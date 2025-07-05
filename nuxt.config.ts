@@ -11,10 +11,18 @@ export default defineNuxtConfig({
     // "@sidebase/nuxt-auth",
     "@nuxt/icon",
     "@nuxtjs/tailwindcss",
+    "@nuxtjs/i18n",
   ],
 
   icon: {
     collections: ["mdi", "heroicons"], // Example of explicit collections if you needed them
+  },
+
+  i18n: {
+    // <--- Add this configuration
+    locales: ["id"], // Set default locale to Indonesian
+    defaultLocale: "id",
+    vueI18n: "./i18n.config.ts", // Path to your i18n config file
   },
 
   tailwindcss: {
@@ -94,10 +102,12 @@ export default defineNuxtConfig({
     },
   },
 
-  // postcss: {
-  //   plugins: {
-  //     "@tailwindcss/postcss": {}, // <--- Updated line
-  //     autoprefixer: {},
-  //   },
-  // },
+  css: ["vuetify/styles", "~/assets/css/main.css"],
+
+  postcss: {
+    plugins: {
+      "@tailwindcss/postcss": {}, // <--- Updated line
+      autoprefixer: {},
+    },
+  },
 });
