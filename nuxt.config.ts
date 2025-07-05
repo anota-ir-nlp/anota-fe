@@ -8,7 +8,7 @@ export default defineNuxtConfig({
     "@pinia/nuxt",
     "@nuxt/ui",
     "@vueuse/nuxt",
-    "@sidebase/nuxt-auth",
+    // "@sidebase/nuxt-auth",
     "@nuxt/icon",
     "@nuxtjs/tailwindcss",
   ],
@@ -32,53 +32,53 @@ export default defineNuxtConfig({
     },
   },
 
-  auth: {
-    baseURL: process.env.AUTH_ORIGIN, // Uses the AUTH_ORIGIN from your runtimeConfig
-    secret: process.env.AUTH_SECRET,
-    enableGlobalAppMiddleware: true,
-    // or set specific redirect paths.
-    pages: {
-      signIn: "/login", // Redirect to this path if unauthenticated
-      // signOut: '/',
-      // error: '/auth-error',
-      // newUser: '/register'
-    },
+  // auth: {
+  //   baseURL: process.env.AUTH_ORIGIN, // Uses the AUTH_ORIGIN from your runtimeConfig
+  //   secret: process.env.AUTH_SECRET,
+  //   enableGlobalAppMiddleware: false, //TODO: set to true if auth is ready
+  //   // or set specific redirect paths.
+  //   pages: {
+  //     signIn: "/login", // Redirect to this path if unauthenticated
+  //     // signOut: '/',
+  //     // error: '/auth-error',
+  //     // newUser: '/register'
+  //   },
 
-    // To add specific providers (e.g., Keycloak, Google, GitHub, Credentials):
-    // providers: {
-    //   // Example: Credentials provider (for username/password login)
-    //   // You'll need to define the `credentials` provider in a server route
-    //   // for authentication logic.
-    //   credentials: {
-    //     // name: 'Credentials', // Optional display name
-    //     // type: 'credentials', // Type of provider
-    //     // credentials: { // Define expected credentials structure (e.g., username, password)
-    //     //   username: { label: 'Username', type: 'text' },
-    //     //   password: { label: 'Password', type: 'password' }
-    //     // },
-    //     // authorize: async (credentials: Record<string, string>) => {
-    //     //   // This is where you'd call your backend API to authenticate
-    //     //   // and return a user object if successful.
-    //     //   // Example:
-    //     //   // const user = await fetch('/api/auth/login', {
-    //     //   //   method: 'POST',
-    //     //   //   body: JSON.stringify(credentials)
-    //     //   // }).then(res => res.json());
-    //     //   // if (user) { return user; } else { return null; }
-    //     //   return null; // Return null if authentication fails
-    //     // }
-    //   },
-    //   // Example: Keycloak provider (requires Keycloak instance and setup)
-    //   // You'd need to install '@auth/core' and 'next-auth' adapters for Keycloak if using Auth.js direct
-    //   // Or use a specific Keycloak module if available.
-    //   // Keycloak setup is quite involved and requires client ID, secret, issuer URL.
-    //   // keycloak: {
-    //   //   clientId: process.env.KEYCLOAK_CLIENT_ID,
-    //   //   clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
-    //   //   issuer: process.env.KEYCLOAK_ISSUER,
-    //   // },
-    // },
-  },
+  //   // To add specific providers (e.g., Keycloak, Google, GitHub, Credentials):
+  //   // providers: {
+  //   //   // Example: Credentials provider (for username/password login)
+  //   //   // You'll need to define the `credentials` provider in a server route
+  //   //   // for authentication logic.
+  //   //   credentials: {
+  //   //     // name: 'Credentials', // Optional display name
+  //   //     // type: 'credentials', // Type of provider
+  //   //     // credentials: { // Define expected credentials structure (e.g., username, password)
+  //   //     //   username: { label: 'Username', type: 'text' },
+  //   //     //   password: { label: 'Password', type: 'password' }
+  //   //     // },
+  //   //     // authorize: async (credentials: Record<string, string>) => {
+  //   //     //   // This is where you'd call your backend API to authenticate
+  //   //     //   // and return a user object if successful.
+  //   //     //   // Example:
+  //   //     //   // const user = await fetch('/api/auth/login', {
+  //   //     //   //   method: 'POST',
+  //   //     //   //   body: JSON.stringify(credentials)
+  //   //     //   // }).then(res => res.json());
+  //   //     //   // if (user) { return user; } else { return null; }
+  //   //     //   return null; // Return null if authentication fails
+  //   //     // }
+  //   //   },
+  //   //   // Example: Keycloak provider (requires Keycloak instance and setup)
+  //   //   // You'd need to install '@auth/core' and 'next-auth' adapters for Keycloak if using Auth.js direct
+  //   //   // Or use a specific Keycloak module if available.
+  //   //   // Keycloak setup is quite involved and requires client ID, secret, issuer URL.
+  //   //   // keycloak: {
+  //   //   //   clientId: process.env.KEYCLOAK_CLIENT_ID,
+  //   //   //   clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
+  //   //   //   issuer: process.env.KEYCLOAK_ISSUER,
+  //   //   // },
+  //   // },
+  // },
 
   plugins: [
     "~/plugins/vuetify.ts", // Make sure you actually use Vuetify or remove this if not
@@ -94,10 +94,10 @@ export default defineNuxtConfig({
     },
   },
 
-  postcss: {
-    plugins: {
-      tailwindcss: {}, // This is automatically added by @nuxt/ui. Keep if you add @nuxtjs/tailwindcss separately.
-      autoprefixer: {},
-    },
-  },
+  // postcss: {
+  //   plugins: {
+  //     "@tailwindcss/postcss": {}, // <--- Updated line
+  //     autoprefixer: {},
+  //   },
+  // },
 });
