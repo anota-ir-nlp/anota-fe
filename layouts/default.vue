@@ -108,7 +108,7 @@ const viewProfile = () => {
   toast.add({
     title: "Lihat Profil",
     description: "Navigasi ke halaman profil.",
-    color: "blue",
+    color: "neutral",
   });
   closeProfileDropdown(); // Close both dropdowns
   // navigateTo('/profile'); // Placeholder route
@@ -119,7 +119,7 @@ const changeRole = (role: string) => {
   toast.add({
     title: "Peran Diubah",
     description: `Anda sekarang adalah ${role}`,
-    color: "green",
+    color: "success",
   });
   closeProfileDropdown(); // Close both dropdowns
 };
@@ -131,7 +131,7 @@ const logout = () => {
   toast.add({
     title: "Berhasil Keluar",
     description: "Anda telah keluar dari akun.",
-    color: "green",
+    color: "success",
   });
   closeProfileDropdown(); // Close both dropdowns
   navigateTo("/"); // Redirect to homepage after logout
@@ -236,7 +236,7 @@ const logout = () => {
           <UButton
             icon="i-simple-icons-github"
             variant="ghost"
-            color="white"
+            color="neutral"
             to="https://github.com/your-org/anota"
             target="_blank"
             aria-label="GitHub"
@@ -244,7 +244,7 @@ const logout = () => {
           <UButton
             icon="i-simple-icons-twitter"
             variant="ghost"
-            color="white"
+            color="neutral"
             to="https://twitter.com"
             target="_blank"
             aria-label="Twitter"
@@ -252,7 +252,6 @@ const logout = () => {
         </div>
       </div>
     </footer>
-    <UNotifications />
   </div>
 </template>
 

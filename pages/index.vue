@@ -61,7 +61,7 @@
                 class="w-full z-50"
                 value-attribute="value"
                 option-attribute="label"
-                color="white"
+                color="neutral"
                 variant="outline"
                 size="lg"
                 :ui="{
@@ -130,7 +130,7 @@
               <UButton
                 icon="i-heroicons-arrow-left"
                 variant="outline"
-                color="white"
+                color="neutral"
                 label="Sebelumnya"
                 :disabled="currentGecExampleIndex === 0"
                 @click="prevGecExample"
@@ -139,7 +139,7 @@
               <UButton
                 icon="i-heroicons-arrow-right"
                 variant="outline"
-                color="white"
+                color="neutral"
                 label="Berikutnya"
                 :disabled="
                   currentGecExampleIndex >=

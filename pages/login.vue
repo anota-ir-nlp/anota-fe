@@ -31,24 +31,24 @@ type Schema = z.output<typeof schema>;
 const providers = [
   {
     label: "Google",
-    icon: "i-simple-icons-google",
+    icon: "i-mdi-google",
     onClick: () => {
       toast.add({
         title: "Login Google",
         description: "Simulasi login dengan Google...",
-        color: "blue",
+        color: "primary",
       });
       // In a real app, this would trigger OAuth flow
     },
   },
   {
     label: "GitHub",
-    icon: "i-simple-icons-github",
+    icon: "i-mdi-github",
     onClick: () => {
       toast.add({
         title: "Login GitHub",
         description: "Simulasi login dengan GitHub...",
-        color: "purple",
+        color: "primary",
       });
       // In a real app, this would trigger OAuth flow
     },
@@ -81,7 +81,7 @@ async function onSubmit() {
     toast.add({
       title: "Validasi Gagal",
       description: "Periksa kembali input Anda.",
-      color: "red",
+      color: "error",
     });
     return; // Stop submission if validation fails
   }
@@ -90,7 +90,7 @@ async function onSubmit() {
   toast.add({
     title: "Login",
     description: "Mencoba masuk...",
-    color: "orange",
+    color: "warning",
   });
 
   try {
@@ -105,14 +105,14 @@ async function onSubmit() {
     toast.add({
       title: "Berhasil Masuk",
       description: `Selamat datang, ${userName.value}!`,
-      color: "green",
+      color: "success",
     });
     navigateTo("/beranda"); // Redirect to /beranda page
   } catch (error) {
     toast.add({
       title: "Gagal Masuk",
       description: "Email atau kata sandi salah.",
-      color: "red",
+      color: "error",
     });
     console.error("Login error:", error);
   }
