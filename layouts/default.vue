@@ -234,7 +234,7 @@ const logout = () => {
         <p>&copy; {{ new Date().getFullYear() }} ANOTA. All rights reserved.</p>
         <div class="social-links">
           <UButton
-            icon="i-simple-icons-github"
+            icon="i-mdi-github"
             variant="ghost"
             color="neutral"
             to="https://github.com/your-org/anota"
@@ -242,7 +242,7 @@ const logout = () => {
             aria-label="GitHub"
           />
           <UButton
-            icon="i-simple-icons-twitter"
+            icon="i-mdi-twitter"
             variant="ghost"
             color="neutral"
             to="https://twitter.com"
