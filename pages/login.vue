@@ -1,67 +1,28 @@
 <script setup lang="ts">
 import * as z from "zod";
+import { useAuth } from "~/composables/useAuth";
 import { navigateTo } from "#app";
 
 const toast = useToast();
+const { login } = useAuth();
 
-// Global state for authentication and role
-const isAuthenticated = useState<boolean>("isAuthenticated", () => false);
-const userRole = useState<string>("userRole", () => "Guest");
-const userName = useState<string>("userName", () => "Pengguna");
-
-// Form input refs
 const email = ref("");
 const password = ref("");
 const remember = ref(false);
 
-// Form error refs
 const emailError = ref("");
 const passwordError = ref("");
 
-// Zod schema for form validation
 const schema = z.object({
   email: z.string().email("Email tidak valid."),
-  password: z.string().min(8, "Kata sandi minimal 8 karakter."),
+  password: z.string().min(6, "Kata sandi minimal 6 karakter."),
   remember: z.boolean().optional(),
 });
 
-type Schema = z.output<typeof schema>;
-
-// Mock providers (Google, GitHub)
-const providers = [
-  {
-    label: "Google",
-    icon: "i-mdi-google", // Ensure 'mdi' collection is enabled in nuxt.config.ts
-    onClick: () => {
-      toast.add({
-        title: "Login Google",
-        description: "Simulasi login dengan Google...",
-        color: "primary",
-      });
-      // In a real app, this would trigger OAuth flow
-    },
-  },
-  {
-    label: "GitHub",
-    icon: "i-mdi-github", // Ensure 'mdi' collection is enabled in nuxt.config.ts
-    onClick: () => {
-      toast.add({
-        title: "Login GitHub",
-        description: "Simulasi login dengan GitHub...",
-        color: "primary",
-      });
-      // In a real app, this would trigger OAuth flow
-    },
-  },
-];
-
-// Function to handle form submission
 async function onSubmit() {
-  // Clear previous errors
   emailError.value = "";
   passwordError.value = "";
 
-  // Validate form data using Zod
   const validationResult = schema.safeParse({
     email: email.value,
     password: password.value,
@@ -69,24 +30,18 @@ async function onSubmit() {
   });
 
   if (!validationResult.success) {
-    // If validation fails, display errors
     validationResult.error.errors.forEach((err) => {
-      if (err.path[0] === "email") {
-        emailError.value = err.message;
-      }
-      if (err.path[0] === "password") {
-        passwordError.value = err.message;
-      }
+      if (err.path[0] === "email") emailError.value = err.message;
+      if (err.path[0] === "password") passwordError.value = err.message;
     });
     toast.add({
       title: "Validasi Gagal",
       description: "Periksa kembali input Anda.",
       color: "error",
     });
-    return; // Stop submission if validation fails
+    return;
   }
 
-  // Simulate API call
   toast.add({
     title: "Login",
     description: "Mencoba masuk...",
@@ -94,34 +49,51 @@ async function onSubmit() {
   });
 
   try {
-    // Simulate a delay for network request
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    // For demonstration, assume successful login with a default role
-    isAuthenticated.value = true;
-    userRole.value = "Anotator"; // Default role for testing
-    userName.value = "John Doe"; // Default name for testing
-
+    await login(email.value, password.value);
     toast.add({
       title: "Berhasil Masuk",
-      description: `Selamat datang, ${userName.value}!`,
+      description: `Selamat datang!`,
       color: "success",
     });
-    navigateTo("/beranda"); // Redirect to /beranda page
+    navigateTo("/beranda");
   } catch (error) {
     toast.add({
       title: "Gagal Masuk",
       description: "Email atau kata sandi salah.",
       color: "error",
     });
-    console.error("Login error:", error);
   }
 }
 
-// Function to navigate back to homepage
 const goBack = () => {
   navigateTo("/");
 };
+
+// Social login providers
+const providers = [
+  {
+    label: "Google",
+    icon: "i-logos-google-icon",
+    onClick: () => {
+      toast.add({
+        title: "Google Login",
+        description: "Fitur login dengan Google belum tersedia.",
+        color: "info",
+      });
+    },
+  },
+  {
+    label: "Facebook",
+    icon: "i-logos-facebook",
+    onClick: () => {
+      toast.add({
+        title: "Facebook Login",
+        description: "Fitur login dengan Facebook belum tersedia.",
+        color: "info",
+      });
+    },
+  },
+];
 </script>
 
 <template>

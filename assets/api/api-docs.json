@@ -1,0 +1,1878 @@
+{
+  "schemes": [],
+  "swagger": "2.0",
+  "info": {
+    "description": "API for annotation management system with role-based access control",
+    "title": "Annota Skripsi API",
+    "contact": {},
+    "version": "1.0"
+  },
+  "host": "",
+  "basePath": "/api/v1",
+  "paths": {
+    "/api/v1/assignments": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Retrieves a list of all document assignments.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["Assignments"],
+        "summary": "Get all assignments",
+        "responses": {
+          "200": {
+            "description": "List of assignments",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/dto.AssignmentResponse"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Assigns a document to a specific user for annotation.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["Assignments"],
+        "summary": "Assign a document to a user",
+        "parameters": [
+          {
+            "description": "Assignment details",
+            "name": "assignRequest",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dto.AssignDocumentRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Document assigned successfully",
+            "schema": {
+              "$ref": "#/definitions/dto.AssignmentResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assignments/{assignmentId}": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Retrieves a single assignment by its ID.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["Assignments"],
+        "summary": "Get assignment by ID",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Assignment ID",
+            "name": "assignmentId",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Assignment details",
+            "schema": {
+              "$ref": "#/definitions/dto.AssignmentResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Assignment not found",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/documents": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Retrieves a list of all documents.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["Documents"],
+        "summary": "Get all documents",
+        "responses": {
+          "200": {
+            "description": "List of documents",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/dto.DocumentResponse"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Creates a new document with its content.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["Documents"],
+        "summary": "Create a new document",
+        "parameters": [
+          {
+            "description": "Document creation details",
+            "name": "documentRequest",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dto.CreateDocumentRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Document created successfully",
+            "schema": {
+              "$ref": "#/definitions/dto.DocumentResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/documents/{documentId}": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Retrieves a single document by its ID.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["Documents"],
+        "summary": "Get document by ID",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Document ID",
+            "name": "documentId",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Document details",
+            "schema": {
+              "$ref": "#/definitions/dto.DocumentResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Document not found",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/documents/{documentId}/sentences/{sentenceId}": {
+      "put": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Updates a specific sentence within a document.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["Documents"],
+        "summary": "Update a sentence in a document",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Document ID",
+            "name": "documentId",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Sentence ID",
+            "name": "sentenceId",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Sentence update details",
+            "name": "sentenceRequest",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dto.UpdateSentenceRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sentence updated successfully",
+            "schema": {
+              "$ref": "#/definitions/dto.SentenceResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Document or sentence not found",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "description": "Authenticate user with email and password",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["Authentication"],
+        "summary": "User login",
+        "parameters": [
+          {
+            "description": "Login credentials",
+            "name": "loginRequest",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dto.LoginRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "schema": {
+              "$ref": "#/definitions/dto.LoginResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Logout user and invalidate JWT token",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["Authentication"],
+        "summary": "User logout",
+        "responses": {
+          "204": {
+            "description": "Logout successful"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Get current authenticated user information with permissions",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["Authentication"],
+        "summary": "Get current user info",
+        "responses": {
+          "200": {
+            "description": "User information",
+            "schema": {
+              "$ref": "#/definitions/dto.AuthMeResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/auth/reset-password": {
+      "post": {
+        "description": "Reset user password using email and backup key",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["Authentication"],
+        "summary": "Reset user password",
+        "parameters": [
+          {
+            "description": "Reset password data",
+            "name": "resetPasswordRequest",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dto.ResetPasswordRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Password reset successfully",
+            "schema": {
+              "$ref": "#/definitions/dto.ResetPasswordResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid input or backup key",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/roles": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Get list of all roles in the system (Admin only)",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["Role Management"],
+        "summary": "Get all roles",
+        "responses": {
+          "200": {
+            "description": "List of all roles",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/dto.RoleResponse"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "403": {
+            "description": "Forbidden - Admin only",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Create a new role in the system (Admin only)",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["Role Management"],
+        "summary": "Create a new role",
+        "parameters": [
+          {
+            "description": "Role creation data",
+            "name": "createRoleRequest",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dto.CreateRoleRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Role created successfully",
+            "schema": {
+              "$ref": "#/definitions/dto.CreateRoleResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid input or role already exists",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "403": {
+            "description": "Forbidden - Admin only",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/roles/active": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Get list of all active roles in the system (Admin only)",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["Role Management"],
+        "summary": "Get active roles",
+        "responses": {
+          "200": {
+            "description": "List of active roles",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/dto.RoleResponse"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "403": {
+            "description": "Forbidden - Admin only",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/roles/names": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Get list of all active role names for validation purposes (Admin only)",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["Role Management"],
+        "summary": "Get role names",
+        "responses": {
+          "200": {
+            "description": "List of role names",
+            "schema": {
+              "$ref": "#/definitions/dto.RoleNamesResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "403": {
+            "description": "Forbidden - Admin only",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/roles/{id}": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Get detailed information of a specific role by ID (Admin only)",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["Role Management"],
+        "summary": "Get role by ID",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "Role ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Role details",
+            "schema": {
+              "$ref": "#/definitions/dto.RoleResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid role ID",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "403": {
+            "description": "Forbidden - Admin only",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Role not found",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Delete a role from the system (Admin only)",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["Role Management"],
+        "summary": "Delete role",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "Role ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Role deleted successfully",
+            "schema": {
+              "$ref": "#/definitions/dto.DeleteRoleResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid role ID",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "403": {
+            "description": "Forbidden - Admin only",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Role not found",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          }
+        }
+      },
+      "patch": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Update role information including name and active status (Admin only)",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["Role Management"],
+        "summary": "Update role",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "Role ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Role update data",
+            "name": "updateRoleRequest",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dto.UpdateRoleRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Role updated successfully",
+            "schema": {
+              "$ref": "#/definitions/dto.UpdateRoleResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid input",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "403": {
+            "description": "Forbidden - Admin only",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Role not found",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Get list of all users in the system (Admin only)",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["User Management"],
+        "summary": "Get all users",
+        "responses": {
+          "200": {
+            "description": "List of users",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/dto.UsersListResponse"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "403": {
+            "description": "Forbidden - Admin only",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Create a new user with specified roles and active role. Password is auto-generated. (Admin only)",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["User Management"],
+        "summary": "Create a new user",
+        "parameters": [
+          {
+            "description": "User creation data (no password required)",
+            "name": "createUserRequest",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dto.CreateUserRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "User created successfully with default password and backup key",
+            "schema": {
+              "$ref": "#/definitions/dto.CreateUserResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid input",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "403": {
+            "description": "Forbidden - Admin only",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/users/csv": {
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Upload CSV file to create multiple users at once (Admin only)",
+        "consumes": ["multipart/form-data"],
+        "produces": ["application/json"],
+        "tags": ["User Management"],
+        "summary": "Bulk create users from CSV",
+        "parameters": [
+          {
+            "type": "file",
+            "description": "CSV file with user data (name,email,password,roles,active_role)",
+            "name": "file",
+            "in": "formData",
+            "required": true
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Users created successfully",
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid file or format",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "403": {
+            "description": "Forbidden - Admin only",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Get detailed information of a specific user by ID (Admin only)",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["User Management"],
+        "summary": "Get user by ID",
+        "parameters": [
+          {
+            "type": "string",
+            "format": "uuid",
+            "description": "User ID (UUID)",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User details",
+            "schema": {
+              "$ref": "#/definitions/dto.UserDetailResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid user ID",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "403": {
+            "description": "Forbidden - Admin only",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Delete a user from the system (Admin only)",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["User Management"],
+        "summary": "Delete user",
+        "parameters": [
+          {
+            "type": "string",
+            "format": "uuid",
+            "description": "User ID (UUID)",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "User deleted successfully"
+          },
+          "400": {
+            "description": "Bad request - Invalid user ID",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "403": {
+            "description": "Forbidden - Admin only",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          }
+        }
+      },
+      "patch": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Update user information including name, roles, and active role (Admin only)",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["User Management"],
+        "summary": "Update user",
+        "parameters": [
+          {
+            "type": "string",
+            "format": "uuid",
+            "description": "User ID (UUID)",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "User update data",
+            "name": "updateUserRequest",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dto.UpdateUserRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User updated successfully"
+          },
+          "400": {
+            "description": "Bad request - Invalid input",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "403": {
+            "description": "Forbidden - Admin only",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/active-role": {
+      "patch": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Switch the current user's active role and get new JWT token",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["User Role Switching"],
+        "summary": "Switch user's active role",
+        "parameters": [
+          {
+            "type": "string",
+            "format": "uuid",
+            "description": "User ID (UUID)",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Role switching data",
+            "name": "switchRoleRequest",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dto.SwitchRoleRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "New token with switched role",
+            "schema": {
+              "$ref": "#/definitions/dto.SwitchRoleResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid input or role not available",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/add-role": {
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Add a specific role to a user (Admin only)",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["User Management"],
+        "summary": "Add role to user",
+        "parameters": [
+          {
+            "type": "string",
+            "format": "uuid",
+            "description": "User ID (UUID)",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Role to add",
+            "name": "addRoleRequest",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dto.AddRoleRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Role added successfully",
+            "schema": {
+              "$ref": "#/definitions/dto.AddRoleResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid input or user already has role",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "403": {
+            "description": "Forbidden - Admin only",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/remove-role": {
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Remove a specific role from a user (Admin only)",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["User Management"],
+        "summary": "Remove role from user",
+        "parameters": [
+          {
+            "type": "string",
+            "format": "uuid",
+            "description": "User ID (UUID)",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Role to remove",
+            "name": "removeRoleRequest",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dto.RemoveRoleRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Role removed successfully",
+            "schema": {
+              "$ref": "#/definitions/dto.RemoveRoleResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid input or user doesn't have role",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "403": {
+            "description": "Forbidden - Admin only",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/roles": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Get the list of roles available to a specific user",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["User Role Switching"],
+        "summary": "Get user's available roles",
+        "parameters": [
+          {
+            "type": "string",
+            "format": "uuid",
+            "description": "User ID (UUID)",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User's available roles and current active role",
+            "schema": {
+              "$ref": "#/definitions/dto.UserRolesResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid user ID",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "schema": {
+              "$ref": "#/definitions/dto.ErrorResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "dto.AddRoleRequest": {
+      "type": "object",
+      "required": ["role"],
+      "properties": {
+        "role": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.AddRoleResponse": {
+      "type": "object",
+      "properties": {
+        "active_role": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "user_id": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.AssignDocumentRequest": {
+      "type": "object",
+      "required": ["assignee_id", "document_id"],
+      "properties": {
+        "assignee_id": {
+          "type": "string"
+        },
+        "document_id": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.AssignmentResponse": {
+      "type": "object",
+      "properties": {
+        "assignee": {
+          "$ref": "#/definitions/dto.UserResponse"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "document": {
+          "$ref": "#/definitions/dto.DocumentResponse"
+        },
+        "id": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.AuthMeResponse": {
+      "type": "object",
+      "properties": {
+        "active_role": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "permissions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "dto.CreateDocumentRequest": {
+      "type": "object",
+      "required": ["text", "title"],
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.CreateRoleRequest": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.CreateRoleResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        },
+        "role": {
+          "$ref": "#/definitions/dto.RoleResponse"
+        }
+      }
+    },
+    "dto.CreateUserRequest": {
+      "type": "object",
+      "required": ["active_role", "email", "name", "roles"],
+      "properties": {
+        "active_role": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "dto.CreateUserResponse": {
+      "type": "object",
+      "properties": {
+        "active_role": {
+          "type": "string"
+        },
+        "backup_key": {
+          "type": "string"
+        },
+        "default_password": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "user_id": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.DeleteRoleResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        },
+        "role_id": {
+          "type": "integer"
+        }
+      }
+    },
+    "dto.DocumentResponse": {
+      "type": "object",
+      "properties": {
+        "created_at": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "sentences": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/dto.SentenceResponse"
+          }
+        },
+        "title": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.ErrorResponse": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.LoginRequest": {
+      "type": "object",
+      "required": ["email", "password"],
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.LoginResponse": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string"
+        },
+        "user": {
+          "$ref": "#/definitions/dto.UserResponse"
+        }
+      }
+    },
+    "dto.RemoveRoleRequest": {
+      "type": "object",
+      "required": ["role"],
+      "properties": {
+        "role": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.RemoveRoleResponse": {
+      "type": "object",
+      "properties": {
+        "active_role": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "user_id": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.ResetPasswordRequest": {
+      "type": "object",
+      "required": ["backup_key", "email", "new_password"],
+      "properties": {
+        "backup_key": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "new_password": {
+          "type": "string",
+          "minLength": 6
+        }
+      }
+    },
+    "dto.ResetPasswordResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.RoleNamesResponse": {
+      "type": "object",
+      "properties": {
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "dto.RoleResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "is_active": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.SentenceResponse": {
+      "type": "object",
+      "properties": {
+        "corrected_text": {
+          "type": "string"
+        },
+        "has_error": {
+          "type": "boolean"
+        },
+        "id": {
+          "type": "string"
+        },
+        "m2_correction": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.SwitchRoleRequest": {
+      "type": "object",
+      "required": ["role_name"],
+      "properties": {
+        "role_name": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.SwitchRoleResponse": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string"
+        },
+        "user": {
+          "$ref": "#/definitions/dto.UserResponse"
+        }
+      }
+    },
+    "dto.UpdateRoleRequest": {
+      "type": "object",
+      "properties": {
+        "is_active": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.UpdateRoleResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        },
+        "role": {
+          "$ref": "#/definitions/dto.RoleResponse"
+        }
+      }
+    },
+    "dto.UpdateSentenceRequest": {
+      "type": "object",
+      "properties": {
+        "corrected_text": {
+          "type": "string"
+        },
+        "has_error": {
+          "type": "boolean"
+        },
+        "m2_correction": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.UpdateUserRequest": {
+      "type": "object",
+      "properties": {
+        "active_role": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "dto.UserDetailResponse": {
+      "type": "object",
+      "properties": {
+        "active_role": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "deleted_at": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "updated_at": {
+          "type": "string"
+        }
+      }
+    },
+    "dto.UserResponse": {
+      "type": "object",
+      "properties": {
+        "active_role": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "dto.UserRolesResponse": {
+      "type": "object",
+      "properties": {
+        "active_role": {
+          "type": "string"
+        },
+        "available_roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "dto.UsersListResponse": {
+      "type": "object",
+      "properties": {
+        "active_role": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "BearerAuth": {
+      "description": "Type \"Bearer\" followed by a space and JWT token. Example: \"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"",
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
+    }
+  }
+}

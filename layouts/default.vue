@@ -1,85 +1,86 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from "vue";
-import { navigateTo } from "#app"; // Import navigateTo for programmatic navigation
+import { useAuth } from "~/composables/useAuth";
+import { onMounted, onUnmounted, ref, computed } from "vue";
+import { navigateTo } from "#app";
 
 const toast = useToast();
+const {
+  user,
+  // isAuthenticated,
+  // availableRoles,
+  // activeRole,
+  login,
+  logout,
+  switchRole,
+  fetchMe,
+} = useAuth();
 
-// Global state for authentication and role (using Nuxt's useState for simplicity)
-const isAuthenticated = useState<boolean>("isAuthenticated", () => false);
-const userRole = useState<string>("userRole", () => "Guest");
-const userName = useState<string>("userName", () => "Pengguna");
-const userAvatar = useState<string>(
-  "userAvatar",
-  () => "https://avatars.githubusercontent.com/u/739984?v=4"
-); // Placeholder avatar
+const isAuthenticated = ref(true);
+const availableRoles = ref(["admin", "annotator", "reviewer", "kepala riset"]); // Mock roles, replace with actual roles from your auth system
+const activeRole = ref("admin");
 
-// State for custom dropdown visibility
 const isProfileDropdownOpen = ref(false);
-const isSubmenuOpen = ref(false); // New ref for submenu visibility
+const isSubmenuOpen = ref(false);
 const profileDropdownRef = ref<HTMLElement | null>(null);
 
-// Define all possible menu items with their roles
-const allMenus = [
-  { role: "Guest", label: "Beranda", path: "/" },
-  { role: "Anotator", label: "Beranda", path: "/beranda" },
-  { role: "Anotator", label: "Anotasi", path: "/anotator/anotasi" },
-  { role: "Peninjau", label: "Beranda", path: "/beranda" },
-  { role: "Peninjau", label: "Tinjauan", path: "/peninjau/tinjauan" },
-  { role: "Admin", label: "Beranda", path: "/beranda" },
-  { role: "Admin", label: "Kelola Pengguna", path: "/admin/kelola-pengguna" },
-  { role: "Admin", label: "Kelola Dokumen", path: "/admin/kelola-dokumen" },
-  { role: "Admin", label: "Kelola Error", path: "/admin/kelola-error" },
-  { role: "Kepala Riset", label: "Beranda", path: "/beranda" },
-  {
-    role: "Kepala Riset",
-    label: "Rekap Kinerja",
-    path: "/kepala-riset/rekap-kinerja",
-  },
-  {
-    role: "Kepala Riset",
-    label: "Rekap Dokumen",
-    path: "/kepala-riset/rekap-dokumen",
-  },
-  {
-    role: "Kepala Riset",
-    label: "Generate Dataset",
-    path: "/generate-dataset",
-  },
-];
+const userAvatar = computed(() => user.value?.avatarUrl || "");
+const userName = computed(() => user.value?.name || "Pengguna");
+const userRole = computed(() => activeRole.value || "admin"); //TODO: FIX:
 
-// Computed property to filter menus based on current user role
+const allRoles = availableRoles; // Only show roles user has
+
 const filteredMenus = computed(() => {
   if (!isAuthenticated.value) {
-    return allMenus.filter((menu) => menu.role === "Guest");
+    return [{ role: "Guest", label: "Beranda", path: "/" }];
   }
-  return allMenus.filter((menu) => menu.role === userRole.value);
+  // Example: adapt menu based on activeRole
+  switch (
+    activeRole.value //TODO: FIX:
+  ) {
+    case "admin":
+      return [
+        { label: "Beranda", path: "/beranda" },
+        { label: "Kelola Pengguna", path: "/admin/kelola-pengguna" },
+        { label: "Kelola Dokumen", path: "/admin/kelola-dokumen" },
+        { label: "Kelola Error", path: "/admin/kelola-error" },
+      ];
+    case "annotator":
+      return [
+        { label: "Beranda", path: "/beranda" },
+        { label: "Anotasi", path: "/anotator/anotasi" },
+      ];
+    case "reviewer":
+      return [
+        { label: "Beranda", path: "/beranda" },
+        { label: "Tinjauan", path: "/peninjau/tinjauan" },
+      ];
+    case "kepala riset":
+      return [
+        { label: "Beranda", path: "/beranda" },
+        { label: "Rekap Kinerja", path: "/kepala-riset/rekap-kinerja" },
+        { label: "Rekap Dokumen", path: "/kepala-riset/rekap-dokumen" },
+        { label: "Generate Dataset", path: "/generate-dataset" },
+      ];
+    default:
+      return [{ label: "Beranda", path: "/beranda" }];
+  }
 });
 
-// All possible roles for the "Ganti Peran" dropdown
-const allRoles = ["Anotator", "Peninjau", "Admin", "Kepala Riset"];
-
-// Function to toggle profile dropdown
 const toggleProfileDropdown = () => {
   isProfileDropdownOpen.value = !isProfileDropdownOpen.value;
-  // Close submenu if main dropdown is closing
-  if (!isProfileDropdownOpen.value) {
-    isSubmenuOpen.value = false;
-  }
+  if (!isProfileDropdownOpen.value) isSubmenuOpen.value = false;
 };
 
-// Function to toggle submenu
 const toggleSubmenu = (event: MouseEvent) => {
-  event.stopPropagation(); // Prevent click from bubbling up to close main dropdown
+  event.stopPropagation();
   isSubmenuOpen.value = !isSubmenuOpen.value;
 };
 
-// Function to close profile dropdown (and submenu)
 const closeProfileDropdown = () => {
   isProfileDropdownOpen.value = false;
   isSubmenuOpen.value = false;
 };
 
-// Handle clicks outside the dropdown to close it
 const handleClickOutside = (event: MouseEvent) => {
   if (
     profileDropdownRef.value &&
@@ -89,52 +90,57 @@ const handleClickOutside = (event: MouseEvent) => {
   }
 };
 
-// Lifecycle hooks for event listener
 onMounted(() => {
   document.addEventListener("click", handleClickOutside);
+  if (isAuthenticated.value && !user.value) {
+    fetchMe();
+  }
 });
 
 onUnmounted(() => {
   document.removeEventListener("click", handleClickOutside);
 });
 
-// Function to handle login navigation from homepage
 const handleLoginClick = () => {
   navigateTo("/login");
 };
 
-// Profile action functions
 const viewProfile = () => {
   toast.add({
     title: "Lihat Profil",
     description: "Navigasi ke halaman profil.",
     color: "neutral",
   });
-  closeProfileDropdown(); // Close both dropdowns
-  // navigateTo('/profile'); // Placeholder route
+  closeProfileDropdown();
 };
 
-const changeRole = (role: string) => {
-  userRole.value = role;
-  toast.add({
-    title: "Peran Diubah",
-    description: `Anda sekarang adalah ${role}`,
-    color: "success",
-  });
-  closeProfileDropdown(); // Close both dropdowns
+const changeRole = async (role: string) => {
+  try {
+    await switchRole(role);
+    toast.add({
+      title: "Peran Diubah",
+      description: `Anda sekarang adalah ${role}`,
+      color: "success",
+    });
+    closeProfileDropdown();
+  } catch (err) {
+    toast.add({
+      title: "Gagal Ganti Peran",
+      description: "Tidak dapat mengganti peran.",
+      color: "error",
+    });
+  }
 };
 
-const logout = () => {
-  isAuthenticated.value = false;
-  userRole.value = "Guest";
-  userName.value = "Pengguna";
+const handleLogout = async () => {
+  await logout();
   toast.add({
     title: "Berhasil Keluar",
     description: "Anda telah keluar dari akun.",
     color: "success",
   });
-  closeProfileDropdown(); // Close both dropdowns
-  navigateTo("/"); // Redirect to homepage after logout
+  closeProfileDropdown();
+  navigateTo("/");
 };
 </script>
 
