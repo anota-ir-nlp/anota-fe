@@ -4,56 +4,81 @@
   >
     <!-- Subtle background circles for modern feel -->
     <div
-      class="absolute top-0 left-0 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"
+      class="absolute top-0 left-0 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-2xl opacity-20 animate-blob"
     ></div>
     <div
-      class="absolute top-0 right-0 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"
+      class="absolute top-0 right-0 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-2xl opacity-20 animate-blob animation-delay-2000"
     ></div>
     <div
-      class="absolute bottom-0 left-1/4 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"
+      class="absolute bottom-0 left-1/4 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-2xl opacity-20 animate-blob animation-delay-4000"
     ></div>
 
     <!-- Main content container -->
-    <div class="main-container">
+    <div class="mx-auto p-4 py-8 lg:p-12 relative z-10 max-w-7xl">
       <!-- Login Section -->
-      <section class="login-section animate-fade-in">
+      <section
+        class="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] text-center relative overflow-hidden animate-fade-in"
+      >
         <!-- Giant background text for techy vibe -->
-        <div class="absolute-center-text">ANOTA</div>
+        <div
+          class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[15rem] md:text-[8rem] font-black text-white/3 opacity-5 pointer-events-none select-none whitespace-nowrap animate-moveText z-0"
+        >
+          ANOTA
+        </div>
 
-        <div class="login-content-wrapper relative z-10">
-          <h1 class="title-text flex items-center justify-center gap-4">
+        <div
+          class="p-8 md:p-12 max-w-4xl w-full relative z-10 glassmorphism-card shadow-2xl"
+        >
+          <h1
+            class="text-4xl md:text-6xl font-extrabold mb-4 text-white leading-tight drop-shadow-lg flex items-center justify-center gap-4"
+          >
             <UIcon
               name="i-heroicons-light-bulb"
               class="w-12 h-12 text-blue-400"
             />
             ANOTA
           </h1>
-          <p class="tagline-text">Anotasi Cerdas. Dataset Sempurna.</p>
-          <p class="description-text">
+          <p
+            class="text-2xl md:text-3xl font-semibold mb-8 text-purple-400 drop-shadow-sm"
+          >
+            Anotasi Cerdas. Dataset Sempurna.
+          </p>
+          <p
+            class="text-lg md:text-2xl mb-10 text-gray-200 font-light max-w-2xl mx-auto leading-relaxed"
+          >
             Platform inovatif untuk anotasi Grammatical Error Correction (GEC)
             Bahasa Indonesia. Mempermudah annotator, reviewer, dan kepala riset
             dalam menciptakan dataset berkualitas tinggi.
           </p>
           <UButton
+            color="primary"
             variant="solid"
             size="xl"
             icon="i-heroicons-arrow-right-on-rectangle"
             label="Masuk ke ANOTA"
-            class="login-button"
+            class="text-lg md:text-xl font-bold px-10 py-5 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-r from-blue-600 to-purple-600 border border-white/20 relative overflow-hidden z-10 hover:scale-105 hover:from-blue-700 hover:to-purple-700"
             @click="handleLogin"
           />
         </div>
       </section>
 
       <!-- Informasi Utama -->
-      <section class="info-section animate-fade-in-up">
-        <h2 class="section-title">Informasi Penting</h2>
+      <section class="py-16 animate-fade-in-up">
+        <h2
+          class="text-3xl md:text-5xl font-bold text-center mb-12 text-white drop-shadow-md leading-none"
+        >
+          Informasi Penting
+        </h2>
 
         <!-- GEC Examples Card (Zig-zag 1) -->
-        <div class="zig-zag-row">
-          <div class="glassmorphism-card gec-card">
-            <h3 class="card-title">Contoh Tipe Kesalahan GEC</h3>
-            <div class="dropdown-wrapper">
+        <div class="flex flex-col lg:flex-row items-center gap-16 mb-24">
+          <div
+            class="glassmorphism-card p-6 md:p-8 w-full shadow-xl transition-all duration-300 hover:shadow-2xl"
+          >
+            <h3 class="text-2xl md:text-4xl font-semibold mb-8 text-white">
+              Contoh Tipe Kesalahan GEC
+            </h3>
+            <div class="mb-6">
               <USelectMenu
                 v-model="selectedGecType"
                 :options="gecErrorTypes"
@@ -65,68 +90,41 @@
                 variant="outline"
                 size="lg"
                 :ui="{
-                  wrapper: 'relative',
-                  base: 'relative block w-full disabled:cursor-not-allowed disabled:opacity-75 focus:outline-none border-0',
-                  rounded: 'rounded-lg',
-                  padding: 'px-4 py-3',
-                  shadow: 'shadow-sm',
-                  variant: {
-                    outline:
-                      'bg-gray-800/70 border border-white/20 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-400',
-                  },
-                  option: {
-                    base: 'cursor-pointer select-none relative flex items-center justify-between gap-2 px-4 py-2.5 text-base',
-                    active: 'bg-blue-600/20',
-                    selected: 'font-semibold text-white bg-blue-600/30',
-                    disabled: 'cursor-not-allowed opacity-50',
-                    empty: 'text-base text-gray-400 px-4 py-2.5',
-                    icon: {
-                      base: 'h-5 w-5 flex-shrink-0 text-gray-400',
-                      active: 'text-white',
-                      selected: 'text-white',
-                    },
-                    selectedIcon: {
-                      wrapper: 'flex-shrink-0 inline-flex items-center',
-                      base: 'h-5 w-5 text-white',
-                    },
-                  },
-                  container:
-                    'z-20 bg-gray-900/90 backdrop-blur-md rounded-lg shadow-xl ring-1 ring-white/20',
-                  background: 'bg-gray-900/90',
-                  ring: 'ring-1 ring-white/20',
-                  optionGroup: {
-                    container: 'space-y-0.5',
-                    label: 'text-sm font-semibold text-gray-300 px-4 py-1.5',
-                  },
+                  base: 'w-full',
                 }"
               />
             </div>
 
-            <div v-if="currentGecExample" class="gec-example-display">
-              <p class="text-base text-gray-300 mb-3">
-                Tipe:
-                <span class="font-bold text-white">{{
-                  currentGecExample.type
-                }}</span>
-              </p>
-              <p class="text-red-300 mb-3 text-xl font-mono leading-relaxed">
-                Salah:
-                <span class="font-mono text-red-100">{{
-                  currentGecExample.wrong
-                }}</span>
-              </p>
-              <p class="text-green-300 text-xl font-mono leading-relaxed">
-                Benar:
-                <span class="font-mono text-green-100">{{
-                  currentGecExample.correct
-                }}</span>
-              </p>
-            </div>
-            <div v-else class="gec-placeholder-text">
-              <p class="text-lg">Pilih tipe kesalahan untuk melihat contoh.</p>
-            </div>
+            <transition name="fade">
+              <div
+                v-if="currentGecExample"
+                class="bg-gray-800/60 rounded-lg p-6 mb-6 border border-white/15 shadow-inner transition-all duration-300"
+              >
+                <p class="text-base text-gray-300 mb-3">
+                  Tipe:
+                  <span class="font-bold text-white">{{
+                    currentGecExample.type
+                  }}</span>
+                </p>
+                <p class="text-red-300 mb-3 text-xl font-mono leading-relaxed">
+                  Salah:
+                  <span class="font-mono text-red-100">{{
+                    currentGecExample.wrong
+                  }}</span>
+                </p>
+                <p class="text-green-300 text-xl font-mono leading-relaxed">
+                  Benar:
+                  <span class="font-mono text-green-100">{{
+                    currentGecExample.correct
+                  }}</span>
+                </p>
+              </div>
+              <div v-else class="text-center text-gray-400 p-8 text-lg">
+                <p>Pilih tipe kesalahan untuk melihat contoh.</p>
+              </div>
+            </transition>
 
-            <div class="navigation-buttons">
+            <div class="flex justify-center gap-6 mt-8">
               <UButton
                 icon="i-heroicons-arrow-left"
                 variant="outline"
@@ -134,7 +132,9 @@
                 label="Sebelumnya"
                 :disabled="currentGecExampleIndex === 0"
                 @click="prevGecExample"
-                class="nav-button"
+                :ui="{
+                  base: 'px-8 py-4 rounded-full font-semibold transition-colors duration-200 bg-transparent border border-white/15 text-white hover:bg-white/10',
+                }"
               />
               <UButton
                 icon="i-heroicons-arrow-right"
@@ -143,27 +143,37 @@
                 label="Berikutnya"
                 :disabled="
                   currentGecExampleIndex >=
-                  (gecExamples[selectedGecType.value]?.length || 0) - 1
+                  (gecExamples[selectedGecType.value.value as keyof typeof gecExamples]?.length || 0) - 1
                 "
                 @click="nextGecExample"
-                class="nav-button"
+                :ui="{
+                  base: 'px-8 py-4 rounded-full font-semibold transition-colors duration-200 bg-transparent border border-white/15 text-white hover:bg-white/10',
+                }"
               />
             </div>
           </div>
           <div class="lg:w-1/2 w-full flex justify-center items-center">
             <UIcon
               name="i-heroicons-document-text"
-              class="w-48 h-48 text-blue-400 opacity-70"
+              class="w-48 h-48 text-blue-400 opacity-70 drop-shadow-2xl"
             />
           </div>
         </div>
 
         <!-- Alur Penggunaan Card (Zig-zag 2) -->
-        <div class="zig-zag-row-reverse">
-          <div class="glassmorphism-card alur-card">
-            <h3 class="card-title">Alur Penggunaan Aplikasi</h3>
+        <div
+          class="flex flex-col lg:flex-row-reverse items-center gap-16 mb-24"
+        >
+          <div
+            class="glassmorphism-card p-6 md:p-8 w-full shadow-xl transition-all duration-300 hover:shadow-2xl"
+          >
+            <h3 class="text-2xl md:text-4xl font-semibold mb-8 text-white">
+              Alur Penggunaan Aplikasi
+            </h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-center">
-              <div class="alur-item">
+              <div
+                class="flex flex-col items-center p-6 bg-gray-800/60 rounded-xl border border-white/10 shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+              >
                 <UIcon
                   name="i-heroicons-user-group"
                   class="w-16 h-16 text-blue-400 mb-4"
@@ -174,7 +184,9 @@
                   review.
                 </p>
               </div>
-              <div class="alur-item">
+              <div
+                class="flex flex-col items-center p-6 bg-gray-800/60 rounded-xl border border-white/10 shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+              >
                 <UIcon
                   name="i-heroicons-pencil-square"
                   class="w-16 h-16 text-green-400 mb-4"
@@ -185,7 +197,9 @@
                   kesalahan GEC.
                 </p>
               </div>
-              <div class="alur-item">
+              <div
+                class="flex flex-col items-center p-6 bg-gray-800/60 rounded-xl border border-white/10 shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+              >
                 <UIcon
                   name="i-heroicons-document-check"
                   class="w-16 h-16 text-purple-400 mb-4"
@@ -196,7 +210,9 @@
                   konsistensi.
                 </p>
               </div>
-              <div class="alur-item">
+              <div
+                class="flex flex-col items-center p-6 bg-gray-800/60 rounded-xl border border-white/10 shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+              >
                 <UIcon
                   name="i-heroicons-chart-bar"
                   class="w-16 h-16 text-pink-400 mb-4"
@@ -212,16 +228,20 @@
           <div class="lg:w-1/2 w-full flex justify-center items-center">
             <UIcon
               name="i-heroicons-arrows-right-left"
-              class="w-48 h-48 text-purple-400 opacity-70"
+              class="w-48 h-48 text-purple-400 opacity-70 drop-shadow-2xl"
             />
           </div>
         </div>
       </section>
 
       <!-- FAQ Section (Centered Accordion) -->
-      <section class="faq-section animate-fade-in-up">
-        <h2 class="section-title">Pertanyaan Umum (FAQ)</h2>
-        <div class="max-w-4xl mx-auto glassmorphism-card faq-card">
+      <section class="py-16 animate-fade-in-up">
+        <h2
+          class="text-3xl md:text-5xl font-bold text-center mb-12 text-white drop-shadow-md leading-none"
+        >
+          Pertanyaan Umum (FAQ)
+        </h2>
+        <div class="max-w-4xl mx-auto glassmorphism-card p-6 md:p-8 shadow-xl">
           <UAccordion
             :items="faqItems"
             color="white"
@@ -229,35 +249,16 @@
             size="lg"
             class="text-white"
             :ui="{
-              wrapper: 'flex flex-col w-full',
-              item: {
-                base: 'py-4',
-                size: 'text-xl',
-                color: 'text-white',
-                // Removed the default icon property here to prevent duplication
-                active: 'rotate-180',
-                inactive: '',
-                container: 'space-y-3',
-                body: 'text-gray-200 mt-3 text-lg leading-relaxed faq-body-padding', // Class for padding
-              },
-              transition: {
-                enterFromClass: 'overflow-hidden max-h-0',
-                enterActiveClass:
-                  'transition-[max-height] duration-500 ease-in-out',
-                enterToClass: 'max-h-[300px]', // Increased max-height for more content
-                leaveFromClass: 'overflow-hidden max-h-[300px]',
-                leaveActiveClass:
-                  'transition-[max-height] duration-500 ease-in-out',
-                leaveToClass: 'max-h-0',
-              },
+              base: 'w-full',
             }"
           >
             <template #default="{ item, index, open }">
               <UButton
-                color="white"
+                color="neutral"
                 variant="ghost"
-                class="accordion-button"
-                :ui="{ rounded: 'rounded-none' }"
+                :ui="{
+                  base: 'border-b border-white/20 hover:bg-white/10 transition-colors duration-200 py-4 px-6 text-white w-full text-left flex justify-between items-center',
+                }"
               >
                 <span class="truncate text-white font-semibold">{{
                   item.label
@@ -283,7 +284,7 @@ import { ref, computed, watch } from "vue";
 import { navigateTo } from "#app"; // Import navigateTo for programmatic navigation
 
 const handleLogin = () => {
-  navigateTo("/login"); // Navigate to the login page
+  navigateTo("/login");
 };
 // Define GEC Error Types based on your PDF
 const gecErrorTypes = [
@@ -674,382 +675,20 @@ useHead({
 </script>
 
 <style scoped>
-/*
-  WARNING: This section uses direct CSS properties for spacing (padding/margin)
-  as a workaround because Tailwind CSS utility classes for spacing
-  are not visually applying as expected in your environment.
-
-  The ideal solution is to properly configure Tailwind CSS
-  so its utility classes work as intended.
-  Please refer to the troubleshooting steps in the chat for potential fixes.
-*/
-
-/* Main content container */
-.main-container {
-  margin-left: auto;
-  margin-right: auto;
-  padding: 2rem 1rem; /* px-4 py-8 */
-  position: relative; /* Needed for z-index of children */
-  z-index: 10;
-}
-
-@media (min-width: 1024px) {
-  /* lg breakpoint */
-  .main-container {
-    padding: 3rem 3rem; /* lg:px-12 lg:py-16 */
-  }
-}
-
-/* Login Section */
-.login-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: calc(100vh - 10rem); /* min-h-[calc(100vh-10rem)] */
-  text-align: center;
-  position: relative; /* For absolute-center-text */
-  overflow: hidden; /* To contain moving text */
-}
-
-.absolute-center-text {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 15rem; /* Adjust as needed */
-  font-weight: 900; /* Extra bold */
-  color: rgba(255, 255, 255, 0.03); /* Very subtle white */
-  pointer-events: none; /* Allows clicks to pass through */
-  user-select: none; /* Prevents text selection */
-  white-space: nowrap; /* Keep text on one line */
-  animation: moveText 20s linear infinite alternate; /* Subtle horizontal movement */
-  z-index: 0;
-}
-
-@media (max-width: 768px) {
-  .absolute-center-text {
-    font-size: 8rem; /* Smaller on mobile */
-  }
-}
-
-@keyframes moveText {
-  0% {
-    transform: translate(-55%, -50%);
-  }
-  100% {
-    transform: translate(-45%, -50%);
-  }
-}
-
-.login-content-wrapper {
-  padding: 2rem; /* p-8 */
-  max-width: 48rem; /* max-w-4xl */
-  width: 100%;
-}
-
-@media (min-width: 768px) {
-  /* md breakpoint */
-  .login-content-wrapper {
-    padding: 3rem; /* md:p-12 */
-  }
-}
-
-.title-text {
-  font-size: 2.25rem; /* text-4xl */
-  line-height: 2.5rem; /* leading-tight */
-  font-weight: 800; /* font-extrabold */
-  margin-bottom: 1rem; /* mb-4 */
-  color: white;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); /* drop-shadow-lg */
-}
-
-@media (min-width: 768px) {
-  /* md breakpoint */
-  .title-text {
-    font-size: 3.75rem; /* md:text-6xl */
-  }
-}
-
-.tagline-text {
-  font-size: 1.5rem; /* text-2xl */
-  font-weight: 600; /* font-semibold */
-  margin-bottom: 2rem; /* mb-8 */
-  color: #a78bfa; /* purple-400 */
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-}
-
-@media (min-width: 768px) {
-  .tagline-text {
-    font-size: 2rem; /* md:text-3xl */
-  }
-}
-
-.description-text {
-  font-size: 1.125rem; /* text-lg */
-  line-height: 1.75rem; /* leading-relaxed */
-  margin-bottom: 2.5rem; /* mb-10 */
-  color: #e2e8f0; /* text-gray-200 */
-  font-weight: 300; /* font-light */
-  max-width: 42rem; /* max-w-2xl */
-  margin-left: auto;
-  margin-right: auto;
-}
-
-@media (min-width: 768px) {
-  /* md breakpoint */
-  .description-text {
-    font-size: 1.5rem; /* md:text-2xl */
-  }
-}
-
-.login-button {
-  font-size: 1.125rem; /* text-lg */
-  font-weight: 700; /* font-bold */
-  padding: 1.25rem 2.5rem; /* px-10 py-5 */
-  border-radius: 9999px; /* rounded-full */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 15px rgba(0, 0, 0, 0.05); /* shadow-lg */
-  transition: all 0.3s ease-in-out;
-  background: linear-gradient(
-    to right,
-    #3b82f6,
-    #9333ea
-  ); /* bg-gradient-to-r from-blue-600 to-purple-600 */
-  border: 1px solid rgba(255, 255, 255, 0.2); /* border border-white/20 */
-  position: relative;
-  overflow: hidden;
-  z-index: 1;
-}
-
-.login-button::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 300%;
-  height: 300%;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
-  transition: all 0.7s ease-in-out;
-  transform: translate(-50%, -50%) scale(0);
-  opacity: 0;
-  z-index: -1;
-}
-
-.login-button:hover::before {
-  transform: translate(-50%, -50%) scale(1);
-  opacity: 1;
-}
-
-.login-button:hover {
-  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3), 0 20px 25px rgba(0, 0, 0, 0.1); /* hover:shadow-xl */
-  transform: scale(1.05); /* hover:scale-105 */
-  background: linear-gradient(
-    to right,
-    #2563eb,
-    #7e22ce
-  ); /* hover:from-blue-700 hover:to-purple-700 */
-}
-
-@media (min-width: 768px) {
-  /* md breakpoint */
-  .login-button {
-    font-size: 1.25rem; /* md:text-xl */
-  }
-}
-
-/* Information Sections */
-.info-section,
-.faq-section {
-  padding-top: 6rem; /* py-24 */
-  padding-bottom: 6rem; /* py-24 */
-}
-
-.section-title {
-  font-size: 1.875rem; /* text-3xl */
-  line-height: 2.25rem; /* leading-normal */
-  font-weight: 700; /* font-bold */
-  text-align: center;
-  margin-bottom: 4rem; /* mb-16 */
-  color: white;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); /* drop-shadow-md */
-}
-
-@media (min-width: 768px) {
-  /* md breakpoint */
-  .section-title {
-    font-size: 3rem; /* md:text-5xl */
-    line-height: 1; /* md:leading-none */
-  }
-}
-
-.zig-zag-row {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4rem; /* gap-16 */
-  margin-bottom: 8rem; /* mb-32 */
-}
-
-@media (min-width: 1024px) {
-  /* lg breakpoint */
-  .zig-zag-row {
-    flex-direction: row;
-  }
-}
-
-.zig-zag-row-reverse {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4rem; /* gap-16 */
-  margin-bottom: 8rem; /* mb-32 */
-}
-
-@media (min-width: 1024px) {
-  /* lg breakpoint */
-  .zig-zag-row-reverse {
-    flex-direction: row-reverse;
-  }
-}
-
-/* Glassmorphism Card */
+/* Glassmorphism card effect */
 .glassmorphism-card {
-  background-color: rgba(255, 255, 255, 0.08); /* White with 8% opacity */
-  backdrop-filter: blur(12px); /* Blurs the background behind the element */
-  -webkit-backdrop-filter: blur(12px); /* For Safari support */
-  border: 1px solid rgba(255, 255, 255, 0.15); /* Subtle white border */
-  border-radius: 1.25rem; /* Rounded corners */
-  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15), 0 12px 20px rgba(0, 0, 0, 0.1); /* Soft shadow */
-  transition: all 0.3s ease-in-out;
-  width: 100%;
+  background-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1.5px solid rgba(255, 255, 255, 0.18);
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18), 0 1.5px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
 .glassmorphism-card:hover {
-  background-color: rgba(
-    255,
-    255,
-    255,
-    0.12
-  ); /* Slightly less transparent on hover */
-  border-color: rgba(255, 255, 255, 0.25);
-  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2), 0 15px 25px rgba(0, 0, 0, 0.15);
-}
-
-.gec-card,
-.alur-card {
-  padding: 2.5rem; /* p-10 */
-}
-
-@media (min-width: 768px) {
-  /* md breakpoint */
-  .gec-card,
-  .alur-card {
-    padding: 3rem; /* md:p-12 */
-  }
-}
-
-.card-title {
-  font-size: 1.5rem; /* text-2xl */
-  line-height: 2rem; /* leading-normal */
-  font-weight: 600; /* font-semibold */
-  margin-bottom: 2rem; /* mb-8 */
-  color: white;
-}
-
-@media (min-width: 768px) {
-  /* md breakpoint */
-  .card-title {
-    font-size: 2.25rem; /* md:text-4xl */
-  }
-}
-
-.dropdown-wrapper {
-  margin-bottom: 1.5rem; /* mb-6 */
-}
-
-.gec-example-display {
-  background-color: rgba(31, 41, 55, 0.4); /* bg-gray-800/40 */
-  border-radius: 0.5rem; /* rounded-lg */
-  padding: 1.5rem; /* p-6 */
-  margin-bottom: 1.5rem; /* mb-6 */
-  border: 1px solid rgba(255, 255, 255, 0.15); /* border border-white/15 */
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1); /* shadow-inner */
-}
-
-.gec-placeholder-text {
-  text-align: center;
-  color: #9ca3af; /* text-gray-400 */
-  padding: 2rem; /* p-8 */
-}
-
-.navigation-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 1.5rem; /* gap-6 */
-  margin-top: 2rem; /* mt-8 */
-}
-
-.nav-button {
-  padding: 1rem 2rem; /* px-8 py-4 */
-  border-radius: 9999px; /* rounded-full */
-  font-weight: 600; /* font-semibold */
-  transition: background-color 0.2s ease-in-out; /* transition-colors duration-200 */
-  background-color: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.15); /* border border-white/20 */
-  color: white;
-}
-
-.nav-button:hover {
-  background-color: rgba(255, 255, 255, 0.1); /* hover:bg-white/10 */
-}
-
-/* Alur Penggunaan Card Items */
-.alur-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 1.5rem; /* p-6 */
-  background-color: rgba(31, 41, 55, 0.5); /* bg-gray-800/50 */
-  border-radius: 0.75rem; /* rounded-xl */
-  border: 1px solid rgba(255, 255, 255, 0.1); /* border border-white/10 */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 15px rgba(0, 0, 0, 0.05); /* shadow-lg */
-  transition: all 0.3s ease-in-out;
-}
-
-.alur-item:hover {
-  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15), 0 12px 20px rgba(0, 0, 0, 0.1); /* hover:shadow-xl */
-  transform: translateY(-5px); /* subtle lift */
-}
-
-/* FAQ Section */
-.faq-card {
-  padding: 2.5rem; /* p-10 */
-}
-
-@media (min-width: 768px) {
-  /* md breakpoint */
-  .faq-card {
-    padding: 3rem; /* md:p-12 */
-  }
-}
-
-.faq-body-padding {
-  padding-bottom: 1rem; /* pb-4 */
-  padding-top: 0.5rem; /* pt-2 */
-  padding-left: 1.5rem; /* px-6 */
-  padding-right: 1.5rem; /* px-6 */
-}
-
-.accordion-button {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2); /* border-b border-white/20 */
-  transition: background-color 0.2s ease-in-out; /* transition-colors duration-200 */
-  padding: 1rem 1.5rem; /* px-6 py-4 */
-  color: white;
-}
-
-.accordion-button:hover {
-  background-color: rgba(255, 255, 255, 0.1); /* hover:bg-white/10 */
+  background-color: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.28);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22), 0 2px 12px rgba(0, 0, 0, 0.13);
 }
 
 /* Background blob animations */
@@ -1097,7 +736,31 @@ useHead({
 
 .animate-fade-in-up {
   animation: fadeIn 1s ease-out forwards;
-  animation-delay: 0.5s; /* Delay for subsequent sections */
-  opacity: 0; /* Hide initially */
+  animation-delay: 0.5s;
+  opacity: 0;
+}
+
+/* Specific animation for the giant ANOTA text */
+@keyframes moveText {
+  0% {
+    transform: translate(-55%, -50%);
+  }
+  100% {
+    transform: translate(-45%, -50%);
+  }
+}
+
+.animate-moveText {
+  animation: moveText 20s linear infinite alternate;
+}
+
+/* Fade transition for GEC example */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>
