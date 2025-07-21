@@ -15,7 +15,7 @@ export default defineNuxtConfig({
   ],
 
   icon: {
-    collections: ["mdi", "heroicons"],
+    collections: ["mdi", "heroicons", "lucide"],
   },
 
   i18n: {
@@ -24,9 +24,7 @@ export default defineNuxtConfig({
     vueI18n: "./i18n.config.ts",
   },
 
-  plugins: [
-    "~/plugins/vuetify.ts",
-  ],
+  plugins: ["~/plugins/vuetify.ts"],
 
   runtimeConfig: {
     AUTH_ORIGIN: process.env.AUTH_ORIGIN,
@@ -37,11 +35,9 @@ export default defineNuxtConfig({
     },
   },
 
-  css: ["vuetify/styles", "~/assets/css/main.css"],
+  css: ["~/assets/css/main.css"],
 
   vite: {
-    plugins: [
-      tailwindcss(),
-    ],
+    plugins: [tailwindcss()],
   },
 });
