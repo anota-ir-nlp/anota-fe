@@ -68,37 +68,11 @@ async function onSubmit() {
 const goBack = () => {
   navigateTo("/");
 };
-
-// Social login providers
-const providers = [
-  {
-    label: "Google",
-    icon: "i-logos-google-icon",
-    onClick: () => {
-      toast.add({
-        title: "Google Login",
-        description: "Fitur login dengan Google belum tersedia.",
-        color: "info",
-      });
-    },
-  },
-  {
-    label: "Facebook",
-    icon: "i-logos-facebook",
-    onClick: () => {
-      toast.add({
-        title: "Facebook Login",
-        description: "Fitur login dengan Facebook belum tersedia.",
-        color: "info",
-      });
-    },
-  },
-];
 </script>
 
 <template>
   <div class="min-h-[calc(100vh-8rem)] flex items-center justify-center bg-slate-900">
-    <div class="w-full max-w-md bg-slate-800/90 backdrop-blur-lg border border-white/10 rounded-lg shadow-2xl text-white px-10 py-16 relative">
+    <div class="w-full max-w-md bg-slate-800/90 backdrop-blur-lg border border-white/10 rounded-lg shadow-2xl text-white p-10 relative">
       <div class="absolute top-4 left-4">
         <button
           class="rounded-full p-2 w-10 h-10 flex items-center justify-center bg-transparent border-0 text-slate-400 cursor-pointer hover:bg-white/5 hover:text-white transition-colors"
