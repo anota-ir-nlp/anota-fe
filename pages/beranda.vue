@@ -8,7 +8,6 @@
       label="Kembali ke Halaman Utama"
       icon="i-heroicons-home"
       variant="outline"
-      color="white"
       class="back-button"
       @click="navigateTo('/')"
     />

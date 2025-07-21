@@ -14,7 +14,6 @@ const email = ref("");
 const password = ref("");
 const remember = ref(false);
 
-
 // Form error refs
 const emailError = ref("");
 const passwordError = ref("");
@@ -119,389 +118,80 @@ async function onSubmit() {
   }
 }
 
-// Function to navigate back to homepage
 const goBack = () => {
   navigateTo("/");
 };
 </script>
 
 <template>
-  <div class="login-page-container">
-    <div class="login-card">
-      <div class="back-button-container">
-        <button class="back-button" @click="goBack" aria-label="Kembali">
-          <UIcon name="i-heroicons-arrow-left" class="icon-style" />
+  <div class="min-h-[calc(100vh-8rem)] flex items-center justify-center bg-slate-900">
+    <div class="w-full max-w-md bg-slate-800/90 backdrop-blur-lg border border-white/10 rounded-lg shadow-2xl text-white px-10 py-16 relative">
+      <div class="absolute top-4 left-4">
+        <button
+          class="rounded-full p-2 w-10 h-10 flex items-center justify-center bg-transparent border-0 text-slate-400 cursor-pointer hover:bg-white/5 hover:text-white transition-colors"
+          @click="goBack"
+          aria-label="Kembali"
+        >
+          <UIcon name="i-heroicons-arrow-left" class="w-6 h-6" />
         </button>
       </div>
 
-      <div class="header-section">
-        <UIcon name="i-heroicons-user" class="header-icon" />
-        <h2 class="form-title">Masuk</h2>
-        <p class="form-description">
+      <div class="text-center mb-4">
+        <UIcon name="i-heroicons-user" class="w-12 h-12 text-white mb-2 mx-auto" />
+        <h2 class="text-3xl font-bold text-white mb-2">Masuk</h2>
+        <p class="text-base text-slate-400">
           Masukkan kredensial Anda untuk mengakses akun.
         </p>
       </div>
 
-      <div class="social-providers-top">
-        <button
-          v-for="provider in providers"
-          :key="provider.label"
-          class="social-button-top"
-          @click="provider.onClick"
-        >
-          <UIcon :name="provider.icon" class="social-icon" />
-          <span>{{ provider.label }}</span>
-        </button>
-      </div>
-
-      <div class="divider-container">
-        <hr class="divider-line" />
-        <span class="divider-text">atau</span>
-        <hr class="divider-line" />
-      </div>
-
-      <form @submit.prevent="onSubmit" class="form-inputs">
-        <div class="form-group">
-          <label for="email" class="input-label">Email</label>
+      <form @submit.prevent="onSubmit" class="flex flex-col gap-4">
+        <div class="">
+          <label for="email" class="block text-slate-300 text-sm mb-1">Email</label>
           <input
             id="email"
             v-model="email"
             type="text"
             placeholder="Enter your email"
-            class="custom-input"
-            :class="{ 'input-error-border': emailError }"
+            class="w-full px-4 py-4 text-base bg-slate-900 border border-slate-600 rounded-md text-white outline-none transition-all duration-200 placeholder:text-slate-400 placeholder:opacity-70 focus:border-blue-500 focus:shadow-[0_0_0_1px_rgb(59,130,246)]"
+            :class="{ '!border-red-400': emailError }"
           />
-          <p v-if="emailError" class="error-message">{{ emailError }}</p>
+          <p v-if="emailError" class="text-red-400 text-xs mt-1">{{ emailError }}</p>
         </div>
 
-        <div class="form-group">
-          <label for="password" class="input-label">Kata Sandi</label>
+        <div class="">
+          <label for="password" class="block text-slate-300 text-sm mb-1">Kata Sandi</label>
           <input
             id="password"
             v-model="password"
             type="password"
             placeholder="Enter your password"
-            class="custom-input"
-            :class="{ 'input-error-border': passwordError }"
+            class="w-full px-4 py-4 text-base bg-slate-900 border border-slate-600 rounded-md text-white outline-none transition-all duration-200 placeholder:text-slate-400 placeholder:opacity-70 focus:border-blue-500 focus:shadow-[0_0_0_1px_rgb(59,130,246)]"
+            :class="{ '!border-red-400': passwordError }"
           />
-          <p v-if="passwordError" class="error-message">{{ passwordError }}</p>
+          <p v-if="passwordError" class="text-red-400 text-xs mt-1">{{ passwordError }}</p>
         </div>
 
-        <label class="remember-checkbox-container">
-          <input type="checkbox" v-model="remember" class="custom-checkbox" />
-          <span class="checkbox-label">Ingat saya</span>
+        <label class="flex items-center gap-2 mt-2 mb-4 cursor-pointer">
+          <input
+            type="checkbox"
+            v-model="remember"
+            class="appearance-none w-5 h-5 border border-slate-600 bg-slate-900 rounded grid place-content-center cursor-pointer transition-all duration-200 checked:bg-blue-500 checked:border-blue-500 focus:outline-2 focus:outline-blue-500 focus:outline-offset-2 before:content-[''] before:w-[0.65em] before:h-[0.65em] before:scale-0 before:transition-transform before:duration-[120ms] before:ease-in-out before:shadow-[inset_1em_1em_rgb(59,130,246)] before:[clip-path:polygon(14%_44%,0_65%,50%_100%,100%_16%,80%_0%,43%_62%)] checked:before:scale-100"
+          />
+          <span class="text-slate-300 text-sm select-none">Ingat saya</span>
         </label>
 
-        <button type="submit" class="submit-button">Lanjutkan</button>
+        <button
+          type="submit"
+          class="w-full px-10 py-4 font-bold rounded-full shadow-lg transition-all duration-300 bg-gradient-to-r from-blue-500 to-purple-600 border border-white/20 relative overflow-hidden z-[1] mt-2 cursor-pointer hover:shadow-xl hover:scale-[1.02] hover:from-blue-600 hover:to-purple-700 before:content-[''] before:absolute before:top-1/2 before:left-1/2 before:w-[300%] before:h-[300%] before:bg-white/10 before:rounded-full before:transition-all before:duration-700 before:ease-in-out before:-translate-x-1/2 before:-translate-y-1/2 before:scale-0 before:opacity-0 before:-z-[1] hover:before:scale-100 hover:before:opacity-100"
+        >
+          Lanjutkan
+        </button>
       </form>
 
-      <p class="footer-text">
+      <p class="text-center text-sm text-slate-400 mt-6">
         Belum punya akun?
-        <NuxtLink to="/register" class="register-link">Daftar di sini</NuxtLink>
+        <NuxtLink to="/register" class="text-blue-500 font-medium no-underline transition-all duration-200 hover:underline">Daftar di sini</NuxtLink>
       </p>
     </div>
   </div>
 </template>
-
-<style scoped>
-/* Direct color values for consistency and to avoid variable issues */
-.login-page-container {
-  min-height: calc(100vh - 8rem);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: rgb(20, 24, 30); /* --color-dark-blue-bg */
-  padding: 2rem;
-}
-
-.login-card {
-  width: 100%;
-  max-width: 28rem;
-  background-color: #1a2b3c; /* custom-blue or a dark shade */
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1); /* --color-card-border */
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  color: white;
-  padding: 2.5rem;
-  position: relative;
-}
-
-.back-button-container {
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
-}
-
-.back-button {
-  border-radius: 9999px;
-  padding: 0.5rem;
-  width: 2.5rem;
-  height: 2.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: transparent;
-  border: none;
-  color: rgb(150, 155, 160); /* --color-text-lighter */
-  cursor: pointer;
-}
-
-.back-button:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-  color: white;
-}
-
-.icon-style {
-  width: 1.5rem;
-  height: 1.5rem;
-}
-
-.login-form-content {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.header-section {
-  text-align: center;
-  margin-bottom: 1rem;
-}
-
-.header-icon {
-  width: 3rem;
-  height: 3rem;
-  color: white;
-  margin-bottom: 0.5rem;
-}
-
-.form-title {
-  font-size: 1.875rem;
-  font-weight: 700;
-  color: white;
-  margin-bottom: 0.5rem;
-}
-
-.form-description {
-  font-size: 1rem;
-  color: rgb(150, 155, 160); /* --color-text-lighter */
-}
-
-.social-providers-top {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.social-button-top {
-  flex: 1;
-  max-width: 10rem;
-  padding: 0.75rem 1rem;
-  font-weight: 600;
-  background-color: white;
-  border: 1px solid rgb(200, 205, 210);
-  color: black;
-  transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  border-radius: 0.375rem;
-  cursor: pointer;
-}
-
-.social-button-top:hover {
-  background-color: rgb(240, 240, 240);
-  border-color: rgb(180, 185, 190);
-}
-
-.social-icon {
-  color: black !important;
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
-.divider-container {
-  display: flex;
-  align-items: center;
-  text-align: center;
-  margin: 1.5rem 0;
-}
-
-.divider-line {
-  flex-grow: 1;
-  border: none;
-  border-top: 1px solid rgb(50, 55, 60); /* --color-divider-border */
-  margin: 0;
-}
-
-.divider-text {
-  padding: 0 0.75rem;
-  color: rgb(150, 155, 160); /* --color-divider-text */
-  background-color: rgba(255, 255, 255, 0.05); /* --color-card-bg */
-  font-size: 0.875rem;
-}
-
-.form-inputs {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.form-group {
-  margin-bottom: 0;
-}
-
-.input-label {
-  display: block;
-  color: rgb(200, 205, 210); /* --color-text-light */
-  font-size: 0.875rem;
-  margin-bottom: 0.25rem;
-}
-
-.custom-input {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  font-size: 1rem;
-  background-color: rgb(26, 30, 36); /* --color-input-bg */
-  border: 1px solid rgb(50, 55, 60); /* --color-input-border */
-  border-radius: 0.375rem;
-  color: white;
-  outline: none;
-  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-}
-
-.custom-input::placeholder {
-  color: rgb(150, 155, 160); /* --color-text-lighter */
-  opacity: 0.7;
-}
-
-.custom-input:focus {
-  border-color: rgb(38, 107, 240); /* --color-button-blue */
-  box-shadow: 0 0 0 1px rgb(38, 107, 240); /* --color-button-blue */
-}
-
-.input-error-border {
-  border-color: #f87171 !important; /* --color-error */
-}
-
-.error-message {
-  color: #f87171; /* --color-error */
-  font-size: 0.75rem;
-  margin-top: 0.25rem;
-}
-
-.remember-checkbox-container {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-  margin-bottom: 1rem;
-  cursor: pointer;
-}
-
-.custom-checkbox {
-  appearance: none;
-  width: 1.25rem;
-  height: 1.25rem;
-  border: 1px solid rgb(50, 55, 60); /* --color-input-border */
-  background-color: rgb(26, 30, 36); /* --color-input-bg */
-  border-radius: 0.25rem;
-  display: grid;
-  place-content: center;
-  cursor: pointer;
-  transition: background-color 0.2s, border-color 0.2s;
-}
-
-.custom-checkbox::before {
-  content: "";
-  width: 0.65em;
-  height: 0.65em;
-  transform: scale(0);
-  transition: 120ms transform ease-in-out;
-  box-shadow: inset 1em 1em rgb(38, 107, 240); /* --color-button-blue */
-  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
-}
-
-.custom-checkbox:checked {
-  background-color: rgb(38, 107, 240); /* --color-button-blue */
-  border-color: rgb(38, 107, 240); /* --color-button-blue */
-}
-
-.custom-checkbox:checked::before {
-  transform: scale(1);
-}
-
-.custom-checkbox:focus {
-  outline: 2px solid rgb(38, 107, 240); /* --color-button-blue */
-  outline-offset: 2px;
-}
-
-.checkbox-label {
-  color: rgb(200, 205, 210); /* --color-text-light */
-  font-size: 0.875rem;
-  user-select: none;
-}
-
-.submit-button {
-  width: 100%;
-  padding: 1.25rem 2.5rem;
-  font-weight: 700;
-  border-radius: 9999px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 15px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease-in-out;
-  background: linear-gradient(to right, #3b82f6, #9333ea);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  position: relative;
-  overflow: hidden;
-  z-index: 1;
-  margin-top: 0.5rem;
-  cursor: pointer;
-}
-
-.submit-button::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 300%;
-  height: 300%;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
-  transition: all 0.7s ease-in-out;
-  transform: translate(-50%, -50%) scale(0);
-  opacity: 0;
-  z-index: -1;
-}
-
-.submit-button:hover::before {
-  transform: translate(-50%, -50%) scale(1);
-  opacity: 1;
-}
-
-.submit-button:hover {
-  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3), 0 20px 25px rgba(0, 0, 0, 0.1);
-  transform: scale(1.02);
-  background: linear-gradient(to right, #2563eb, #7e22ce);
-}
-
-.footer-text {
-  text-align: center;
-  font-size: 0.875rem;
-  color: rgb(150, 155, 160); /* --color-text-lighter */
-  margin-top: 1.5rem;
-}
-
-.register-link {
-  color: rgb(38, 107, 240); /* --color-link */
-  font-weight: 500;
-  text-decoration: none;
-  transition: text-decoration 0.2s ease-in-out;
-}
-
-.register-link:hover {
-  text-decoration: underline;
-}
-</style>
