@@ -78,29 +78,6 @@
               size="md"
               icon="i-heroicons-calendar"
             />
-            <USelectMenu
-              v-model="filter.tipe"
-              :options="tipeOptions"
-              placeholder="Tipe"
-              :ui="{ base: 'w-32' }"
-              size="md"
-              icon="i-heroicons-document"
-            />
-            <USelectMenu
-              v-model="filter.reviewed"
-              :options="reviewedOptions"
-              placeholder="Review"
-              :ui="{ base: 'w-32' }"
-              size="md"
-              icon="i-heroicons-check-badge"
-            />
-            <UInput
-              v-model="filter.assignedBy"
-              placeholder="Assigned By"
-              :ui="{ base: 'w-32' }"
-              size="md"
-              icon="i-heroicons-user"
-            />
             <UButton
               icon="i-heroicons-arrow-path"
               color="neutral"
@@ -112,15 +89,17 @@
             />
           </div>
         </div>
-        <div class="overflow-x-auto rounded-lg">
+        <div v-if="isLoading" class="text-center py-8">
+          <span class="text-gray-400">Memuat dokumen...</span>
+        </div>
+        <div v-else class="overflow-x-auto rounded-lg">
           <table class="min-w-full text-sm table-auto">
             <thead>
               <tr class="bg-gray-800/60 text-gray-300 sticky top-0 z-10">
                 <th class="px-4 py-2 text-left">Judul</th>
-                <th class="px-4 py-2 text-left">Tipe</th>
+                <th class="px-4 py-2 text-left">ID</th>
                 <th class="px-4 py-2 text-left">Tanggal</th>
-                <th class="px-4 py-2 text-left">Status Review</th>
-                <th class="px-4 py-2 text-left">Assigned By</th>
+                <th class="px-4 py-2 text-left">Sentences</th>
                 <th class="px-4 py-2"></th>
               </tr>
             </thead>
@@ -130,17 +109,10 @@
                 :key="doc.id"
                 class="border-b border-white/10 hover:bg-blue-900/20 transition"
               >
-                <td class="px-4 py-2 font-semibold">{{ doc.judul }}</td>
-                <td class="px-4 py-2">{{ doc.tipe }}</td>
-                <td class="px-4 py-2">{{ doc.tanggal }}</td>
-                <td class="px-4 py-2">
-                  <span
-                    :class="doc.reviewed ? 'text-green-400' : 'text-yellow-400'"
-                  >
-                    {{ doc.reviewed ? "Ditinjau" : "Belum" }}
-                  </span>
-                </td>
-                <td class="px-4 py-2">{{ doc.assignedBy }}</td>
+                <td class="px-4 py-2 font-semibold">{{ doc.title }}</td>
+                <td class="px-4 py-2">{{ doc.id }}</td>
+                <td class="px-4 py-2">{{ formatDate(doc.created_at) }}</td>
+                <td class="px-4 py-2">{{ doc.sentences?.length || 0 }}</td>
                 <td class="px-4 py-2">
                   <UButton
                     label="Anotasi"
@@ -155,7 +127,7 @@
                 </td>
               </tr>
               <tr v-if="filteredDocs.length === 0">
-                <td colspan="6" class="text-center text-gray-400 py-8">
+                <td colspan="5" class="text-center text-gray-400 py-8">
                   Tidak ada dokumen ditemukan.
                 </td>
               </tr>
@@ -168,17 +140,28 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { navigateTo } from "#app";
+import { useDocumentsApi } from "~/data/documents";
+import { useAnnotationsApi } from "~/data/annotations";
+import type { DocumentResponse, AnnotationResponse } from "~/types/api";
 
-// Dummy statistics
-const stats = ref({
-  annotated: 24,
-  reviewed: 15,
-  total: 30,
-});
+const { getDocuments } = useDocumentsApi();
+const { getAnnotations } = useAnnotationsApi();
 
-// Dummy weekly stats for code block
+// State
+const docs = ref<DocumentResponse[]>([]);
+const annotations = ref<AnnotationResponse[]>([]);
+const isLoading = ref(false);
+
+// Statistics computed from real data
+const stats = computed(() => ({
+  annotated: annotations.value.length,
+  reviewed: 0, // TODO: Get from reviews API
+  total: docs.value.length,
+}));
+
+// Weekly stats (dummy for now)
 const weeklyStats = ref([
   { label: "Sen", count: 3 },
   { label: "Sel", count: 5 },
@@ -189,98 +172,62 @@ const weeklyStats = ref([
   { label: "Min", count: 2 },
 ]);
 
-// Dummy document data
-const docs = ref([
-  {
-    id: 1,
-    judul: "Artikel Bahasa Indonesia 1",
-    tipe: "Artikel",
-    tanggal: "2024-06-01",
-    reviewed: true,
-    assignedBy: "Admin",
-  },
-  {
-    id: 2,
-    judul: "Laporan Penelitian",
-    tipe: "Laporan",
-    tanggal: "2024-06-02",
-    reviewed: false,
-    assignedBy: "Kepala Riset",
-  },
-  {
-    id: 3,
-    judul: "Berita Harian",
-    tipe: "Berita",
-    tanggal: "2024-06-03",
-    reviewed: false,
-    assignedBy: "Admin",
-  },
-  {
-    id: 4,
-    judul: "Makalah Akademik",
-    tipe: "Makalah",
-    tanggal: "2024-06-04",
-    reviewed: true,
-    assignedBy: "Admin",
-  },
-]);
-
 // Filter/search state
 const search = ref("");
 const filter = ref({
   tanggal: "",
-  tipe: "",
-  reviewed: "",
-  assignedBy: "",
 });
-
-const tipeOptions = [
-  { label: "Artikel", value: "Artikel" },
-  { label: "Laporan", value: "Laporan" },
-  { label: "Berita", value: "Berita" },
-  { label: "Makalah", value: "Makalah" },
-];
-const reviewedOptions = [
-  { label: "Ditinjau", value: "true" },
-  { label: "Belum", value: "false" },
-];
 
 // Filtering logic
 const filteredDocs = computed(() => {
   return docs.value.filter((doc) => {
     const matchSearch =
       !search.value ||
-      doc.judul.toLowerCase().includes(search.value.toLowerCase());
+      doc.title.toLowerCase().includes(search.value.toLowerCase());
     const matchTanggal =
-      !filter.value.tanggal || doc.tanggal === filter.value.tanggal;
-    const matchTipe = !filter.value.tipe || doc.tipe === filter.value.tipe;
-    const matchReviewed =
-      !filter.value.reviewed || String(doc.reviewed) === filter.value.reviewed;
-    const matchAssigned =
-      !filter.value.assignedBy ||
-      doc.assignedBy
-        .toLowerCase()
-        .includes(filter.value.assignedBy.toLowerCase());
-    return (
-      matchSearch && matchTanggal && matchTipe && matchReviewed && matchAssigned
-    );
+      !filter.value.tanggal ||
+      doc.created_at.startsWith(filter.value.tanggal);
+    return matchSearch && matchTanggal;
   });
 });
 
+// Methods
 function resetFilters() {
   search.value = "";
   filter.value = {
     tanggal: "",
-    tipe: "",
-    reviewed: "",
-    assignedBy: "",
   };
 }
 
-// Navigation to detail page
 function goToDetail(id: number) {
   navigateTo(`/anotator/anotasi/${id}`);
 }
+
+function formatDate(dateString: string) {
+  return new Date(dateString).toLocaleDateString("id-ID");
+}
+
+// Fetch data on mount
+async function fetchData() {
+  isLoading.value = true;
+  try {
+    const [documentsData, annotationsData] = await Promise.all([
+      getDocuments(),
+      getAnnotations().catch(() => []), // Handle case where user has no annotations yet
+    ]);
+
+    docs.value = documentsData || [];
+    annotations.value = annotationsData || [];
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    docs.value = [];
+    annotations.value = [];
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+onMounted(fetchData);
 </script>
 
 <style scoped>
