@@ -49,7 +49,7 @@ async function onSubmit() {
   });
 
   try {
-    await login(email.value, password.value);
+    await login(email.value, password.value, remember.value);
     toast.add({
       title: "Berhasil Masuk",
       description: `Selamat datang!`,
@@ -134,11 +134,6 @@ const goBack = () => {
           Lanjutkan
         </button>
       </form>
-
-      <p class="text-center text-sm text-slate-400 mt-6">
-        Belum punya akun?
-        <NuxtLink to="/register" class="text-blue-500 font-medium no-underline transition-all duration-200 hover:underline">Daftar di sini</NuxtLink>
-      </p>
     </div>
   </div>
 </template>

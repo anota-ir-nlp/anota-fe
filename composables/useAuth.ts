@@ -15,7 +15,7 @@ export function useAuth() {
   function setToken(newToken: string | null) {
     token.value = newToken;
     tokenCookie.value = newToken;
-    if (process.client) {
+    if (import.meta.client) {
       if (newToken) {
         localStorage.setItem(TOKEN_KEY, newToken);
       } else {
@@ -24,19 +24,15 @@ export function useAuth() {
     }
   }
 
-  // Helper to get token (from state, cookie, or localStorage)
   function getToken(): string | null {
-    // Only access localStorage on client
-    if (process.client) {
+    if (import.meta.client) {
       return (
         token.value || tokenCookie.value || localStorage.getItem(TOKEN_KEY)
       );
     }
-    // On server, only use state/cookie
     return token.value || tokenCookie.value || null;
   }
 
-  // Fetch current user info
   async function fetchMe() {
     const runtimeConfig = useRuntimeConfig();
     const apiBaseUrl = runtimeConfig.public.apiBaseUrl;
@@ -58,8 +54,7 @@ export function useAuth() {
     }
   }
 
-  // Login
-  async function login(email: string, password: string) {
+  async function login(email: string, password: string, remember?: boolean) {
     const runtimeConfig = useRuntimeConfig();
     const apiBaseUrl = runtimeConfig.public.apiBaseUrl;
     try {
@@ -68,6 +63,9 @@ export function useAuth() {
         body: { email, password },
       });
       setToken(res.token);
+      if (remember && import.meta.client) {
+        localStorage.setItem(TOKEN_KEY, res.token);
+      }
       await fetchMe();
       return true;
     } catch (err) {
