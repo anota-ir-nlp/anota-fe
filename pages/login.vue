@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import * as z from "zod";
-import { useAuth } from "~/composables/useAuth";
+import { useAuth } from "~/data/auth";
 import { navigateTo } from "#app";
 
 const toast = useToast();

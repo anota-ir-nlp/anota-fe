@@ -1,4 +1,4 @@
-import { useAuth } from "~/composables/useAuth";
+import { useAuth } from "~/data/auth";
 import type { UseFetchOptions } from "nuxt/app";
 import type { FetchRequest } from "ofetch";
 

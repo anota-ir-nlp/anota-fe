@@ -1,285 +1,337 @@
 <template>
-  <div
-    class="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-blue-950 text-white font-inter"
-  >
-    <!-- Header / Welcome Card -->
-    <section
-      class="w-full px-4 pt-8 pb-4 md:pt-12 md:pb-8 flex flex-col md:flex-row items-center md:items-start gap-6 max-w-7xl mx-auto"
-    >
-      <div
-        class="glassmorphism-card flex-1 flex flex-col md:flex-row items-center gap-6 p-6 md:p-8 shadow-xl"
-      >
-        <UAvatar
-          :src="userData.avatar"
-          :alt="userData.name"
-          size="2xl"
-          class="border-4 border-blue-500/50 shadow-lg"
-        />
-        <div class="flex-1 text-center md:text-left">
-          <div
-            class="flex items-center gap-2 justify-center md:justify-start mb-2"
-          >
-            <span class="text-lg text-gray-400">Hi,</span>
-            <span class="text-2xl md:text-3xl font-bold text-white">
-              {{ userData.name }}
-            </span>
-            <span
-              class="ml-2 px-2 py-0.5 rounded bg-blue-700/30 text-blue-300 text-xs font-semibold uppercase tracking-wide"
-            >
-              {{ userData.role }}
-            </span>
-          </div>
-          <div class="text-gray-400 text-base md:text-lg mb-2">
-            <span class="hidden md:inline">Selamat datang kembali.</span>
-            <span class="inline md:hidden">Selamat datang.</span>
-          </div>
-          <div
-            class="flex flex-wrap gap-3 justify-center md:justify-start text-sm mt-2"
-          >
-            <span class="flex items-center gap-1">
-              <UIcon
-                name="i-heroicons-envelope"
-                class="w-4 h-4 text-gray-400"
+  <div class="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 text-white">
+    <!-- Welcome Section -->
+    <section class="w-full px-4 pt-8 pb-4 md:pt-12 md:pb-8">
+      <div class="max-w-7xl mx-auto">
+        <div class="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-2xl p-6 md:p-8 shadow-2xl">
+          <div class="flex flex-col md:flex-row items-center gap-6">
+            <UAvatar
+              :src="userData.avatar"
+              :alt="userData.name"
+              size="2xl"
+              class="ring-4 ring-blue-500/30 shadow-xl"
+            />
+            <div class="flex-1 text-center md:text-left">
+              <div class="flex items-center gap-2 justify-center md:justify-start mb-2">
+                <span class="text-lg text-slate-400">Hi,</span>
+                <span class="text-2xl md:text-3xl font-bold text-white">{{ userData.name }}</span>
+                <span class="ml-2 px-3 py-1 rounded-full bg-blue-600/20 text-blue-300 text-xs font-semibold uppercase tracking-wide border border-blue-500/30">
+                  {{ userData.role }}
+                </span>
+              </div>
+              <div class="text-slate-300 text-base md:text-lg mb-4">
+                {{ getRoleGreeting() }}
+              </div>
+              <div class="flex flex-wrap gap-3 justify-center md:justify-start text-sm">
+                <span class="flex items-center gap-1 text-slate-400">
+                  <UIcon name="i-heroicons-envelope" class="w-4 h-4" />
+                  {{ userData.email }}
+                </span>
+                <span class="flex items-center gap-1 text-slate-400">
+                  <UIcon name="i-heroicons-calendar" class="w-4 h-4" />
+                  Bergabung {{ userData.memberSince }}
+                </span>
+              </div>
+            </div>
+            <div class="hidden md:block">
+              <UButton
+                icon="i-heroicons-arrow-left"
+                label="Ke Halaman Utama"
+                color="neutral"
+                variant="ghost"
+                class="border border-slate-600 hover:bg-slate-700/50 transition-all duration-200"
+                @click="navigateTo('/')"
               />
-              {{ userData.email }}
-            </span>
-            <span class="flex items-center gap-1">
-              <UIcon
-                name="i-heroicons-calendar"
-                class="w-4 h-4 text-gray-400"
-              />
-              Bergabung {{ userData.memberSince }}
-            </span>
+            </div>
           </div>
-        </div>
-        <div class="hidden md:flex flex-col gap-2 items-end">
-          <UButton
-            icon="i-heroicons-arrow-left"
-            label="Ke Halaman Utama"
-            color="neutral"
-            variant="ghost"
-            :ui="{
-              base: 'rounded-full px-6 py-2 font-semibold border border-white/10 hover:bg-white/10',
-            }"
-            @click="navigateTo('/')"
-          />
         </div>
       </div>
     </section>
 
-    <!-- Statistics Grid -->
-    <section class="w-full max-w-7xl mx-auto px-4 pb-8 flex-1">
-      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mt-6">
-        <div
-          class="glassmorphism-card p-6 flex flex-col items-center shadow group hover:scale-[1.03] transition"
-        >
-          <UIcon
-            name="i-lucide-file-text"
-            class="w-10 h-10 text-green-400 mb-2"
-          />
-          <span class="text-3xl font-bold text-white">
-            {{ statsData.documentsAnnotated }}
-          </span>
-          <span class="text-gray-400 mt-1 text-sm">Dokumen Dianotasi</span>
+    <!-- Role-specific Content -->
+    <section class="w-full max-w-7xl mx-auto px-4 pb-8">
+      <!-- Admin Dashboard -->
+      <div v-if="isAdmin" class="space-y-8">
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+          <div v-if="pending" v-for="i in 4" :key="i" class="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-xl p-6 animate-pulse">
+            <div class="w-10 h-10 bg-slate-700 rounded-lg mb-4"></div>
+            <div class="w-12 h-8 bg-slate-700 rounded mb-2"></div>
+            <div class="w-24 h-4 bg-slate-700 rounded"></div>
+          </div>
+          
+          <div v-else v-for="stat in adminStats" :key="stat.label" 
+               class="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-xl p-6 hover:bg-slate-800/40 transition-all duration-200 group">
+            <div class="flex items-center justify-between mb-4">
+              <UIcon :name="stat.icon" :class="`w-10 h-10 ${stat.color}`" />
+              <span class="text-2xl font-bold text-white">{{ stat.value }}</span>
+            </div>
+            <h3 class="text-slate-300 font-medium">{{ stat.label }}</h3>
+            <p class="text-sm text-slate-400 mt-1">{{ stat.description }}</p>
+          </div>
         </div>
-        <div
-          class="glassmorphism-card p-6 flex flex-col items-center shadow group hover:scale-[1.03] transition"
-        >
-          <UIcon
-            name="i-lucide-check-circle"
-            class="w-10 h-10 text-blue-400 mb-2"
-          />
-          <span class="text-3xl font-bold text-white">
-            {{ userData.totalReviews }}
-          </span>
-          <span class="text-gray-400 mt-1 text-sm">Total Tinjauan</span>
-        </div>
-        <div
-          class="glassmorphism-card p-6 flex flex-col items-center shadow group hover:scale-[1.03] transition"
-        >
-          <UIcon
-            name="i-lucide-alert-triangle"
-            class="w-10 h-10 text-red-400 mb-2"
-          />
-          <span class="text-3xl font-bold text-white">
-            {{ statsData.annotationErrorsReviewed }}
-          </span>
-          <span class="text-gray-400 mt-1 text-sm">Kesalahan Direview</span>
-        </div>
-        <div
-          class="glassmorphism-card p-6 flex flex-col items-center shadow group hover:scale-[1.03] transition"
-        >
-          <UIcon
-            name="i-lucide-bar-chart-2"
-            class="w-10 h-10 text-purple-400 mb-2"
-          />
-          <span class="text-3xl font-bold text-white">
-            {{ userData.totalAnnotations }}
-          </span>
-          <span class="text-gray-400 mt-1 text-sm">Total Anotasi</span>
-        </div>
-      </div>
 
-      <!-- Charts Section -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
-        <!-- Bar Chart -->
-        <div class="glassmorphism-card p-6 shadow">
-          <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
-            <UIcon
-              name="i-lucide-folder-open"
-              class="w-6 h-6 text-yellow-400"
+        <!-- Quick Actions -->
+        <div class="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-xl p-6">
+          <h3 class="text-xl font-semibold mb-4 flex items-center gap-2">
+            <UIcon name="i-heroicons-bolt" class="w-6 h-6 text-yellow-400" />
+            Aksi Cepat
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <UButton
+              label="Tambah Pengguna"
+              icon="i-heroicons-user-plus"
+              variant="outline"
+              color="blue"
+              class="justify-start h-12"
+              @click="navigateTo('/admin/kelola-pengguna')"
             />
-            Dokumen per Kategori
-          </h3>
-          <div class="chart-container">
-            <div
-              v-for="(category, i) in categoryData"
-              :key="i"
-              class="bar-chart-item"
-            >
-              <span class="bar-label">{{ category.name }}</span>
-              <div class="bar-wrapper">
-                <div
-                  class="bar"
-                  :style="{
-                    width: (category.count / maxCategoryCount) * 100 + '%',
-                  }"
-                ></div>
-                <span class="bar-value">{{ category.count }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- Line Chart -->
-        <div class="glassmorphism-card p-6 shadow">
-          <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
-            <UIcon name="i-lucide-trending-up" class="w-6 h-6 text-green-400" />
-            Trend Anotasi Bulanan
-          </h3>
-          <div class="line-chart-container">
-            <svg
-              class="line-chart"
-              viewBox="0 0 400 150"
-              preserveAspectRatio="none"
-            >
-              <polyline
-                fill="none"
-                stroke="#818cf8"
-                stroke-width="2"
-                :points="monthlyDataPoints"
-                class="chart-line"
-              />
-              <polyline
-                fill="rgba(129, 140, 248, 0.2)"
-                stroke="none"
-                :points="monthlyDataAreaPoints"
-                class="chart-area"
-              />
-              <g class="chart-labels">
-                <text
-                  v-for="(point, i) in monthlyDataPointsArray"
-                  :key="i"
-                  :x="point.x"
-                  :y="point.y - 5"
-                  text-anchor="middle"
-                  font-size="10"
-                  fill="#cbd5e1"
-                >
-                  {{ point.value }}
-                </text>
-                <text
-                  v-for="(month, i) in monthlyData"
-                  :key="i"
-                  :x="(i / (monthlyData.length - 1)) * 380 + 10"
-                  y="145"
-                  text-anchor="middle"
-                  font-size="10"
-                  fill="#94a3b8"
-                >
-                  {{ month.month.substring(0, 3) }}
-                </text>
-              </g>
-            </svg>
+            <UButton
+              label="Upload Dokumen"
+              icon="i-heroicons-document-plus"
+              variant="outline"
+              color="green"
+              class="justify-start h-12"
+              @click="navigateTo('/admin/kelola-dokumen')"
+            />
+            <UButton
+              label="Review Error"
+              icon="i-heroicons-exclamation-triangle"
+              variant="outline"
+              color="red"
+              class="justify-start h-12"
+              @click="navigateTo('/admin/kelola-error')"
+            />
           </div>
         </div>
       </div>
 
-      <!-- Contribution Graph -->
-      <div class="glassmorphism-card mt-10 p-6 shadow">
-        <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
-          <UIcon name="i-lucide-calendar-days" class="w-6 h-6 text-blue-400" />
-          Performa Anotasi Harian
-        </h3>
-        <div class="flex flex-col items-center">
-          <div class="flex items-center justify-between w-full mb-2">
-            <span class="text-xs text-gray-400 font-mono">
-              {{ graphStartDate }}
-            </span>
-            <span class="text-xs text-gray-400 font-mono">
-              {{ graphEndDate }}
-            </span>
+      <!-- Annotator Dashboard -->
+      <div v-if="isAnnotator" class="space-y-8">
+        <!-- Progress Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-xl p-6">
+            <div class="flex items-center justify-between mb-4">
+              <UIcon name="i-heroicons-document-text" class="w-10 h-10 text-blue-400" />
+              <span class="text-2xl font-bold text-white">{{ annotatorStats.assignedDocuments || 0 }}</span>
+            </div>
+            <h3 class="text-slate-300 font-medium">Dokumen Ditugaskan</h3>
+            <p class="text-sm text-slate-400 mt-1">Dokumen yang harus dianotasi</p>
           </div>
-          <div class="overflow-x-auto w-full">
-            <div class="flex">
-              <!-- Day of week labels -->
-              <div class="flex flex-col justify-between mr-2 h-[112px] pt-[18px]">
-                <span class="text-xs text-gray-500 block h-[16px]">Sen</span>
-                <span class="text-xs text-gray-500 block h-[16px]">Rab</span>
-                <span class="text-xs text-gray-500 block h-[16px]">Jum</span>
-                <span class="text-xs text-gray-500 block h-[16px]">Min</span>
+          
+          <div class="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-xl p-6">
+            <div class="flex items-center justify-between mb-4">
+              <UIcon name="i-heroicons-check-circle" class="w-10 h-10 text-green-400" />
+              <span class="text-2xl font-bold text-white">{{ annotatorStats.completedDocuments || 0 }}</span>
+            </div>
+            <h3 class="text-slate-300 font-medium">Dokumen Selesai</h3>
+            <p class="text-sm text-slate-400 mt-1">Dokumen yang telah dianotasi</p>
+          </div>
+          
+          <div class="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-xl p-6">
+            <div class="flex items-center justify-between mb-4">
+              <UIcon name="i-heroicons-clock" class="w-10 h-10 text-orange-400" />
+              <span class="text-2xl font-bold text-white">{{ annotatorStats.inProgressDocuments || 0 }}</span>
+            </div>
+            <h3 class="text-slate-300 font-medium">Sedang Dikerjakan</h3>
+            <p class="text-sm text-slate-400 mt-1">Dokumen dalam proses</p>
+          </div>
+        </div>
+
+        <!-- Recent Assignments -->
+        <div class="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-xl p-6">
+          <h3 class="text-xl font-semibold mb-4 flex items-center gap-2">
+            <UIcon name="i-heroicons-clipboard-document-list" class="w-6 h-6 text-blue-400" />
+            Tugas Terbaru
+          </h3>
+          <div class="space-y-3">
+            <div v-for="task in recentTasks" :key="task.id" 
+                 class="flex items-center justify-between p-4 bg-slate-700/30 rounded-lg border border-slate-600/30">
+              <div class="flex items-center gap-3">
+                <UIcon name="i-heroicons-document-text" class="w-5 h-5 text-slate-400" />
+                <div>
+                  <h4 class="font-medium text-white">{{ task.title }}</h4>
+                  <p class="text-sm text-slate-400">{{ task.sentences }} kalimat</p>
+                </div>
               </div>
-              <div>
-                <!-- Month labels -->
-                <div class="flex mb-1 ml-[18px]">
-                  <span
-                    v-for="(label, i) in monthLabels"
-                    :key="i"
-                    class="text-xs text-gray-400 w-[15px] text-center font-semibold"
-                  >
-                    {{ label }}
-                  </span>
+              <UBadge :color="getTaskStatusColor(task.status)" variant="subtle">
+                {{ task.status }}
+              </UBadge>
+            </div>
+          </div>
+          <div class="mt-4">
+            <UButton
+              label="Lihat Semua Tugas"
+              icon="i-heroicons-arrow-right"
+              variant="outline"
+              @click="navigateTo('/anotator/anotasi')"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Reviewer Dashboard -->
+      <div v-if="isReviewer" class="space-y-8">
+        <!-- Review Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-xl p-6">
+            <div class="flex items-center justify-between mb-4">
+              <UIcon name="i-heroicons-eye" class="w-10 h-10 text-purple-400" />
+              <span class="text-2xl font-bold text-white">{{ reviewerStats.pendingReviews || 0 }}</span>
+            </div>
+            <h3 class="text-slate-300 font-medium">Menunggu Review</h3>
+            <p class="text-sm text-slate-400 mt-1">Dokumen yang perlu ditinjau</p>
+          </div>
+          
+          <div class="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-xl p-6">
+            <div class="flex items-center justify-between mb-4">
+              <UIcon name="i-heroicons-check-badge" class="w-10 h-10 text-green-400" />
+              <span class="text-2xl font-bold text-white">{{ reviewerStats.completedReviews || 0 }}</span>
+            </div>
+            <h3 class="text-slate-300 font-medium">Review Selesai</h3>
+            <p class="text-sm text-slate-400 mt-1">Dokumen yang telah direview</p>
+          </div>
+          
+          <div class="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-xl p-6">
+            <div class="flex items-center justify-between mb-4">
+              <UIcon name="i-heroicons-exclamation-triangle" class="w-10 h-10 text-red-400" />
+              <span class="text-2xl font-bold text-white">{{ reviewerStats.errorsFound || 0 }}</span>
+            </div>
+            <h3 class="text-slate-300 font-medium">Error Ditemukan</h3>
+            <p class="text-sm text-slate-400 mt-1">Total error yang ditemukan</p>
+          </div>
+        </div>
+
+        <!-- Review Queue -->
+        <div class="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-xl p-6">
+          <h3 class="text-xl font-semibold mb-4 flex items-center gap-2">
+            <UIcon name="i-heroicons-queue-list" class="w-6 h-6 text-purple-400" />
+            Antrian Review
+          </h3>
+          <div class="space-y-3">
+            <div v-for="review in reviewQueue" :key="review.id" 
+                 class="flex items-center justify-between p-4 bg-slate-700/30 rounded-lg border border-slate-600/30">
+              <div class="flex items-center gap-3">
+                <UIcon name="i-heroicons-document-check" class="w-5 h-5 text-slate-400" />
+                <div>
+                  <h4 class="font-medium text-white">{{ review.title }}</h4>
+                  <p class="text-sm text-slate-400">Oleh {{ review.annotator }}</p>
                 </div>
-                <!-- Contribution grid -->
-                <div class="flex">
-                  <div
-                    class="flex flex-col"
-                    v-for="(week, wIdx) in contributionWeeks"
-                    :key="wIdx"
-                  >
-                    <div
-                      v-for="(day, dIdx) in week"
-                      :key="dIdx"
-                      class="relative group"
-                    >
-                      <div
-                        :class="['grid-cell', `level-${day.level}`]"
-                        style="width: 15px; height: 15px; margin-bottom: 3px; border-radius: 4px;"
-                      ></div>
-                      <!-- Tooltip -->
-                      <div
-                        v-if="day.count > 0"
-                        class="absolute z-20 left-1/2 -translate-x-1/2 -top-8 bg-gray-900/90 text-white text-xs rounded px-2 py-1 shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-nowrap"
-                      >
-                        <span class="font-bold">{{ day.count }}</span> anotasi<br />
-                        <span class="font-mono">{{ day.date }}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <UBadge color="yellow" variant="subtle">{{ review.priority }}</UBadge>
+                <UButton size="xs" icon="i-heroicons-eye" @click="navigateTo(`/peninjau/tinjauan/${review.id}`)">
+                  Review
+                </UButton>
               </div>
             </div>
           </div>
-          <div
-            class="flex justify-between text-xs text-gray-400 mt-3 w-full px-2"
-          >
-            <span>Kurang</span>
-            <span class="flex items-center gap-1">
-              <span class="w-3 h-3 rounded-sm bg-level-1"></span>
-              <span class="w-3 h-3 rounded-sm bg-level-2"></span>
-              <span class="w-3 h-3 rounded-sm bg-level-3"></span>
-              <span class="w-3 h-3 rounded-sm bg-level-4"></span>
-              <span>Banyak</span>
-            </span>
+        </div>
+      </div>
+
+      <!-- Kepala Riset Dashboard -->
+      <div v-if="isKepalaRiset" class="space-y-8">
+        <!-- Overview Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div v-for="stat in researchStats" :key="stat.label" 
+               class="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-xl p-6">
+            <div class="flex items-center justify-between mb-4">
+              <UIcon :name="stat.icon" :class="`w-10 h-10 ${stat.color}`" />
+              <span class="text-2xl font-bold text-white">{{ stat.value }}</span>
+            </div>
+            <h3 class="text-slate-300 font-medium">{{ stat.label }}</h3>
+            <p class="text-sm text-slate-400 mt-1">{{ stat.description }}</p>
+          </div>
+        </div>
+
+        <!-- Progress Chart -->
+        <div class="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-xl p-6">
+          <h3 class="text-xl font-semibold mb-4 flex items-center gap-2">
+            <UIcon name="i-heroicons-chart-bar" class="w-6 h-6 text-green-400" />
+            Progress Proyek
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Progress Bars -->
+            <div class="space-y-4">
+              <div>
+                <div class="flex justify-between text-sm mb-2">
+                  <span class="text-slate-300">Anotasi</span>
+                  <span class="text-slate-400">{{ Math.round(((researchStats.find((stat: any) => stat.label === 'Total Anotasi')?.value || 0) / 1000) * 100) }}%</span>
+                </div>
+                <div class="w-full bg-slate-700 rounded-full h-2">
+                  <div class="bg-blue-500 h-2 rounded-full transition-all duration-1000" 
+                       :style="`width: ${Math.round(((researchStats.find((stat: any) => stat.label === 'Total Anotasi')?.value || 0) / 1000) * 100)}%`"></div>
+                </div>
+              </div>
+              
+              <div>
+                <div class="flex justify-between text-sm mb-2">
+                  <span class="text-slate-300">Review</span>
+                  <span class="text-slate-400">{{ Math.round(((researchStats.find((stat: any) => stat.label === 'Review Selesai')?.value || 0) / 800) * 100) }}%</span>
+                </div>
+                <div class="w-full bg-slate-700 rounded-full h-2">
+                  <div class="bg-green-500 h-2 rounded-full transition-all duration-1000" 
+                       :style="`width: ${Math.round(((researchStats.find((stat: any) => stat.label === 'Review Selesai')?.value || 0) / 800) * 100)}%`"></div>
+                </div>
+              </div>
+              
+              <div>
+                <div class="flex justify-between text-sm mb-2">
+                  <span class="text-slate-300">Dataset Generation</span>
+                  <span class="text-slate-400">75%</span>
+                </div>
+                <div class="w-full bg-slate-700 rounded-full h-2">
+                  <div class="bg-purple-500 h-2 rounded-full transition-all duration-1000" style="width: 75%"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="space-y-3">
+              <UButton
+                label="Generate Dataset"
+                icon="i-heroicons-arrow-down-tray"
+                variant="outline"
+                color="green"
+                class="w-full justify-start"
+                @click="navigateTo('/kepala-riset/generate-dataset')"
+              />
+              <UButton
+                label="Rekap Kinerja"
+                icon="i-heroicons-chart-bar"
+                variant="outline"
+                color="blue"
+                class="w-full justify-start"
+                @click="navigateTo('/kepala-riset/rekap-kinerja')"
+              />
+              <UButton
+                label="Rekap Dokumen"
+                icon="i-heroicons-clipboard-document-list"
+                variant="outline"
+                color="purple"
+                class="w-full justify-start"
+                @click="navigateTo('/kepala-riset/rekap-dokumen')"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Activity Timeline (Common for all roles) -->
+      <div class="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-xl p-6">
+        <h3 class="text-xl font-semibold mb-4 flex items-center gap-2">
+          <UIcon name="i-heroicons-clock" class="w-6 h-6 text-blue-400" />
+          Aktivitas Terbaru
+        </h3>
+        <div class="space-y-4">
+          <div v-for="activity in recentActivities" :key="activity.id" 
+               class="flex items-start gap-3 p-4 bg-slate-700/20 rounded-lg border border-slate-600/20">
+            <UIcon :name="activity.icon" :class="`w-5 h-5 mt-0.5 ${activity.color}`" />
+            <div class="flex-1">
+              <p class="text-white font-medium">{{ activity.title }}</p>
+              <p class="text-sm text-slate-400">{{ activity.description }}</p>
+              <p class="text-xs text-slate-500 mt-1">{{ activity.time }}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -290,517 +342,141 @@
 <script setup lang="ts">
 import { navigateTo } from "#app";
 import { ref, computed } from "vue";
+import { useAuth } from "~/data/auth";
 
-const toast = useToast(); // Initialize useToast
+const { user } = useAuth();
 
-const userRole = useState<string>("userRole", () => "Pengguna"); // Default to 'Pengguna' if not set
-const userName = useState<string>("userName", () => "Pengguna Anonim"); // Default to 'Pengguna Anonim' if not set
+// Mock data - replace with actual API calls
+const pending = ref(false);
 
-// Dummy User Data
-const userData = ref({
-  name: userName.value,
-  email: "pengguna@anota.com",
-  role: userRole.value,
-  memberSince: "1 Januari 2024",
-  totalAnnotations: 1250,
-  totalReviews: 875,
-  avatar: "https://avatars.githubusercontent.com/u/739984?v=4", // Example avatar
-});
+// User data computed from auth
+const userData = computed(() => ({
+  name: user.value?.full_name || "Pengguna",
+  email: user.value?.email || "pengguna@anota.com",
+  role: user.value?.active_role || "Pengguna",
+  memberSince: user.value?.date_joined ? new Date(user.value.date_joined).toLocaleDateString('id-ID') : "1 Januari 2024",
+  avatar: user.value?.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.value?.full_name || 'User')}&background=0ea5e9&color=fff`,
+}));
 
-// Dummy Statistics Data
-const statsData = ref({
-  documentsAnnotated: 150,
-  documentsReviewed: 120,
-  documentsPendingAnnotation: 30, // Not directly used in new overview cards, but kept for context
-  annotationErrorsReviewed: 45,
-});
+// Role checks
+const isAdmin = computed(() => user.value?.active_role === 'Admin');
+const isAnnotator = computed(() => user.value?.active_role === 'Annotators');
+const isReviewer = computed(() => user.value?.active_role === 'Reviewers');
+const isKepalaRiset = computed(() => user.value?.active_role === 'Kepala Riset');
 
-// Dummy Data for Bar Chart (Jumlah Dokumen per Kategori)
-const categoryData = ref([
-  { name: "Teks", count: 80 },
-  { name: "Gambar", count: 40 },
-  { name: "Video", count: 20 },
-  { name: "Audio", count: 10 },
-]);
-const maxCategoryCount = computed(() =>
-  Math.max(...categoryData.value.map((c) => c.count))
-);
-
-// Dummy Data for Line Chart (Trend Anotasi Bulanan)
-const monthlyData = ref([
-  { month: "Jan", count: 20 },
-  { month: "Feb", count: 35 },
-  { month: "Mar", count: 50 },
-  { month: "Apr", count: 45 },
-  { month: "Mei", count: 60 },
-  { month: "Jun", count: 75 },
-  { month: "Jul", count: 80 },
-]);
-
-// Computed properties for Line Chart SVG points
-const monthlyDataPoints = computed(() => {
-  if (monthlyData.value.length === 0) return "";
-  const maxCount = Math.max(...monthlyData.value.map((d) => d.count));
-  const minCount = Math.min(...monthlyData.value.map((d) => d.count));
-  const range = maxCount - minCount === 0 ? 1 : maxCount - minCount; // Avoid division by zero
-
-  return monthlyData.value
-    .map((d, i) => {
-      const x = (i / (monthlyData.value.length - 1)) * 380 + 10; // Scale x to 10-390 (400 width - 2*10 padding)
-      const y = 130 - ((d.count - minCount) / range) * 100; // Scale y to 30-130 (150 height - 20 top/bottom padding)
-      return `${x},${y}`;
-    })
-    .join(" ");
-});
-
-const monthlyDataPointsArray = computed(() => {
-  if (monthlyData.value.length === 0) return [];
-  const maxCount = Math.max(...monthlyData.value.map((d) => d.count));
-  const minCount = Math.min(...monthlyData.value.map((d) => d.count));
-  const range = maxCount - minCount === 0 ? 1 : maxCount - minCount;
-
-  return monthlyData.value.map((d, i) => {
-    const x = (i / (monthlyData.value.length - 1)) * 380 + 10;
-    const y = 130 - ((d.count - minCount) / range) * 100;
-    return { x, y, value: d.count };
-  });
-});
-
-const monthlyDataAreaPoints = computed(() => {
-  if (monthlyData.value.length === 0) return "";
-  const points = monthlyDataPoints.value;
-  const lastX =
-    monthlyDataPointsArray.value[monthlyDataPointsArray.value.length - 1]?.x ||
-    0;
-  const firstX = monthlyDataPointsArray.value[0]?.x || 0;
-  return `${points} ${lastX},130 ${firstX},130`; // Close the area to the bottom
-});
-
-// Dummy Daily Performance Data (GitHub-like contribution graph)
-const generateDailyPerformance = (days: number) => {
-  const data = [];
-  const today = new Date();
-  for (let i = 0; i < days; i++) {
-    const date = new Date(today);
-    date.setDate(today.getDate() - (days - 1 - i)); // Go back in time
-    const count = Math.floor(Math.random() * 11); // 0 to 10 annotations per day
-    let level = 0;
-    if (count > 0 && count <= 2) level = 1;
-    else if (count > 2 && count <= 5) level = 2;
-    else if (count > 5 && count <= 8) level = 3;
-    else if (count > 8) level = 4;
-
-    data.push({
-      date: date.toLocaleDateString("id-ID", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      }),
-      count,
-      level,
-    });
-  }
-  return data;
+// Role-specific greetings
+const getRoleGreeting = () => {
+  const role = user.value?.active_role;
+  const greetings = {
+    'Admin': 'Kelola sistem dan pantau kinerja tim dengan mudah.',
+    'Annotators': 'Lanjutkan anotasi dokumen untuk meningkatkan dataset.',
+    'Reviewers': 'Tinjau hasil anotasi dan pastikan kualitas data terjaga.',
+    'Kepala Riset': 'Pantau progress penelitian dan generate dataset berkualitas.'
+  };
+  return greetings[role as keyof typeof greetings] || 'Selamat datang kembali di platform ANOTA.';
 };
 
-const dailyPerformance = ref(generateDailyPerformance(90)); // Last 90 days
-
-// Tabs for statistics section
-const tabItems = [
+// Admin stats
+const adminStats = ref([
   {
-    label: "Ringkasan Statistik",
-    icon: "i-heroicons-chart-pie",
-    slot: "ringkasan",
+    label: 'Total Pengguna',
+    value: 0,
+    icon: 'i-heroicons-users',
+    color: 'text-blue-400',
+    description: 'Pengguna aktif sistem'
   },
   {
-    label: "Performa Harian",
-    icon: "i-heroicons-calendar-days",
-    slot: "performa",
+    label: 'Dokumen Upload',
+    value: 0,
+    icon: 'i-heroicons-document-text',
+    color: 'text-green-400',
+    description: 'Dokumen dalam sistem'
   },
-];
-const selectedTab = ref(tabItems[0].slot); // Default to the first tab
-
-// Helper: get the start of the week (Monday) for a given date
-function getMonday(d: Date) {
-  const date = new Date(d);
-  const day = date.getDay();
-  const diff = (day === 0 ? -6 : 1) - day;
-  date.setDate(date.getDate() + diff);
-  date.setHours(0, 0, 0, 0);
-  return date;
-}
-
-// Prepare 90 days of data, fill into 13 weeks (columns) × 7 days (rows)
-const contributionWeeks = computed(() => {
-  const days = 91;
-  const today = new Date();
-  const startDate = getMonday(
-    new Date(today.getTime() - (days - 1) * 24 * 60 * 60 * 1000)
-  );
-  const grid: any[][] = [];
-  let dayCursor = new Date(startDate);
-
-  for (let w = 0; w < 13; w++) {
-    const week: any[] = [];
-    for (let d = 0; d < 7; d++) {
-      const perf = dailyPerformance.value.find(
-        (p) =>
-          new Date(p.date).toLocaleDateString("id-ID") ===
-          dayCursor.toLocaleDateString("id-ID")
-      );
-      week.push(
-        perf
-          ? perf
-          : {
-              date: dayCursor.toLocaleDateString("id-ID", {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-              }),
-              count: 0,
-              level: 0,
-            }
-      );
-      dayCursor.setDate(dayCursor.getDate() + 1);
-    }
-    grid.push(week);
+  {
+    label: 'Tugas Aktif',
+    value: 0,
+    icon: 'i-heroicons-clipboard-document-list',
+    color: 'text-orange-400',
+    description: 'Tugas sedang dikerjakan'
+  },
+  {
+    label: 'Error Terdeteksi',
+    value: 0,
+    icon: 'i-heroicons-exclamation-triangle',
+    color: 'text-red-400',
+    description: 'Error yang perlu ditangani'
   }
-  return grid;
+]);
+
+// Annotator stats
+const annotatorStats = ref({
+  assignedDocuments: 0,
+  completedDocuments: 0,
+  inProgressDocuments: 0
 });
 
-// Month labels above the grid
-const monthLabels = computed(() => {
-  const labels: string[] = [];
-  let lastMonth = "";
-  for (let w = 0; w < 13; w++) {
-    const week = contributionWeeks.value[w];
-    if (!week) {
-      labels.push("");
-      continue;
-    }
-    const firstDay = week[0];
-    const date = new Date(firstDay.date);
-    const month = date.toLocaleString("id-ID", { month: "short" });
-    if (month !== lastMonth) {
-      labels.push(month);
-      lastMonth = month;
-    } else {
-      labels.push("");
-    }
+// Reviewer stats  
+const reviewerStats = ref({
+  pendingReviews: 0,
+  completedReviews: 0,
+  errorsFound: 0
+});
+
+// Research stats
+const researchStats = ref([
+  {
+    label: 'Total Anotasi',
+    value: 0,
+    icon: 'i-heroicons-pencil',
+    color: 'text-blue-400',
+    description: 'Anotasi yang telah dibuat'
+  },
+  {
+    label: 'Review Selesai',
+    value: 0,
+    icon: 'i-heroicons-check-circle',
+    color: 'text-green-400',
+    description: 'Review yang telah selesai'
+  },
+  {
+    label: 'Dataset Generated',
+    value: 0,
+    icon: 'i-heroicons-arrow-down-tray',
+    color: 'text-purple-400',
+    description: 'Dataset yang telah dibuat'
+  },
+  {
+    label: 'Active Annotators',
+    value: 0,
+    icon: 'i-heroicons-user-group',
+    color: 'text-orange-400',
+    description: 'Anotator yang aktif'
   }
-  return labels;
-});
+]);
 
-// Date range for the graph
-const graphStartDate = computed(() => {
-  const first = contributionWeeks.value[0]?.[0];
-  if (!first) return "";
-  const date = new Date(first.date);
-  return date.toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-});
-const graphEndDate = computed(() => {
-  const lastWeek = contributionWeeks.value[contributionWeeks.value.length - 1];
-  const last = lastWeek?.[lastWeek.length - 1];
-  if (!last) return "";
-  const date = new Date(last.date);
-  return date.toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-});
+// Recent tasks for annotator
+const recentTasks = ref([]);
 
+// Review queue for reviewer
+const reviewQueue = ref([]);
+
+// Recent activities (common for all roles)
+const recentActivities = ref([]);
+
+// Helper functions
+const getTaskStatusColor = (status: string) => {
+  const colorMap: Record<string, string> = {
+    'Assigned': 'blue',
+    'In Progress': 'orange',
+    'Completed': 'green',
+    'Under Review': 'purple'
+  };
+  return colorMap[status] || 'gray';
+};
+
+// Page meta
 useHead({
   title: "Beranda - ANOTA",
   meta: [{ name: "description", content: "Halaman beranda aplikasi ANOTA." }],
 });
 </script>
-
-<style scoped>
-/* Main container background */
-.min-h-screen {
-  background-color: #0f172a;
-}
-
-/* Glassmorphism card effect */
-.glassmorphism-card {
-  background-color: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1.5px solid rgba(255, 255, 255, 0.18);
-  border-radius: 1.5rem;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18), 0 1.5px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.glassmorphism-card:hover {
-  background-color: rgba(255, 255, 255, 0.16);
-  border-color: rgba(255, 255, 255, 0.28);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22), 0 2px 12px rgba(0, 0, 0, 0.13);
-}
-.glassmorphism-card-inner {
-  background-color: rgba(31, 41, 55, 0.7);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  border-radius: 1rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
-}
-
-/* Animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in {
-  animation: fadeIn 1s ease-out forwards;
-}
-
-.animate-fade-in-up {
-  animation: fadeIn 1s ease-out forwards;
-  animation-delay: 0.3s;
-  opacity: 0;
-}
-
-/* Statistics Minimal Cards */
-.stat-minimal-card {
-  background-color: rgba(31, 41, 55, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  border-radius: 0.75rem;
-  padding: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
-}
-.stat-minimal-card:hover {
-  transform: translateY(-3px) scale(1.03);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
-  border-color: rgba(255, 255, 255, 0.22);
-}
-.stat-minimal-icon {
-  width: 2.5rem;
-  height: 2.5rem;
-  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.18));
-}
-.stat-minimal-label {
-  font-size: 0.9rem;
-  color: #a0aec0;
-}
-.stat-minimal-value {
-  font-size: 1.75rem;
-  font-weight: bold;
-  color: white;
-  text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
-}
-
-/* Bar Chart Styles */
-.chart-container {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 1rem;
-}
-.bar-chart-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-.bar-label {
-  flex-shrink: 0;
-  width: 60px;
-  font-size: 0.9rem;
-  color: #a0aec0;
-}
-.bar-wrapper {
-  flex-grow: 1;
-  background-color: rgba(255, 255, 255, 0.07);
-  border-radius: 0.25rem;
-  height: 20px;
-  position: relative;
-  overflow: hidden;
-}
-.bar {
-  height: 100%;
-  background: linear-gradient(to right, #60a5fa, #9333ea);
-  border-radius: 0.25rem;
-  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  animation: barFill 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-.bar-value {
-  position: absolute;
-  right: 0.5rem;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 0.8rem;
-  font-weight: bold;
-  color: white;
-  text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-}
-@keyframes barFill {
-  from {
-    width: 0%;
-  }
-  to {
-    width: var(--bar-width);
-  }
-}
-
-/* Line Chart Styles */
-.line-chart-container {
-  width: 100%;
-  height: 180px;
-  padding: 10px;
-  box-sizing: border-box;
-}
-.line-chart {
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-.chart-line {
-  stroke-dasharray: 1000;
-  stroke-dashoffset: 1000;
-  animation: drawLine 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-.chart-area {
-  animation: fadeInArea 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  opacity: 0;
-}
-@keyframes drawLine {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-@keyframes fadeInArea {
-  to {
-    opacity: 1;
-  }
-}
-.chart-labels text {
-  font-family: "Inter", sans-serif;
-  transition: fill 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* GitHub-like Contribution Graph */
-.grid-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(15px, 1fr));
-  gap: 3px;
-  padding: 10px;
-  background-color: rgba(31, 41, 55, 0.7);
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  overflow-x: auto;
-  min-height: 100px;
-}
-.grid-cell {
-  width: 15px;
-  height: 15px;
-  background-color: #161b22;
-  border-radius: 2px;
-  transition: background 0.2s, box-shadow 0.2s;
-  cursor: pointer;
-  border-radius: 4px;
-  position: relative;
-}
-.grid-cell.level-0 {
-  background-color: #161b22;
-}
-.grid-cell.level-1 {
-  background-color: #0e4429;
-}
-.grid-cell.level-2 {
-  background-color: #006d32;
-}
-.grid-cell.level-3 {
-  background-color: #26a641;
-}
-.grid-cell.level-4 {
-  background-color: #39d353;
-}
-.grid-cell:hover,
-.grid-cell:focus {
-  box-shadow: 0 0 0 2px #60a5fa, 0 2px 8px rgba(0, 0, 0, 0.18);
-  z-index: 10;
-}
-.bg-level-1 {
-  background-color: #0e4429;
-}
-.bg-level-2 {
-  background-color: #006d32;
-}
-.bg-level-3 {
-  background-color: #26a641;
-}
-.bg-level-4 {
-  background-color: #39d353;
-}
-
-/* Override Nuxt UI Tabs styling for dark theme */
-:deep(.u-tabs) {
-  .u-tabs-list {
-    background-color: rgba(31, 41, 55, 0.8);
-    border-color: rgba(255, 255, 255, 0.1);
-    border-radius: 0.75rem;
-  }
-  .u-tabs-item {
-    color: #e2e8f0;
-    &.u-tabs-item-active {
-      color: white;
-      background-color: rgba(255, 255, 255, 0.1);
-    }
-  }
-}
-/* Darkest green/blue */
-.grid-cell.level-2 {
-  background-color: #006d32;
-} /* Darker green/blue */
-.grid-cell.level-3 {
-  background-color: #26a641;
-} /* Medium green/blue */
-.grid-cell.level-4 {
-  background-color: #39d353;
-} /* Lightest green/blue */
-
-/* Tailwind colors for the legend */
-.bg-level-1 {
-  background-color: #0e4429;
-}
-.bg-level-2 {
-  background-color: #006d32;
-}
-.bg-level-3 {
-  background-color: #26a641;
-}
-.bg-level-4 {
-  background-color: #39d353;
-}
-
-/* Override Nuxt UI Tabs styling for dark theme */
-:deep(.u-tabs) {
-  .u-tabs-list {
-    background-color: rgba(31, 41, 55, 0.8); /* Darker tab background */
-    border-color: rgba(255, 255, 255, 0.1);
-    border-radius: 0.75rem;
-  }
-  .u-tabs-item {
-    color: #e2e8f0; /* Light gray text */
-    &.u-tabs-item-active {
-      color: white; /* White text for active tab */
-      background-color: rgba(255, 255, 255, 0.1); /* Subtle active background */
-    }
-  }
-}
-</style>
