@@ -2,12 +2,31 @@ export interface ErrorResponse {
   error: string;
 }
 
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  access: string;
+  refresh: string;
+}
+
+export interface TokenRefreshRequest {
+  refresh: string;
+}
+
+export interface TokenRefreshResponse {
+  access: string;
+}
+
 export interface UserResponse {
   id: string;
-  name: string;
+  username: string;
   email: string;
+  full_name: string;
   roles: string[];
-  active_role: string;
+  date_joined: string;
 }
 
 export interface UsersListResponse extends UserResponse {}
@@ -127,15 +146,6 @@ export interface UpdateSentenceRequest {
   corrected_text?: string;
   has_error?: boolean;
   m2_correction?: string;
-}
-
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
-export interface LoginResponse {
-  token: string;
-  user: UserResponse;
 }
 
 export interface AuthMeResponse extends UserResponse {

@@ -2,29 +2,31 @@ import { useProtectedFetcher } from "~/composables/protected-fetcher";
 import type {
   LoginRequest,
   LoginResponse,
-  AuthMeResponse,
-  ResetPasswordRequest,
-  ResetPasswordResponse,
-  ErrorResponse,
+  TokenRefreshResponse,
+  UserResponse,
 } from "~/types/api";
 
 export function useAuthApi() {
   const { fetcher } = useProtectedFetcher();
+  const runtimeConfig = useRuntimeConfig();
 
   const login = (data: LoginRequest) =>
-    fetcher<LoginResponse>("/auth/login", { method: "POST", body: data });
-  const logout = () => fetcher("/auth/logout", { method: "POST" });
-  const me = () => fetcher<AuthMeResponse>("/auth/me");
-  const resetPassword = (data: ResetPasswordRequest) =>
-    fetcher<ResetPasswordResponse>("/auth/reset-password", {
+    $fetch<LoginResponse>(`${runtimeConfig.public.apiBaseUrl}/login/`, {
       method: "POST",
       body: data,
     });
 
+  const refreshToken = (refresh: string) =>
+    $fetch<TokenRefreshResponse>(`${runtimeConfig.public.apiBaseUrl}/token/refresh/`, {
+      method: "POST",
+      body: { refresh },
+    });
+
+  const me = () => fetcher<UserResponse>("/users/me/");
+
   return {
     login,
-    logout,
+    refreshToken,
     me,
-    resetPassword,
   };
 }

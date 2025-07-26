@@ -1,137 +1,151 @@
 import { useState, useCookie } from "#imports";
 import { useRuntimeConfig } from "#imports";
 
-const TOKEN_KEY = "auth_token";
+const ACCESS_TOKEN_KEY = "access_token";
+const REFRESH_TOKEN_KEY = "refresh_token";
 
 export function useAuth() {
   // Global state
-  const token = useState<string | null>("auth_token", () => null);
+  const accessToken = useState<string | null>("access_token", () => null);
+  const refreshToken = useState<string | null>("refresh_token", () => null);
   const user = useState<any | null>("auth_user", () => null);
 
-  // Persist token in localStorage/cookie
-  const tokenCookie = useCookie(TOKEN_KEY);
+  // Persist tokens in cookies
+  const accessTokenCookie = useCookie(ACCESS_TOKEN_KEY, {
+    maxAge: 60 * 60 * 24, // 24 hours
+    httpOnly: false,
+    secure: false,
+    sameSite: 'lax'
+  });
+  const refreshTokenCookie = useCookie(REFRESH_TOKEN_KEY, {
+    maxAge: 60 * 60 * 24 * 7, // 7 days
+    httpOnly: false,
+    secure: false,
+    sameSite: 'lax'
+  });
 
-  // Helper to set token
-  function setToken(newToken: string | null) {
-    token.value = newToken;
-    tokenCookie.value = newToken;
-    if (import.meta.client) {
-      if (newToken) {
-        localStorage.setItem(TOKEN_KEY, newToken);
-      } else {
-        localStorage.removeItem(TOKEN_KEY);
-      }
-    }
+  // Helper to set tokens
+  function setTokens(access: string | null, refresh: string | null) {
+    accessToken.value = access;
+    refreshToken.value = refresh;
+    accessTokenCookie.value = access;
+    refreshTokenCookie.value = refresh;
   }
 
-  function getToken(): string | null {
-    if (import.meta.client) {
-      return (
-        token.value || tokenCookie.value || localStorage.getItem(TOKEN_KEY)
-      );
+  function getAccessToken(): string | null {
+    return accessToken.value || accessTokenCookie.value || null;
+  }
+
+  function getRefreshToken(): string | null {
+    return refreshToken.value || refreshTokenCookie.value || null;
+  }
+
+  async function refreshAccessToken(): Promise<string | null> {
+    const runtimeConfig = useRuntimeConfig();
+    const refresh = getRefreshToken();
+
+    if (!refresh) return null;
+
+    try {
+      const res = await $fetch<{ access: string }>(`${runtimeConfig.public.apiBaseUrl}/token/refresh/`, {
+        method: "POST",
+        body: { refresh },
+      });
+
+      setTokens(res.access, refresh);
+      return res.access;
+    } catch {
+      setTokens(null, null);
+      user.value = null;
+      return null;
     }
-    return token.value || tokenCookie.value || null;
   }
 
   async function fetchMe() {
     const runtimeConfig = useRuntimeConfig();
-    const apiBaseUrl = runtimeConfig.public.apiBaseUrl;
-    const authToken = getToken();
-    if (!authToken) {
-      user.value = null;
-      return null;
+    let token = getAccessToken();
+
+    if (!token) {
+      // Try to refresh token
+      token = await refreshAccessToken();
+      if (!token) {
+        user.value = null;
+        return null;
+      }
     }
+
     try {
-      const res = await $fetch(`${apiBaseUrl}/auth/me`, {
-        headers: { Authorization: `Bearer ${authToken}` },
+      const res = await $fetch(`${runtimeConfig.public.apiBaseUrl}/users/me/`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
       user.value = res;
       return res;
-    } catch {
+    } catch (error: any) {
+      if (error.status === 401) {
+        // Try to refresh token once
+        token = await refreshAccessToken();
+        if (token) {
+          try {
+            const res = await $fetch(`${runtimeConfig.public.apiBaseUrl}/users/me/`, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            user.value = res;
+            return res;
+          } catch {
+            user.value = null;
+            setTokens(null, null);
+            return null;
+          }
+        }
+      }
       user.value = null;
-      setToken(null);
+      setTokens(null, null);
       return null;
     }
   }
 
-  async function login(email: string, password: string, remember?: boolean) {
+  async function login(username: string, password: string) {
     const runtimeConfig = useRuntimeConfig();
-    const apiBaseUrl = runtimeConfig.public.apiBaseUrl;
     try {
-      const res = await $fetch<{ token: string }>(`${apiBaseUrl}/auth/login`, {
+      // Use the proxy URL instead of direct backend URL
+      const res = await $fetch<{ access: string; refresh: string }>(`${runtimeConfig.public.apiBaseUrl}/login/`, {
         method: "POST",
-        body: { email, password },
+        body: { username, password },
       });
-      setToken(res.token);
-      if (remember && import.meta.client) {
-        localStorage.setItem(TOKEN_KEY, res.token);
-      }
+
+      setTokens(res.access, res.refresh);
       await fetchMe();
       return true;
     } catch (err) {
-      setToken(null);
+      setTokens(null, null);
       user.value = null;
       throw err;
     }
   }
 
-  // Logout
   async function logout() {
-    const runtimeConfig = useRuntimeConfig();
-    const apiBaseUrl = runtimeConfig.public.apiBaseUrl;
-    const authToken = getToken();
-    try {
-      await $fetch(`${apiBaseUrl}/auth/logout`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
-    } catch {}
-    setToken(null);
+    setTokens(null, null);
     user.value = null;
   }
 
-  // Switch role (calls API, updates token and user)
-  async function switchRole(roleName: string) {
-    const runtimeConfig = useRuntimeConfig();
-    const apiBaseUrl = runtimeConfig.public.apiBaseUrl;
-    const authToken = getToken();
-    try {
-      const res = await $fetch<{ token: string }>(
-        `${apiBaseUrl}/users/${user.value.id}/active-role`,
-        {
-          method: "PATCH",
-          headers: { Authorization: `Bearer ${authToken}` },
-          body: { role_name: roleName },
-        }
-      );
-      setToken(res.token);
-      await fetchMe();
-      return true;
-    } catch (err) {
-      throw err;
-    }
-  }
-
   // Is authenticated
-  const isAuthenticated = computed(() => !!getToken() && !!user.value);
+  const isAuthenticated = computed(() => !!getAccessToken() && !!user.value);
 
   // Available roles
   const availableRoles = computed(() => user.value?.roles || []);
 
-  // Active role
-  const activeRole = computed(() => user.value?.active_role || null);
-
   return {
-    token,
+    accessToken,
+    refreshToken,
     user,
     isAuthenticated,
     availableRoles,
-    activeRole,
     login,
     logout,
     fetchMe,
-    switchRole,
-    setToken,
-    getToken,
+    refreshAccessToken,
+    setTokens,
+    getAccessToken,
+    getRefreshToken,
   };
 }

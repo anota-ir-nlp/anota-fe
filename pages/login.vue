@@ -6,32 +6,29 @@ import { navigateTo } from "#app";
 const toast = useToast();
 const { login } = useAuth();
 
-const email = ref("");
+const username = ref("");
 const password = ref("");
-const remember = ref(false);
 
-const emailError = ref("");
+const usernameError = ref("");
 const passwordError = ref("");
 
 const schema = z.object({
-  email: z.string().email("Email tidak valid."),
+  username: z.string().min(1, "Username harus diisi."),
   password: z.string().min(6, "Kata sandi minimal 6 karakter."),
-  remember: z.boolean().optional(),
 });
 
 async function onSubmit() {
-  emailError.value = "";
+  usernameError.value = "";
   passwordError.value = "";
 
   const validationResult = schema.safeParse({
-    email: email.value,
+    username: username.value,
     password: password.value,
-    remember: remember.value,
   });
 
   if (!validationResult.success) {
     validationResult.error.errors.forEach((err) => {
-      if (err.path[0] === "email") emailError.value = err.message;
+      if (err.path[0] === "username") usernameError.value = err.message;
       if (err.path[0] === "password") passwordError.value = err.message;
     });
     toast.add({
@@ -49,7 +46,7 @@ async function onSubmit() {
   });
 
   try {
-    await login(email.value, password.value, remember.value);
+    await login(username.value, password.value);
     toast.add({
       title: "Berhasil Masuk",
       description: `Selamat datang!`,
@@ -59,7 +56,7 @@ async function onSubmit() {
   } catch (error) {
     toast.add({
       title: "Gagal Masuk",
-      description: "Email atau kata sandi salah.",
+      description: "Username atau kata sandi salah.",
       color: "error",
     });
   }
@@ -93,16 +90,17 @@ const goBack = () => {
 
       <form @submit.prevent="onSubmit" class="flex flex-col gap-4">
         <div class="">
-          <label for="email" class="block text-slate-300 text-sm mb-1">Email</label>
+          <label for="username" class="block text-slate-300 text-sm mb-1">Username</label>
           <input
-            id="email"
-            v-model="email"
+            id="username"
+            v-model="username"
             type="text"
-            placeholder="Enter your email"
+            placeholder="Enter your username"
+            autocomplete="username"
             class="w-full px-4 py-4 text-base bg-slate-900 border border-slate-600 rounded-md text-white outline-none transition-all duration-200 placeholder:text-slate-400 placeholder:opacity-70 focus:border-blue-500 focus:shadow-[0_0_0_1px_rgb(59,130,246)]"
-            :class="{ '!border-red-400': emailError }"
+            :class="{ '!border-red-400': usernameError }"
           />
-          <p v-if="emailError" class="text-red-400 text-xs mt-1">{{ emailError }}</p>
+          <p v-if="usernameError" class="text-red-400 text-xs mt-1">{{ usernameError }}</p>
         </div>
 
         <div class="">
@@ -112,20 +110,12 @@ const goBack = () => {
             v-model="password"
             type="password"
             placeholder="Enter your password"
+            autocomplete="current-password"
             class="w-full px-4 py-4 text-base bg-slate-900 border border-slate-600 rounded-md text-white outline-none transition-all duration-200 placeholder:text-slate-400 placeholder:opacity-70 focus:border-blue-500 focus:shadow-[0_0_0_1px_rgb(59,130,246)]"
             :class="{ '!border-red-400': passwordError }"
           />
           <p v-if="passwordError" class="text-red-400 text-xs mt-1">{{ passwordError }}</p>
         </div>
-
-        <label class="flex items-center gap-2 mt-2 mb-4 cursor-pointer">
-          <input
-            type="checkbox"
-            v-model="remember"
-            class="appearance-none w-5 h-5 border border-slate-600 bg-slate-900 rounded grid place-content-center cursor-pointer transition-all duration-200 checked:bg-blue-500 checked:border-blue-500 focus:outline-2 focus:outline-blue-500 focus:outline-offset-2 before:content-[''] before:w-[0.65em] before:h-[0.65em] before:scale-0 before:transition-transform before:duration-[120ms] before:ease-in-out before:shadow-[inset_1em_1em_rgb(59,130,246)] before:[clip-path:polygon(14%_44%,0_65%,50%_100%,100%_16%,80%_0%,43%_62%)] checked:before:scale-100"
-          />
-          <span class="text-slate-300 text-sm select-none">Ingat saya</span>
-        </label>
 
         <button
           type="submit"
