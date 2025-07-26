@@ -52,6 +52,7 @@ async function onSubmit() {
       description: `Selamat datang!`,
       color: "success",
     });
+    // Navigate to beranda regardless of role
     navigateTo("/beranda");
   } catch (error) {
     toast.add({

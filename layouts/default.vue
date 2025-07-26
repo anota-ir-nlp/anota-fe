@@ -10,7 +10,7 @@ const {
   availableRoles,
   activeRole,
   logout,
-  fetchMe,
+  initializeAuth,
 } = useAuth();
 
 const isProfileDropdownOpen = ref(false);
@@ -96,11 +96,10 @@ const handleClickOutside = (event: MouseEvent) => {
   }
 };
 
-onMounted(() => {
+onMounted(async () => {
   document.addEventListener("click", handleClickOutside);
-  if (isAuthenticated.value && !user.value) {
-    fetchMe();
-  }
+  // Initialize auth state from cookies
+  await initializeAuth();
 });
 
 onUnmounted(() => {

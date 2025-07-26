@@ -1,11 +1,13 @@
-import { useState } from "#imports";
+import { useState, useCookie } from "#imports";
 import { useRuntimeConfig } from "#imports";
 import type {
-  LoginRequest,
   LoginResponse,
   TokenRefreshResponse,
   UserResponse,
 } from "~/types/api";
+
+const ACCESS_TOKEN_KEY = "access_token";
+const REFRESH_TOKEN_KEY = "refresh_token";
 
 export function useAuth() {
   // Global state
@@ -15,21 +17,51 @@ export function useAuth() {
 
   const runtimeConfig = useRuntimeConfig();
 
+  // Persist tokens in cookies
+  const accessTokenCookie = useCookie<string | null>(ACCESS_TOKEN_KEY, {
+    maxAge: 60 * 60 * 24, // 24 hours
+    httpOnly: false,
+    secure: false,
+    sameSite: 'lax',
+    default: () => null
+  });
+  const refreshTokenCookie = useCookie<string | null>(REFRESH_TOKEN_KEY, {
+    maxAge: 60 * 60 * 24 * 7, // 7 days
+    httpOnly: false,
+    secure: false,
+    sameSite: 'lax',
+    default: () => null
+  });
+
+  // Initialize state from cookies on first load
+  if (import.meta.client && !accessToken.value && accessTokenCookie.value) {
+    accessToken.value = accessTokenCookie.value;
+    refreshToken.value = refreshTokenCookie.value;
+  }
+
   // Helper to set tokens
   function setTokens(access: string | null, refresh?: string | null) {
     accessToken.value = access;
+    accessTokenCookie.value = access;
+
     if (refresh !== undefined) {
       refreshToken.value = refresh;
+      refreshTokenCookie.value = refresh;
     }
   }
 
   function getAccessToken(): string | null {
-    return accessToken.value;
+    return accessToken.value || accessTokenCookie.value || null;
+  }
+
+  function getRefreshToken(): string | null {
+    return refreshToken.value || refreshTokenCookie.value || null;
   }
 
   async function refreshAccessToken(): Promise<string | null> {
     try {
-      if (!refreshToken.value) {
+      const refresh = getRefreshToken();
+      if (!refresh) {
         setTokens(null, null);
         user.value = null;
         return null;
@@ -38,7 +70,7 @@ export function useAuth() {
       const res = await $fetch<TokenRefreshResponse>(`${runtimeConfig.public.apiBaseUrl}/token/refresh/`, {
         method: "POST",
         body: {
-          refresh: refreshToken.value
+          refresh: refresh
         },
         credentials: 'include',
       });
@@ -54,7 +86,7 @@ export function useAuth() {
 
   async function fetchMe() {
     const { fetcher } = useProtectedFetcher();
-    
+
     try {
       const res = await fetcher<UserResponse>('/users/me/');
       user.value = res;
@@ -73,11 +105,11 @@ export function useAuth() {
         credentials: 'include',
       });
 
-      setTokens(res.access);
+      setTokens(res.access, res.refresh);
       await fetchMe();
       return true;
     } catch (err) {
-      setTokens(null);
+      setTokens(null, null);
       user.value = null;
       throw err;
     }
@@ -92,11 +124,17 @@ export function useAuth() {
     } catch {
       // Ignore logout errors
     }
-    setTokens(null);
+    setTokens(null, null);
     user.value = null;
   }
 
-  // Computed properties
+  // Initialize auth state on client-side
+  async function initializeAuth() {
+    if (import.meta.client && getAccessToken() && !user.value) {
+      await fetchMe();
+    }
+  }
+
   const isAuthenticated = computed(() => !!getAccessToken() && !!user.value);
   const availableRoles = computed(() => user.value?.roles || []);
   const activeRole = computed(() => user.value?.active_role || availableRoles.value[0] || null);
@@ -113,5 +151,7 @@ export function useAuth() {
     refreshAccessToken,
     setTokens,
     getAccessToken,
+    getRefreshToken,
+    initializeAuth,
   };
 }
