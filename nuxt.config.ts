@@ -12,6 +12,7 @@ export default defineNuxtConfig({
     "@vueuse/nuxt",
     "@nuxt/icon",
     "@nuxtjs/i18n",
+    "shadcn-nuxt",
   ],
 
   icon: {
@@ -38,8 +39,12 @@ export default defineNuxtConfig({
 
   css: ["~/assets/css/main.css"],
 
+  shadcn: {
+    prefix: '',
+    componentDir: './components/ui'
+  },
+
   vite: {
     plugins: [tailwindcss()],
   },
 });
-
