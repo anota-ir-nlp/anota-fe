@@ -43,6 +43,49 @@
               <label for="full_name" class="text-sm font-medium text-left">Nama Lengkap</label>
               <Input id="full_name" v-model="newUser.full_name" placeholder="Nama Lengkap" class="w-full" />
             </div>
+            <div class="grid gap-2">
+              <label for="roles" class="text-sm font-medium text-left">Roles</label>
+              <Combobox v-model="newUserRoles" v-model:open="openCreateRoles" :ignore-filter="true">
+                <ComboboxAnchor as-child>
+                  <TagsInput v-model="newUserRoles" class="px-2 gap-2 w-80">
+                    <div class="flex gap-2 flex-wrap items-center">
+                      <TagsInputItem v-for="item in newUserRoles" :key="item" :value="item">
+                        <TagsInputItemText />
+                        <TagsInputItemDelete @click="newUserRoles.splice(newUserRoles.indexOf(item), 1)" />
+                      </TagsInputItem>
+                    </div>
+
+                    <ComboboxInput v-model="searchTermCreate" as-child>
+                      <TagsInputInput placeholder="Tambah role..."
+                        class="min-w-[200px] w-full p-0 border-none focus-visible:ring-0 h-auto"
+                        @keydown.enter.prevent />
+                    </ComboboxInput>
+                  </TagsInput>
+
+                  <ComboboxList class="w-[--reka-popper-anchor-width]">
+                    <ComboboxEmpty />
+                    <ComboboxGroup>
+                      <ComboboxItem
+                        v-for="role in availableRoles.filter(r => r.toLowerCase().includes(searchTermCreate?.toLowerCase() || '') && !newUserRoles.includes(r))"
+                        :key="role"
+                        :value="role"
+                        @select.prevent="(ev) => {
+                          if (typeof ev.detail.value === 'string') {
+                            searchTermCreate = ''
+                            newUserRoles.push(ev.detail.value)
+                          }
+                          if (availableRoles.filter(r => r.toLowerCase().includes(searchTermCreate?.toLowerCase() || '') && !newUserRoles.includes(r)).length === 0) {
+                            openCreateRoles = false
+                          }
+                        }"
+                      >
+                        {{ role }}
+                      </ComboboxItem>
+                    </ComboboxGroup>
+                  </ComboboxList>
+                </ComboboxAnchor>
+              </Combobox>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" @click="resetForm">
@@ -86,6 +129,50 @@
           <div class="grid gap-2">
             <label for="edit_full_name" class="text-sm font-medium text-left">Nama Lengkap</label>
             <Input id="edit_full_name" v-model="editingUser.full_name" placeholder="Nama Lengkap" class="w-full" />
+          </div>
+          <div class="grid gap-2">
+            <label for="edit_roles" class="text-sm font-medium text-left">Roles</label>
+            <Combobox v-model="editingUserRoles" v-model:open="openEditRoles" :ignore-filter="true">
+              <ComboboxAnchor as-child>
+                <TagsInput v-model="editingUserRoles" class="px-2 gap-2 w-80">
+                  <div class="flex gap-2 flex-wrap items-center">
+                    <TagsInputItem v-for="item in editingUserRoles" :key="item" :value="item" class="bg-secondary border border-border text-foreground">
+                      <TagsInputItemText class="text-foreground" />
+                      <TagsInputItemDelete class="text-muted-foreground" @click="editingUserRoles.splice(editingUserRoles.indexOf(item), 1)" />
+                    </TagsInputItem>
+                  </div>
+
+                  <ComboboxInput v-model="searchTermEdit" as-child>
+                    <TagsInputInput placeholder="Tambah role..."
+                      class="min-w-[200px] w-full p-0 border-none focus-visible:ring-0 h-auto text-foreground"
+                      @keydown.enter.prevent />
+                  </ComboboxInput>
+                </TagsInput>
+
+                <ComboboxList class="w-[--reka-popper-anchor-width] bg-popover text-popover-foreground">
+                  <ComboboxEmpty class="text-muted-foreground" />
+                  <ComboboxGroup class="bg-popover text-foreground">
+                    <ComboboxItem
+                      v-for="role in availableRoles.filter(r => r.toLowerCase().includes(searchTermEdit?.toLowerCase() || '') && !editingUserRoles.includes(r))"
+                      :key="role"
+                      :value="role"
+                      class="data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground text-foreground"
+                      @select.prevent="(ev) => {
+                        if (typeof ev.detail.value === 'string') {
+                          searchTermEdit = ''
+                          editingUserRoles.push(ev.detail.value)
+                        }
+                        if (availableRoles.filter(r => r.toLowerCase().includes(searchTermEdit?.toLowerCase() || '') && !editingUserRoles.includes(r)).length === 0) {
+                          openEditRoles = false
+                        }
+                      }"
+                    >
+                      {{ role }}
+                    </ComboboxItem>
+                  </ComboboxGroup>
+                </ComboboxList>
+              </ComboboxAnchor>
+            </Combobox>
           </div>
         </div>
         <DialogFooter>
@@ -199,8 +286,17 @@ import {
   TableHeader,
   TableRow
 } from "~/components/ui/table";
+import { TagsInput, TagsInputItem, TagsInputInput, TagsInputItemDelete, TagsInputItemText } from "~/components/ui/tags-input";
+import { Combobox, ComboboxAnchor, ComboboxEmpty, ComboboxGroup, ComboboxInput, ComboboxItem, ComboboxList } from '@/components/ui/combobox'
 
-const { getUsers, createUser: apiCreateUser, deleteUser: apiDeleteUser, updateUser: apiUpdateUser } = useUsersApi();
+const {
+  getUsers,
+  createUser: apiCreateUser,
+  deleteUser: apiDeleteUser,
+  updateUser: apiUpdateUser,
+  getAvailableRoles,
+  manageUserRole,
+} = useUsersApi();
 const toast = useToast();
 
 const users = ref<UsersListResponse[]>([]);
@@ -226,6 +322,28 @@ const editingUser = ref<{
   email: "",
   full_name: "",
 });
+
+const availableRoles = ref<string[]>([]);
+const newUserRoles = ref<string[]>([]);
+const editingUserRoles = ref<string[]>([]);
+const openCreateRoles = ref(false);
+const openEditRoles = ref(false);
+const searchTermCreate = ref('');
+const searchTermEdit = ref('');
+
+// Fetch available roles for dropdown
+async function fetchAvailableRoles() {
+  try {
+    const res = await getAvailableRoles();
+    availableRoles.value = res.roles;
+  } catch (error) {
+    toast.add({
+      title: "Error",
+      description: "Gagal memuat daftar roles",
+      color: "error",
+    });
+  }
+}
 
 async function fetchUsers() {
   isLoading.value = true;
@@ -256,6 +374,13 @@ async function createUser() {
   isCreating.value = true;
   try {
     const result = await apiCreateUser(newUser.value);
+    for (const role of newUserRoles.value) {
+      await manageUserRole({
+        user_id: result.data.id,
+        role,
+        action: "add",
+      });
+    }
     toast.add({
       title: "Berhasil",
       description: `Pengguna ${result.data.username} berhasil dibuat. Password: ${result.data.password}`,
@@ -295,6 +420,25 @@ async function updateUser() {
     };
 
     await apiUpdateUser(editingUser.value.id, updateData);
+
+    const currentRoles = users.value.find(u => u.id === editingUser.value.id)?.roles || [];
+    const toAdd = editingUserRoles.value.filter(r => !currentRoles.includes(r));
+    const toRemove = currentRoles.filter(r => !editingUserRoles.value.includes(r));
+    for (const role of toAdd) {
+      await manageUserRole({
+        user_id: editingUser.value.id!,
+        role,
+        action: "add",
+      });
+    }
+    for (const role of toRemove) {
+      await manageUserRole({
+        user_id: editingUser.value.id!,
+        role,
+        action: "remove",
+      });
+    }
+
     toast.add({
       title: "Berhasil",
       description: `Pengguna ${editingUser.value.username} berhasil diupdate`,
@@ -344,6 +488,7 @@ function editUser(user: UsersListResponse) {
     email: user.email,
     full_name: user.full_name,
   };
+  editingUserRoles.value = [...user.roles];
   isEditDialogOpen.value = true;
 }
 
@@ -353,6 +498,7 @@ function cancelEdit() {
     email: "",
     full_name: "",
   };
+  editingUserRoles.value = [];
   isEditDialogOpen.value = false;
 }
 
@@ -362,13 +508,28 @@ function resetForm() {
     email: "",
     full_name: "",
   };
+  newUserRoles.value = [];
 }
 
 function formatDate(dateString: string) {
   return new Date(dateString).toLocaleDateString('id-ID');
 }
 
-onMounted(fetchUsers);
+function addRoleToNewUser(role: string) {
+  if (!newUserRoles.value.includes(role)) {
+    newUserRoles.value.push(role);
+  }
+}
+function addRoleToEditingUser(role: string) {
+  if (!editingUserRoles.value.includes(role)) {
+    editingUserRoles.value.push(role);
+  }
+}
+
+onMounted(async () => {
+  await fetchAvailableRoles();
+  await fetchUsers();
+});
 
 useHead({
   title: "Kelola Pengguna - ANOTA",
