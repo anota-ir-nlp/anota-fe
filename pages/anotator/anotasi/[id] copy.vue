@@ -687,11 +687,22 @@
 </template>
 
 <script setup lang="ts">
+<<<<<<< HEAD
 import { ref, computed, onMounted, watch } from "vue";
+=======
+import { ref, computed, onMounted } from "vue";
+>>>>>>> d817870a3b8460585aa07cf2b2cc5ce52b2a2533
 import { useRoute, useRouter } from "vue-router";
 import { useTextSelection } from "@vueuse/core";
 import { useDocumentsApi } from "~/data/documents";
+<<<<<<< HEAD
 import type { DocumentResponse, AnnotationResponse } from "~/types/api";
+=======
+import { useAnnotationsApi } from "~/data/annotations";
+import { useErrorTypesApi } from "~/data/error-types";
+import type { DocumentResponse, SentenceResponse, AnnotationResponse, ErrorTypeResponse } from "~/types/api";
+import { toast } from "vue-sonner";
+>>>>>>> d817870a3b8460585aa07cf2b2cc5ce52b2a2533
 
 const route = useRoute();
 const router = useRouter();
@@ -789,6 +800,7 @@ function getGridLayout() {
   }
 }
 
+<<<<<<< HEAD
 //FIX: TEXT SELECTION - Gets selected text and calculates current positions
 function handleTextSelection() {
   if (!editableArea.value || !selectedSentence.value) return;
@@ -810,12 +822,20 @@ function handleTextSelection() {
 
   if (startIndex === -1) {
     console.error("Selected text not found in current sentence");
+=======
+async function saveAnnotation() {
+  if (!selectedSentenceData.value || !selectedErrorType.value || !correctionInput.value.trim()) {
+    toast.message("Validasi Error", {
+      description: "Mohon lengkapi semua field yang diperlukan",
+    });
+>>>>>>> d817870a3b8460585aa07cf2b2cc5ce52b2a2533
     return;
   }
 
   //FIX: Use current positions (not original positions)
   const endIndex = startIndex + selectedText.value.length;
 
+<<<<<<< HEAD
   selectedRange.value = {
     start: startIndex,
     end: endIndex,
@@ -1077,6 +1097,20 @@ function selectSentence(sentenceId: number) {
     //FIX: Clear any existing text selection
     selectedText.value = "";
     selectedRange.value = null;
+=======
+    await createAnnotation(annotationData);
+    
+    toast.success("Anotasi berhasil disimpan");
+
+    // Refresh annotations
+    await fetchAnnotations();
+    cancelAnnotation();
+  } catch (error) {
+    console.error('Error saving annotation:', error);
+    toast.error("Gagal menyimpan anotasi");
+  } finally {
+    isSaving.value = false;
+>>>>>>> d817870a3b8460585aa07cf2b2cc5ce52b2a2533
   }
 }
 
@@ -1136,6 +1170,7 @@ function navigateDocument(direction: number) {
 async function fetchDocument() {
   try {
     const docId = Number(route.params.id);
+<<<<<<< HEAD
 
     // For now, use dummy data that matches the index.vue structure
     const dummyDocuments = [
@@ -1293,6 +1328,29 @@ async function fetchDocument() {
         ],
       },
     ];
+=======
+    document.value = await getDocument(docId);
+  } catch (error) {
+    console.error('Error fetching document:', error);
+    document.value = null;
+    toast.error("Gagal memuat dokumen");
+  }
+}
+
+async function fetchAnnotations() {
+  try {
+    const allAnnotations = await getAnnotations();
+    // Filter annotations for current document
+    annotations.value = allAnnotations.filter(
+      annotation => annotation.document === Number(route.params.id)
+    );
+  } catch (error) {
+    console.error('Error fetching annotations:', error);
+    annotations.value = [];
+    toast.error("Gagal memuat anotasi");
+  }
+}
+>>>>>>> d817870a3b8460585aa07cf2b2cc5ce52b2a2533
 
     const foundDocument = dummyDocuments.find((doc) => doc.id === docId);
     if (foundDocument) {
@@ -1303,7 +1361,24 @@ async function fetchDocument() {
       router.push("/anotator/anotasi");
     }
   } catch (error) {
+<<<<<<< HEAD
     console.error("Error fetching document:", error);
+=======
+    console.error('Error fetching error types:', error);
+    errorTypes.value = [];
+    toast.error("Gagal memuat tipe kesalahan");
+  }
+}
+
+onMounted(async () => {
+  isLoading.value = true;
+  try {
+    await Promise.all([
+      fetchDocument(),
+      fetchAnnotations(),
+      fetchErrorTypes(),
+    ]);
+>>>>>>> d817870a3b8460585aa07cf2b2cc5ce52b2a2533
   } finally {
     isLoading.value = false;
   }
