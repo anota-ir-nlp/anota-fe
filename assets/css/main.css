@@ -18,3 +18,24 @@
     color: #333;
   }
 }
+
+:root {
+  /* Override Nuxt UI primary color to purple */
+  --ui-color-primary-50: #faf5ff;
+  --ui-color-primary-100: #f3e8ff;
+  --ui-color-primary-200: #e9d5ff;
+  --ui-color-primary-300: #d8b4fe;
+  --ui-color-primary-400: #c084fc;
+  --ui-color-primary-500: #a855f7;
+  --ui-color-primary-600: #9333ea;
+  --ui-color-primary-700: #7e22ce;
+  --ui-color-primary-800: #6d28d9;
+  --ui-color-primary-900: #5b21b6;
+  --ui-color-primary-950: #3b0764;
+}
+
+/* Optionally, you can also set --ui-primary to use the new value */
+:root,
+.light {
+  --ui-primary: var(--ui-color-primary-500);
+}

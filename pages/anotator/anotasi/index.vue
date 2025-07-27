@@ -5,25 +5,28 @@
     <div class="max-w-7xl mx-auto">
       <!-- Statistic Cards -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <div class="stat-card">
-          <UIcon name="i-lucide-file-text" class="stat-icon text-blue-400" />
-          <span class="stat-value">{{ stats.annotated }}</span>
+        <div class="stat-card flex flex-col items-center py-6">
+          <UIcon
+            name="i-heroicons-document-text"
+            class="stat-icon text-blue-400 mb-2"
+          />
+          <span class="stat-value mb-1">{{ stats.annotated }}</span>
           <span class="stat-label">Dokumen Dianotasi</span>
         </div>
-        <div class="stat-card">
+        <div class="stat-card flex flex-col items-center py-6">
           <UIcon
-            name="i-lucide-check-circle"
-            class="stat-icon text-green-400"
+            name="i-heroicons-check-circle"
+            class="stat-icon text-green-400 mb-2"
           />
-          <span class="stat-value">{{ stats.reviewed }}</span>
+          <span class="stat-value mb-1">{{ stats.reviewed }}</span>
           <span class="stat-label">Dokumen Ditinjau</span>
         </div>
-        <div class="stat-card">
+        <div class="stat-card flex flex-col items-center py-6">
           <UIcon
-            name="i-lucide-bar-chart-2"
-            class="stat-icon text-purple-400"
+            name="i-heroicons-bars-3"
+            class="stat-icon text-purple-400 mb-2"
           />
-          <span class="stat-value">{{ stats.total }}</span>
+          <span class="stat-value mb-1">{{ stats.total }}</span>
           <span class="stat-label">Total Dokumen</span>
         </div>
       </div>
@@ -62,64 +65,94 @@
             />
             Daftar Dokumen
           </h2>
-          <div class="flex flex-wrap gap-2 items-center filter-bar">
-            <UInput
-              v-model="search"
-              placeholder="Cari judul dokumen..."
-              :ui="{ base: 'w-48 md:w-64' }"
-              size="md"
-              icon="i-heroicons-magnifying-glass"
-            />
-            <UInput
-              v-model="filter.tanggal"
-              type="date"
-              placeholder="Tanggal"
-              :ui="{ base: 'w-32' }"
-              size="md"
-              icon="i-heroicons-calendar"
-            />
-            <USelectMenu
-              v-model="filter.tipe"
-              :options="tipeOptions"
-              placeholder="Tipe"
-              :ui="{ base: 'w-32' }"
-              size="md"
-              icon="i-heroicons-document"
-            />
-            <USelectMenu
-              v-model="filter.reviewed"
-              :options="reviewedOptions"
-              placeholder="Review"
-              :ui="{ base: 'w-32' }"
-              size="md"
-              icon="i-heroicons-check-badge"
-            />
-            <UInput
-              v-model="filter.assignedBy"
-              placeholder="Assigned By"
-              :ui="{ base: 'w-32' }"
-              size="md"
-              icon="i-heroicons-user"
-            />
-            <UButton
-              icon="i-heroicons-arrow-path"
-              color="neutral"
-              variant="ghost"
-              size="sm"
-              :ui="{ base: 'rounded-full px-3 py-2' }"
-              @click="resetFilters"
-              title="Reset Filter"
-            />
-          </div>
+        </div>
+        <div class="filter-bar mt-2 mb-6">
+          <UInput
+            v-model="search"
+            placeholder="Cari judul dokumen..."
+            :ui="{
+              base: 'w-48 md:w-64 bg-gray-900 text-white border-gray-700 placeholder-gray-400',
+              icon: 'text-blue-400',
+            }"
+            size="md"
+            icon="i-heroicons-magnifying-glass"
+          />
+          <UInput
+            v-model="filter.tanggal"
+            type="date"
+            placeholder="Tanggal"
+            :ui="{
+              base: 'w-32 bg-gray-900 text-white border-gray-700 placeholder-gray-400',
+              icon: 'text-blue-400',
+            }"
+            size="md"
+            icon="i-heroicons-calendar"
+          />
+          <USelectMenu
+            v-model="filter.status"
+            :items="statusItems"
+            placeholder="Status"
+            :ui="{
+              base: 'w-40 bg-gray-900 text-white border-gray-700 placeholder-gray-400',
+              icon: 'text-blue-400',
+            }"
+            size="md"
+            icon="i-heroicons-adjustments-horizontal"
+          >
+            <template #leading="{ modelValue, ui }">
+              <UChip
+                v-if="modelValue"
+                v-bind="modelValue.chip"
+                inset
+                standalone
+                :size="(ui.itemLeadingChipSize() as ChipProps['size'])"
+                :class="ui.itemLeadingChip()"
+              />
+            </template>
+          </USelectMenu>
+          <UInput
+            v-model="filter.asalLembaga"
+            placeholder="Asal Lembaga"
+            :ui="{
+              base: 'w-32 bg-gray-900 text-white border-gray-700 placeholder-gray-400',
+              icon: 'text-blue-400',
+            }"
+            size="md"
+            icon="i-heroicons-building-office"
+          />
+          <UInput
+            v-model="filter.assignedBy"
+            placeholder="Assigned By"
+            :ui="{
+              base: 'w-32 bg-gray-900 text-white border-gray-700 placeholder-gray-400',
+              icon: 'text-blue-400',
+            }"
+            size="md"
+            icon="i-heroicons-user"
+          />
+          <UButton
+            label="Reset Filter"
+            icon="i-heroicons-arrow-path"
+            color="primary"
+            variant="solid"
+            size="md"
+            :ui="{
+              base: 'rounded-full px-4 py-2 font-semibold shadow bg-blue-900 text-white border border-blue-700 hover:bg-blue-800 transition',
+            }"
+            @click="resetFilters"
+            title="Reset Filter"
+            class="ml-2"
+          />
         </div>
         <div class="overflow-x-auto rounded-lg">
           <table class="min-w-full text-sm table-auto">
             <thead>
               <tr class="bg-gray-800/60 text-gray-300 sticky top-0 z-10">
+                <th class="px-4 py-2 text-left">Nomor</th>
                 <th class="px-4 py-2 text-left">Judul</th>
-                <th class="px-4 py-2 text-left">Tipe</th>
                 <th class="px-4 py-2 text-left">Tanggal</th>
-                <th class="px-4 py-2 text-left">Status Review</th>
+                <th class="px-4 py-2 text-left">Status</th>
+                <th class="px-4 py-2 text-left">Asal Lembaga</th>
                 <th class="px-4 py-2 text-left">Assigned By</th>
                 <th class="px-4 py-2"></th>
               </tr>
@@ -130,16 +163,15 @@
                 :key="doc.id"
                 class="border-b border-white/10 hover:bg-blue-900/20 transition"
               >
+                <td class="px-4 py-2 font-semibold">{{ doc.nomor }}</td>
                 <td class="px-4 py-2 font-semibold">{{ doc.judul }}</td>
-                <td class="px-4 py-2">{{ doc.tipe }}</td>
                 <td class="px-4 py-2">{{ doc.tanggal }}</td>
                 <td class="px-4 py-2">
-                  <span
-                    :class="doc.reviewed ? 'text-green-400' : 'text-yellow-400'"
-                  >
-                    {{ doc.reviewed ? "Ditinjau" : "Belum" }}
+                  <span :class="statusColor(doc.status)">
+                    {{ doc.status }}
                   </span>
                 </td>
+                <td class="px-4 py-2">{{ doc.asalLembaga }}</td>
                 <td class="px-4 py-2">{{ doc.assignedBy }}</td>
                 <td class="px-4 py-2">
                   <UButton
@@ -155,7 +187,7 @@
                 </td>
               </tr>
               <tr v-if="filteredDocs.length === 0">
-                <td colspan="6" class="text-center text-gray-400 py-8">
+                <td colspan="7" class="text-center text-gray-400 py-8">
                   Tidak ada dokumen ditemukan.
                 </td>
               </tr>
@@ -170,6 +202,7 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { navigateTo } from "#app";
+import type { SelectMenuItem, ChipProps } from "@nuxt/ui";
 
 // Dummy statistics
 const stats = ref({
@@ -193,34 +226,38 @@ const weeklyStats = ref([
 const docs = ref([
   {
     id: 1,
+    nomor: "001/A/2024",
     judul: "Artikel Bahasa Indonesia 1",
-    tipe: "Artikel",
     tanggal: "2024-06-01",
-    reviewed: true,
+    status: "Sudah Dianotasi",
+    asalLembaga: "Universitas A",
     assignedBy: "Admin",
   },
   {
     id: 2,
+    nomor: "002/L/2024",
     judul: "Laporan Penelitian",
-    tipe: "Laporan",
     tanggal: "2024-06-02",
-    reviewed: false,
+    status: "Belum Dianotasi",
+    asalLembaga: "Kementerian Riset",
     assignedBy: "Kepala Riset",
   },
   {
     id: 3,
+    nomor: "003/B/2024",
     judul: "Berita Harian",
-    tipe: "Berita",
     tanggal: "2024-06-03",
-    reviewed: false,
+    status: "Sedang Dianotasi",
+    asalLembaga: "Media Nasional",
     assignedBy: "Admin",
   },
   {
     id: 4,
+    nomor: "004/M/2024",
     judul: "Makalah Akademik",
-    tipe: "Makalah",
     tanggal: "2024-06-04",
-    reviewed: true,
+    status: "Sudah Direview",
+    asalLembaga: "Universitas B",
     assignedBy: "Admin",
   },
 ]);
@@ -229,21 +266,34 @@ const docs = ref([
 const search = ref("");
 const filter = ref({
   tanggal: "",
-  tipe: "",
-  reviewed: "",
+  status: null, // will hold the selected item object
+  asalLembaga: "",
   assignedBy: "",
 });
 
-const tipeOptions = [
-  { label: "Artikel", value: "Artikel" },
-  { label: "Laporan", value: "Laporan" },
-  { label: "Berita", value: "Berita" },
-  { label: "Makalah", value: "Makalah" },
-];
-const reviewedOptions = [
-  { label: "Ditinjau", value: "true" },
-  { label: "Belum", value: "false" },
-];
+// Status dropdown items with chip color
+const statusItems = ref([
+  {
+    label: "Belum Dianotasi",
+    value: "Belum Dianotasi",
+    chip: { color: "warning" },
+  },
+  {
+    label: "Sedang Dianotasi",
+    value: "Sedang Dianotasi",
+    chip: { color: "primary" },
+  },
+  {
+    label: "Sudah Dianotasi",
+    value: "Sudah Dianotasi",
+    chip: { color: "success" },
+  },
+  {
+    label: "Sudah Direview",
+    value: "Sudah Direview",
+    chip: { color: "secondary" },
+  },
+] satisfies SelectMenuItem[]);
 
 // Filtering logic
 const filteredDocs = computed(() => {
@@ -253,16 +303,24 @@ const filteredDocs = computed(() => {
       doc.judul.toLowerCase().includes(search.value.toLowerCase());
     const matchTanggal =
       !filter.value.tanggal || doc.tanggal === filter.value.tanggal;
-    const matchTipe = !filter.value.tipe || doc.tipe === filter.value.tipe;
-    const matchReviewed =
-      !filter.value.reviewed || String(doc.reviewed) === filter.value.reviewed;
+    const matchStatus =
+      !filter.value.status || doc.status === filter.value.status.value;
+    const matchAsalLembaga =
+      !filter.value.asalLembaga ||
+      doc.asalLembaga
+        .toLowerCase()
+        .includes(filter.value.asalLembaga.toLowerCase());
     const matchAssigned =
       !filter.value.assignedBy ||
       doc.assignedBy
         .toLowerCase()
         .includes(filter.value.assignedBy.toLowerCase());
     return (
-      matchSearch && matchTanggal && matchTipe && matchReviewed && matchAssigned
+      matchSearch &&
+      matchTanggal &&
+      matchStatus &&
+      matchAsalLembaga &&
+      matchAssigned
     );
   });
 });
@@ -271,10 +329,26 @@ function resetFilters() {
   search.value = "";
   filter.value = {
     tanggal: "",
-    tipe: "",
-    reviewed: "",
+    status: null,
+    asalLembaga: "",
     assignedBy: "",
   };
+}
+
+// Status color helper
+function statusColor(status: string) {
+  switch (status) {
+    case "Belum Dianotasi":
+      return "text-yellow-400";
+    case "Sedang Dianotasi":
+      return "text-blue-400";
+    case "Sudah Dianotasi":
+      return "text-green-400";
+    case "Sudah Direview":
+      return "text-purple-400";
+    default:
+      return "text-gray-400";
+  }
 }
 
 // Navigation to detail page
@@ -292,6 +366,7 @@ function goToDetail(id: number) {
   border-radius: 1.25rem;
   box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15), 0 12px 20px rgba(0, 0, 0, 0.1);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 2rem;
 }
 .glassmorphism-custom:hover {
   background-color: rgba(255, 255, 255, 0.12);
@@ -306,6 +381,8 @@ function goToDetail(id: number) {
   border-radius: 1.25rem;
   box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15), 0 12px 20px rgba(0, 0, 0, 0.1);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 1.5rem 0.5rem;
+  margin-bottom: 0;
 }
 .stat-icon {
   width: 2.5rem;
@@ -322,6 +399,12 @@ function goToDetail(id: number) {
   color: #cbd5e1;
   margin-top: 0.25rem;
   font-size: 0.95rem;
+}
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
 }
 .filter-bar > * {
   margin-right: 0.25rem;

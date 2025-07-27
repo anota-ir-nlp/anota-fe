@@ -17,7 +17,7 @@ const {
 
 const isAuthenticated = ref(true);
 const availableRoles = ref(["admin", "annotator", "reviewer", "kepala riset"]); // Mock roles, replace with actual roles from your auth system
-const activeRole = ref("admin");
+const activeRole = ref("annotator");
 
 const isProfileDropdownOpen = ref(false);
 const isSubmenuOpen = ref(false);
