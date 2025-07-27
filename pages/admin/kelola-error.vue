@@ -211,11 +211,7 @@ const newErrorType = ref<ErrorTypeRequest>({
   description: "",
 });
 
-const editingErrorType = ref<{
-  id?: number;
-  error_code: string;
-  description: string;
-}>({
+const editingErrorType = ref<Partial<ErrorTypeResponse>>({
   error_code: "",
   description: "",
 });
@@ -363,3 +359,6 @@ useHead({
   ],
 });
 </script>
+    { name: "description", content: "Halaman kelola error types aplikasi ANOTA." },
+  ],
+});

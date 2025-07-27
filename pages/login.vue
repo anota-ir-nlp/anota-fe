@@ -7,12 +7,12 @@ import { Input } from "~/components/ui/input";
 import { useAuth } from "~/data/auth";
 import { navigateTo } from "#app";
 import { toast } from "vue-sonner";
+import type { LoginRequest } from "~/types/api";
 
 const { login } = useAuth();
 
 const username = ref("");
 const password = ref("");
-
 const usernameError = ref("");
 const passwordError = ref("");
 
@@ -25,10 +25,12 @@ async function onSubmit() {
   usernameError.value = "";
   passwordError.value = "";
 
-  const validationResult = schema.safeParse({
+  const loginData: LoginRequest = {
     username: username.value,
     password: password.value,
-  });
+  };
+
+  const validationResult = schema.safeParse(loginData);
 
   if (!validationResult.success) {
     validationResult.error.errors.forEach((err) => {
@@ -42,7 +44,7 @@ async function onSubmit() {
   }
 
   await toast.promise(
-    login(username.value, password.value),
+    login(loginData.username, loginData.password),
     {
       loading: "Mencoba masuk...",
       success: () => {

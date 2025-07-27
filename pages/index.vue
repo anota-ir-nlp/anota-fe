@@ -56,9 +56,9 @@
                   <SelectValue placeholder="Pilih Tipe Kesalahan" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem 
-                    v-for="option in gecErrorTypes" 
-                    :key="option.value" 
+                  <SelectItem
+                    v-for="option in gecErrorTypes"
+                    :key="option.value"
                     :value="option"
                   >
                     {{ option.label }}
@@ -153,12 +153,12 @@
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
 import { navigateTo } from "#app";
-import { 
-  Lightbulb, 
-  ArrowRightFromLine, 
-  ArrowLeft, 
-  ArrowRight, 
-  FileText, 
+import {
+  Lightbulb,
+  ArrowRightFromLine,
+  ArrowLeft,
+  ArrowRight,
+  FileText,
   ArrowLeftRight,
   Users,
   PenTool,

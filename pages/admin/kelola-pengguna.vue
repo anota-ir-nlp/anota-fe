@@ -252,7 +252,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
 import { useUsersApi } from "~/data/users";
-import type { UserRegistrationRequest } from "~/types/api";
+import type { UserResponse, UserRegistrationRequest, UserRegistrationResponse } from "~/types/api";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
@@ -297,14 +297,7 @@ const {
   manageUserRole,
 } = useUsersApi();
 
-const users = ref<Array<{
-  id: string;
-  username: string;
-  email: string;
-  full_name: string;
-  roles: string[];
-  date_joined: string;
-}>>([]);
+const users = ref<UserResponse[]>([]);
 const isLoading = ref(false);
 const isCreating = ref(false);
 const isUpdating = ref(false);
@@ -317,12 +310,7 @@ const newUser = ref<UserRegistrationRequest>({
   full_name: "",
 });
 
-const editingUser = ref<{
-  id?: string;
-  username: string;
-  email: string;
-  full_name: string;
-}>({
+const editingUser = ref<Partial<UserResponse>>({
   username: "",
   email: "",
   full_name: "",
@@ -346,11 +334,7 @@ async function fetchAvailableRoles() {
     const res = await getAvailableRoles();
     availableRoles.value = res.roles;
   } catch (error) {
-    toast({
-      title: "Error",
-      description: "Gagal memuat daftar roles",
-      variant: "destructive",
-    });
+    toast.error("Gagal memuat daftar roles");
   }
 }
 
@@ -364,11 +348,7 @@ async function fetchUsers(page = 1) {
     totalPages.value = Math.max(1, Math.ceil(response.count / 20));
   } catch (error) {
     console.error('Error fetching users:', error);
-    toast({
-      title: "Error",
-      description: "Gagal memuat data pengguna",
-      variant: "destructive",
-    });
+    toast.error("Gagal memuat data pengguna");
   } finally {
     isLoading.value = false;
   }
@@ -391,39 +371,36 @@ const paginationPages = computed(() => {
 
 async function createUser() {
   if (!newUser.value.username || !newUser.value.full_name) {
-    toast({
-      title: "Validasi Error",
-      description: "Username dan nama lengkap harus diisi",
-      variant: "destructive",
-    });
+    toast.error("Username dan nama lengkap harus diisi");
     return;
   }
 
   isCreating.value = true;
   try {
-    const result = await apiCreateUser(newUser.value);
-    for (const role of newUserRoles.value) {
-      await manageUserRole({
-        user_id: result.data.id,
-        role,
-        action: "add",
-      });
-    }
-    toast({
-      title: "Berhasil",
-      description: `Pengguna ${result.data.username} berhasil dibuat. Password: ${result.data.password}`,
-      variant: "success",
-    });
+    await toast.promise(
+      (async () => {
+        const result = await apiCreateUser(newUser.value);
+        for (const role of newUserRoles.value) {
+          await manageUserRole({
+            user_id: result.data.id,
+            role,
+            action: "add",
+          });
+        }
+        return result;
+      })(),
+      {
+        loading: "Menambah pengguna...",
+        success: (result: UserRegistrationResponse) => `Pengguna ${result.data.username} berhasil dibuat. Password: ${result.data.password}`,
+        error: "Gagal membuat pengguna baru",
+      }
+    );
     resetForm();
     isCreateDialogOpen.value = false;
     await fetchUsers();
   } catch (error) {
     console.error('Error creating user:', error);
-    toast({
-      title: "Error",
-      description: "Gagal membuat pengguna baru",
-      variant: "destructive",
-    });
+    // toast handled by promise
   } finally {
     isCreating.value = false;
   }
@@ -431,56 +408,52 @@ async function createUser() {
 
 async function updateUser() {
   if (!editingUser.value.id || !editingUser.value.username || !editingUser.value.full_name) {
-    toast({
-      title: "Validasi Error",
-      description: "Username dan nama lengkap harus diisi",
-      variant: "destructive",
-    });
+    toast.error("Username dan nama lengkap harus diisi");
     return;
   }
 
   isUpdating.value = true;
   try {
-    const updateData = {
-      username: editingUser.value.username,
-      email: editingUser.value.email,
-      full_name: editingUser.value.full_name,
-    };
+    await toast.promise(
+      (async () => {
+        const updateData = {
+          username: editingUser.value.username,
+          email: editingUser.value.email,
+          full_name: editingUser.value.full_name,
+        };
 
-    await apiUpdateUser(editingUser.value.id, updateData);
+        await apiUpdateUser(editingUser.value.id!, updateData);
 
-    const currentRoles = users.value.find(u => u.id === editingUser.value.id)?.roles || [];
-    const toAdd = editingUserRoles.value.filter(r => !currentRoles.includes(r));
-    const toRemove = currentRoles.filter(r => !editingUserRoles.value.includes(r));
-    for (const role of toAdd) {
-      await manageUserRole({
-        user_id: editingUser.value.id!,
-        role,
-        action: "add",
-      });
-    }
-    for (const role of toRemove) {
-      await manageUserRole({
-        user_id: editingUser.value.id!,
-        role,
-        action: "remove",
-      });
-    }
-
-    toast({
-      title: "Berhasil",
-      description: `Pengguna ${editingUser.value.username} berhasil diupdate`,
-      variant: "success",
-    });
+        const currentRoles = users.value.find(u => u.id === editingUser.value.id)?.roles || [];
+        const toAdd = editingUserRoles.value.filter(r => !currentRoles.includes(r));
+        const toRemove = currentRoles.filter(r => !editingUserRoles.value.includes(r));
+        for (const role of toAdd) {
+          await manageUserRole({
+            user_id: editingUser.value.id!,
+            role,
+            action: "add",
+          });
+        }
+        for (const role of toRemove) {
+          await manageUserRole({
+            user_id: editingUser.value.id!,
+            role,
+            action: "remove",
+          });
+        }
+        return editingUser.value;
+      })(),
+      {
+        loading: "Mengupdate pengguna...",
+        success: (user: typeof editingUser.value) => `Pengguna ${user.username} berhasil diupdate`,
+        error: "Gagal mengupdate pengguna",
+      }
+    );
     isEditDialogOpen.value = false;
     await fetchUsers();
   } catch (error) {
     console.error('Error updating user:', error);
-    toast({
-      title: "Error",
-      description: "Gagal mengupdate pengguna",
-      variant: "destructive",
-    });
+    // toast handled by promise
   } finally {
     isUpdating.value = false;
   }
@@ -492,20 +465,18 @@ async function deleteUser(id: string) {
   }
 
   try {
-    await apiDeleteUser(id);
-    toast({
-      title: "Berhasil",
-      description: "Pengguna berhasil dihapus",
-      variant: "success",
-    });
+    await toast.promise(
+      apiDeleteUser(id),
+      {
+        loading: "Menghapus pengguna...",
+        success: "Pengguna berhasil dihapus",
+        error: "Gagal menghapus pengguna",
+      }
+    );
     await fetchUsers();
   } catch (error) {
     console.error('Error deleting user:', error);
-    toast({
-      title: "Error",
-      description: "Gagal menghapus pengguna",
-      variant: "destructive",
-    });
+    // toast handled by promise
   }
 }
 

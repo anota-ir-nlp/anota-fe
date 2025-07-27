@@ -278,11 +278,7 @@ const newDocument = ref<DocumentRequest>({
   text: "",
 });
 
-const editingDocument = ref<{
-  id?: number;
-  title: string;
-  text: string;
-}>({
+const editingDocument = ref<Partial<DocumentResponse>>({
   title: "",
   text: "",
 });
