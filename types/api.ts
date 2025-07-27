@@ -212,6 +212,14 @@ export interface ErrorTypeResponse {
   updated_at: string;
 }
 
+// Paginated response for error types (matches API docs)
+export interface ErrorTypesListResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: ErrorTypeResponse[];
+}
+
 export interface ReviewRequest {
   document: number;
   annotation: number;

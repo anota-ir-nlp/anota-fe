@@ -188,16 +188,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useDocumentsApi } from "~/data/documents";
 import { useAnnotationsApi } from "~/data/annotations";
 import { useErrorTypesApi } from "~/data/error-types";
 import type { DocumentResponse, SentenceResponse, AnnotationResponse, ErrorTypeResponse } from "~/types/api";
+import { toast } from "vue-sonner";
 
 const route = useRoute();
 const router = useRouter();
-const toast = useToast();
 
 const { getDocument } = useDocumentsApi();
 const { getAnnotations, createAnnotation } = useAnnotationsApi();
@@ -256,10 +256,8 @@ function editSentence(sentence: SentenceResponse) {
 
 async function saveAnnotation() {
   if (!selectedSentenceData.value || !selectedErrorType.value || !correctionInput.value.trim()) {
-    toast.add({
-      title: "Validasi Error",
+    toast.message("Validasi Error", {
       description: "Mohon lengkapi semua field yang diperlukan",
-      color: "error",
     });
     return;
   }
@@ -280,22 +278,14 @@ async function saveAnnotation() {
 
     await createAnnotation(annotationData);
     
-    toast.add({
-      title: "Berhasil",
-      description: "Anotasi berhasil disimpan",
-      color: "success",
-    });
+    toast.success("Anotasi berhasil disimpan");
 
     // Refresh annotations
     await fetchAnnotations();
     cancelAnnotation();
   } catch (error) {
     console.error('Error saving annotation:', error);
-    toast.add({
-      title: "Error",
-      description: "Gagal menyimpan anotasi",
-      color: "error",
-    });
+    toast.error("Gagal menyimpan anotasi");
   } finally {
     isSaving.value = false;
   }
@@ -325,6 +315,7 @@ async function fetchDocument() {
   } catch (error) {
     console.error('Error fetching document:', error);
     document.value = null;
+    toast.error("Gagal memuat dokumen");
   }
 }
 
@@ -338,6 +329,7 @@ async function fetchAnnotations() {
   } catch (error) {
     console.error('Error fetching annotations:', error);
     annotations.value = [];
+    toast.error("Gagal memuat anotasi");
   }
 }
 
@@ -347,6 +339,7 @@ async function fetchErrorTypes() {
   } catch (error) {
     console.error('Error fetching error types:', error);
     errorTypes.value = [];
+    toast.error("Gagal memuat tipe kesalahan");
   }
 }
 

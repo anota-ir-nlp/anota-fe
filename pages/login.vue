@@ -6,8 +6,8 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { useAuth } from "~/data/auth";
 import { navigateTo } from "#app";
+import { toast } from "vue-sonner";
 
-const toast = useToast();
 const { login } = useAuth();
 
 const username = ref("");
@@ -35,35 +35,23 @@ async function onSubmit() {
       if (err.path[0] === "username") usernameError.value = err.message;
       if (err.path[0] === "password") passwordError.value = err.message;
     });
-    toast.add({
-      title: "Validasi Gagal",
+    toast.message("Validasi Gagal", {
       description: "Periksa kembali input Anda.",
-      color: "error",
     });
     return;
   }
 
-  toast.add({
-    title: "Login",
-    description: "Mencoba masuk...",
-    color: "warning",
-  });
-
-  try {
-    await login(username.value, password.value);
-    toast.add({
-      title: "Berhasil Masuk",
-      description: `Selamat datang!`,
-      color: "success",
-    });
-    navigateTo("/beranda");
-  } catch (error) {
-    toast.add({
-      title: "Gagal Masuk",
-      description: "Username atau kata sandi salah.",
-      color: "error",
-    });
-  }
+  await toast.promise(
+    login(username.value, password.value),
+    {
+      loading: "Mencoba masuk...",
+      success: () => {
+        navigateTo("/beranda");
+        return "Berhasil Masuk. Selamat datang!";
+      },
+      error: () => "Gagal Masuk. Username atau kata sandi salah.",
+    }
+  );
 }
 
 const goBack = () => {

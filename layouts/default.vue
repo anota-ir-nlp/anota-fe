@@ -19,8 +19,8 @@ import {
   MenubarTrigger,
 } from "~/components/ui/menubar";
 import { Home, Users, FileText, AlertTriangle, Pencil, BarChart3, ClipboardList, Download, LogOut, Lightbulb, FileCheck } from "lucide-vue-next";
+import { toast } from "vue-sonner";
 
-const toast = useToast();
 const {
   user,
   isAuthenticated,
@@ -109,11 +109,7 @@ const handleLoginClick = () => {
 
 const handleLogout = async () => {
   await logout();
-  toast.add({
-    title: "Berhasil Keluar",
-    description: "Anda telah keluar dari akun.",
-    color: "success",
-  });
+  toast.success("Anda telah keluar dari akun.");
   navigateTo("/");
 };
 </script>

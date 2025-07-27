@@ -27,7 +27,7 @@
             </div>
             <div class="grid gap-2">
               <label for="text" class="text-sm font-medium text-left">Teks Dokumen</label>
-              <Textarea id="text" v-model="newDocument.text" placeholder="Masukkan teks dokumen..." 
+              <Textarea id="text" v-model="newDocument.text" placeholder="Masukkan teks dokumen..."
                 class="w-full min-h-32" />
             </div>
           </div>
@@ -61,20 +61,46 @@
             </DialogDescription>
           </DialogHeader>
           <div class="grid gap-4 py-4">
-            <input type="file" accept=".csv" @change="handleCsvFile" class="mb-2" />
-            <div v-if="csvPreview.length" class="bg-slate-800 rounded p-2 text-sm max-h-40 overflow-auto mb-2">
-              <div v-for="(row, idx) in csvPreview" :key="idx">
-                <span class="text-blue-300 font-semibold">{{ row.title }}</span>
-                <span class="text-gray-400">: {{ row.text }}</span>
+            <Input
+              type="file"
+              accept=".csv"
+              @change="handleCsvFile"
+              class="mb-2"
+            />
+            <div v-if="csvPreview.length" class="font-semibold">
+              Total {{ csvPreview.length }} dokumen
+            </div>
+            <div v-if="csvPreview.length" class="bg-slate-800 rounded p-2 text-sm mb-2">
+              <div class="w-full max-w-2xl mx-auto">
+                <Table class="w-full text-left border-collapse table-fixed">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead class="px-3 py-2 border-b border-slate-700 text-blue-300 font-semibold w-1/4">Judul</TableHead>
+                      <TableHead class="px-3 py-2 border-b border-slate-700 text-gray-400 font-semibold w-3/4">Teks</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow v-for="(row, idx) in csvPreview.slice(0, 5)" :key="idx">
+                      <TableCell
+                        class="px-3 py-2 border-b border-slate-700 align-top truncate whitespace-nowrap overflow-hidden"
+                        :title="row.title">{{ row.title }}</TableCell>
+                      <TableCell
+                        class="px-3 py-2 border-b border-slate-700 text-gray-400 align-top truncate whitespace-nowrap overflow-hidden"
+                        :title="row.text">{{ row.text }}</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
               </div>
             </div>
             <div v-if="csvError" class="text-red-400 text-sm">{{ csvError }}</div>
+            <Progress v-if="isBulkUploading" :model-value="bulkProgress" class="mt-2" />
           </div>
           <DialogFooter>
             <Button variant="outline" @click="resetBulkForm">
               Reset
             </Button>
-            <Button @click="bulkCreateDocuments" :disabled="isBulkUploading || !csvPreview.length" class="flex items-center gap-2">
+            <Button @click="bulkCreateDocuments" :disabled="isBulkUploading || !csvPreview.length"
+              class="flex items-center gap-2">
               <Upload v-if="!isBulkUploading" class="w-4 h-4" />
               <Loader2 v-else class="w-4 h-4 animate-spin" />
               {{ isBulkUploading ? 'Mengupload...' : 'Upload CSV' }}
@@ -100,7 +126,7 @@
           </div>
           <div class="grid gap-2">
             <label for="edit_text" class="text-sm font-medium text-left">Teks Dokumen</label>
-            <Textarea id="edit_text" v-model="editingDocument.text" placeholder="Masukkan teks dokumen..." 
+            <Textarea id="edit_text" v-model="editingDocument.text" placeholder="Masukkan teks dokumen..."
               class="w-full min-h-32" />
           </div>
         </div>
@@ -127,8 +153,7 @@
         <Table>
           <TableHeader>
             <TableRow class="bg-gray-800/60 hover:bg-gray-800/60">
-              <TableHead class="text-gray-300 font-medium text-left w-12">ID</TableHead>
-              <TableHead class="text-gray-300 font-medium text-left w-full max-w-xs truncate">Judul</TableHead>
+              <TableHead class="text-gray-300 font-medium text-left w-96 truncate">Judul</TableHead>
               <TableHead class="text-gray-300 font-medium text-left">Assigned To</TableHead>
               <TableHead class="text-gray-300 font-medium text-left">Tanggal Dibuat</TableHead>
               <TableHead class="text-gray-300 font-medium text-right"></TableHead>
@@ -136,8 +161,7 @@
           </TableHeader>
           <TableBody>
             <TableRow v-for="doc in documents" :key="doc.id" class="border-white/10 hover:bg-white/5">
-              <TableCell class="text-white text-left w-12">{{ doc.id }}</TableCell>
-              <TableCell class="font-semibold text-white text-left w-full max-w-xs truncate" style="max-width: 16rem;">
+              <TableCell class="font-semibold text-white text-left w-96 truncate">
                 <span class="block truncate">{{ doc.title }}</span>
               </TableCell>
               <TableCell class="text-left">
@@ -170,23 +194,15 @@
     </div>
     <!-- Pagination Controls: moved outside the card -->
     <div v-if="documents.length" class="mt-4 flex justify-center w-full max-w-6xl">
-      <Pagination
-        :page="currentPage"
-        :total="totalPages"
-        :items-per-page="documents.length > 0 ? documents.length : 1"
-        @update:page="fetchDocuments"
-      >
+      <Pagination :page="currentPage" :total="totalPages" :items-per-page="documents.length > 0 ? documents.length : 1"
+        @update:page="fetchDocuments">
         <PaginationContent>
           <PaginationPrevious :disabled="currentPage === 1" @click="fetchDocuments(currentPage - 1)">
             <ArrowLeft class="w-4 h-4" />
           </PaginationPrevious>
           <template v-for="(page, idx) in paginationPages" :key="idx">
-            <PaginationItem
-              v-if="typeof page === 'number'"
-              :value="page"
-              :is-active="page === currentPage"
-              @click="fetchDocuments(page)"
-            >{{ page }}</PaginationItem>
+            <PaginationItem v-if="typeof page === 'number'" :value="page" :is-active="page === currentPage"
+              @click="fetchDocuments(page)">{{ page }}</PaginationItem>
             <PaginationEllipsis v-else>
               <MoreHorizontal class="w-4 h-4" />
             </PaginationEllipsis>
@@ -199,7 +215,7 @@
     </div>
 
     <div v-if="!documents.length && !isLoading"
-      class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl shadow-lg p-6 text-center">
+      class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl shadow-lg p-6 w-full max-w-6xl text-center">
       <span class="text-gray-400">Tidak ada dokumen ditemukan.</span>
     </div>
 
@@ -240,12 +256,13 @@ import {
   PaginationEllipsis
 } from "~/components/ui/pagination";
 import Papa from "papaparse";
-import { 
-  Plus, Home, Upload, Loader2, Check, Pencil, Trash2, ArrowLeft, ArrowRight, MoreHorizontal 
+import {
+  Plus, Upload, Loader2, Check, Pencil, Trash2, ArrowLeft, ArrowRight, MoreHorizontal
 } from "lucide-vue-next";
+import { toast } from "vue-sonner";
+import { Progress } from "~/components/ui/progress";
 
 const { getDocuments, createDocument: apiCreateDocument, deleteDocument: apiDeleteDocument, updateDocument: apiUpdateDocument } = useDocumentsApi();
-const toast = useToast();
 
 const documents = ref<DocumentResponse[]>([]);
 const isLoading = ref(false);
@@ -272,6 +289,7 @@ const editingDocument = ref<{
 
 const csvPreview = ref<DocumentRequest[]>([]);
 const csvError = ref("");
+const bulkProgress = ref(0);
 
 const currentPage = ref(1);
 const totalPages = ref(1);
@@ -286,11 +304,7 @@ async function fetchDocuments(page = 1) {
     console.log(response)
   } catch (error) {
     console.error('Error fetching documents:', error);
-    toast.add({
-      title: "Error",
-      description: "Gagal memuat data dokumen",
-      color: "error",
-    });
+    toast.error("Gagal memuat data dokumen");
   } finally {
     isLoading.value = false;
   }
@@ -298,10 +312,8 @@ async function fetchDocuments(page = 1) {
 
 async function createDocument() {
   if (!newDocument.value.title || !newDocument.value.text) {
-    toast.add({
-      title: "Validasi Error",
+    toast.message("Validasi Error", {
       description: "Judul dan teks dokumen harus diisi",
-      color: "error",
     });
     return;
   }
@@ -309,21 +321,13 @@ async function createDocument() {
   isCreating.value = true;
   try {
     await apiCreateDocument(newDocument.value);
-    toast.add({
-      title: "Berhasil",
-      description: `Dokumen "${newDocument.value.title}" berhasil dibuat`,
-      color: "success",
-    });
+    toast.success(`Dokumen "${newDocument.value.title}" berhasil dibuat`);
     resetForm();
     isCreateDialogOpen.value = false;
     await fetchDocuments(currentPage.value);
   } catch (error) {
     console.error('Error creating document:', error);
-    toast.add({
-      title: "Error",
-      description: "Gagal membuat dokumen baru",
-      color: "error",
-    });
+    toast.error("Gagal membuat dokumen baru");
   } finally {
     isCreating.value = false;
   }
@@ -331,10 +335,8 @@ async function createDocument() {
 
 async function updateDocument() {
   if (!editingDocument.value.id || !editingDocument.value.title || !editingDocument.value.text) {
-    toast.add({
-      title: "Validasi Error",
+    toast.message("Validasi Error", {
       description: "Judul dan teks dokumen harus diisi",
-      color: "error",
     });
     return;
   }
@@ -347,20 +349,12 @@ async function updateDocument() {
     };
 
     await apiUpdateDocument(editingDocument.value.id, updateData);
-    toast.add({
-      title: "Berhasil",
-      description: `Dokumen "${editingDocument.value.title}" berhasil diupdate`,
-      color: "success",
-    });
+    toast.success(`Dokumen "${editingDocument.value.title}" berhasil diupdate`);
     isEditDialogOpen.value = false;
     await fetchDocuments(currentPage.value);
   } catch (error) {
     console.error('Error updating document:', error);
-    toast.add({
-      title: "Error",
-      description: "Gagal mengupdate dokumen",
-      color: "error",
-    });
+    toast.error("Gagal mengupdate dokumen");
   } finally {
     isUpdating.value = false;
   }
@@ -373,19 +367,11 @@ async function deleteDocument(id: number) {
 
   try {
     await apiDeleteDocument(id);
-    toast.add({
-      title: "Berhasil",
-      description: "Dokumen berhasil dihapus",
-      color: "success",
-    });
+    toast.success("Dokumen berhasil dihapus");
     await fetchDocuments(currentPage.value);
   } catch (error) {
     console.error('Error deleting document:', error);
-    toast.add({
-      title: "Error",
-      description: "Gagal menghapus dokumen",
-      color: "error",
-    });
+    toast.error("Gagal menghapus dokumen");
   }
 }
 
@@ -454,24 +440,26 @@ function resetBulkForm() {
 async function bulkCreateDocuments() {
   if (!csvPreview.value.length) return;
   isBulkUploading.value = true;
+  bulkProgress.value = 0;
   let successCount = 0;
   let failCount = 0;
-  for (const doc of csvPreview.value) {
+  const total = csvPreview.value.length;
+  for (const [idx, doc] of csvPreview.value.entries()) {
     try {
       await apiCreateDocument(doc);
       successCount++;
     } catch (error) {
       failCount++;
     }
+    bulkProgress.value = Math.round(((idx + 1) / total) * 100);
   }
-  toast.add({
-    title: "Bulk Upload Selesai",
+  toast.warning("Bulk Upload Selesai", {
     description: `Berhasil: ${successCount}, Gagal: ${failCount}`,
-    color: failCount ? "warning" : "success",
   });
   resetBulkForm();
   await fetchDocuments(currentPage.value);
   isBulkUploading.value = false;
+  bulkProgress.value = 0;
 }
 
 function formatDate(dateString: string) {

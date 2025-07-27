@@ -16,13 +16,14 @@ useHead({
     },
   ],
 });
+import { Toaster } from '@/components/ui/sonner';
+import 'vue-sonner/style.css';
 </script>
 <template>
+  <Toaster />
   <div>
-    <UApp>
       <NuxtLayout>
         <NuxtPage />
       </NuxtLayout>
-    </UApp>
   </div>
 </template>

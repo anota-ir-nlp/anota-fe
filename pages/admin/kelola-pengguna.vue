@@ -242,7 +242,7 @@
     </div>
 
     <div v-if="!users.length && !isLoading"
-      class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl shadow-lg p-6 text-center">
+      class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl shadow-lg p-6 text-center w-full max-w-6xl mx-auto">
       <span class="text-gray-400">Tidak ada pengguna ditemukan.</span>
     </div>
 
@@ -252,8 +252,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
 import { useUsersApi } from "~/data/users";
-import { navigateTo } from "#app";
-import type { UsersListResponse, UserRegistrationRequest } from "~/types/api";
+import type { UserRegistrationRequest } from "~/types/api";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
@@ -285,8 +284,9 @@ import {
 import { TagsInput, TagsInputItem, TagsInputInput, TagsInputItemDelete, TagsInputItemText } from "~/components/ui/tags-input";
 import { Combobox, ComboboxAnchor, ComboboxEmpty, ComboboxGroup, ComboboxInput, ComboboxItem, ComboboxList } from '@/components/ui/combobox'
 import { 
-  Plus, Home, Loader2, Check, Pencil, Trash2, ArrowLeft, ArrowRight, MoreHorizontal 
+  Plus, Loader2, Check, Pencil, Trash2, ArrowLeft, ArrowRight, MoreHorizontal 
 } from "lucide-vue-next";
+import { toast } from "vue-sonner";
 
 const {
   getUsers,
@@ -296,7 +296,6 @@ const {
   getAvailableRoles,
   manageUserRole,
 } = useUsersApi();
-const toast = useToast();
 
 const users = ref<Array<{
   id: string;
@@ -347,10 +346,10 @@ async function fetchAvailableRoles() {
     const res = await getAvailableRoles();
     availableRoles.value = res.roles;
   } catch (error) {
-    toast.add({
+    toast({
       title: "Error",
       description: "Gagal memuat daftar roles",
-      color: "error",
+      variant: "destructive",
     });
   }
 }
@@ -365,10 +364,10 @@ async function fetchUsers(page = 1) {
     totalPages.value = Math.max(1, Math.ceil(response.count / 20));
   } catch (error) {
     console.error('Error fetching users:', error);
-    toast.add({
+    toast({
       title: "Error",
       description: "Gagal memuat data pengguna",
-      color: "error",
+      variant: "destructive",
     });
   } finally {
     isLoading.value = false;
@@ -392,10 +391,10 @@ const paginationPages = computed(() => {
 
 async function createUser() {
   if (!newUser.value.username || !newUser.value.full_name) {
-    toast.add({
+    toast({
       title: "Validasi Error",
       description: "Username dan nama lengkap harus diisi",
-      color: "error",
+      variant: "destructive",
     });
     return;
   }
@@ -410,20 +409,20 @@ async function createUser() {
         action: "add",
       });
     }
-    toast.add({
+    toast({
       title: "Berhasil",
       description: `Pengguna ${result.data.username} berhasil dibuat. Password: ${result.data.password}`,
-      color: "success",
+      variant: "success",
     });
     resetForm();
     isCreateDialogOpen.value = false;
     await fetchUsers();
   } catch (error) {
     console.error('Error creating user:', error);
-    toast.add({
+    toast({
       title: "Error",
       description: "Gagal membuat pengguna baru",
-      color: "error",
+      variant: "destructive",
     });
   } finally {
     isCreating.value = false;
@@ -432,10 +431,10 @@ async function createUser() {
 
 async function updateUser() {
   if (!editingUser.value.id || !editingUser.value.username || !editingUser.value.full_name) {
-    toast.add({
+    toast({
       title: "Validasi Error",
       description: "Username dan nama lengkap harus diisi",
-      color: "error",
+      variant: "destructive",
     });
     return;
   }
@@ -468,19 +467,19 @@ async function updateUser() {
       });
     }
 
-    toast.add({
+    toast({
       title: "Berhasil",
       description: `Pengguna ${editingUser.value.username} berhasil diupdate`,
-      color: "success",
+      variant: "success",
     });
     isEditDialogOpen.value = false;
     await fetchUsers();
   } catch (error) {
     console.error('Error updating user:', error);
-    toast.add({
+    toast({
       title: "Error",
       description: "Gagal mengupdate pengguna",
-      color: "error",
+      variant: "destructive",
     });
   } finally {
     isUpdating.value = false;
@@ -494,18 +493,18 @@ async function deleteUser(id: string) {
 
   try {
     await apiDeleteUser(id);
-    toast.add({
+    toast({
       title: "Berhasil",
       description: "Pengguna berhasil dihapus",
-      color: "success",
+      variant: "success",
     });
     await fetchUsers();
   } catch (error) {
     console.error('Error deleting user:', error);
-    toast.add({
+    toast({
       title: "Error",
       description: "Gagal menghapus pengguna",
-      color: "error",
+      variant: "destructive",
     });
   }
 }
