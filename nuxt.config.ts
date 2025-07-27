@@ -15,7 +15,7 @@ export default defineNuxtConfig({
   ],
 
   icon: {
-    collections: ["mdi", "heroicons"],
+    collections: ["mdi", "heroicons", "lucide"],
   },
 
   i18n: {
@@ -24,24 +24,22 @@ export default defineNuxtConfig({
     vueI18n: "./i18n.config.ts",
   },
 
-  plugins: [
-    "~/plugins/vuetify.ts",
-  ],
+  plugins: ["~/plugins/vuetify.ts"],
 
   runtimeConfig: {
     AUTH_ORIGIN: process.env.AUTH_ORIGIN,
     AUTH_SECRET: process.env.AUTH_SECRET,
+    backendUrl: process.env.NUXT_BACKEND_URL || "http://127.0.0.1:8000/api/v1",
 
     public: {
-      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || "/api",
+      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || "/api/proxy",
     },
   },
 
-  css: ["vuetify/styles", "~/assets/css/main.css"],
+  css: ["~/assets/css/main.css"],
 
   vite: {
-    plugins: [
-      tailwindcss(),
-    ],
+    plugins: [tailwindcss()],
   },
 });
+

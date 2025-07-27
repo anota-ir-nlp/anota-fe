@@ -21,9 +21,7 @@ useHead({
   <div>
     <UApp>
       <NuxtLayout>
-        <!-- This tells Nuxt to use your layout system -->
         <NuxtPage />
-        <!-- This renders the current page content inside the layout -->
       </NuxtLayout>
     </UApp>
   </div>
