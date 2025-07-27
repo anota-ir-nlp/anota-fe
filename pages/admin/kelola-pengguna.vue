@@ -211,7 +211,7 @@
               <TableCell class="text-white text-left">{{ user.username }}</TableCell>
               <TableCell class="text-white text-left">{{ user.email }}</TableCell>
               <TableCell class="text-left">
-                <div class="flex flex-wrap gap-1">
+                <div class="flex flex-wrap gap-1 uppercase">
                   <Badge v-for="role in user.roles" :key="role" variant="blue">
                     {{ role }}
                   </Badge>
