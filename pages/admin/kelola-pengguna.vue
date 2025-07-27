@@ -49,7 +49,7 @@
                 <ComboboxAnchor as-child>
                   <TagsInput v-model="newUserRoles" class="px-2 w-full">
                     <div class="flex flex-col">
-                      <div v-if="newUserRoles.length" class="flex gap-2 flex-wrap items-center p-1">
+                      <div v-if="newUserRoles.length" class="flex gap-2 flex-wrap items-center p-1 uppercase">
                         <TagsInputItem v-for="item in newUserRoles" :key="item" :value="item">
                           <TagsInputItemText  class="text-xs"/>
                           <TagsInputItemDelete @click="newUserRoles.splice(newUserRoles.indexOf(item), 1)" />
@@ -133,7 +133,7 @@
               <ComboboxAnchor as-child>
                 <TagsInput v-model="editingUserRoles" class="px-2 w-full">
                   <div class="flex flex-col">
-                    <div v-if="editingUserRoles.length" class="flex gap-2 flex-wrap items-center p-1">
+                    <div v-if="editingUserRoles.length" class="flex gap-2 flex-wrap items-center p-1 uppercase">
                       <TagsInputItem v-for="item in editingUserRoles" :key="item" :value="item">
                         <TagsInputItemText class="text-xs"/>
                         <TagsInputItemDelete @click="editingUserRoles.splice(editingUserRoles.indexOf(item), 1)" />
