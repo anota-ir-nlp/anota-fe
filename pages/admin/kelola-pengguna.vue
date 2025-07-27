@@ -506,17 +506,6 @@ function formatDate(dateString: string) {
   return new Date(dateString).toLocaleDateString('id-ID');
 }
 
-function addRoleToNewUser(role: string) {
-  if (!newUserRoles.value.includes(role)) {
-    newUserRoles.value.push(role);
-  }
-}
-function addRoleToEditingUser(role: string) {
-  if (!editingUserRoles.value.includes(role)) {
-    editingUserRoles.value.push(role);
-  }
-}
-
 onMounted(async () => {
   await fetchAvailableRoles();
   await fetchUsers();
