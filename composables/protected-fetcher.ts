@@ -22,7 +22,6 @@ export const useProtectedFetcher = () => {
             description: "Silakan login kembali",
             color: "error",
           });
-          await navigateTo("/login");
           return;
         }
       }

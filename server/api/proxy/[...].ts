@@ -1,14 +1,20 @@
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
-  const { method, url } = event.node.req
+  const { method } = event.node.req
 
   // Extract the path after /api/proxy/
   const proxyPath = Array.isArray(event.context.params?._)
     ? event.context.params._.join('/')
     : event.context.params?._ || ''
 
-  // Build the target URL
-  const targetUrl = `${config.backendUrl}/${proxyPath}/`
+  // Get query parameters
+  const query = getQuery(event)
+  const queryString = Object.keys(query).length
+    ? '?' + new URLSearchParams(query as Record<string, string>).toString()
+    : ''
+
+  // Build the target URL including query string
+  const targetUrl = `${config.backendUrl}/${proxyPath}/${queryString}`
 
   try {
     // Get the request body if it exists

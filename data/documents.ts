@@ -11,17 +11,17 @@ export function useDocumentsApi() {
 
   const getDocuments = (page?: number) => {
     const params = page ? `?page=${page}` : '';
-    return fetcher<{ count: number; next: string | null; previous: string | null; results: DocumentResponse[] }>(`${BASE}${params}`);
+    return fetcher<{ count: number; next: string | null; previous: string | null; results: DocumentResponse[] }>(`${BASE}/${params}`);
   };
-  
+
   const getDocument = (id: number) => fetcher<DocumentResponse>(`${BASE}/${id}/`);
-  
+
   const createDocument = (data: DocumentRequest) =>
     fetcher<DocumentResponse>(BASE, { method: "POST", body: data });
-  
+
   const updateDocument = (id: number, data: Partial<DocumentRequest>) =>
     fetcher<DocumentResponse>(`${BASE}/${id}/`, { method: "PATCH", body: data });
-  
+
   const deleteDocument = (id: number) =>
     fetcher(`${BASE}/${id}/`, { method: "DELETE" });
 

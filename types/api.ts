@@ -29,7 +29,12 @@ export interface UserResponse {
   date_joined: string;
 }
 
-export interface UsersListResponse extends UserResponse {}
+export interface UsersListResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: UserResponse[];
+}
 
 export interface UserDetailResponse extends UserResponse {
   created_at: string;
