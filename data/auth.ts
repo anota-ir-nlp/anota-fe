@@ -116,14 +116,6 @@ export function useAuth() {
   }
 
   async function logout() {
-    try {
-      await $fetch(`${runtimeConfig.public.apiBaseUrl}/logout/`, {
-        method: "POST",
-        credentials: 'include',
-      });
-    } catch {
-      // Ignore logout errors
-    }
     setTokens(null, null);
     user.value = null;
   }

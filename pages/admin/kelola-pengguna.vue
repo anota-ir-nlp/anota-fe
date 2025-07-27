@@ -258,7 +258,7 @@ async function createUser() {
     const result = await apiCreateUser(newUser.value);
     toast.add({
       title: "Berhasil",
-      description: `Pengguna ${result.data.username} berhasil dibuat. Password: ${result.data.password}`,
+      description: `Pengguna ${result.data.username} berhasil dibuat`,
       color: "success",
     });
     resetForm();
