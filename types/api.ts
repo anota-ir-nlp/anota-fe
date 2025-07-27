@@ -278,3 +278,6 @@ export interface UserUpdateRequest {
 export interface AvailableRolesResponse {
   roles: string[];
 }
+
+// Add a type for the available roles based on API docs
+export type AvailableRole = 'Admin' | 'Annotator' | 'Reviewer' | 'Kepala Riset';

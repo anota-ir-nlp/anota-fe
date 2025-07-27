@@ -1,22 +1,22 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-blue-950 text-white font-inter relative overflow-hidden">
     <!-- Subtle background circles for modern feel -->
-    <div class="absolute top-0 left-0 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-2xl opacity-20 animate-blob"></div>
-    <div class="absolute top-0 right-0 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-2xl opacity-20 animate-blob animation-delay-2000"></div>
-    <div class="absolute bottom-0 left-1/4 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-2xl opacity-20 animate-blob animation-delay-4000"></div>
+    <div class="absolute top-0 left-0 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply blur-2xl opacity-20 animate-pulse"></div>
+    <div class="absolute top-0 right-0 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply blur-2xl opacity-20 animate-pulse"></div>
+    <div class="absolute bottom-0 left-1/4 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply blur-2xl opacity-20 animate-pulse"></div>
 
     <!-- Main content container -->
     <div class="mx-auto p-4 py-8 lg:p-12 relative z-10 max-w-7xl">
       <!-- Login Section -->
       <section class="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] text-center relative overflow-hidden animate-fade-in">
         <!-- Giant background text for techy vibe -->
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[15rem] md:text-[8rem] font-black text-white/3 opacity-5 pointer-events-none select-none whitespace-nowrap animate-moveText z-0">
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[15rem] md:text-[8rem] font-black text-white/3 opacity-5 pointer-events-none select-none whitespace-nowrap z-0">
           ANOTA
         </div>
 
-        <Card variant="glassmorphism" class="p-8 md:p-12 max-w-4xl w-full relative z-10">
+        <Card variant="glassmorphism" class="p-8 md:p-12 max-w-4xl w-full relative z-10 bg-white/10 backdrop-blur-[14px] border border-white/18 rounded-3xl shadow-[0_8px_24px_rgba(0,0,0,0.18),0_1.5px_8px_rgba(0,0,0,0.1)] transition-all duration-300 ease-out hover:bg-white/16 hover:border-white/28 hover:shadow-[0_12px_32px_rgba(0,0,0,0.22),0_2px_12px_rgba(0,0,0,0.13)]">
           <h1 class="text-4xl md:text-6xl font-extrabold mb-4 text-white leading-tight drop-shadow-lg flex items-center justify-center gap-4">
-            <UIcon name="i-heroicons-light-bulb" class="w-12 h-12 text-blue-400" />
+            <Lightbulb class="w-12 h-12 text-blue-400" />
             ANOTA
           </h1>
           <p class="text-2xl md:text-3xl font-semibold mb-8 text-purple-400 drop-shadow-sm">
@@ -32,40 +32,43 @@
             size="xl"
             @click="handleLogin"
           >
-            <UIcon name="i-heroicons-arrow-right-on-rectangle" class="w-5 h-5" />
+            <ArrowRightFromLine class="w-5 h-5" />
             Masuk ke ANOTA
           </Button>
         </Card>
       </section>
 
       <!-- Informasi Utama -->
-      <section class="py-16 animate-fade-in-up">
+      <section class="py-16 animate-fade-in-delayed">
         <h2 class="text-3xl md:text-5xl font-bold text-center mb-12 text-white drop-shadow-md leading-none">
           Informasi Penting
         </h2>
 
         <!-- GEC Examples Card (Zig-zag 1) -->
         <div class="flex flex-col lg:flex-row items-center gap-16 mb-24">
-          <Card variant="glassmorphism" class="p-6 md:p-8 w-full">
+          <Card variant="glassmorphism" class="p-6 md:p-8 w-full bg-white/10 backdrop-blur-[14px] border border-white/18 rounded-3xl shadow-[0_8px_24px_rgba(0,0,0,0.18),0_1.5px_8px_rgba(0,0,0,0.1)] transition-all duration-300 ease-out hover:bg-white/16 hover:border-white/28 hover:shadow-[0_12px_32px_rgba(0,0,0,0.22),0_2px_12px_rgba(0,0,0,0.13)]">
             <h3 class="text-2xl md:text-4xl font-semibold mb-8 text-white">
               Contoh Tipe Kesalahan GEC
             </h3>
             <div class="mb-6">
-              <USelectMenu
-                v-model="selectedGecType"
-                :options="gecErrorTypes"
-                placeholder="Pilih Tipe Kesalahan"
-                class="w-full z-50"
-                value-attribute="value"
-                option-attribute="label"
-                color="neutral"
-                variant="outline"
-                size="lg"
-              />
+              <Select v-model="selectedGecType">
+                <SelectTrigger class="w-full text-white bg-white/10 border-white/20 hover:bg-white/20" size="default">
+                  <SelectValue placeholder="Pilih Tipe Kesalahan" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem 
+                    v-for="option in gecErrorTypes" 
+                    :key="option.value" 
+                    :value="option"
+                  >
+                    {{ option.label }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            <transition name="fade">
-              <Card v-if="currentGecExample" variant="glassmorphism" class="p-6 mb-6">
+            <transition name="fade" enter-active-class="transition-opacity duration-300" leave-active-class="transition-opacity duration-300" enter-from-class="opacity-0" leave-to-class="opacity-0">
+              <Card v-if="currentGecExample" variant="glassmorphism" class="p-6 mb-6 bg-white/10 backdrop-blur-[14px] border border-white/18 rounded-3xl shadow-[0_8px_24px_rgba(0,0,0,0.18),0_1.5px_8px_rgba(0,0,0,0.1)] transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] hover:bg-white/16 hover:border-white/28 hover:shadow-[0_12px_32px_rgba(0,0,0,0.22),0_2px_12px_rgba(0,0,0,0.13)]">
                 <p class="text-base text-gray-300 mb-3">
                   Tipe: <span class="font-bold text-white">{{ currentGecExample.type }}</span>
                 </p>
@@ -87,50 +90,50 @@
                 :disabled="currentGecExampleIndex === 0"
                 @click="prevGecExample"
               >
-                <UIcon name="i-heroicons-arrow-left" class="w-4 h-4" />
+                <ArrowLeft class="w-4 h-4" />
                 Sebelumnya
               </Button>
               <Button
                 variant="outline"
-                :disabled="currentGecExampleIndex >= (gecExamples[selectedGecType.value.value as keyof typeof gecExamples]?.length || 0) - 1"
+                :disabled="currentGecExampleIndex >= (gecExamples[selectedGecType.value as keyof typeof gecExamples]?.length || 0) - 1"
                 @click="nextGecExample"
               >
                 Berikutnya
-                <UIcon name="i-heroicons-arrow-right" class="w-4 h-4" />
+                <ArrowRight class="w-4 h-4" />
               </Button>
             </div>
           </Card>
           <div class="lg:w-1/2 w-full flex justify-center items-center">
-            <UIcon name="i-heroicons-document-text" class="w-48 h-48 text-blue-400 opacity-70 drop-shadow-2xl" />
+            <FileText class="w-48 h-48 text-blue-400 opacity-70 drop-shadow-2xl" />
           </div>
         </div>
 
         <!-- Alur Penggunaan Card (Zig-zag 2) -->
         <div class="flex flex-col lg:flex-row-reverse items-center gap-16 mb-24">
-          <Card variant="glassmorphism" class="p-6 md:p-8 w-full">
+          <Card variant="glassmorphism" class="p-6 md:p-8 w-full bg-white/10 backdrop-blur-[14px] border border-white/18 rounded-3xl shadow-[0_8px_24px_rgba(0,0,0,0.18),0_1.5px_8px_rgba(0,0,0,0.1)] transition-all duration-300 ease-out hover:bg-white/16 hover:border-white/28 hover:shadow-[0_12px_32px_rgba(0,0,0,0.22),0_2px_12px_rgba(0,0,0,0.13)]">
             <h3 class="text-2xl md:text-4xl font-semibold mb-8 text-white">
               Alur Penggunaan Aplikasi
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-center">
-              <Card v-for="role in appRoles" :key="role.name" variant="glassmorphism" class="flex flex-col items-center p-6 hover:scale-105 transition-transform duration-300">
-                <UIcon :name="role.icon" class="w-16 h-16 mb-4" :class="role.color" />
+              <Card v-for="role in appRoles" :key="role.name" variant="glassmorphism" class="flex flex-col items-center p-6 hover:scale-105 transition-transform duration-300 bg-white/10 backdrop-blur-[14px] border border-white/18 rounded-3xl shadow-[0_8px_24px_rgba(0,0,0,0.18),0_1.5px_8px_rgba(0,0,0,0.1)] hover:bg-white/16 hover:border-white/28 hover:shadow-[0_12px_32px_rgba(0,0,0,0.22),0_2px_12px_rgba(0,0,0,0.13)]">
+                <component :is="role.iconComponent" class="w-16 h-16 mb-4" :class="role.color" />
                 <p class="font-bold text-white text-xl mb-1">{{ role.name }}</p>
                 <p class="text-gray-200 text-base leading-relaxed">{{ role.description }}</p>
               </Card>
             </div>
           </Card>
           <div class="lg:w-1/2 w-full flex justify-center items-center">
-            <UIcon name="i-heroicons-arrows-right-left" class="w-48 h-48 text-purple-400 opacity-70 drop-shadow-2xl" />
+            <ArrowLeftRight class="w-48 h-48 text-purple-400 opacity-70 drop-shadow-2xl" />
           </div>
         </div>
       </section>
 
       <!-- FAQ Section (Centered Accordion) -->
-      <section class="py-16 animate-fade-in-up">
+      <section class="py-16 animate-fade-in-delayed">
         <h2 class="text-3xl md:text-5xl font-bold text-center mb-12 text-white drop-shadow-md leading-none">
           Pertanyaan Umum (FAQ)
         </h2>
-        <Card variant="glassmorphism" class="max-w-4xl mx-auto p-6 md:p-8">
+        <Card variant="glassmorphism" class="max-w-4xl mx-auto p-6 md:p-8 bg-white/10 backdrop-blur-[14px] border border-white/18 rounded-3xl shadow-[0_8px_24px_rgba(0,0,0,0.18),0_1.5px_8px_rgba(0,0,0,0.1)] transition-all duration-300 ease-out hover:bg-white/16 hover:border-white/28 hover:shadow-[0_12px_32px_rgba(0,0,0,0.22),0_2px_12px_rgba(0,0,0,0.13)]">
           <Accordion type="single" collapsible class="w-full">
             <AccordionItem v-for="(item, index) in faqItems" :key="index" :value="`item-${index}`">
               <AccordionTrigger class="text-white hover:text-gray-200">
@@ -149,7 +152,19 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
-import { navigateTo } from "#app"; // Import navigateTo for programmatic navigation
+import { navigateTo } from "#app";
+import { 
+  Lightbulb, 
+  ArrowRightFromLine, 
+  ArrowLeft, 
+  ArrowRight, 
+  FileText, 
+  ArrowLeftRight,
+  Users,
+  PenTool,
+  FileCheck,
+  BarChart3
+} from "lucide-vue-next";
 
 const handleLogin = () => {
   navigateTo("/login");
@@ -526,25 +541,25 @@ const faqItems = [
 const appRoles = [
   {
     name: "Admin",
-    icon: "i-heroicons-user-group",
+    iconComponent: Users,
     color: "text-blue-400",
     description: "Mengelola pengguna, menetapkan dokumen untuk anotasi dan review.",
   },
   {
     name: "Annotator",
-    icon: "i-heroicons-pencil-square",
+    iconComponent: PenTool,
     color: "text-green-400",
     description: "Menganotasi dokumen teks untuk mengidentifikasi dan mengoreksi kesalahan GEC.",
   },
   {
     name: "Reviewer",
-    icon: "i-heroicons-document-check",
+    iconComponent: FileCheck,
     color: "text-purple-400",
     description: "Meninjau anotasi yang telah dibuat, memastikan kualitas dan konsistensi.",
   },
   {
     name: "Kepala Riset",
-    icon: "i-heroicons-chart-bar",
+    iconComponent: BarChart3,
     color: "text-pink-400",
     description: "Memantau progres, melihat rekap kinerja, dan menghasilkan dataset GEC dalam format paralel atau M2.",
   },
@@ -570,50 +585,6 @@ useHead({
 </script>
 
 <style scoped>
-/* Glassmorphism card effect */
-.glassmorphism-card {
-  background-color: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1.5px solid rgba(255, 255, 255, 0.18);
-  border-radius: 1.5rem;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18), 0 1.5px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.glassmorphism-card:hover {
-  background-color: rgba(255, 255, 255, 0.16);
-  border-color: rgba(255, 255, 255, 0.28);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22), 0 2px 12px rgba(0, 0, 0, 0.13);
-}
-
-/* Background blob animations */
-@keyframes blob {
-  0% {
-    transform: translate(0px, 0px) scale(1);
-  }
-  33% {
-    transform: translate(30px, -50px) scale(1.1);
-  }
-  66% {
-    transform: translate(-20px, 20px) scale(0.9);
-  }
-  100% {
-    transform: translate(0px, 0px) scale(1);
-  }
-}
-
-.animate-blob {
-  animation: blob 7s infinite cubic-bezier(0.68, -0.55, 0.27, 1.55);
-}
-
-.animation-delay-2000 {
-  animation-delay: 2s;
-}
-.animation-delay-4000 {
-  animation-delay: 4s;
-}
-
-/* Fade-in animations for sections */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -629,33 +600,8 @@ useHead({
   animation: fadeIn 1s ease-out forwards;
 }
 
-.animate-fade-in-up {
-  animation: fadeIn 1s ease-out forwards;
-  animation-delay: 0.5s;
-  opacity: 0;
-}
-
-/* Specific animation for the giant ANOTA text */
-@keyframes moveText {
-  0% {
-    transform: translate(-55%, -50%);
-  }
-  100% {
-    transform: translate(-45%, -50%);
-  }
-}
-
-.animate-moveText {
-  animation: moveText 20s linear infinite alternate;
-}
-
-/* Fade transition for GEC example */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s;
-}
-.fade-enter-from,
-.fade-leave-to {
+.animate-fade-in-delayed {
+  animation: fadeIn 1s ease-out 0.3s forwards;
   opacity: 0;
 }
 </style>

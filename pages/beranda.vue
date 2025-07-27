@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 text-white">
     <!-- Welcome Section -->
-    <section class="w-full max-w-7xl mx-auto px-4 pb-8 pt-20">
+    <section class="w-full max-w-7xl mx-auto px-4 pb-20 pt-20">
       <Card variant="glassmorphism" class="p-8">
         <div class="flex flex-col md:flex-row items-center gap-8">
           <Avatar class="w-24 h-24 ring-4 ring-blue-500/30 shadow-xl">
@@ -41,9 +41,20 @@
     </section>
 
     <!-- Role-specific Content -->
-    <section class="w-full max-w-7xl mx-auto px-4 pb-12 flex-col space-y-8">
+    <section class="w-full max-w-7xl mx-auto px-4 pb-12 flex-col space-y-20">
       <!-- Admin Dashboard -->
       <div v-if="hasRole('Admin')" class="space-y-8">
+        <!-- Admin Role Header -->
+        <div class="flex items-center gap-4 mb-8">
+          <div class="p-3 rounded-lg bg-blue-500/20 border border-blue-500/30">
+            <Users class="w-8 h-8 text-blue-400" />
+          </div>
+          <div>
+            <h2 class="text-3xl font-bold text-white">Dashboard Admin</h2>
+            <p class="text-slate-400 text-lg">Kelola sistem dan pengguna</p>
+          </div>
+        </div>
+
         <!-- Stats Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
           <Card v-if="pending" v-for="i in 4" :key="i" variant="glassmorphism" class="p-6 animate-pulse">
@@ -91,7 +102,18 @@
       </div>
 
       <!-- Annotator Dashboard -->
-      <div v-if="hasRole('Annotators')" class="space-y-8">
+      <div v-if="hasRole('Annotator')" class="space-y-8">
+        <!-- Annotator Role Header -->
+        <div class="flex items-center gap-4 mb-8">
+          <div class="p-3 rounded-lg bg-green-500/20 border border-green-500/30">
+            <Pencil class="w-8 h-8 text-green-400" />
+          </div>
+          <div>
+            <h2 class="text-3xl font-bold text-white">Dashboard Anotator</h2>
+            <p class="text-slate-400 text-lg">Kelola tugas anotasi Anda</p>
+          </div>
+        </div>
+
         <!-- Progress Overview -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card variant="glassmorphism" class="p-6 hover:scale-105 transition-all duration-300">
@@ -153,7 +175,18 @@
       </div>
 
       <!-- Reviewer Dashboard -->
-      <div v-if="hasRole('Reviewers')" class="space-y-8">
+      <div v-if="hasRole('Reviewer')" class="space-y-8">
+        <!-- Reviewer Role Header -->
+        <div class="flex items-center gap-4 mb-8">
+          <div class="p-3 rounded-lg bg-purple-500/20 border border-purple-500/30">
+            <Eye class="w-8 h-8 text-purple-400" />
+          </div>
+          <div>
+            <h2 class="text-3xl font-bold text-white">Dashboard Peninjau</h2>
+            <p class="text-slate-400 text-lg">Tinjau dan validasi anotasi</p>
+          </div>
+        </div>
+
         <!-- Review Stats -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card variant="glassmorphism" class="p-6 hover:scale-105 transition-all duration-300">
@@ -214,6 +247,17 @@
 
       <!-- Kepala Riset Dashboard -->
       <div v-if="hasRole('Kepala Riset')" class="space-y-8">
+        <!-- Research Head Role Header -->
+        <div class="flex items-center gap-4 mb-8">
+          <div class="p-3 rounded-lg bg-orange-500/20 border border-orange-500/30">
+            <BarChart3 class="w-8 h-8 text-orange-400" />
+          </div>
+          <div>
+            <h2 class="text-3xl font-bold text-white">Dashboard Kepala Riset</h2>
+            <p class="text-slate-400 text-lg">Pantau progress dan generate dataset</p>
+          </div>
+        </div>
+
         <!-- Overview Stats -->
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
           <Card v-for="stat in researchStats" :key="stat.label" variant="glassmorphism"
@@ -330,6 +374,9 @@ import { Avatar, AvatarImage, AvatarFallback } from "~/components/ui/avatar";
 import { useAuth } from "~/data/auth";
 
 const { user } = useAuth();
+
+// Loading state
+const pending = ref(false);
 
 // Helper function to get icon component
 const getIcon = (iconName: string) => {
@@ -448,13 +495,32 @@ const researchStats = ref([
 ]);
 
 // Recent tasks for annotator
-const recentTasks = ref([]);
+interface Task {
+  id: string;
+  title: string;
+  sentences: number;
+  status: string;
+}
+
+const recentTasks = ref<Task[]>([]);
 
 // Review queue for reviewer
-const reviewQueue = ref([]);
+const reviewQueue = ref<Array<{
+  id: string;
+  title: string;
+  annotator: string;
+  priority: string;
+}>>([]);
 
 // Recent activities (common for all roles)
-const recentActivities = ref([]);
+const recentActivities = ref<Array<{
+  id: string;
+  title: string;
+  description: string;
+  time: string;
+  icon: string;
+  color: string;
+}>>([]);
 
 // Helper functions
 const getTaskStatusColor = (status: string) => {

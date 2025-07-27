@@ -29,9 +29,9 @@
     }
   ],
   "paths": {
-    "/annotation/annotations/": {
+    "/annotations/": {
       "get": {
-        "operationId": "annotation_annotations_list",
+        "operationId": "annotations_list",
         "summary": "List User's Annotations",
         "description": "\nMendapatkan daftar semua annotations yang dibuat oleh user yang sedang login.\n\n**Features:**\n- Hanya menampilkan annotations milik user sendiri\n- Hanya annotator yang dapat mengakses endpoint ini\n- Menampilkan informasi lengkap annotation\n",
         "parameters": [
@@ -73,7 +73,7 @@
         ]
       },
       "post": {
-        "operationId": "annotation_annotations_create",
+        "operationId": "annotations_create",
         "summary": "Create Annotation",
         "description": "\nMembuat annotation baru pada sentence dalam dokumen.\n\n**Annotation Process:**\n- Pilih sentence yang akan dianotasi\n- Tentukan start_index dan end_index untuk highlight text\n- Pilih error_type yang sesuai\n- Berikan correction dan comments jika perlu\n",
         "parameters": [
@@ -149,127 +149,9 @@
       },
       "parameters": []
     },
-    "/annotation/annotations/{id}/": {
+    "/annotations/error-types/": {
       "get": {
-        "operationId": "annotation_annotations_read",
-        "summary": "Get Annotation Detail",
-        "description": "Mendapatkan detail annotation berdasarkan ID. Hanya pemilik annotation yang dapat mengakses.",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "schema": {
-              "$ref": "#/definitions/Annotation"
-            }
-          },
-          "403": {
-            "description": "Hanya pemilik annotation yang dapat mengakses"
-          },
-          "404": {
-            "description": "Annotation tidak ditemukan"
-          }
-        },
-        "tags": [
-          "📝 Annotations"
-        ]
-      },
-      "put": {
-        "operationId": "annotation_annotations_update",
-        "summary": "Update Annotation",
-        "description": "Update annotation yang sudah ada. Hanya pemilik annotation yang dapat mengupdate.",
-        "parameters": [
-          {
-            "name": "data",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/Annotation"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Annotation berhasil diupdate"
-          },
-          "400": {
-            "description": "Invalid input data"
-          },
-          "403": {
-            "description": "Hanya pemilik annotation yang dapat mengupdate"
-          },
-          "404": {
-            "description": "Annotation tidak ditemukan"
-          }
-        },
-        "tags": [
-          "📝 Annotations"
-        ]
-      },
-      "patch": {
-        "operationId": "annotation_annotations_partial_update",
-        "summary": "Partial Update Annotation",
-        "description": "Partial update annotation yang sudah ada. Hanya pemilik annotation yang dapat mengupdate.",
-        "parameters": [
-          {
-            "name": "data",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/Annotation"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Annotation berhasil diupdate"
-          },
-          "400": {
-            "description": "Invalid input data"
-          },
-          "403": {
-            "description": "Hanya pemilik annotation yang dapat mengupdate"
-          },
-          "404": {
-            "description": "Annotation tidak ditemukan"
-          }
-        },
-        "tags": [
-          "📝 Annotations"
-        ]
-      },
-      "delete": {
-        "operationId": "annotation_annotations_delete",
-        "summary": "Delete Annotation",
-        "description": "Menghapus annotation. Hanya pemilik annotation yang dapat menghapus.",
-        "parameters": [],
-        "responses": {
-          "204": {
-            "description": "Annotation berhasil dihapus"
-          },
-          "403": {
-            "description": "Hanya pemilik annotation yang dapat menghapus"
-          },
-          "404": {
-            "description": "Annotation tidak ditemukan"
-          }
-        },
-        "tags": [
-          "📝 Annotations"
-        ]
-      },
-      "parameters": [
-        {
-          "name": "id",
-          "in": "path",
-          "description": "A unique integer value identifying this annotation.",
-          "required": true,
-          "type": "integer"
-        }
-      ]
-    },
-    "/annotation/error-types/": {
-      "get": {
-        "operationId": "annotation_error-types_list",
+        "operationId": "annotations_error-types_list",
         "summary": "List Error Types",
         "description": "\nMendapatkan daftar semua jenis kesalahan yang dapat digunakan untuk anotasi.\n\n**Error Types** digunakan untuk mengkategorikan kesalahan yang ditemukan dalam teks.\n",
         "parameters": [
@@ -302,7 +184,7 @@
         ]
       },
       "post": {
-        "operationId": "annotation_error-types_create",
+        "operationId": "annotations_error-types_create",
         "summary": "Create Error Type",
         "description": "\nMembuat jenis kesalahan baru yang dapat digunakan untuk anotasi.\n\n**Error Code** harus unik dan biasanya menggunakan format UPPERCASE_WITH_UNDERSCORE.\n",
         "parameters": [
@@ -343,9 +225,9 @@
       },
       "parameters": []
     },
-    "/annotation/error-types/{id}/": {
+    "/annotations/error-types/{id}/": {
       "get": {
-        "operationId": "annotation_error-types_read",
+        "operationId": "annotations_error-types_read",
         "summary": "Get Error Type Detail",
         "description": "Mendapatkan detail error type berdasarkan ID",
         "parameters": [],
@@ -365,7 +247,7 @@
         ]
       },
       "put": {
-        "operationId": "annotation_error-types_update",
+        "operationId": "annotations_error-types_update",
         "summary": "Update Error Type",
         "description": "Update error type yang sudah ada",
         "parameters": [
@@ -394,7 +276,7 @@
         ]
       },
       "patch": {
-        "operationId": "annotation_error-types_partial_update",
+        "operationId": "annotations_error-types_partial_update",
         "summary": "Partial Update Error Type",
         "description": "Partial update error type yang sudah ada",
         "parameters": [
@@ -423,7 +305,7 @@
         ]
       },
       "delete": {
-        "operationId": "annotation_error-types_delete",
+        "operationId": "annotations_error-types_delete",
         "summary": "Delete Error Type",
         "description": "\nMenghapus error type dari sistem.\n\n**Warning:** Menghapus error type akan mempengaruhi annotations yang menggunakan error type ini.\n",
         "parameters": [],
@@ -449,9 +331,9 @@
         }
       ]
     },
-    "/annotation/reviews/": {
+    "/annotations/reviews/": {
       "get": {
-        "operationId": "annotation_reviews_list",
+        "operationId": "annotations_reviews_list",
         "summary": "List User's Reviews",
         "description": "\nMendapatkan daftar semua reviews yang dibuat oleh user yang sedang login.\n\n**Features:**\n- Hanya menampilkan reviews milik user sendiri\n- Hanya reviewer yang dapat mengakses endpoint ini\n- Menampilkan informasi lengkap review\n",
         "parameters": [
@@ -494,7 +376,7 @@
         ]
       },
       "post": {
-        "operationId": "annotation_reviews_create",
+        "operationId": "annotations_reviews_create",
         "summary": "Create Review",
         "description": "\nMembuat review baru untuk annotation yang sudah ada.\n\n**Review Process:**\n- Pilih annotation yang akan direview\n- Evaluasi correction yang diberikan annotator\n- Berikan review dan correction jika perlu\n- Tambahkan comments untuk feedback\n",
         "parameters": [
@@ -575,9 +457,9 @@
       },
       "parameters": []
     },
-    "/annotation/reviews/{id}/": {
+    "/annotations/reviews/{id}/": {
       "get": {
-        "operationId": "annotation_reviews_read",
+        "operationId": "annotations_reviews_read",
         "summary": "Get Review Detail",
         "description": "Mendapatkan detail review berdasarkan ID. Hanya pemilik review yang dapat mengakses.",
         "parameters": [],
@@ -600,7 +482,7 @@
         ]
       },
       "put": {
-        "operationId": "annotation_reviews_update",
+        "operationId": "annotations_reviews_update",
         "summary": "Update Review",
         "description": "Update review yang sudah ada. Hanya pemilik review yang dapat mengupdate.",
         "parameters": [
@@ -632,7 +514,7 @@
         ]
       },
       "patch": {
-        "operationId": "annotation_reviews_partial_update",
+        "operationId": "annotations_reviews_partial_update",
         "summary": "Partial Update Review",
         "description": "Partial update review yang sudah ada. Hanya pemilik review yang dapat mengupdate.",
         "parameters": [
@@ -664,7 +546,7 @@
         ]
       },
       "delete": {
-        "operationId": "annotation_reviews_delete",
+        "operationId": "annotations_reviews_delete",
         "summary": "Delete Review",
         "description": "Menghapus review. Hanya pemilik review yang dapat menghapus.",
         "parameters": [],
@@ -693,9 +575,127 @@
         }
       ]
     },
-    "/assignment/": {
+    "/annotations/{id}/": {
+      "get": {
+        "operationId": "annotations_read",
+        "summary": "Get Annotation Detail",
+        "description": "Mendapatkan detail annotation berdasarkan ID. Hanya pemilik annotation yang dapat mengakses.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/Annotation"
+            }
+          },
+          "403": {
+            "description": "Hanya pemilik annotation yang dapat mengakses"
+          },
+          "404": {
+            "description": "Annotation tidak ditemukan"
+          }
+        },
+        "tags": [
+          "📝 Annotations"
+        ]
+      },
+      "put": {
+        "operationId": "annotations_update",
+        "summary": "Update Annotation",
+        "description": "Update annotation yang sudah ada. Hanya pemilik annotation yang dapat mengupdate.",
+        "parameters": [
+          {
+            "name": "data",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Annotation"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Annotation berhasil diupdate"
+          },
+          "400": {
+            "description": "Invalid input data"
+          },
+          "403": {
+            "description": "Hanya pemilik annotation yang dapat mengupdate"
+          },
+          "404": {
+            "description": "Annotation tidak ditemukan"
+          }
+        },
+        "tags": [
+          "📝 Annotations"
+        ]
+      },
+      "patch": {
+        "operationId": "annotations_partial_update",
+        "summary": "Partial Update Annotation",
+        "description": "Partial update annotation yang sudah ada. Hanya pemilik annotation yang dapat mengupdate.",
+        "parameters": [
+          {
+            "name": "data",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Annotation"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Annotation berhasil diupdate"
+          },
+          "400": {
+            "description": "Invalid input data"
+          },
+          "403": {
+            "description": "Hanya pemilik annotation yang dapat mengupdate"
+          },
+          "404": {
+            "description": "Annotation tidak ditemukan"
+          }
+        },
+        "tags": [
+          "📝 Annotations"
+        ]
+      },
+      "delete": {
+        "operationId": "annotations_delete",
+        "summary": "Delete Annotation",
+        "description": "Menghapus annotation. Hanya pemilik annotation yang dapat menghapus.",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "Annotation berhasil dihapus"
+          },
+          "403": {
+            "description": "Hanya pemilik annotation yang dapat menghapus"
+          },
+          "404": {
+            "description": "Annotation tidak ditemukan"
+          }
+        },
+        "tags": [
+          "📝 Annotations"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "description": "A unique integer value identifying this annotation.",
+          "required": true,
+          "type": "integer"
+        }
+      ]
+    },
+    "/assignments/": {
       "post": {
-        "operationId": "assignment_create",
+        "operationId": "assignments_create",
         "summary": "Assign Document to User",
         "description": "\nAssign dokumen kepada user tertentu untuk proses anotasi atau review.\n\n**Constraints:**\n- Hanya user dengan role Annotators atau Reviewers yang dapat di-assign\n- Satu dokumen dapat di-assign ke multiple users\n- Hanya admin yang dapat melakukan assignment\n",
         "parameters": [
@@ -743,7 +743,7 @@
         ]
       },
       "delete": {
-        "operationId": "assignment_delete",
+        "operationId": "assignments_delete",
         "summary": "Unassign Document from User",
         "description": "\nMenghapus assignment dokumen dari user tertentu.\n\n**Note:**\n- Tidak menghapus annotations yang sudah dibuat\n- User tidak akan bisa mengakses dokumen untuk anotasi baru\n- Hanya admin yang dapat melakukan unassignment\n",
         "parameters": [
@@ -789,9 +789,9 @@
       },
       "parameters": []
     },
-    "/document/": {
+    "/documents/": {
       "get": {
-        "operationId": "document_list",
+        "operationId": "documents_list",
         "summary": "List All Documents",
         "description": "\nMendapatkan daftar semua dokumen yang tersedia di sistem.\n\n**Features:**\n- Pagination dengan default 20 items per page\n- Hanya admin yang dapat mengakses endpoint ini\n- Menampilkan informasi dokumen tanpa sentences detail\n",
         "parameters": [
@@ -833,7 +833,7 @@
         ]
       },
       "post": {
-        "operationId": "document_create",
+        "operationId": "documents_create",
         "summary": "Create New Document",
         "description": "\nMembuat dokumen baru dan secara otomatis split text menjadi sentences.\n\n**Auto-Processing:**\n- Text akan dipecah menjadi sentences menggunakan NLTK\n- Setiap sentence akan disimpan sebagai object terpisah\n- Mendukung fallback parsing jika NLTK tidak tersedia\n",
         "parameters": [
@@ -896,9 +896,9 @@
       },
       "parameters": []
     },
-    "/document/{id}/": {
+    "/documents/{id}/": {
       "get": {
-        "operationId": "document_read",
+        "operationId": "documents_read",
         "summary": "Get Document Detail",
         "description": "\nMendapatkan detail lengkap dokumen termasuk semua sentences.\n\n**Response includes:**\n- Informasi dasar dokumen\n- Daftar lengkap sentences\n- Assignment information\n",
         "parameters": [],
@@ -937,7 +937,7 @@
         ]
       },
       "patch": {
-        "operationId": "document_update",
+        "operationId": "documents_update",
         "summary": "Update Document",
         "description": "\nUpdate dokumen yang sudah ada.\n\n**Special Behavior:**\n- Jika field `text` diubah, semua sentences akan di-regenerate\n- Semua sentence lama akan dihapus dan diganti dengan yang baru\n- Annotations yang terkait dengan sentence lama akan terpengaruh\n",
         "parameters": [
@@ -976,7 +976,7 @@
         ]
       },
       "delete": {
-        "operationId": "document_delete",
+        "operationId": "documents_delete",
         "summary": "Delete Document",
         "description": "\nMenghapus dokumen dari sistem.\n\n**Warning:**\n- Menghapus dokumen akan menghapus semua sentences\n- Semua annotations yang terkait akan ikut terhapus\n- Action ini tidak dapat di-undo\n",
         "parameters": [],
@@ -1005,48 +1005,27 @@
     "/login/": {
       "post": {
         "operationId": "login_create",
-        "summary": "User Login",
-        "description": "",
+        "description": "Takes a set of user credentials and returns an access and refresh JSON web\ntoken pair to prove the authentication of those credentials.",
         "parameters": [
           {
             "name": "data",
             "in": "body",
             "required": true,
             "schema": {
-              "required": [
-                "username",
-                "password"
-              ],
-              "type": "object",
-              "properties": {
-                "username": {
-                  "description": "Username user",
-                  "type": "string"
-                },
-                "password": {
-                  "description": "Password user",
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/TokenObtainPair"
             }
           }
         ],
         "responses": {
-          "200": {
-            "description": "Login berhasil",
-            "examples": {
-              "application/json": {
-                "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
-                "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
-              }
+          "201": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/TokenObtainPair"
             }
-          },
-          "401": {
-            "description": "Invalid credentials"
           }
         },
         "tags": [
-          "🔐 Authentication"
+          "login"
         ]
       },
       "parameters": []
@@ -1054,42 +1033,27 @@
     "/token/refresh/": {
       "post": {
         "operationId": "token_refresh_create",
-        "summary": "Refresh JWT Token",
-        "description": "\nRefresh JWT access token menggunakan refresh token.\n\n**Token Refresh Flow:**\n1. Kirim refresh token yang valid\n2. Sistem akan validate refresh token\n3. Jika valid, sistem akan return access token baru\n4. Access token baru dapat digunakan untuk authenticated requests\n",
+        "description": "Takes a refresh type JSON web token and returns an access type JSON web\ntoken if the refresh token is valid.",
         "parameters": [
           {
             "name": "data",
             "in": "body",
             "required": true,
             "schema": {
-              "required": [
-                "refresh"
-              ],
-              "type": "object",
-              "properties": {
-                "refresh": {
-                  "description": "Refresh token yang valid",
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/TokenRefresh"
             }
           }
         ],
         "responses": {
-          "200": {
-            "description": "Token refresh berhasil",
-            "examples": {
-              "application/json": {
-                "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
-              }
+          "201": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/TokenRefresh"
             }
-          },
-          "401": {
-            "description": "Invalid refresh token"
           }
         },
         "tags": [
-          "🔐 Authentication"
+          "token"
         ]
       },
       "parameters": []
@@ -1153,7 +1117,6 @@
                   "Admin",
                   "Annotators",
                   "Reviewers",
-                  "Researcher",
                   "Kepala Riset"
                 ]
               }
@@ -1409,7 +1372,7 @@
       "post": {
         "operationId": "users_role-management_create",
         "summary": "Manage User Roles",
-        "description": "\nMenambahkan atau menghapus role dari user.\n\n**Actions:**\n- `add`: Menambahkan role ke user\n- `remove`: Menghapus role dari user\n\n**Available Roles:**\n- Admin\n- Annotators\n- Reviewers\n- Researcher\n- Kepala Riset\n\n**Constraints:**\n- Admin tidak dapat menghapus role Admin dari diri sendiri\n- Sistem harus memiliki minimal 2 admin\n",
+        "description": "\nMenambahkan atau menghapus role dari user.\n\n**Actions:**\n- `add`: Menambahkan role ke user\n- `remove`: Menghapus role dari user\n\n**Available Roles:**\n- Admin\n- Annotators\n- Reviewers\n- Kepala Riset\n\n**Constraints:**\n- Admin tidak dapat menghapus role Admin dari diri sendiri\n- Sistem harus memiliki minimal 2 admin\n",
         "parameters": [
           {
             "name": "data",
@@ -1443,7 +1406,7 @@
                   "Pengguna tidak ditemukan"
                 ],
                 "role": [
-                  "Role tidak valid. Role tersedia: Admin, Annotators, Reviewers, Researcher, Kepala Riset"
+                  "Role tidak valid. Role tersedia: Admin, Annotators, Reviewers, Kepala Riset"
                 ],
                 "action": [
                   "Anda tidak dapat menghapus role Admin dari diri sendiri",
@@ -1665,73 +1628,6 @@
     }
   },
   "definitions": {
-    "Annotation": {
-      "required": [
-        "start_index",
-        "end_index",
-        "correction",
-        "document",
-        "sentence",
-        "error_type"
-      ],
-      "type": "object",
-      "properties": {
-        "id": {
-          "title": "ID",
-          "type": "integer",
-          "readOnly": true
-        },
-        "start_index": {
-          "title": "Start index",
-          "type": "integer",
-          "maximum": 9.223372036854776e+18,
-          "minimum": 0
-        },
-        "end_index": {
-          "title": "End index",
-          "type": "integer",
-          "maximum": 9.223372036854776e+18,
-          "minimum": 0
-        },
-        "correction": {
-          "title": "Correction",
-          "type": "string",
-          "minLength": 1
-        },
-        "is_required": {
-          "title": "Is required",
-          "type": "boolean"
-        },
-        "comments": {
-          "title": "Comments",
-          "type": "string",
-          "minLength": 1,
-          "x-nullable": true
-        },
-        "is_submitted": {
-          "title": "Is submitted",
-          "type": "boolean"
-        },
-        "annotator": {
-          "title": "Annotator",
-          "type": "string",
-          "format": "uuid",
-          "readOnly": true
-        },
-        "document": {
-          "title": "Document",
-          "type": "integer"
-        },
-        "sentence": {
-          "title": "Sentence",
-          "type": "integer"
-        },
-        "error_type": {
-          "title": "Error type",
-          "type": "integer"
-        }
-      }
-    },
     "ErrorType": {
       "required": [
         "error_code",
@@ -1838,6 +1734,111 @@
         "error_type": {
           "title": "Error type",
           "type": "integer"
+        }
+      }
+    },
+    "Annotation": {
+      "required": [
+        "start_index",
+        "end_index",
+        "correction",
+        "document",
+        "sentence",
+        "error_type"
+      ],
+      "type": "object",
+      "properties": {
+        "id": {
+          "title": "ID",
+          "type": "integer",
+          "readOnly": true
+        },
+        "start_index": {
+          "title": "Start index",
+          "type": "integer",
+          "maximum": 9.223372036854776e+18,
+          "minimum": 0
+        },
+        "end_index": {
+          "title": "End index",
+          "type": "integer",
+          "maximum": 9.223372036854776e+18,
+          "minimum": 0
+        },
+        "correction": {
+          "title": "Correction",
+          "type": "string",
+          "minLength": 1
+        },
+        "is_required": {
+          "title": "Is required",
+          "type": "boolean"
+        },
+        "comments": {
+          "title": "Comments",
+          "type": "string",
+          "minLength": 1,
+          "x-nullable": true
+        },
+        "is_submitted": {
+          "title": "Is submitted",
+          "type": "boolean"
+        },
+        "annotator": {
+          "title": "Annotator",
+          "type": "string",
+          "format": "uuid",
+          "readOnly": true
+        },
+        "document": {
+          "title": "Document",
+          "type": "integer"
+        },
+        "sentence": {
+          "title": "Sentence",
+          "type": "integer"
+        },
+        "error_type": {
+          "title": "Error type",
+          "type": "integer"
+        }
+      }
+    },
+    "TokenObtainPair": {
+      "required": [
+        "username",
+        "password"
+      ],
+      "type": "object",
+      "properties": {
+        "username": {
+          "title": "Username",
+          "type": "string",
+          "minLength": 1
+        },
+        "password": {
+          "title": "Password",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "TokenRefresh": {
+      "required": [
+        "refresh"
+      ],
+      "type": "object",
+      "properties": {
+        "refresh": {
+          "title": "Refresh",
+          "type": "string",
+          "minLength": 1
+        },
+        "access": {
+          "title": "Access",
+          "type": "string",
+          "readOnly": true,
+          "minLength": 1
         }
       }
     },

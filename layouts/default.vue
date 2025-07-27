@@ -11,7 +11,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from "~/components/ui/dropdown-menu";
-import { ChevronDown, Home, Users, FileText, AlertTriangle, Pencil, Eye, BarChart3, ClipboardList, Download, User, LogOut, Lightbulb } from "lucide-vue-next";
+import {
+  Menubar,
+  MenubarContent,
+  MenubarItem,
+  MenubarMenu,
+  MenubarTrigger,
+} from "~/components/ui/menubar";
+import { Home, Users, FileText, AlertTriangle, Pencil, BarChart3, ClipboardList, Download, LogOut, Lightbulb, FileCheck } from "lucide-vue-next";
 
 const toast = useToast();
 const {
@@ -27,39 +34,69 @@ const userName = computed(() => user.value?.full_name || "Pengguna");
 
 const hasRole = (role: string) => userRoles.value.includes(role);
 
-const filteredMenus = computed(() => {
+const menuGroups = computed(() => {
   if (!isAuthenticated.value) {
-    return [{ label: "Beranda", path: "/", icon: Home }];
+    return [];
   }
 
-  const menus = [{ label: "Beranda", path: "/beranda", icon: Home }];
+  const groups = [];
 
-  // Add role-specific menus based on user's roles
+  // Always show Beranda as a simple link
+  groups.push({ type: 'link', label: "Beranda", path: "/beranda", icon: Home });
+
+  // Admin menus - based on actual pages in admin folder
   if (hasRole("Admin")) {
-    menus.push(
-      { label: "Kelola Pengguna", path: "/admin/kelola-pengguna", icon: Users },
-      { label: "Kelola Dokumen", path: "/admin/kelola-dokumen", icon: FileText },
-      { label: "Kelola Error", path: "/admin/kelola-error", icon: AlertTriangle }
-    );
+    groups.push({
+      type: 'dropdown',
+      label: "Administrator",
+      icon: Users,
+      items: [
+        { label: "Kelola Pengguna", path: "/admin/kelola-pengguna", icon: Users, description: "Manage system users" },
+        { label: "Kelola Dokumen", path: "/admin/kelola-dokumen", icon: FileText, description: "Manage documents" },
+        { label: "Kelola Error", path: "/admin/kelola-error", icon: AlertTriangle, description: "Manage system errors" }
+      ]
+    });
   }
 
-  if (hasRole("Annotators")) {
-    menus.push({ label: "Anotasi", path: "/anotator/anotasi", icon: Pencil });
+  // Annotator menus - single page with document list functionality
+  if (hasRole("Annotator")) {
+    groups.push({
+      type: 'dropdown',
+      label: "Anotator",
+      icon: Pencil,
+      items: [
+        { label: "Daftar Dokumen", path: "/anotator/anotasi", icon: FileText, description: "List of documents to annotate" },
+      ]
+    });
   }
 
-  if (hasRole("Reviewers")) {
-    menus.push({ label: "Tinjauan", path: "/peninjau/tinjauan", icon: Eye });
+  // Reviewer menus - single page for reviewing annotations
+  if (hasRole("Reviewer")) {
+    groups.push({
+      type: 'dropdown',
+      label: "Reviewer",
+      icon: FileCheck,
+      items: [
+        { label: "Daftar Dokumen", path: "/peninjau/tinjauan", icon: FileCheck, description: "Documents to review" },
+      ]
+    });
   }
 
+  // Kepala Riset menus - based on actual pages in kepala-riset folder
   if (hasRole("Kepala Riset")) {
-    menus.push(
-      { label: "Rekap Kinerja", path: "/kepala-riset/rekap-kinerja", icon: BarChart3 },
-      { label: "Rekap Dokumen", path: "/kepala-riset/rekap-dokumen", icon: ClipboardList },
-      { label: "Generate Dataset", path: "/kepala-riset/generate-dataset", icon: Download }
-    );
+    groups.push({
+      type: 'dropdown',
+      label: "Kepala Riset",
+      icon: BarChart3,
+      items: [
+        { label: "Rekap Kinerja", path: "/kepala-riset/rekap-kinerja", icon: BarChart3, description: "Performance summary" },
+        { label: "Rekap Dokumen", path: "/kepala-riset/rekap-dokumen", icon: ClipboardList, description: "Document summary" },
+        { label: "Generate Dataset", path: "/kepala-riset/generate-dataset", icon: Download, description: "Generate dataset files" }
+      ]
+    });
   }
 
-  return menus;
+  return groups;
 });
 
 onMounted(async () => {
@@ -91,20 +128,53 @@ const handleLogout = async () => {
         <span class="text-2xl font-bold">ANOTA</span>
       </NuxtLink>
 
-      <nav v-if="isAuthenticated" class="flex items-center space-x-8">
-        <!-- Navigation Menu -->
-        <ul class="hidden md:flex items-center space-x-6">
-          <li v-for="menu in filteredMenus" :key="menu.path">
-            <NuxtLink
-              :to="menu.path"
-              class="flex items-center space-x-2 py-3 px-3 text-slate-200 hover:text-white hover:bg-slate-800/50 rounded-lg transition-all duration-200"
-              active-class="text-blue-400 bg-blue-500/10"
-            >
-              <component :is="menu.icon" class="w-3 h-3" />
-              <span class="font-medium text-sm">{{ menu.label }}</span>
-            </NuxtLink>
-          </li>
-        </ul>
+      <nav v-if="isAuthenticated" class="flex items-center space-x-3">
+        <!-- Menubar -->
+        <Menubar class="hidden md:flex bg-transparent border-none shadow-none space-x-4">
+          <template v-for="group in menuGroups" :key="group.label">
+            <!-- Simple Link Menu Item -->
+            <MenubarMenu v-if="group.type === 'link'">
+              <MenubarTrigger as-child>
+                <NuxtLink
+                  :to="group.path"
+                  class="flex items-center space-x-2 px-3 py-3 text-slate-200 hover:text-white hover:bg-slate-800/50 data-[state=open]:bg-slate-800/50 data-[state=open]:text-white transition-all duration-200"
+                  active-class="text-blue-400 bg-blue-500/10"
+                >
+                  <component :is="group.icon" class="w-4 h-4" />
+                  <span class="font-medium">{{ group.label }}</span>
+                </NuxtLink>
+              </MenubarTrigger>
+            </MenubarMenu>
+
+            <!-- Dropdown Menu Item -->
+            <MenubarMenu v-else-if="group.type === 'dropdown'">
+              <MenubarTrigger class="flex items-center space-x-2 px-3 py-3 text-slate-200 hover:text-white hover:bg-slate-800/50 data-[state=open]:bg-slate-800/50 data-[state=open]:text-white">
+                <component :is="group.icon" class="w-4 h-4" />
+                <span class="font-medium">{{ group.label }}</span>
+              </MenubarTrigger>
+              <MenubarContent>
+                <MenubarItem
+                  v-for="item in group.items"
+                  :key="item.path"
+                  as-child
+                  class="flex items-start space-x-3 p-3 cursor-pointer hover:bg-slate-800/50 transition-colors group"
+                >
+                  <NuxtLink
+                    :to="item.path"
+                    class="flex items-start space-x-3 w-full"
+                    active-class="bg-blue-500/10 text-blue-400"
+                  >
+                    <component :is="item.icon" class="w-5 h-5 text-slate-400 group-hover:text-slate-300 mt-0.5 flex-shrink-0" />
+                    <div class="flex-1">
+                      <div class="text-sm font-medium text-slate-200 group-hover:text-white">{{ item.label }}</div>
+                      <div class="text-xs text-slate-400 mt-1 leading-relaxed">{{ item.description }}</div>
+                    </div>
+                  </NuxtLink>
+                </MenubarItem>
+              </MenubarContent>
+            </MenubarMenu>
+          </template>
+        </Menubar>
 
         <!-- Profile Dropdown -->
         <DropdownMenu>
