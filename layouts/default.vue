@@ -100,7 +100,6 @@ const menuGroups = computed(() => {
 });
 
 onMounted(async () => {
-  // Initialize auth state from cookies
   await initializeAuth();
 });
 
