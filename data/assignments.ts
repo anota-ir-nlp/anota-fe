@@ -1,20 +1,19 @@
 import { useProtectedFetcher } from "~/composables/protected-fetcher";
-import type { AssignmentResponse, AssignDocumentRequest } from "~/types/api";
+import type { AssignDocumentRequest } from "~/types/api";
 
-const BASE = "/assignments";
+const BASE = "/assignment";
 
 export function useAssignmentsApi() {
   const { fetcher } = useProtectedFetcher();
 
-  const getAssignments = () => fetcher<AssignmentResponse[]>(BASE);
-  const getAssignment = (id: string) =>
-    fetcher<AssignmentResponse>(`${BASE}/${id}`);
   const assignDocument = (data: AssignDocumentRequest) =>
-    fetcher<AssignmentResponse>(BASE, { method: "POST", body: data });
+    fetcher(BASE, { method: "POST", body: data });
+  const unassignDocument = (data: AssignDocumentRequest) =>
+    fetcher(BASE, { method: "DELETE", body: data });
 
   return {
-    getAssignments,
-    getAssignment,
     assignDocument,
+    unassignDocument,
   };
 }
+

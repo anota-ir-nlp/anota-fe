@@ -125,9 +125,12 @@ export interface AssignDocumentRequest {
 }
 
 export interface DocumentResponse {
-  id: string;
+  id: number;
   title: string;
+  text: string;
   created_at: string;
+  updated_at: string;
+  assigned_to: number[];
   sentences: SentenceResponse[];
 }
 export interface CreateDocumentRequest {
@@ -135,11 +138,14 @@ export interface CreateDocumentRequest {
   text: string;
 }
 export interface SentenceResponse {
-  id: string;
+  id: number;
   text: string;
-  corrected_text?: string;
-  has_error?: boolean;
-  m2_correction?: string;
+  m2_text: string;
+  corrected_text: string;
+  has_error: boolean;
+  created_at: string;
+  updated_at: string;
+  document: number;
 }
 
 export interface UpdateSentenceRequest {
@@ -160,3 +166,118 @@ export interface ResetPasswordRequest {
 export interface ResetPasswordResponse {
   message: string;
 }
+
+// Add new types from API docs
+export interface AnnotationRequest {
+  document: number;
+  sentence: number;
+  start_index: number;
+  end_index: number;
+  error_type: number;
+  correction: string;
+  is_required?: boolean;
+  comments?: string;
+  is_submitted?: boolean;
+}
+
+export interface AnnotationResponse {
+  id: number;
+  annotator: string;
+  document: number;
+  sentence: number;
+  start_index: number;
+  end_index: number;
+  error_type: number;
+  correction: string;
+  is_required: boolean;
+  comments?: string;
+  is_submitted: boolean;
+}
+
+export interface ErrorTypeRequest {
+  error_code: string;
+  description: string;
+}
+
+export interface ErrorTypeResponse {
+  id: number;
+  error_code: string;
+  description: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ReviewRequest {
+  document: number;
+  annotation: number;
+  sentence: number;
+  start_index: number;
+  end_index: number;
+  error_type: number;
+  correction: string;
+  is_required?: boolean;
+  comments?: string;
+  is_submitted?: boolean;
+}
+
+export interface ReviewResponse {
+  id: number;
+  reviewer: string;
+  document: number;
+  annotation: number;
+  sentence: number;
+  start_index: number;
+  end_index: number;
+  error_type: number;
+  correction: string;
+  is_required: boolean;
+  comments?: string;
+  is_submitted: boolean;
+}
+
+export interface DocumentRequest {
+  title: string;
+  text: string;
+}
+
+export interface UserRegistrationRequest {
+  username: string;
+  email?: string;
+  full_name?: string;
+}
+
+export interface UserRegistrationResponse {
+  message: string;
+  data: {
+    id: string;
+    username: string;
+    email: string;
+    full_name: string;
+    password: string;
+    backup_key: string;
+  };
+}
+
+export interface UserPasswordResetRequest {
+  new_password: string;
+  backup_key: string;
+}
+
+export interface UserRoleManagementRequest {
+  user_id: string;
+  role: string;
+  action: 'add' | 'remove';
+}
+
+export interface UserUpdateRequest {
+  username?: string;
+  email?: string;
+  full_name?: string;
+}
+
+export interface AvailableRolesResponse {
+  roles: string[];
+}
+
+// Add a type for the available roles based on API docs
+export type AvailableRole = 'Admin' | 'Annotator' | 'Reviewer' | 'Kepala Riset';

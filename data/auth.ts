@@ -136,15 +136,13 @@ export function useAuth() {
   }
 
   const isAuthenticated = computed(() => !!getAccessToken() && !!user.value);
-  const availableRoles = computed(() => user.value?.roles || []);
-  const activeRole = computed(() => user.value?.active_role || availableRoles.value[0] || null);
+  const userRoles = computed(() => user.value?.roles || []);
 
   return {
     accessToken,
     user,
     isAuthenticated,
-    availableRoles,
-    activeRole,
+    userRoles,
     login,
     logout,
     fetchMe,
@@ -155,3 +153,4 @@ export function useAuth() {
     initializeAuth,
   };
 }
+
