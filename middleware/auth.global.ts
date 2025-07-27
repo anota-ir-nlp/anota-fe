@@ -1,7 +1,10 @@
 import { useAuth } from "~/data/auth";
 
-export default defineNuxtRouteMiddleware((to) => {
-  const { isAuthenticated } = useAuth();
+export default defineNuxtRouteMiddleware(async (to) => {
+  const { isAuthenticated, initializeAuth } = useAuth();
+
+  // Ensure auth state is initialized before checking
+  await initializeAuth();
 
   // Public routes that don't require authentication
   const publicRoutes = ['/', '/login'];
