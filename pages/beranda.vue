@@ -1,280 +1,265 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 text-white">
     <!-- Welcome Section -->
-    <section class="w-full px-4 pt-8 pb-4 md:pt-12 md:pb-8">
-      <div class="max-w-7xl mx-auto">
-        <div class="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-2xl p-6 md:p-8 shadow-2xl">
-          <div class="flex flex-col md:flex-row items-center gap-6">
-            <UAvatar
-              :src="userData.avatar"
-              :alt="userData.name"
-              size="2xl"
-              class="ring-4 ring-blue-500/30 shadow-xl"
-            />
-            <div class="flex-1 text-center md:text-left">
-              <div class="flex items-center gap-2 justify-center md:justify-start mb-2">
-                <span class="text-lg text-slate-400">Hi,</span>
-                <span class="text-2xl md:text-3xl font-bold text-white">{{ userData.name }}</span>
-                <span class="ml-2 px-3 py-1 rounded-full bg-blue-600/20 text-blue-300 text-xs font-semibold uppercase tracking-wide border border-blue-500/30">
-                  {{ userData.role }}
-                </span>
-              </div>
-              <div class="text-slate-300 text-base md:text-lg mb-4">
-                {{ getRoleGreeting() }}
-              </div>
-              <div class="flex flex-wrap gap-3 justify-center md:justify-start text-sm">
-                <span class="flex items-center gap-1 text-slate-400">
-                  <UIcon name="i-heroicons-envelope" class="w-4 h-4" />
-                  {{ userData.email }}
-                </span>
-                <span class="flex items-center gap-1 text-slate-400">
-                  <UIcon name="i-heroicons-calendar" class="w-4 h-4" />
-                  Bergabung {{ userData.memberSince }}
-                </span>
-              </div>
+    <section class="w-full max-w-7xl mx-auto px-4 pb-8 pt-20">
+      <Card variant="glassmorphism" class="p-8">
+        <div class="flex flex-col md:flex-row items-center gap-8">
+          <Avatar class="w-24 h-24 ring-4 ring-blue-500/30 shadow-xl">
+            <AvatarImage :src="userData.avatar" :alt="userData.name" />
+            <AvatarFallback class="text-xl font-semibold">{{ userData.name.charAt(0) }}</AvatarFallback>
+          </Avatar>
+          <div class="flex-1 text-center md:text-left">
+            <div class="flex items-center gap-3 justify-center md:justify-start mb-3 text-3xl">
+              <span class=" text-slate-400 font-medium">Hi,</span>
+              <span class="font-bold text-white">{{ userData.name }}</span>
             </div>
-            <div class="hidden md:block">
-              <UButton
-                icon="i-heroicons-arrow-left"
-                label="Ke Halaman Utama"
-                color="neutral"
-                variant="ghost"
-                class="border border-slate-600 hover:bg-slate-700/50 transition-all duration-200"
-                @click="navigateTo('/')"
-              />
+            <div class="flex gap-2 mt-2 mb-8">
+              <Badge v-for="role in userData.roles" :key="role" variant="blue"
+                class="text-xs uppercase tracking-wider font-semibold px-3 py-1">
+                {{ role }}
+              </Badge>
+            </div>
+            <div class="flex flex-wrap gap-4 justify-center md:justify-start text-sm">
+              <span class="flex items-center gap-2 text-slate-400 font-medium">
+                <Mail class="w-4 h-4" />
+                {{ userData.email }}
+              </span>
+              <span class="flex items-center gap-2 text-slate-400 font-medium">
+                <Calendar class="w-4 h-4" />
+                Bergabung {{ userData.memberSince }}
+              </span>
             </div>
           </div>
+          <div class="hidden md:block">
+            <Button variant="outline" size="lg" @click="navigateTo('/')">
+              <ArrowLeft class="w-4 h-4" />
+              Ke Halaman Utama
+            </Button>
+          </div>
         </div>
-      </div>
+      </Card>
     </section>
 
     <!-- Role-specific Content -->
-    <section class="w-full max-w-7xl mx-auto px-4 pb-8">
+    <section class="w-full max-w-7xl mx-auto px-4 pb-12 flex-col space-y-8">
       <!-- Admin Dashboard -->
-      <div v-if="isAdmin" class="space-y-8">
+      <div v-if="hasRole('Admin')" class="space-y-8">
         <!-- Stats Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-          <div v-if="pending" v-for="i in 4" :key="i" class="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-xl p-6 animate-pulse">
-            <div class="w-10 h-10 bg-slate-700 rounded-lg mb-4"></div>
-            <div class="w-12 h-8 bg-slate-700 rounded mb-2"></div>
-            <div class="w-24 h-4 bg-slate-700 rounded"></div>
-          </div>
-          
-          <div v-else v-for="stat in adminStats" :key="stat.label" 
-               class="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-xl p-6 hover:bg-slate-800/40 transition-all duration-200 group">
-            <div class="flex items-center justify-between mb-4">
-              <UIcon :name="stat.icon" :class="`w-10 h-10 ${stat.color}`" />
-              <span class="text-2xl font-bold text-white">{{ stat.value }}</span>
+          <Card v-if="pending" v-for="i in 4" :key="i" variant="glassmorphism" class="p-6 animate-pulse">
+            <div class="w-12 h-12 bg-slate-700 rounded-lg mb-4"></div>
+            <div class="w-16 h-8 bg-slate-700 rounded mb-3"></div>
+            <div class="w-28 h-4 bg-slate-700 rounded"></div>
+          </Card>
+
+          <Card v-else v-for="stat in adminStats" :key="stat.label" variant="glassmorphism"
+            class="p-6 hover:scale-105 transition-all duration-300 group cursor-pointer">
+            <div class="flex items-center justify-between mb-6">
+              <component :is="getIcon(stat.icon)"
+                :class="`w-12 h-12 ${stat.color} group-hover:scale-110 transition-transform duration-300`" />
+              <span class="text-3xl font-bold text-white">{{ stat.value }}</span>
             </div>
-            <h3 class="text-slate-300 font-medium">{{ stat.label }}</h3>
-            <p class="text-sm text-slate-400 mt-1">{{ stat.description }}</p>
-          </div>
+            <h3 class="text-slate-200 font-semibold text-lg mb-2">{{ stat.label }}</h3>
+            <p class="text-sm text-slate-400 leading-relaxed">{{ stat.description }}</p>
+          </Card>
         </div>
 
         <!-- Quick Actions -->
-        <div class="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-xl p-6">
-          <h3 class="text-xl font-semibold mb-4 flex items-center gap-2">
-            <UIcon name="i-heroicons-bolt" class="w-6 h-6 text-yellow-400" />
+        <Card variant="glassmorphism" class="p-8">
+          <h3 class="text-2xl font-bold mb-6 flex items-center gap-3">
+            <Zap class="w-7 h-7 text-yellow-400" />
             Aksi Cepat
           </h3>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <UButton
-              label="Tambah Pengguna"
-              icon="i-heroicons-user-plus"
-              variant="outline"
-              color="blue"
-              class="justify-start h-12"
-              @click="navigateTo('/admin/kelola-pengguna')"
-            />
-            <UButton
-              label="Upload Dokumen"
-              icon="i-heroicons-document-plus"
-              variant="outline"
-              color="green"
-              class="justify-start h-12"
-              @click="navigateTo('/admin/kelola-dokumen')"
-            />
-            <UButton
-              label="Review Error"
-              icon="i-heroicons-exclamation-triangle"
-              variant="outline"
-              color="red"
-              class="justify-start h-12"
-              @click="navigateTo('/admin/kelola-error')"
-            />
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Button variant="outline" size="lg" class="justify-start h-14 text-base font-medium"
+              @click="navigateTo('/admin/kelola-pengguna')">
+              <UserPlus class="w-5 h-5" />
+              Tambah Pengguna
+            </Button>
+            <Button variant="outline" size="lg" class="justify-start h-14 text-base font-medium"
+              @click="navigateTo('/admin/kelola-dokumen')">
+              <FilePlus class="w-5 h-5" />
+              Upload Dokumen
+            </Button>
+            <Button variant="outline" size="lg" class="justify-start h-14 text-base font-medium"
+              @click="navigateTo('/admin/kelola-error')">
+              <AlertTriangle class="w-5 h-5" />
+              Review Error
+            </Button>
           </div>
-        </div>
+        </Card>
       </div>
 
       <!-- Annotator Dashboard -->
-      <div v-if="isAnnotator" class="space-y-8">
+      <div v-if="hasRole('Annotators')" class="space-y-8">
         <!-- Progress Overview -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div class="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-xl p-6">
-            <div class="flex items-center justify-between mb-4">
-              <UIcon name="i-heroicons-document-text" class="w-10 h-10 text-blue-400" />
-              <span class="text-2xl font-bold text-white">{{ annotatorStats.assignedDocuments || 0 }}</span>
+          <Card variant="glassmorphism" class="p-6 hover:scale-105 transition-all duration-300">
+            <div class="flex items-center justify-between mb-6">
+              <FileText class="w-12 h-12 text-blue-400" />
+              <span class="text-3xl font-bold text-white">{{ annotatorStats.assignedDocuments || 0 }}</span>
             </div>
-            <h3 class="text-slate-300 font-medium">Dokumen Ditugaskan</h3>
-            <p class="text-sm text-slate-400 mt-1">Dokumen yang harus dianotasi</p>
-          </div>
-          
-          <div class="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-xl p-6">
-            <div class="flex items-center justify-between mb-4">
-              <UIcon name="i-heroicons-check-circle" class="w-10 h-10 text-green-400" />
-              <span class="text-2xl font-bold text-white">{{ annotatorStats.completedDocuments || 0 }}</span>
+            <h3 class="text-slate-200 font-semibold text-lg mb-2">Dokumen Ditugaskan</h3>
+            <p class="text-sm text-slate-400 leading-relaxed">Dokumen yang harus dianotasi</p>
+          </Card>
+
+          <Card variant="glassmorphism" class="p-6 hover:scale-105 transition-all duration-300">
+            <div class="flex items-center justify-between mb-6">
+              <CheckCircle class="w-12 h-12 text-green-400" />
+              <span class="text-3xl font-bold text-white">{{ annotatorStats.completedDocuments || 0 }}</span>
             </div>
-            <h3 class="text-slate-300 font-medium">Dokumen Selesai</h3>
-            <p class="text-sm text-slate-400 mt-1">Dokumen yang telah dianotasi</p>
-          </div>
-          
-          <div class="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-xl p-6">
-            <div class="flex items-center justify-between mb-4">
-              <UIcon name="i-heroicons-clock" class="w-10 h-10 text-orange-400" />
-              <span class="text-2xl font-bold text-white">{{ annotatorStats.inProgressDocuments || 0 }}</span>
+            <h3 class="text-slate-200 font-semibold text-lg mb-2">Dokumen Selesai</h3>
+            <p class="text-sm text-slate-400 leading-relaxed">Dokumen yang telah dianotasi</p>
+          </Card>
+
+          <Card variant="glassmorphism" class="p-6 hover:scale-105 transition-all duration-300">
+            <div class="flex items-center justify-between mb-6">
+              <Clock class="w-12 h-12 text-orange-400" />
+              <span class="text-3xl font-bold text-white">{{ annotatorStats.inProgressDocuments || 0 }}</span>
             </div>
-            <h3 class="text-slate-300 font-medium">Sedang Dikerjakan</h3>
-            <p class="text-sm text-slate-400 mt-1">Dokumen dalam proses</p>
-          </div>
+            <h3 class="text-slate-200 font-semibold text-lg mb-2">Sedang Dikerjakan</h3>
+            <p class="text-sm text-slate-400 leading-relaxed">Dokumen dalam proses</p>
+          </Card>
         </div>
 
         <!-- Recent Assignments -->
-        <div class="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-xl p-6">
-          <h3 class="text-xl font-semibold mb-4 flex items-center gap-2">
-            <UIcon name="i-heroicons-clipboard-document-list" class="w-6 h-6 text-blue-400" />
+        <Card variant="glassmorphism" class="p-8">
+          <h3 class="text-2xl font-bold mb-6 flex items-center gap-3">
+            <ClipboardList class="w-7 h-7 text-blue-400" />
             Tugas Terbaru
           </h3>
-          <div class="space-y-3">
-            <div v-for="task in recentTasks" :key="task.id" 
-                 class="flex items-center justify-between p-4 bg-slate-700/30 rounded-lg border border-slate-600/30">
-              <div class="flex items-center gap-3">
-                <UIcon name="i-heroicons-document-text" class="w-5 h-5 text-slate-400" />
+          <div class="space-y-4">
+            <Card v-for="task in recentTasks" :key="task.id" variant="glassmorphism"
+              class="flex items-center justify-between p-6 hover:bg-white/5 transition-colors duration-200">
+              <div class="flex items-center gap-4">
+                <FileText class="w-6 h-6 text-slate-400" />
                 <div>
-                  <h4 class="font-medium text-white">{{ task.title }}</h4>
-                  <p class="text-sm text-slate-400">{{ task.sentences }} kalimat</p>
+                  <h4 class="font-semibold text-white text-lg">{{ task.title }}</h4>
+                  <p class="text-sm text-slate-400 mt-1">{{ task.sentences }} kalimat</p>
                 </div>
               </div>
-              <UBadge :color="getTaskStatusColor(task.status)" variant="subtle">
+              <Badge :variant="getTaskStatusColor(task.status)" class="text-sm font-medium px-3 py-1">
                 {{ task.status }}
-              </UBadge>
-            </div>
+              </Badge>
+            </Card>
           </div>
-          <div class="mt-4">
-            <UButton
-              label="Lihat Semua Tugas"
-              icon="i-heroicons-arrow-right"
-              variant="outline"
-              @click="navigateTo('/anotator/anotasi')"
-            />
+          <div class="mt-8 pt-6 border-t border-slate-700/50">
+            <Button variant="outline" size="lg" @click="navigateTo('/anotator/anotasi')">
+              Lihat Semua Tugas
+              <ArrowRight class="w-4 h-4" />
+            </Button>
           </div>
-        </div>
+        </Card>
       </div>
 
       <!-- Reviewer Dashboard -->
-      <div v-if="isReviewer" class="space-y-8">
+      <div v-if="hasRole('Reviewers')" class="space-y-8">
         <!-- Review Stats -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div class="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-xl p-6">
-            <div class="flex items-center justify-between mb-4">
-              <UIcon name="i-heroicons-eye" class="w-10 h-10 text-purple-400" />
-              <span class="text-2xl font-bold text-white">{{ reviewerStats.pendingReviews || 0 }}</span>
+          <Card variant="glassmorphism" class="p-6 hover:scale-105 transition-all duration-300">
+            <div class="flex items-center justify-between mb-6">
+              <Eye class="w-12 h-12 text-purple-400" />
+              <span class="text-3xl font-bold text-white">{{ reviewerStats.pendingReviews || 0 }}</span>
             </div>
-            <h3 class="text-slate-300 font-medium">Menunggu Review</h3>
-            <p class="text-sm text-slate-400 mt-1">Dokumen yang perlu ditinjau</p>
-          </div>
-          
-          <div class="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-xl p-6">
-            <div class="flex items-center justify-between mb-4">
-              <UIcon name="i-heroicons-check-badge" class="w-10 h-10 text-green-400" />
-              <span class="text-2xl font-bold text-white">{{ reviewerStats.completedReviews || 0 }}</span>
+            <h3 class="text-slate-200 font-semibold text-lg mb-2">Menunggu Review</h3>
+            <p class="text-sm text-slate-400 leading-relaxed">Dokumen yang perlu ditinjau</p>
+          </Card>
+
+          <Card variant="glassmorphism" class="p-6 hover:scale-105 transition-all duration-300">
+            <div class="flex items-center justify-between mb-6">
+              <CheckCircle2 class="w-12 h-12 text-green-400" />
+              <span class="text-3xl font-bold text-white">{{ reviewerStats.completedReviews || 0 }}</span>
             </div>
-            <h3 class="text-slate-300 font-medium">Review Selesai</h3>
-            <p class="text-sm text-slate-400 mt-1">Dokumen yang telah direview</p>
-          </div>
-          
-          <div class="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-xl p-6">
-            <div class="flex items-center justify-between mb-4">
-              <UIcon name="i-heroicons-exclamation-triangle" class="w-10 h-10 text-red-400" />
-              <span class="text-2xl font-bold text-white">{{ reviewerStats.errorsFound || 0 }}</span>
+            <h3 class="text-slate-200 font-semibold text-lg mb-2">Review Selesai</h3>
+            <p class="text-sm text-slate-400 leading-relaxed">Dokumen yang telah direview</p>
+          </Card>
+
+          <Card variant="glassmorphism" class="p-6 hover:scale-105 transition-all duration-300">
+            <div class="flex items-center justify-between mb-6">
+              <AlertTriangle class="w-12 h-12 text-red-400" />
+              <span class="text-3xl font-bold text-white">{{ reviewerStats.errorsFound || 0 }}</span>
             </div>
-            <h3 class="text-slate-300 font-medium">Error Ditemukan</h3>
-            <p class="text-sm text-slate-400 mt-1">Total error yang ditemukan</p>
-          </div>
+            <h3 class="text-slate-200 font-semibold text-lg mb-2">Error Ditemukan</h3>
+            <p class="text-sm text-slate-400 leading-relaxed">Total error yang ditemukan</p>
+          </Card>
         </div>
 
         <!-- Review Queue -->
-        <div class="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-xl p-6">
-          <h3 class="text-xl font-semibold mb-4 flex items-center gap-2">
-            <UIcon name="i-heroicons-queue-list" class="w-6 h-6 text-purple-400" />
+        <Card variant="glassmorphism" class="p-8">
+          <h3 class="text-2xl font-bold mb-6 flex items-center gap-3">
+            <List class="w-7 h-7 text-purple-400" />
             Antrian Review
           </h3>
-          <div class="space-y-3">
-            <div v-for="review in reviewQueue" :key="review.id" 
-                 class="flex items-center justify-between p-4 bg-slate-700/30 rounded-lg border border-slate-600/30">
-              <div class="flex items-center gap-3">
-                <UIcon name="i-heroicons-document-check" class="w-5 h-5 text-slate-400" />
+          <div class="space-y-4">
+            <div v-for="review in reviewQueue" :key="review.id"
+              class="flex items-center justify-between p-6 bg-slate-700/30 rounded-lg border border-slate-600/30 hover:bg-slate-700/50 transition-colors duration-200">
+              <div class="flex items-center gap-4">
+                <FileCheck class="w-6 h-6 text-slate-400" />
                 <div>
-                  <h4 class="font-medium text-white">{{ review.title }}</h4>
-                  <p class="text-sm text-slate-400">Oleh {{ review.annotator }}</p>
+                  <h4 class="font-semibold text-white text-lg">{{ review.title }}</h4>
+                  <p class="text-sm text-slate-400 mt-1">Oleh {{ review.annotator }}</p>
                 </div>
               </div>
-              <div class="flex items-center gap-2">
-                <UBadge color="yellow" variant="subtle">{{ review.priority }}</UBadge>
-                <UButton size="xs" icon="i-heroicons-eye" @click="navigateTo(`/peninjau/tinjauan/${review.id}`)">
+              <div class="flex items-center gap-3">
+                <Badge variant="yellow" class="text-sm font-medium px-3 py-1">{{ review.priority }}</Badge>
+                <Button size="sm" @click="navigateTo(`/peninjau/tinjauan/${review.id}`)">
+                  <Eye class="w-4 h-4" />
                   Review
-                </UButton>
+                </Button>
               </div>
             </div>
           </div>
-        </div>
+        </Card>
       </div>
 
       <!-- Kepala Riset Dashboard -->
-      <div v-if="isKepalaRiset" class="space-y-8">
+      <div v-if="hasRole('Kepala Riset')" class="space-y-8">
         <!-- Overview Stats -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div v-for="stat in researchStats" :key="stat.label" 
-               class="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-xl p-6">
-            <div class="flex items-center justify-between mb-4">
-              <UIcon :name="stat.icon" :class="`w-10 h-10 ${stat.color}`" />
-              <span class="text-2xl font-bold text-white">{{ stat.value }}</span>
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+          <Card v-for="stat in researchStats" :key="stat.label" variant="glassmorphism"
+            class="p-6 hover:scale-105 transition-all duration-300 cursor-pointer">
+            <div class="flex items-center justify-between mb-6">
+              <component :is="getIcon(stat.icon)" :class="`w-12 h-12 ${stat.color}`" />
+              <span class="text-3xl font-bold text-white">{{ stat.value }}</span>
             </div>
-            <h3 class="text-slate-300 font-medium">{{ stat.label }}</h3>
-            <p class="text-sm text-slate-400 mt-1">{{ stat.description }}</p>
-          </div>
+            <h3 class="text-slate-200 font-semibold text-lg mb-2">{{ stat.label }}</h3>
+            <p class="text-sm text-slate-400 leading-relaxed">{{ stat.description }}</p>
+          </Card>
         </div>
 
         <!-- Progress Chart -->
-        <div class="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-xl p-6">
-          <h3 class="text-xl font-semibold mb-4 flex items-center gap-2">
-            <UIcon name="i-heroicons-chart-bar" class="w-6 h-6 text-green-400" />
+        <Card variant="glassmorphism" class="p-8">
+          <h3 class="text-2xl font-bold mb-8 flex items-center gap-3">
+            <BarChart3 class="w-7 h-7 text-green-400" />
             Progress Proyek
           </h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <!-- Progress Bars -->
-            <div class="space-y-4">
+            <div class="space-y-6">
               <div>
                 <div class="flex justify-between text-sm mb-2">
                   <span class="text-slate-300">Anotasi</span>
-                  <span class="text-slate-400">{{ Math.round(((researchStats.find((stat: any) => stat.label === 'Total Anotasi')?.value || 0) / 1000) * 100) }}%</span>
+                  <span class="text-slate-400">{{Math.round(((researchStats.find((stat: any) => stat.label === 'Total Anotasi')?.value || 0) / 1000) * 100) }}%</span>
                 </div>
                 <div class="w-full bg-slate-700 rounded-full h-2">
-                  <div class="bg-blue-500 h-2 rounded-full transition-all duration-1000" 
-                       :style="`width: ${Math.round(((researchStats.find((stat: any) => stat.label === 'Total Anotasi')?.value || 0) / 1000) * 100)}%`"></div>
+                  <div class="bg-blue-500 h-2 rounded-full transition-all duration-1000"
+                    :style="`width: ${Math.round(((researchStats.find((stat: any) => stat.label === 'Total Anotasi')?.value || 0) / 1000) * 100)}%`">
+                  </div>
                 </div>
               </div>
-              
+
               <div>
                 <div class="flex justify-between text-sm mb-2">
                   <span class="text-slate-300">Review</span>
-                  <span class="text-slate-400">{{ Math.round(((researchStats.find((stat: any) => stat.label === 'Review Selesai')?.value || 0) / 800) * 100) }}%</span>
+                  <span class="text-slate-400">{{Math.round(((researchStats.find((stat: any) => stat.label === 'Review Selesai')?.value || 0) / 800) * 100) }}%</span>
                 </div>
                 <div class="w-full bg-slate-700 rounded-full h-2">
-                  <div class="bg-green-500 h-2 rounded-full transition-all duration-1000" 
-                       :style="`width: ${Math.round(((researchStats.find((stat: any) => stat.label === 'Review Selesai')?.value || 0) / 800) * 100)}%`"></div>
+                  <div class="bg-green-500 h-2 rounded-full transition-all duration-1000"
+                    :style="`width: ${Math.round(((researchStats.find((stat: any) => stat.label === 'Review Selesai')?.value || 0) / 800) * 100)}%`">
+                  </div>
                 </div>
               </div>
-              
+
               <div>
                 <div class="flex justify-between text-sm mb-2">
                   <span class="text-slate-300">Dataset Generation</span>
@@ -287,54 +272,45 @@
             </div>
 
             <!-- Quick Actions -->
-            <div class="space-y-3">
-              <UButton
-                label="Generate Dataset"
-                icon="i-heroicons-arrow-down-tray"
-                variant="outline"
-                color="green"
-                class="w-full justify-start"
-                @click="navigateTo('/kepala-riset/generate-dataset')"
-              />
-              <UButton
-                label="Rekap Kinerja"
-                icon="i-heroicons-chart-bar"
-                variant="outline"
-                color="blue"
-                class="w-full justify-start"
-                @click="navigateTo('/kepala-riset/rekap-kinerja')"
-              />
-              <UButton
-                label="Rekap Dokumen"
-                icon="i-heroicons-clipboard-document-list"
-                variant="outline"
-                color="purple"
-                class="w-full justify-start"
-                @click="navigateTo('/kepala-riset/rekap-dokumen')"
-              />
+            <div class="space-y-4">
+              <Button variant="outline" size="lg" class="w-full justify-start h-14 text-base font-medium"
+                @click="navigateTo('/kepala-riset/generate-dataset')">
+                <Download class="w-5 h-5" />
+                Generate Dataset
+              </Button>
+              <Button variant="outline" size="lg" class="w-full justify-start h-14 text-base font-medium"
+                @click="navigateTo('/kepala-riset/rekap-kinerja')">
+                <BarChart3 class="w-5 h-5" />
+                Rekap Kinerja
+              </Button>
+              <Button variant="outline" size="lg" class="w-full justify-start h-14 text-base font-medium"
+                @click="navigateTo('/kepala-riset/rekap-dokumen')">
+                <ClipboardList class="w-5 h-5" />
+                Rekap Dokumen
+              </Button>
             </div>
           </div>
-        </div>
+        </Card>
       </div>
 
-      <!-- Activity Timeline (Common for all roles) -->
-      <div class="bg-slate-800/30 backdrop-blur-md border border-slate-700/50 rounded-xl p-6">
-        <h3 class="text-xl font-semibold mb-4 flex items-center gap-2">
-          <UIcon name="i-heroicons-clock" class="w-6 h-6 text-blue-400" />
+      <!-- Activity Timeline -->
+      <Card variant="glassmorphism" class="p-8">
+        <h3 class="text-2xl font-bold mb-6 flex items-center gap-3">
+          <Clock class="w-7 h-7 text-blue-400" />
           Aktivitas Terbaru
         </h3>
         <div class="space-y-4">
-          <div v-for="activity in recentActivities" :key="activity.id" 
-               class="flex items-start gap-3 p-4 bg-slate-700/20 rounded-lg border border-slate-600/20">
-            <UIcon :name="activity.icon" :class="`w-5 h-5 mt-0.5 ${activity.color}`" />
+          <Card v-for="activity in recentActivities" :key="activity.id" variant="glassmorphism"
+            class="flex items-start gap-4 p-6 hover:bg-white/5 transition-colors duration-200">
+            <component :is="getIcon(activity.icon)" :class="`w-6 h-6 mt-1 ${activity.color}`" />
             <div class="flex-1">
-              <p class="text-white font-medium">{{ activity.title }}</p>
-              <p class="text-sm text-slate-400">{{ activity.description }}</p>
-              <p class="text-xs text-slate-500 mt-1">{{ activity.time }}</p>
+              <p class="text-white font-semibold text-lg">{{ activity.title }}</p>
+              <p class="text-sm text-slate-400 mt-1 leading-relaxed">{{ activity.description }}</p>
+              <p class="text-xs text-slate-500 mt-2 font-medium">{{ activity.time }}</p>
             </div>
-          </div>
+          </Card>
         </div>
-      </div>
+      </Card>
     </section>
   </div>
 </template>
@@ -342,67 +318,84 @@
 <script setup lang="ts">
 import { navigateTo } from "#app";
 import { ref, computed } from "vue";
+import {
+  ArrowLeft, ArrowRight, Mail, Calendar, Zap, UserPlus, FilePlus, AlertTriangle,
+  FileText, CheckCircle, Clock, ClipboardList, Eye, CheckCircle2, List, FileCheck,
+  BarChart3, Download, Users, Pencil
+} from "lucide-vue-next";
+import { Card } from "~/components/ui/card";
+import { Button } from "~/components/ui/button";
+import { Badge } from "~/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "~/components/ui/avatar";
 import { useAuth } from "~/data/auth";
 
 const { user } = useAuth();
 
-// Mock data - replace with actual API calls
-const pending = ref(false);
+// Helper function to get icon component
+const getIcon = (iconName: string) => {
+  const iconMap: Record<string, any> = {
+    'users': Users,
+    'document-text': FileText,
+    'clipboard-document-list': ClipboardList,
+    'exclamation-triangle': AlertTriangle,
+    'pencil': Pencil,
+    'check-circle': CheckCircle,
+    'arrow-down-tray': Download,
+    'user-group': Users,
+    'chart-bar': BarChart3,
+    'clock': Clock,
+    'envelope': Mail,
+    'calendar': Calendar,
+    'bolt': Zap,
+    'user-plus': UserPlus,
+    'document-plus': FilePlus,
+    'eye': Eye,
+    'check-badge': CheckCircle2,
+    'queue-list': List,
+    'document-check': FileCheck,
+  };
+  return iconMap[iconName] || FileText;
+};
 
 // User data computed from auth
 const userData = computed(() => ({
   name: user.value?.full_name || "Pengguna",
   email: user.value?.email || "pengguna@anota.com",
-  role: user.value?.active_role || "Pengguna",
+  roles: user.value?.roles || ["Pengguna"],
   memberSince: user.value?.date_joined ? new Date(user.value.date_joined).toLocaleDateString('id-ID') : "1 Januari 2024",
   avatar: user.value?.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.value?.full_name || 'User')}&background=0ea5e9&color=fff`,
 }));
 
 // Role checks
-const isAdmin = computed(() => user.value?.active_role === 'Admin');
-const isAnnotator = computed(() => user.value?.active_role === 'Annotators');
-const isReviewer = computed(() => user.value?.active_role === 'Reviewers');
-const isKepalaRiset = computed(() => user.value?.active_role === 'Kepala Riset');
-
-// Role-specific greetings
-const getRoleGreeting = () => {
-  const role = user.value?.active_role;
-  const greetings = {
-    'Admin': 'Kelola sistem dan pantau kinerja tim dengan mudah.',
-    'Annotators': 'Lanjutkan anotasi dokumen untuk meningkatkan dataset.',
-    'Reviewers': 'Tinjau hasil anotasi dan pastikan kualitas data terjaga.',
-    'Kepala Riset': 'Pantau progress penelitian dan generate dataset berkualitas.'
-  };
-  return greetings[role as keyof typeof greetings] || 'Selamat datang kembali di platform ANOTA.';
-};
+const hasRole = (role: string) => user.value?.roles?.includes(role) || false;
 
 // Admin stats
 const adminStats = ref([
   {
     label: 'Total Pengguna',
     value: 0,
-    icon: 'i-heroicons-users',
+    icon: 'users',
     color: 'text-blue-400',
     description: 'Pengguna aktif sistem'
   },
   {
     label: 'Dokumen Upload',
     value: 0,
-    icon: 'i-heroicons-document-text',
+    icon: 'document-text',
     color: 'text-green-400',
     description: 'Dokumen dalam sistem'
   },
   {
     label: 'Tugas Aktif',
     value: 0,
-    icon: 'i-heroicons-clipboard-document-list',
+    icon: 'clipboard-document-list',
     color: 'text-orange-400',
     description: 'Tugas sedang dikerjakan'
   },
   {
     label: 'Error Terdeteksi',
     value: 0,
-    icon: 'i-heroicons-exclamation-triangle',
+    icon: 'exclamation-triangle',
     color: 'text-red-400',
     description: 'Error yang perlu ditangani'
   }
@@ -415,7 +408,7 @@ const annotatorStats = ref({
   inProgressDocuments: 0
 });
 
-// Reviewer stats  
+// Reviewer stats
 const reviewerStats = ref({
   pendingReviews: 0,
   completedReviews: 0,
@@ -427,28 +420,28 @@ const researchStats = ref([
   {
     label: 'Total Anotasi',
     value: 0,
-    icon: 'i-heroicons-pencil',
+    icon: 'pencil',
     color: 'text-blue-400',
     description: 'Anotasi yang telah dibuat'
   },
   {
     label: 'Review Selesai',
     value: 0,
-    icon: 'i-heroicons-check-circle',
+    icon: 'check-circle',
     color: 'text-green-400',
     description: 'Review yang telah selesai'
   },
   {
     label: 'Dataset Generated',
     value: 0,
-    icon: 'i-heroicons-arrow-down-tray',
+    icon: 'arrow-down-tray',
     color: 'text-purple-400',
     description: 'Dataset yang telah dibuat'
   },
   {
     label: 'Active Annotators',
     value: 0,
-    icon: 'i-heroicons-user-group',
+    icon: 'user-group',
     color: 'text-orange-400',
     description: 'Anotator yang aktif'
   }
@@ -465,9 +458,9 @@ const recentActivities = ref([]);
 
 // Helper functions
 const getTaskStatusColor = (status: string) => {
-  const colorMap: Record<string, string> = {
+  const colorMap: Record<string, 'blue' | 'yellow' | 'green' | 'purple' | 'gray'> = {
     'Assigned': 'blue',
-    'In Progress': 'orange',
+    'In Progress': 'yellow',
     'Completed': 'green',
     'Under Review': 'purple'
   };

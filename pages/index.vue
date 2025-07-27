@@ -1,80 +1,52 @@
 <template>
-  <div
-    class="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-blue-950 text-white font-inter relative overflow-hidden"
-  >
+  <div class="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-blue-950 text-white font-inter relative overflow-hidden">
     <!-- Subtle background circles for modern feel -->
-    <div
-      class="absolute top-0 left-0 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-2xl opacity-20 animate-blob"
-    ></div>
-    <div
-      class="absolute top-0 right-0 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-2xl opacity-20 animate-blob animation-delay-2000"
-    ></div>
-    <div
-      class="absolute bottom-0 left-1/4 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-2xl opacity-20 animate-blob animation-delay-4000"
-    ></div>
+    <div class="absolute top-0 left-0 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-2xl opacity-20 animate-blob"></div>
+    <div class="absolute top-0 right-0 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-2xl opacity-20 animate-blob animation-delay-2000"></div>
+    <div class="absolute bottom-0 left-1/4 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-2xl opacity-20 animate-blob animation-delay-4000"></div>
 
     <!-- Main content container -->
     <div class="mx-auto p-4 py-8 lg:p-12 relative z-10 max-w-7xl">
       <!-- Login Section -->
-      <section
-        class="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] text-center relative overflow-hidden animate-fade-in"
-      >
+      <section class="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] text-center relative overflow-hidden animate-fade-in">
         <!-- Giant background text for techy vibe -->
-        <div
-          class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[15rem] md:text-[8rem] font-black text-white/3 opacity-5 pointer-events-none select-none whitespace-nowrap animate-moveText z-0"
-        >
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[15rem] md:text-[8rem] font-black text-white/3 opacity-5 pointer-events-none select-none whitespace-nowrap animate-moveText z-0">
           ANOTA
         </div>
 
-        <div
-          class="p-8 md:p-12 max-w-4xl w-full relative z-10 glassmorphism-card shadow-2xl"
-        >
-          <h1
-            class="text-4xl md:text-6xl font-extrabold mb-4 text-white leading-tight drop-shadow-lg flex items-center justify-center gap-4"
-          >
-            <UIcon
-              name="i-heroicons-light-bulb"
-              class="w-12 h-12 text-blue-400"
-            />
+        <Card variant="glassmorphism" class="p-8 md:p-12 max-w-4xl w-full relative z-10">
+          <h1 class="text-4xl md:text-6xl font-extrabold mb-4 text-white leading-tight drop-shadow-lg flex items-center justify-center gap-4">
+            <UIcon name="i-heroicons-light-bulb" class="w-12 h-12 text-blue-400" />
             ANOTA
           </h1>
-          <p
-            class="text-2xl md:text-3xl font-semibold mb-8 text-purple-400 drop-shadow-sm"
-          >
+          <p class="text-2xl md:text-3xl font-semibold mb-8 text-purple-400 drop-shadow-sm">
             Anotasi Cerdas. Dataset Sempurna.
           </p>
-          <p
-            class="text-lg md:text-2xl mb-10 text-gray-200 font-light max-w-2xl mx-auto leading-relaxed"
-          >
+          <p class="text-lg md:text-2xl mb-10 text-gray-200 font-light max-w-2xl mx-auto leading-relaxed">
             Platform inovatif untuk anotasi Grammatical Error Correction (GEC)
             Bahasa Indonesia. Mempermudah annotator, reviewer, dan kepala riset
             dalam menciptakan dataset berkualitas tinggi.
           </p>
-          <UButton
-            color="primary"
-            variant="solid"
+          <Button
+            variant="gradient"
             size="xl"
-            icon="i-heroicons-arrow-right-on-rectangle"
-            label="Masuk ke ANOTA"
-            class="text-lg md:text-xl font-bold px-10 py-5 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-r from-blue-600 to-purple-600 border border-white/20 relative overflow-hidden z-10 hover:scale-105 hover:from-blue-700 hover:to-purple-700"
             @click="handleLogin"
-          />
-        </div>
+          >
+            <UIcon name="i-heroicons-arrow-right-on-rectangle" class="w-5 h-5" />
+            Masuk ke ANOTA
+          </Button>
+        </Card>
       </section>
 
       <!-- Informasi Utama -->
       <section class="py-16 animate-fade-in-up">
-        <h2
-          class="text-3xl md:text-5xl font-bold text-center mb-12 text-white drop-shadow-md leading-none"
-        >
+        <h2 class="text-3xl md:text-5xl font-bold text-center mb-12 text-white drop-shadow-md leading-none">
           Informasi Penting
         </h2>
 
         <!-- GEC Examples Card (Zig-zag 1) -->
         <div class="flex flex-col lg:flex-row items-center gap-16 mb-24">
-          <div
-            class="glassmorphism-card p-6 md:p-8 w-full shadow-xl transition-all duration-300 hover:shadow-2xl"
-          >
+          <Card variant="glassmorphism" class="p-6 md:p-8 w-full">
             <h3 class="text-2xl md:text-4xl font-semibold mb-8 text-white">
               Contoh Tipe Kesalahan GEC
             </h3>
@@ -89,191 +61,87 @@
                 color="neutral"
                 variant="outline"
                 size="lg"
-                :ui="{
-                  base: 'w-full',
-                }"
               />
             </div>
 
             <transition name="fade">
-              <div
-                v-if="currentGecExample"
-                class="bg-gray-800/60 rounded-lg p-6 mb-6 border border-white/15 shadow-inner transition-all duration-300"
-              >
+              <Card v-if="currentGecExample" variant="glassmorphism" class="p-6 mb-6">
                 <p class="text-base text-gray-300 mb-3">
-                  Tipe:
-                  <span class="font-bold text-white">{{
-                    currentGecExample.type
-                  }}</span>
+                  Tipe: <span class="font-bold text-white">{{ currentGecExample.type }}</span>
                 </p>
                 <p class="text-red-300 mb-3 text-xl font-mono leading-relaxed">
-                  Salah:
-                  <span class="font-mono text-red-100">{{
-                    currentGecExample.wrong
-                  }}</span>
+                  Salah: <span class="font-mono text-red-100">{{ currentGecExample.wrong }}</span>
                 </p>
                 <p class="text-green-300 text-xl font-mono leading-relaxed">
-                  Benar:
-                  <span class="font-mono text-green-100">{{
-                    currentGecExample.correct
-                  }}</span>
+                  Benar: <span class="font-mono text-green-100">{{ currentGecExample.correct }}</span>
                 </p>
-              </div>
+              </Card>
               <div v-else class="text-center text-gray-400 p-8 text-lg">
                 <p>Pilih tipe kesalahan untuk melihat contoh.</p>
               </div>
             </transition>
 
             <div class="flex justify-center gap-6 mt-8">
-              <UButton
-                icon="i-heroicons-arrow-left"
+              <Button
                 variant="outline"
-                color="neutral"
-                label="Sebelumnya"
                 :disabled="currentGecExampleIndex === 0"
                 @click="prevGecExample"
-                :ui="{
-                  base: 'px-8 py-4 rounded-full font-semibold transition-colors duration-200 bg-transparent border border-white/15 text-white hover:bg-white/10',
-                }"
-              />
-              <UButton
-                icon="i-heroicons-arrow-right"
+              >
+                <UIcon name="i-heroicons-arrow-left" class="w-4 h-4" />
+                Sebelumnya
+              </Button>
+              <Button
                 variant="outline"
-                color="neutral"
-                label="Berikutnya"
-                :disabled="
-                  currentGecExampleIndex >=
-                  (gecExamples[selectedGecType.value.value as keyof typeof gecExamples]?.length || 0) - 1
-                "
+                :disabled="currentGecExampleIndex >= (gecExamples[selectedGecType.value.value as keyof typeof gecExamples]?.length || 0) - 1"
                 @click="nextGecExample"
-                :ui="{
-                  base: 'px-8 py-4 rounded-full font-semibold transition-colors duration-200 bg-transparent border border-white/15 text-white hover:bg-white/10',
-                }"
-              />
+              >
+                Berikutnya
+                <UIcon name="i-heroicons-arrow-right" class="w-4 h-4" />
+              </Button>
             </div>
-          </div>
+          </Card>
           <div class="lg:w-1/2 w-full flex justify-center items-center">
-            <UIcon
-              name="i-heroicons-document-text"
-              class="w-48 h-48 text-blue-400 opacity-70 drop-shadow-2xl"
-            />
+            <UIcon name="i-heroicons-document-text" class="w-48 h-48 text-blue-400 opacity-70 drop-shadow-2xl" />
           </div>
         </div>
 
         <!-- Alur Penggunaan Card (Zig-zag 2) -->
-        <div
-          class="flex flex-col lg:flex-row-reverse items-center gap-16 mb-24"
-        >
-          <div
-            class="glassmorphism-card p-6 md:p-8 w-full shadow-xl transition-all duration-300 hover:shadow-2xl"
-          >
+        <div class="flex flex-col lg:flex-row-reverse items-center gap-16 mb-24">
+          <Card variant="glassmorphism" class="p-6 md:p-8 w-full">
             <h3 class="text-2xl md:text-4xl font-semibold mb-8 text-white">
               Alur Penggunaan Aplikasi
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-center">
-              <div
-                class="flex flex-col items-center p-6 bg-gray-800/60 rounded-xl border border-white/10 shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-              >
-                <UIcon
-                  name="i-heroicons-user-group"
-                  class="w-16 h-16 text-blue-400 mb-4"
-                />
-                <p class="font-bold text-white text-xl mb-1">Admin</p>
-                <p class="text-gray-200 text-base leading-relaxed">
-                  Mengelola pengguna, menetapkan dokumen untuk anotasi dan
-                  review.
-                </p>
-              </div>
-              <div
-                class="flex flex-col items-center p-6 bg-gray-800/60 rounded-xl border border-white/10 shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-              >
-                <UIcon
-                  name="i-heroicons-pencil-square"
-                  class="w-16 h-16 text-green-400 mb-4"
-                />
-                <p class="font-bold text-white text-xl mb-1">Annotator</p>
-                <p class="text-gray-200 text-base leading-relaxed">
-                  Menganotasi dokumen teks untuk mengidentifikasi dan mengoreksi
-                  kesalahan GEC.
-                </p>
-              </div>
-              <div
-                class="flex flex-col items-center p-6 bg-gray-800/60 rounded-xl border border-white/10 shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-              >
-                <UIcon
-                  name="i-heroicons-document-check"
-                  class="w-16 h-16 text-purple-400 mb-4"
-                />
-                <p class="font-bold text-white text-xl mb-1">Reviewer</p>
-                <p class="text-gray-200 text-base leading-relaxed">
-                  Meninjau anotasi yang telah dibuat, memastikan kualitas dan
-                  konsistensi.
-                </p>
-              </div>
-              <div
-                class="flex flex-col items-center p-6 bg-gray-800/60 rounded-xl border border-white/10 shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-              >
-                <UIcon
-                  name="i-heroicons-chart-bar"
-                  class="w-16 h-16 text-pink-400 mb-4"
-                />
-                <p class="font-bold text-white text-xl mb-1">Kepala Riset</p>
-                <p class="text-gray-200 text-base leading-relaxed">
-                  Memantau progres, melihat rekap kinerja, dan menghasilkan
-                  dataset GEC dalam format paralel atau M2.
-                </p>
-              </div>
+              <Card v-for="role in appRoles" :key="role.name" variant="glassmorphism" class="flex flex-col items-center p-6 hover:scale-105 transition-transform duration-300">
+                <UIcon :name="role.icon" class="w-16 h-16 mb-4" :class="role.color" />
+                <p class="font-bold text-white text-xl mb-1">{{ role.name }}</p>
+                <p class="text-gray-200 text-base leading-relaxed">{{ role.description }}</p>
+              </Card>
             </div>
-          </div>
+          </Card>
           <div class="lg:w-1/2 w-full flex justify-center items-center">
-            <UIcon
-              name="i-heroicons-arrows-right-left"
-              class="w-48 h-48 text-purple-400 opacity-70 drop-shadow-2xl"
-            />
+            <UIcon name="i-heroicons-arrows-right-left" class="w-48 h-48 text-purple-400 opacity-70 drop-shadow-2xl" />
           </div>
         </div>
       </section>
 
       <!-- FAQ Section (Centered Accordion) -->
       <section class="py-16 animate-fade-in-up">
-        <h2
-          class="text-3xl md:text-5xl font-bold text-center mb-12 text-white drop-shadow-md leading-none"
-        >
+        <h2 class="text-3xl md:text-5xl font-bold text-center mb-12 text-white drop-shadow-md leading-none">
           Pertanyaan Umum (FAQ)
         </h2>
-        <div class="max-w-4xl mx-auto glassmorphism-card p-6 md:p-8 shadow-xl">
-          <UAccordion
-            :items="faqItems"
-            color="white"
-            variant="outline"
-            size="lg"
-            class="text-white"
-            :ui="{
-              base: 'w-full',
-            }"
-          >
-            <template #default="{ item, index, open }">
-              <UButton
-                color="neutral"
-                variant="ghost"
-                :ui="{
-                  base: 'border-b border-white/20 hover:bg-white/10 transition-colors duration-200 py-4 px-6 text-white w-full text-left flex justify-between items-center',
-                }"
-              >
-                <span class="truncate text-white font-semibold">{{
-                  item.label
-                }}</span>
-                <template #trailing>
-                  <UIcon
-                    name="i-heroicons-chevron-down-20-solid"
-                    class="w-6 h-6 ms-auto transform transition-transform duration-200"
-                    :class="[open && 'rotate-180']"
-                  />
-                </template>
-              </UButton>
-            </template>
-          </UAccordion>
-        </div>
+        <Card variant="glassmorphism" class="max-w-4xl mx-auto p-6 md:p-8">
+          <Accordion type="single" collapsible class="w-full">
+            <AccordionItem v-for="(item, index) in faqItems" :key="index" :value="`item-${index}`">
+              <AccordionTrigger class="text-white hover:text-gray-200">
+                {{ item.label }}
+              </AccordionTrigger>
+              <AccordionContent class="text-gray-200">
+                {{ item.content }}
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </Card>
       </section>
     </div>
   </div>
@@ -600,7 +468,7 @@ const selectedGecType = ref(gecErrorTypes[0]); // Default to the first type
 const currentGecExampleIndex = ref(0);
 
 const currentGecExample = computed(() => {
-  const examples = gecExamples[selectedGecType.value.value];
+  const examples = gecExamples[selectedGecType.value.value as keyof typeof gecExamples];
   if (examples && examples.length > 0) {
     return examples[currentGecExampleIndex.value];
   }
@@ -619,7 +487,7 @@ const prevGecExample = () => {
 };
 
 const nextGecExample = () => {
-  const examples = gecExamples[selectedGecType.value.value];
+  const examples = gecExamples[selectedGecType.value.value as keyof typeof gecExamples];
   if (examples && currentGecExampleIndex.value < examples.length - 1) {
     currentGecExampleIndex.value++;
   }
@@ -652,6 +520,33 @@ const faqItems = [
       "Apakah saya perlu memiliki latar belakang linguistik untuk menggunakan ANOTA?",
     content:
       "Untuk peran Annotator dan Reviewer, pemahaman yang baik tentang tata bahasa Bahasa Indonesia sangat dianjurkan. ANOTA dirancang untuk mempermudah proses anotasi, namun keahlian linguistik akan sangat membantu dalam menghasilkan anotasi yang akurat.",
+  },
+];
+
+const appRoles = [
+  {
+    name: "Admin",
+    icon: "i-heroicons-user-group",
+    color: "text-blue-400",
+    description: "Mengelola pengguna, menetapkan dokumen untuk anotasi dan review.",
+  },
+  {
+    name: "Annotator",
+    icon: "i-heroicons-pencil-square",
+    color: "text-green-400",
+    description: "Menganotasi dokumen teks untuk mengidentifikasi dan mengoreksi kesalahan GEC.",
+  },
+  {
+    name: "Reviewer",
+    icon: "i-heroicons-document-check",
+    color: "text-purple-400",
+    description: "Meninjau anotasi yang telah dibuat, memastikan kualitas dan konsistensi.",
+  },
+  {
+    name: "Kepala Riset",
+    icon: "i-heroicons-chart-bar",
+    color: "text-pink-400",
+    description: "Memantau progres, melihat rekap kinerja, dan menghasilkan dataset GEC dalam format paralel atau M2.",
   },
 ];
 

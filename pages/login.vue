@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import * as z from "zod";
+import { ArrowLeft, User } from "lucide-vue-next";
+import { Card, CardHeader } from "~/components/ui/card";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
 import { useAuth } from "~/data/auth";
 import { navigateTo } from "#app";
 
@@ -52,7 +56,6 @@ async function onSubmit() {
       description: `Selamat datang!`,
       color: "success",
     });
-    // Navigate to beranda regardless of role
     navigateTo("/beranda");
   } catch (error) {
     toast.add({
@@ -70,29 +73,29 @@ const goBack = () => {
 
 <template>
   <div class="min-h-[calc(100vh-8rem)] flex items-center justify-center bg-slate-900">
-    <div class="w-full max-w-md bg-slate-800/90 backdrop-blur-lg border border-white/10 rounded-lg shadow-2xl text-white p-10 relative">
-      <div class="absolute top-4 left-4">
-        <button
-          class="rounded-full p-2 w-10 h-10 flex items-center justify-center bg-transparent border-0 text-slate-400 cursor-pointer hover:bg-white/5 hover:text-white transition-colors"
-          @click="goBack"
-          aria-label="Kembali"
-        >
-          <UIcon name="i-heroicons-arrow-left" class="w-6 h-6" />
-        </button>
-      </div>
+    <Card variant="glassmorphism" class="w-full max-w-md p-10 relative">
+      <Button
+        variant="ghost"
+        size="icon"
+        class="absolute top-4 left-4 rounded-full text-slate-400 hover:bg-white/5 hover:text-white"
+        @click="goBack"
+        aria-label="Kembali"
+      >
+        <ArrowLeft class="w-6 h-6" />
+      </Button>
 
-      <div class="text-center mb-4">
-        <UIcon name="i-heroicons-user" class="w-12 h-12 text-white mb-2 mx-auto" />
+      <CardHeader class="text-center mb-4 px-0">
+        <User class="w-12 h-12 text-white mb-2 mx-auto" />
         <h2 class="text-3xl font-bold text-white mb-2">Masuk</h2>
         <p class="text-base text-slate-400">
           Masukkan kredensial Anda untuk mengakses akun.
         </p>
-      </div>
+      </CardHeader>
 
       <form @submit.prevent="onSubmit" class="flex flex-col gap-4">
-        <div class="">
+        <div>
           <label for="username" class="block text-slate-300 text-sm mb-1">Username</label>
-          <input
+          <Input
             id="username"
             v-model="username"
             type="text"
@@ -104,9 +107,9 @@ const goBack = () => {
           <p v-if="usernameError" class="text-red-400 text-xs mt-1">{{ usernameError }}</p>
         </div>
 
-        <div class="">
+        <div>
           <label for="password" class="block text-slate-300 text-sm mb-1">Kata Sandi</label>
-          <input
+          <Input
             id="password"
             v-model="password"
             type="password"
@@ -118,13 +121,15 @@ const goBack = () => {
           <p v-if="passwordError" class="text-red-400 text-xs mt-1">{{ passwordError }}</p>
         </div>
 
-        <button
+        <Button
           type="submit"
-          class="w-full px-10 py-4 font-bold rounded-full shadow-lg transition-all duration-300 bg-gradient-to-r from-blue-500 to-purple-600 border border-white/20 relative overflow-hidden z-[1] mt-2 cursor-pointer hover:shadow-xl hover:scale-[1.02] hover:from-blue-600 hover:to-purple-700 before:content-[''] before:absolute before:top-1/2 before:left-1/2 before:w-[300%] before:h-[300%] before:bg-white/10 before:rounded-full before:transition-all before:duration-700 before:ease-in-out before:-translate-x-1/2 before:-translate-y-1/2 before:scale-0 before:opacity-0 before:-z-[1] hover:before:scale-100 hover:before:opacity-100"
+          variant="gradient"
+          size="xl"
+          class="w-full mt-2"
         >
           Lanjutkan
-        </button>
+        </Button>
       </form>
-    </div>
+    </Card>
   </div>
 </template>
