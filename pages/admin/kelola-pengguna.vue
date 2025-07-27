@@ -47,29 +47,27 @@
               <label for="roles" class="text-sm font-medium text-left">Roles</label>
               <Combobox v-model="newUserRoles" v-model:open="openCreateRoles" :ignore-filter="true">
                 <ComboboxAnchor as-child>
-                  <TagsInput v-model="newUserRoles" class="px-2 gap-2 w-80">
-                    <div class="flex gap-2 flex-wrap items-center">
-                      <TagsInputItem v-for="item in newUserRoles" :key="item" :value="item">
-                        <TagsInputItemText />
-                        <TagsInputItemDelete @click="newUserRoles.splice(newUserRoles.indexOf(item), 1)" />
-                      </TagsInputItem>
-                    </div>
+                  <TagsInput v-model="newUserRoles" class="px-2 w-full">
+                    <div class="flex flex-col">
+                      <div v-if="newUserRoles.length" class="flex gap-2 flex-wrap items-center p-1">
+                        <TagsInputItem v-for="item in newUserRoles" :key="item" :value="item">
+                          <TagsInputItemText  class="text-xs"/>
+                          <TagsInputItemDelete @click="newUserRoles.splice(newUserRoles.indexOf(item), 1)" />
+                        </TagsInputItem>
+                      </div>
 
-                    <ComboboxInput v-model="searchTermCreate" as-child>
-                      <TagsInputInput placeholder="Tambah role..."
-                        class="min-w-[200px] w-full p-0 border-none focus-visible:ring-0 h-auto"
-                        @keydown.enter.prevent />
-                    </ComboboxInput>
+                      <ComboboxInput v-model="searchTermCreate" as-child>
+                        <TagsInputInput placeholder="Tambah role..." class="w-full" @keydown.enter.prevent />
+                      </ComboboxInput>
+                    </div>
                   </TagsInput>
 
-                  <ComboboxList class="w-[--reka-popper-anchor-width]">
+                  <ComboboxList class="w-[--reka-popper-anchor-width]" align="start">
                     <ComboboxEmpty />
                     <ComboboxGroup>
                       <ComboboxItem
                         v-for="role in availableRoles.filter(r => r.toLowerCase().includes(searchTermCreate?.toLowerCase() || '') && !newUserRoles.includes(r))"
-                        :key="role"
-                        :value="role"
-                        @select.prevent="(ev) => {
+                        :key="role" :value="role" @select.prevent="(ev) => {
                           if (typeof ev.detail.value === 'string') {
                             searchTermCreate = ''
                             newUserRoles.push(ev.detail.value)
@@ -77,8 +75,7 @@
                           if (availableRoles.filter(r => r.toLowerCase().includes(searchTermCreate?.toLowerCase() || '') && !newUserRoles.includes(r)).length === 0) {
                             openCreateRoles = false
                           }
-                        }"
-                      >
+                        }">
                         {{ role }}
                       </ComboboxItem>
                     </ComboboxGroup>
@@ -134,30 +131,26 @@
             <label for="edit_roles" class="text-sm font-medium text-left">Roles</label>
             <Combobox v-model="editingUserRoles" v-model:open="openEditRoles" :ignore-filter="true">
               <ComboboxAnchor as-child>
-                <TagsInput v-model="editingUserRoles" class="px-2 gap-2 w-80">
-                  <div class="flex gap-2 flex-wrap items-center">
-                    <TagsInputItem v-for="item in editingUserRoles" :key="item" :value="item" class="bg-secondary border border-border text-foreground">
-                      <TagsInputItemText class="text-foreground" />
-                      <TagsInputItemDelete class="text-muted-foreground" @click="editingUserRoles.splice(editingUserRoles.indexOf(item), 1)" />
-                    </TagsInputItem>
+                <TagsInput v-model="editingUserRoles" class="px-2 w-full">
+                  <div class="flex flex-col">
+                    <div v-if="editingUserRoles.length" class="flex gap-2 flex-wrap items-center p-1">
+                      <TagsInputItem v-for="item in editingUserRoles" :key="item" :value="item">
+                        <TagsInputItemText class="text-xs"/>
+                        <TagsInputItemDelete @click="editingUserRoles.splice(editingUserRoles.indexOf(item), 1)" />
+                      </TagsInputItem>
+                    </div>
+                    <ComboboxInput v-model="searchTermEdit" as-child>
+                      <TagsInputInput placeholder="Tambah role..." class="w-full" @keydown.enter.prevent />
+                    </ComboboxInput>
                   </div>
-
-                  <ComboboxInput v-model="searchTermEdit" as-child>
-                    <TagsInputInput placeholder="Tambah role..."
-                      class="min-w-[200px] w-full p-0 border-none focus-visible:ring-0 h-auto text-foreground"
-                      @keydown.enter.prevent />
-                  </ComboboxInput>
                 </TagsInput>
 
-                <ComboboxList class="w-[--reka-popper-anchor-width] bg-popover text-popover-foreground">
-                  <ComboboxEmpty class="text-muted-foreground" />
-                  <ComboboxGroup class="bg-popover text-foreground">
+                <ComboboxList class="w-[--reka-popper-anchor-width]">
+                  <ComboboxEmpty />
+                  <ComboboxGroup>
                     <ComboboxItem
                       v-for="role in availableRoles.filter(r => r.toLowerCase().includes(searchTermEdit?.toLowerCase() || '') && !editingUserRoles.includes(r))"
-                      :key="role"
-                      :value="role"
-                      class="data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground text-foreground"
-                      @select.prevent="(ev) => {
+                      :key="role" :value="role" @select.prevent="(ev) => {
                         if (typeof ev.detail.value === 'string') {
                           searchTermEdit = ''
                           editingUserRoles.push(ev.detail.value)
@@ -165,8 +158,7 @@
                         if (availableRoles.filter(r => r.toLowerCase().includes(searchTermEdit?.toLowerCase() || '') && !editingUserRoles.includes(r)).length === 0) {
                           openEditRoles = false
                         }
-                      }"
-                    >
+                      }">
                       {{ role }}
                     </ComboboxItem>
                   </ComboboxGroup>
@@ -201,7 +193,6 @@
 
     <div v-if="users.length"
       class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl shadow-lg p-6 mb-6 w-full max-w-6xl">
-      <h2 class="text-xl font-semibold mb-4 text-blue-300">Daftar Pengguna</h2>
       <div class="rounded-md overflow-hidden">
         <Table>
           <TableHeader>
@@ -227,7 +218,7 @@
                 </div>
               </TableCell>
               <TableCell class="text-white text-left">{{ formatDate(user.date_joined) }}</TableCell>
-              <TableCell class="text-left">
+              <TableCell class="flex w-full justify-end">
                 <div class="flex gap-2">
                   <Button size="sm" variant="outline" @click="editUser(user)"
                     class="rounded-full px-4 py-1 font-semibold">
