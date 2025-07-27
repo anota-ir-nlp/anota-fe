@@ -40,8 +40,8 @@ export default defineNuxtConfig({
   css: ["~/assets/css/main.css"],
 
   shadcn: {
-    prefix: '',
-    componentDir: './components/ui'
+    prefix: "",
+    componentDir: "./components/ui",
   },
 
   vite: {

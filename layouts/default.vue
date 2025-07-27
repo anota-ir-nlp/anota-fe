@@ -212,12 +212,14 @@ const handleLogout = async () => {
                 <component :is="group.icon" class="w-4 h-4" />
                 <span class="font-medium">{{ group.label }}</span>
               </MenubarTrigger>
-              <MenubarContent>
+              <MenubarContent
+                class="bg-slate-800 border border-slate-700 shadow-lg"
+              >
                 <MenubarItem
                   v-for="item in group.items"
                   :key="item.path"
                   as-child
-                  class="flex items-start space-x-3 p-3 cursor-pointer hover:bg-slate-800/50 transition-colors group"
+                  class="flex items-start space-x-3 p-3 cursor-pointer hover:bg-slate-700/50 transition-colors group focus:bg-slate-700/50"
                 >
                   <NuxtLink
                     :to="item.path"
@@ -261,20 +263,23 @@ const handleLogout = async () => {
             </Button>
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent class="w-56" align="end">
+          <DropdownMenuContent
+            class="w-56 bg-slate-800 border border-slate-700 shadow-lg"
+            align="end"
+          >
             <!-- Profile Info -->
             <div class="px-3 py-2">
               <div class="font-medium text-white">{{ userName }}</div>
               <div class="text-sm text-slate-400">{{ user?.email }}</div>
             </div>
 
-            <DropdownMenuSeparator></DropdownMenuSeparator>
+            <DropdownMenuSeparator class="bg-slate-700"></DropdownMenuSeparator>
 
             <!-- Menu Items -->
             <DropdownMenuItem
               @click="handleLogout"
               variant="destructive"
-              class="cursor-pointer"
+              class="cursor-pointer hover:bg-red-600/20 focus:bg-red-600/20"
             >
               <LogOut class="w-4 h-4 mr-3" />
               <span>Keluar</span>
@@ -309,3 +314,36 @@ const handleLogout = async () => {
     </footer>
   </div>
 </template>
+
+<style scoped>
+/* Custom styles for better dark theme compatibility */
+:deep(.menubar-content) {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+}
+
+:deep(.dropdown-menu-content) {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+}
+
+:deep(.menubar-item) {
+  color: #e5e7eb !important;
+}
+
+:deep(.menubar-item:hover) {
+  background-color: #374151 !important;
+}
+
+:deep(.dropdown-menu-item) {
+  color: #e5e7eb !important;
+}
+
+:deep(.dropdown-menu-item:hover) {
+  background-color: #374151 !important;
+}
+</style>
