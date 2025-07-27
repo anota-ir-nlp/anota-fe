@@ -1,21 +1,21 @@
-import { useAuth } from "~/composables/useAuth";
+import { useAuth } from "~/data/auth";
 
-export default defineNuxtRouteMiddleware(async (to) => {
-  //   const { isAuthenticated, user, fetchMe, activeRole } = useAuth();
-  //   // Public routes
-  //   if (to.path === "/" || to.path === "/login" || to.path === "/register") {
-  //     return;
-  //   }
-  //   // Ensure user is authenticated
-  //   if (!isAuthenticated.value) {
-  //     await fetchMe();
-  //     if (!isAuthenticated.value) {
-  //       return navigateTo("/login");
-  //     }
-  //   }
-  //   // Role-based protection (if meta.roles is set)
-  //   const roles: string[] = Array.isArray(to.meta.roles) ? to.meta.roles : [];
-  //   if (roles.length > 0 && !roles.includes(activeRole.value)) {
-  //     return navigateTo("/");
-  //   }
+export default defineNuxtRouteMiddleware((to) => {
+  const { isAuthenticated } = useAuth();
+
+  // Public routes that don't require authentication
+  const publicRoutes = ['/', '/login'];
+
+  // Check if current route is public
+  const isPublicRoute = publicRoutes.includes(to.path);
+
+  // If user is not authenticated and trying to access protected route
+  if (!isAuthenticated.value && !isPublicRoute) {
+    return navigateTo('/login');
+  }
+
+  // If user is authenticated and trying to access login page
+  if (isAuthenticated.value && to.path === '/login') {
+    return navigateTo('/beranda');
+  }
 });

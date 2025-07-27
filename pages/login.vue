@@ -1,37 +1,38 @@
 <script setup lang="ts">
 import * as z from "zod";
-import { useAuth } from "~/composables/useAuth";
+import { ArrowLeft, User } from "lucide-vue-next";
+import { Card, CardHeader } from "~/components/ui/card";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { useAuth } from "~/data/auth";
 import { navigateTo } from "#app";
 
 const toast = useToast();
 const { login } = useAuth();
 
-const email = ref("");
+const username = ref("");
 const password = ref("");
-const remember = ref(false);
 
-const emailError = ref("");
+const usernameError = ref("");
 const passwordError = ref("");
 
 const schema = z.object({
-  email: z.string().email("Email tidak valid."),
+  username: z.string().min(1, "Username harus diisi."),
   password: z.string().min(6, "Kata sandi minimal 6 karakter."),
-  remember: z.boolean().optional(),
 });
 
 async function onSubmit() {
-  emailError.value = "";
+  usernameError.value = "";
   passwordError.value = "";
 
   const validationResult = schema.safeParse({
-    email: email.value,
+    username: username.value,
     password: password.value,
-    remember: remember.value,
   });
 
   if (!validationResult.success) {
     validationResult.error.errors.forEach((err) => {
-      if (err.path[0] === "email") emailError.value = err.message;
+      if (err.path[0] === "username") usernameError.value = err.message;
       if (err.path[0] === "password") passwordError.value = err.message;
     });
     toast.add({
@@ -49,7 +50,7 @@ async function onSubmit() {
   });
 
   try {
-    await login(email.value, password.value);
+    await login(username.value, password.value);
     toast.add({
       title: "Berhasil Masuk",
       description: `Selamat datang!`,
@@ -59,7 +60,7 @@ async function onSubmit() {
   } catch (error) {
     toast.add({
       title: "Gagal Masuk",
-      description: "Email atau kata sandi salah.",
+      description: "Username atau kata sandi salah.",
       color: "error",
     });
   }
@@ -68,200 +69,67 @@ async function onSubmit() {
 const goBack = () => {
   navigateTo("/");
 };
-
-// Social login providers
-const providers = [
-  {
-    label: "Google",
-    icon: "i-logos-google-icon",
-    onClick: () => {
-      toast.add({
-        title: "Google Login",
-        description: "Fitur login dengan Google belum tersedia.",
-        color: "info",
-      });
-    },
-  },
-  {
-    label: "Facebook",
-    icon: "i-logos-facebook",
-    onClick: () => {
-      toast.add({
-        title: "Facebook Login",
-        description: "Fitur login dengan Facebook belum tersedia.",
-        color: "info",
-      });
-    },
-  },
-];
 </script>
 
 <template>
-  <div
-    class="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-blue-950 p-4 sm:p-8 font-inter text-white"
-  >
-    <div
-      class="w-full max-w-sm mx-auto glassmorphism-card border border-white/10 rounded-2xl shadow-2xl p-6 sm:p-8 relative"
-    >
-      <!-- Back Button -->
-      <div class="absolute top-4 left-4">
-        <UButton
-          icon="i-heroicons-arrow-left"
-          variant="ghost"
-          color="neutral"
-          size="lg"
-          :ui="{
-            base: 'p-2 rounded-full text-gray-400 hover:bg-white/10 hover:text-white transition-colors duration-200',
-          }"
-          @click="goBack"
-          aria-label="Kembali"
-        />
-      </div>
+  <div class="min-h-[calc(100vh-8rem)] flex items-center justify-center bg-slate-900">
+    <Card variant="glassmorphism" class="w-full max-w-md p-10 relative">
+      <Button
+        variant="ghost"
+        size="icon"
+        class="absolute top-4 left-4 rounded-full text-slate-400 hover:bg-white/5 hover:text-white"
+        @click="goBack"
+        aria-label="Kembali"
+      >
+        <ArrowLeft class="w-6 h-6" />
+      </Button>
 
-      <!-- Header Section -->
-      <div class="text-center mb-6 mt-8">
-        <UIcon
-          name="i-heroicons-user"
-          class="w-12 h-12 text-blue-400 mb-2 mx-auto"
-        />
+      <CardHeader class="text-center mb-4 px-0">
+        <User class="w-12 h-12 text-white mb-2 mx-auto" />
         <h2 class="text-3xl font-bold text-white mb-2">Masuk</h2>
-        <p class="text-gray-400 text-sm">
+        <p class="text-base text-slate-400">
           Masukkan kredensial Anda untuk mengakses akun.
         </p>
-      </div>
+      </CardHeader>
 
-      <!-- Social Providers -->
-      <div class="flex justify-center gap-4 mb-6">
-        <UButton
-          v-for="provider in providers"
-          :key="provider.label"
-          :label="provider.label"
-          :icon="provider.icon"
-          variant="outline"
-          color="neutral"
-          :ui="{
-            base: 'flex-1 max-w-[10rem] py-3 px-4 font-semibold bg-gray-700/50 border border-gray-600 rounded-lg text-white hover:bg-gray-700 hover:border-blue-500 transition-all duration-200 justify-center gap-2',
-          }"
-          @click="provider.onClick"
-        />
-      </div>
-
-      <!-- Divider -->
-      <div class="flex items-center my-6">
-        <hr class="flex-grow border-t border-gray-700" />
-        <span class="px-3 text-gray-500 text-sm bg-gray-800/60">atau</span>
-        <hr class="flex-grow border-t border-gray-700" />
-      </div>
-
-      <!-- Login Form -->
       <form @submit.prevent="onSubmit" class="flex flex-col gap-4">
         <div>
-          <label
-            for="email"
-            class="block text-sm font-medium text-gray-300 mb-1"
-            >Email</label
-          >
-          <UInput
-            id="email"
-            v-model="email"
+          <label for="username" class="block text-slate-300 text-sm mb-1">Username</label>
+          <Input
+            id="username"
+            v-model="username"
             type="text"
-            placeholder="Enter your email"
-            size="lg"
-            :ui="{ base: 'w-full' }"
-            :class="{ 'border-red-500 ring-red-500': emailError }"
+            placeholder="Enter your username"
+            autocomplete="username"
+            class="w-full px-4 py-4 text-base bg-slate-900 border border-slate-600 rounded-md text-white outline-none transition-all duration-200 placeholder:text-slate-400 placeholder:opacity-70 focus:border-blue-500 focus:shadow-[0_0_0_1px_rgb(59,130,246)]"
+            :class="{ '!border-red-400': usernameError }"
           />
-          <p v-if="emailError" class="text-red-400 text-xs mt-1">
-            {{ emailError }}
-          </p>
+          <p v-if="usernameError" class="text-red-400 text-xs mt-1">{{ usernameError }}</p>
         </div>
 
         <div>
-          <label
-            for="password"
-            class="block text-sm font-medium text-gray-300 mb-1"
-            >Kata Sandi</label
-          >
-          <UInput
+          <label for="password" class="block text-slate-300 text-sm mb-1">Kata Sandi</label>
+          <Input
             id="password"
             v-model="password"
             type="password"
             placeholder="Enter your password"
-            size="lg"
-            :ui="{ base: 'w-full' }"
-            :class="{ 'border-red-500 ring-red-500': passwordError }"
+            autocomplete="current-password"
+            class="w-full px-4 py-4 text-base bg-slate-900 border border-slate-600 rounded-md text-white outline-none transition-all duration-200 placeholder:text-slate-400 placeholder:opacity-70 focus:border-blue-500 focus:shadow-[0_0_0_1px_rgb(59,130,246)]"
+            :class="{ '!border-red-400': passwordError }"
           />
-          <p v-if="passwordError" class="text-red-400 text-xs mt-1">
-            {{ passwordError }}
-          </p>
+          <p v-if="passwordError" class="text-red-400 text-xs mt-1">{{ passwordError }}</p>
         </div>
 
-        <UCheckbox
-          id="remember"
-          v-model="remember"
-          name="remember"
-          label="Ingat saya"
-          class="mt-2 mb-4"
-          :ui="{
-            base: 'h-5 w-5 text-blue-500 rounded-md border-gray-700 bg-gray-900/60 focus:ring-blue-500',
-            label: 'text-sm text-gray-300 select-none',
-          }"
-        />
-
-        <UButton
+        <Button
           type="submit"
-          label="Lanjutkan"
-          color="primary"
-          variant="solid"
+          variant="gradient"
           size="xl"
-          :ui="{
-            base: 'w-full py-4 px-8 font-bold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-102 mt-2',
-          }"
-        />
-      </form>
-
-      <p class="text-center text-sm text-gray-400 mt-6">
-        Belum punya akun?
-        <NuxtLink
-          to="/register"
-          class="text-blue-500 hover:underline font-medium transition-colors duration-200"
-          >Daftar di sini</NuxtLink
+          class="w-full mt-2"
         >
-      </p>
-    </div>
+          Lanjutkan
+        </Button>
+      </form>
+    </Card>
   </div>
 </template>
-
-<style scoped>
-.glassmorphism-card {
-  background-color: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1.5px solid rgba(255, 255, 255, 0.18);
-  border-radius: 1.5rem;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18), 0 1.5px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.glassmorphism-card:hover {
-  background-color: rgba(255, 255, 255, 0.16);
-  border-color: rgba(255, 255, 255, 0.28);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22), 0 2px 12px rgba(0, 0, 0, 0.13);
-}
-</style>
-<style scoped>
-.glassmorphism-card {
-  background-color: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1.5px solid rgba(255, 255, 255, 0.18);
-  border-radius: 1.5rem;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18), 0 1.5px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.glassmorphism-card:hover {
-  background-color: rgba(255, 255, 255, 0.16);
-  border-color: rgba(255, 255, 255, 0.28);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22), 0 2px 12px rgba(0, 0, 0, 0.13);
-}
-</style>

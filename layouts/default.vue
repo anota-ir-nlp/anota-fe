@@ -1,135 +1,162 @@
 <script setup lang="ts">
-import { useAuth } from "~/composables/useAuth";
-import { onMounted, onUnmounted, ref, computed } from "vue";
+import { useAuth } from "~/data/auth";
+import { onMounted, ref, computed } from "vue";
 import { navigateTo } from "#app";
+import { Button } from "~/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import {
+  Menubar,
+  MenubarContent,
+  MenubarItem,
+  MenubarMenu,
+  MenubarTrigger,
+} from "~/components/ui/menubar";
+import {
+  Home,
+  Users,
+  FileText,
+  AlertTriangle,
+  Pencil,
+  BarChart3,
+  ClipboardList,
+  Download,
+  LogOut,
+  Lightbulb,
+  FileCheck,
+} from "lucide-vue-next";
 
 const toast = useToast();
-const {
-  user,
-  // isAuthenticated,
-  // availableRoles,
-  // activeRole,
-  login,
-  logout,
-  switchRole,
-  fetchMe,
-} = useAuth();
+const { user, isAuthenticated, userRoles, logout, initializeAuth } = useAuth();
 
-const isAuthenticated = ref(true);
-const availableRoles = ref(["admin", "annotator", "reviewer", "kepala riset"]); // Mock roles, replace with actual roles from your auth system
-const activeRole = ref("annotator");
+const userAvatar = computed(
+  () =>
+    user.value?.avatarUrl ||
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(
+      user.value?.full_name || "User"
+    )}&background=0ea5e9&color=fff`
+);
+const userName = computed(() => user.value?.full_name || "Pengguna");
 
-const isProfileDropdownOpen = ref(false);
-const isSubmenuOpen = ref(false);
-const profileDropdownRef = ref<HTMLElement | null>(null);
+const hasRole = (role: string) => userRoles.value.includes(role);
 
-const userAvatar = computed(() => user.value?.avatarUrl || "");
-const userName = computed(() => user.value?.name || "Pengguna");
-const userRole = computed(() => activeRole.value || "admin"); //TODO: FIX:
-
-const allRoles = availableRoles; // Only show roles user has
-
-const filteredMenus = computed(() => {
+const menuGroups = computed(() => {
   if (!isAuthenticated.value) {
-    return [{ role: "Guest", label: "Beranda", path: "/" }];
+    return [];
   }
-  // Example: adapt menu based on activeRole
-  switch (
-    activeRole.value //TODO: FIX:
-  ) {
-    case "admin":
-      return [
-        { label: "Beranda", path: "/beranda" },
-        { label: "Kelola Pengguna", path: "/admin/kelola-pengguna" },
-        { label: "Kelola Dokumen", path: "/admin/kelola-dokumen" },
-        { label: "Kelola Error", path: "/admin/kelola-error" },
-      ];
-    case "annotator":
-      return [
-        { label: "Beranda", path: "/beranda" },
-        { label: "Anotasi", path: "/anotator/anotasi" },
-      ];
-    case "reviewer":
-      return [
-        { label: "Beranda", path: "/beranda" },
-        { label: "Tinjauan", path: "/peninjau/tinjauan" },
-      ];
-    case "kepala riset":
-      return [
-        { label: "Beranda", path: "/beranda" },
-        { label: "Rekap Kinerja", path: "/kepala-riset/rekap-kinerja" },
-        { label: "Rekap Dokumen", path: "/kepala-riset/rekap-dokumen" },
-        { label: "Generate Dataset", path: "/generate-dataset" },
-      ];
-    default:
-      return [{ label: "Beranda", path: "/beranda" }];
+
+  const groups = [];
+
+  // Always show Beranda as a simple link
+  groups.push({ type: "link", label: "Beranda", path: "/beranda", icon: Home });
+
+  // Admin menus - based on actual pages in admin folder
+  if (hasRole("Admin")) {
+    groups.push({
+      type: "dropdown",
+      label: "Administrator",
+      icon: Users,
+      items: [
+        {
+          label: "Kelola Pengguna",
+          path: "/admin/kelola-pengguna",
+          icon: Users,
+          description: "Manage system users",
+        },
+        {
+          label: "Kelola Dokumen",
+          path: "/admin/kelola-dokumen",
+          icon: FileText,
+          description: "Manage documents",
+        },
+        {
+          label: "Kelola Error",
+          path: "/admin/kelola-error",
+          icon: AlertTriangle,
+          description: "Manage system errors",
+        },
+      ],
+    });
   }
+
+  // Annotator menus - single page with document list functionality
+  if (hasRole("Annotator")) {
+    groups.push({
+      type: "dropdown",
+      label: "Anotator",
+      icon: Pencil,
+      items: [
+        {
+          label: "Daftar Dokumen",
+          path: "/anotator/anotasi",
+          icon: FileText,
+          description: "List of documents to annotate",
+        },
+      ],
+    });
+  }
+
+  // Reviewer menus - single page for reviewing annotations
+  if (hasRole("Reviewer")) {
+    groups.push({
+      type: "dropdown",
+      label: "Reviewer",
+      icon: FileCheck,
+      items: [
+        {
+          label: "Daftar Dokumen",
+          path: "/peninjau/tinjauan",
+          icon: FileCheck,
+          description: "Documents to review",
+        },
+      ],
+    });
+  }
+
+  // Kepala Riset menus - based on actual pages in kepala-riset folder
+  if (hasRole("Kepala Riset")) {
+    groups.push({
+      type: "dropdown",
+      label: "Kepala Riset",
+      icon: BarChart3,
+      items: [
+        {
+          label: "Rekap Kinerja",
+          path: "/kepala-riset/rekap-kinerja",
+          icon: BarChart3,
+          description: "Performance summary",
+        },
+        {
+          label: "Rekap Dokumen",
+          path: "/kepala-riset/rekap-dokumen",
+          icon: ClipboardList,
+          description: "Document summary",
+        },
+        {
+          label: "Generate Dataset",
+          path: "/kepala-riset/generate-dataset",
+          icon: Download,
+          description: "Generate dataset files",
+        },
+      ],
+    });
+  }
+
+  return groups;
 });
 
-const toggleProfileDropdown = () => {
-  isProfileDropdownOpen.value = !isProfileDropdownOpen.value;
-  if (!isProfileDropdownOpen.value) isSubmenuOpen.value = false;
-};
-
-const toggleSubmenu = (event: MouseEvent) => {
-  event.stopPropagation();
-  isSubmenuOpen.value = !isSubmenuOpen.value;
-};
-
-const closeProfileDropdown = () => {
-  isProfileDropdownOpen.value = false;
-  isSubmenuOpen.value = false;
-};
-
-const handleClickOutside = (event: MouseEvent) => {
-  if (
-    profileDropdownRef.value &&
-    !profileDropdownRef.value.contains(event.target as Node)
-  ) {
-    closeProfileDropdown();
-  }
-};
-
-onMounted(() => {
-  document.addEventListener("click", handleClickOutside);
-  if (isAuthenticated.value && !user.value) {
-    fetchMe();
-  }
-});
-
-onUnmounted(() => {
-  document.removeEventListener("click", handleClickOutside);
+onMounted(async () => {
+  await initializeAuth();
 });
 
 const handleLoginClick = () => {
   navigateTo("/login");
-};
-
-const viewProfile = () => {
-  toast.add({
-    title: "Lihat Profil",
-    description: "Navigasi ke halaman profil.",
-    color: "neutral",
-  });
-  closeProfileDropdown();
-};
-
-const changeRole = async (role: string) => {
-  try {
-    await switchRole(role);
-    toast.add({
-      title: "Peran Diubah",
-      description: `Anda sekarang adalah ${role}`,
-      color: "success",
-    });
-    closeProfileDropdown();
-  } catch (err) {
-    toast.add({
-      title: "Gagal Ganti Peran",
-      description: "Tidak dapat mengganti peran.",
-      color: "error",
-    });
-  }
 };
 
 const handleLogout = async () => {
@@ -139,358 +166,146 @@ const handleLogout = async () => {
     description: "Anda telah keluar dari akun.",
     color: "success",
   });
-  closeProfileDropdown();
   navigateTo("/");
 };
 </script>
 
 <template>
-  <div class="flex flex-col min-h-screen">
+  <div class="flex flex-col min-h-screen bg-slate-950">
     <!-- Header/Navbar -->
-    <header class="header">
-      <NuxtLink to="/" class="logo-link">
-        <UIcon name="i-heroicons-light-bulb" class="logo-icon" />
-        <span class="logo-text">ANOTA</span>
+    <header
+      class="sticky top-0 z-50 flex justify-start gap-8 items-center px-4 md:px-8 py-4 bg-slate-900/95 backdrop-blur-sm border-b border-slate-800"
+    >
+      <NuxtLink
+        to="/"
+        class="flex items-center space-x-2 text-white hover:text-blue-400 transition-colors"
+      >
+        <Lightbulb class="text-blue-400" />
+        <span class="text-2xl font-bold">ANOTA</span>
       </NuxtLink>
 
-      <nav v-if="isAuthenticated" class="authenticated-nav">
-        <ul class="menu-list">
-          <li v-for="menu in filteredMenus" :key="menu.path">
-            <NuxtLink :to="menu.path" class="menu-item">{{
-              menu.label
-            }}</NuxtLink>
-          </li>
-        </ul>
-
-        <!-- Custom Profile Dropdown -->
-        <div class="profile-dropdown-wrapper" ref="profileDropdownRef">
-          <button class="profile-button" @click.stop="toggleProfileDropdown">
-            <UAvatar :src="userAvatar" :alt="userName" size="md" />
-            <span class="profile-name">{{ userName }} ({{ userRole }})</span>
-            <UIcon
-              name="i-heroicons-chevron-down-20-solid"
-              class="profile-dropdown-icon"
-              :class="{ 'rotate-180': isProfileDropdownOpen }"
-            />
-          </button>
-
-          <div v-if="isProfileDropdownOpen" class="profile-dropdown-menu">
-            <div class="dropdown-item" @click="viewProfile">
-              <UIcon name="i-heroicons-user" class="dropdown-item-icon" />
-              Lihat Profil
-            </div>
-            <div class="dropdown-submenu-parent">
-              <div
-                class="dropdown-item dropdown-submenu-toggle"
-                @click.stop="toggleSubmenu"
-              >
-                <UIcon
-                  name="i-heroicons-arrows-right-left"
-                  class="dropdown-item-icon"
-                />
-                Ganti Peran
-                <UIcon
-                  name="i-heroicons-chevron-right-20-solid"
-                  class="submenu-arrow"
-                  :class="{ 'rotate-90': isSubmenuOpen }"
-                />
-              </div>
-              <div v-if="isSubmenuOpen" class="dropdown-submenu">
-                <div
-                  v-for="role in allRoles"
-                  :key="role"
-                  class="dropdown-item"
-                  @click="changeRole(role)"
+      <nav v-if="isAuthenticated" class="w-full justify-between flex my-auto">
+        <!-- Menubar -->
+        <Menubar
+          class="hidden md:flex bg-transparent border-none shadow-none space-x-4 my-auto"
+        >
+          <template v-for="group in menuGroups" :key="group.label">
+            <!-- Simple Link Menu Item -->
+            <MenubarMenu v-if="group.type === 'link'">
+              <MenubarTrigger as-child>
+                <NuxtLink
+                  :to="group.path"
+                  class="flex items-center space-x-2 px-3 py-3 text-slate-200 hover:text-white hover:bg-slate-800/50 data-[state=open]:bg-slate-800/50 data-[state=open]:text-white transition-all duration-200"
+                  active-class="text-blue-400 bg-blue-500/10"
                 >
-                  {{ role }}
-                </div>
-              </div>
+                  <component :is="group.icon" class="w-4 h-4" />
+                  <span class="font-medium">{{ group.label }}</span>
+                </NuxtLink>
+              </MenubarTrigger>
+            </MenubarMenu>
+
+            <!-- Dropdown Menu Item -->
+            <MenubarMenu v-else-if="group.type === 'dropdown'">
+              <MenubarTrigger
+                class="flex items-center space-x-2 px-3 py-3 text-slate-200 hover:text-white hover:bg-slate-800/50 data-[state=open]:bg-slate-800/50 data-[state=open]:text-white"
+              >
+                <component :is="group.icon" class="w-4 h-4" />
+                <span class="font-medium">{{ group.label }}</span>
+              </MenubarTrigger>
+              <MenubarContent>
+                <MenubarItem
+                  v-for="item in group.items"
+                  :key="item.path"
+                  as-child
+                  class="flex items-start space-x-3 p-3 cursor-pointer hover:bg-slate-800/50 transition-colors group"
+                >
+                  <NuxtLink
+                    :to="item.path"
+                    class="flex items-start space-x-3 w-full"
+                    active-class="bg-blue-500/10 text-blue-400"
+                  >
+                    <component
+                      :is="item.icon"
+                      class="w-5 h-5 text-slate-400 group-hover:text-slate-300 mt-0.5 flex-shrink-0"
+                    />
+                    <div class="flex-1">
+                      <div
+                        class="text-sm font-medium text-slate-200 group-hover:text-white"
+                      >
+                        {{ item.label }}
+                      </div>
+                      <div class="text-xs text-slate-400 mt-1 leading-relaxed">
+                        {{ item.description }}
+                      </div>
+                    </div>
+                  </NuxtLink>
+                </MenubarItem>
+              </MenubarContent>
+            </MenubarMenu>
+          </template>
+        </Menubar>
+
+        <!-- Profile Dropdown -->
+        <DropdownMenu>
+          <DropdownMenuTrigger as-child>
+            <Button
+              variant="ghost"
+              class="flex items-center space-x-3 px-3 py-3 text-white hover:bg-slate-800/50 rounded-lg h-auto"
+            >
+              <Avatar class="ring-2 ring-slate-700">
+                <AvatarImage :src="userAvatar" :alt="userName" />
+                <AvatarFallback>{{
+                  userName.charAt(0).toUpperCase()
+                }}</AvatarFallback>
+              </Avatar>
+            </Button>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent class="w-56" align="end">
+            <!-- Profile Info -->
+            <div class="px-3 py-2">
+              <div class="font-medium text-white">{{ userName }}</div>
+              <div class="text-sm text-slate-400">{{ user?.email }}</div>
             </div>
-            <hr class="dropdown-divider" />
-            <div class="dropdown-item" @click="logout">
-              <UIcon
-                name="i-heroicons-arrow-right-on-rectangle"
-                class="dropdown-item-icon"
-              />
-              Keluar
-            </div>
-          </div>
-        </div>
+
+            <DropdownMenuSeparator></DropdownMenuSeparator>
+
+            <!-- Menu Items -->
+            <DropdownMenuItem
+              @click="handleLogout"
+              variant="destructive"
+              class="cursor-pointer"
+            >
+              <LogOut class="w-4 h-4 mr-3" />
+              <span>Keluar</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </nav>
-      <nav v-else class="public-nav">
-        <UButton
-          label="Masuk"
-          icon="i-heroicons-arrow-right-on-rectangle"
-          variant="solid"
-          color="primary"
-          class="public-login-button"
-          @click="handleLoginClick"
-        />
+
+      <!-- Public Navigation -->
+      <nav v-else class="flex items-end w-full justify-end">
+        <Button variant="gradient" @click="handleLoginClick">
+          <LogOut class="w-4 h-4" />
+          Masuk
+        </Button>
       </nav>
     </header>
 
-    <!-- Main Content Slot -->
-    <main class="flex-grow">
+    <!-- Main Content -->
+    <main class="flex-1">
       <slot />
     </main>
 
     <!-- Footer -->
-    <footer class="footer">
-      <div class="footer-content">
-        <p>&copy; {{ new Date().getFullYear() }} ANOTA. All rights reserved.</p>
-        <div class="social-links">
-          <UButton
-            icon="i-mdi-github"
-            variant="ghost"
-            color="neutral"
-            to="https://github.com/your-org/anota"
-            target="_blank"
-            aria-label="GitHub"
-          />
-          <UButton
-            icon="i-mdi-twitter"
-            variant="ghost"
-            color="neutral"
-            to="https://twitter.com"
-            target="_blank"
-            aria-label="Twitter"
-          />
-        </div>
+    <footer
+      class="border-t border-slate-800 bg-slate-900/50 px-8 py-6 text-center"
+    >
+      <div class="max-w-5xl mx-auto flex flex-col items-center space-y-4">
+        <p class="text-slate-300">
+          &copy; {{ new Date().getFullYear() }} ANOTA. All rights reserved.
+        </p>
       </div>
     </footer>
   </div>
 </template>
-
-<style scoped>
-/* Header/Navbar Styles */
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 2rem; /* py-4 px-8 */
-  background-color: rgba(
-    31,
-    41,
-    55,
-    0.9
-  ); /* bg-gray-800 with some transparency */
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.logo-link {
-  display: flex;
-  align-items: center;
-  text-decoration: none;
-  color: white;
-  font-size: 1.5rem; /* text-2xl */
-  font-weight: 700; /* font-bold */
-  transition: color 0.2s ease-in-out;
-}
-
-.logo-link:hover {
-  color: #9333ea; /* purple-600 */
-}
-
-.logo-icon {
-  width: 2rem; /* w-8 */
-  height: 2rem; /* h-8 */
-  margin-right: 0.5rem; /* mr-2 */
-  color: #60a5fa; /* blue-400 */
-}
-
-.authenticated-nav {
-  display: flex;
-  align-items: center;
-  gap: 2rem; /* gap-8 */
-}
-
-.menu-list {
-  display: flex;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  gap: 1.5rem; /* gap-6 */
-}
-
-.menu-item {
-  text-decoration: none;
-  color: #e2e8f0; /* text-gray-200 */
-  font-weight: 500; /* font-medium */
-  padding: 0.5rem 0.75rem; /* px-3 py-2 */
-  border-radius: 0.5rem; /* rounded-md */
-  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
-}
-
-.menu-item:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: white;
-}
-
-/* Custom Profile Dropdown Styles */
-.profile-dropdown-wrapper {
-  position: relative;
-  z-index: 1000; /* Ensure it's above other content */
-}
-
-.profile-button {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem; /* gap-2 */
-  padding: 0.5rem 0.75rem; /* px-3 py-2 */
-  border-radius: 0.5rem; /* rounded-md */
-  transition: background-color 0.2s ease-in-out;
-  background-color: transparent;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-
-.profile-button:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.profile-name {
-  font-weight: 600; /* font-semibold */
-}
-
-.profile-dropdown-icon {
-  width: 1.25rem; /* w-5 */
-  height: 1.25rem; /* h-5 */
-  margin-left: 0.25rem; /* ms-1 */
-  transition: transform 0.2s ease-in-out;
-}
-
-.profile-dropdown-icon.rotate-180 {
-  transform: rotate(180deg);
-}
-
-.profile-dropdown-menu {
-  position: absolute;
-  top: calc(100% + 0.5rem); /* Position below the button with some spacing */
-  right: 0;
-  background-color: rgba(31, 41, 55, 0.95); /* Darker background for menu */
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 15px rgba(0, 0, 0, 0.05);
-  min-width: 12rem; /* Minimum width for the dropdown */
-  padding: 0.5rem 0; /* Vertical padding */
-}
-
-.dropdown-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem; /* gap-3 */
-  padding: 0.75rem 1rem; /* px-4 py-3 */
-  color: #e2e8f0; /* text-gray-200 */
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
-}
-
-.dropdown-item:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: white;
-}
-
-.dropdown-item-icon {
-  width: 1.25rem; /* w-5 */
-  height: 1.25rem; /* h-5 */
-}
-
-.dropdown-submenu-parent {
-  position: relative;
-}
-
-.dropdown-submenu-toggle {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.dropdown-submenu {
-  position: absolute;
-  top: 0;
-  left: -100%; /* Position to the left of the parent item */
-  background-color: rgba(31, 41, 55, 0.98); /* Slightly darker for submenu */
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 15px rgba(0, 0, 0, 0.05);
-  min-width: 10rem; /* Minimum width for submenu */
-  padding: 0.5rem 0;
-  /* Removed display: none; and hover rules, now controlled by v-if */
-}
-
-.submenu-arrow {
-  width: 1rem;
-  height: 1rem;
-  margin-left: 0.5rem;
-  transition: transform 0.2s ease-in-out; /* Add transition for rotation */
-}
-
-.submenu-arrow.rotate-90 {
-  transform: rotate(90deg);
-}
-
-.dropdown-divider {
-  border: none;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  margin: 0.5rem 0;
-}
-
-.public-nav .public-login-button {
-  font-weight: 600; /* font-semibold */
-  padding: 0.75rem 1.5rem; /* px-6 py-3 */
-  border-radius: 0.5rem; /* rounded-md */
-  background: linear-gradient(to right, #3b82f6, #9333ea);
-  border: none;
-  color: white;
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-}
-
-.public-nav .public-login-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-/* Footer Styles */
-.footer {
-  padding: 2rem; /* p-8 */
-  background-color: #1a2b3c; /* custom-blue or a dark shade */
-  color: #cbd5e1; /* text-gray-300 */
-  text-align: center;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.footer-content {
-  max-width: 80rem; /* max-w-5xl */
-  margin-left: auto;
-  margin-right: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem; /* gap-4 */
-}
-
-.social-links {
-  display: flex;
-  gap: 0.5rem; /* gap-2 */
-}
-
-.social-links .u-button {
-  color: #cbd5e1; /* text-gray-300 */
-}
-
-.social-links .u-button:hover {
-  color: white;
-}
-</style>
