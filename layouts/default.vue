@@ -122,15 +122,15 @@ const handleLogout = async () => {
 <template>
   <div class="flex flex-col min-h-screen bg-slate-950">
     <!-- Header/Navbar -->
-    <header class="sticky top-0 z-50 flex justify-between items-center px-4 md:px-8 py-4 bg-slate-900/95 backdrop-blur-sm border-b border-slate-800">
+    <header class="sticky top-0 z-50 flex justify-start gap-8 items-center px-4 md:px-8 py-4 bg-slate-900/95 backdrop-blur-sm border-b border-slate-800">
       <NuxtLink to="/" class="flex items-center space-x-2 text-white hover:text-blue-400 transition-colors">
         <Lightbulb class="text-blue-400" />
         <span class="text-2xl font-bold">ANOTA</span>
       </NuxtLink>
 
-      <nav v-if="isAuthenticated" class="flex items-center space-x-3">
+      <nav v-if="isAuthenticated" class="w-full justify-between flex my-auto">
         <!-- Menubar -->
-        <Menubar class="hidden md:flex bg-transparent border-none shadow-none space-x-4">
+        <Menubar class="hidden md:flex bg-transparent border-none shadow-none space-x-4 my-auto">
           <template v-for="group in menuGroups" :key="group.label">
             <!-- Simple Link Menu Item -->
             <MenubarMenu v-if="group.type === 'link'">
@@ -190,7 +190,7 @@ const handleLogout = async () => {
             </Button>
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent class="w-56">
+          <DropdownMenuContent class="w-56" align="end">
             <!-- Profile Info -->
             <div class="px-3 py-2">
               <div class="font-medium text-white">{{ userName }}</div>
@@ -209,7 +209,7 @@ const handleLogout = async () => {
       </nav>
 
       <!-- Public Navigation -->
-      <nav v-else class="flex items-center">
+      <nav v-else class="flex items-end w-full justify-end">
         <Button
           variant="gradient"
           @click="handleLoginClick"
