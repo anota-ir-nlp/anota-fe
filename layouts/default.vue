@@ -20,6 +20,7 @@ import {
 } from "~/components/ui/menubar";
 import { Home, Users, FileText, AlertTriangle, Pencil, BarChart3, ClipboardList, Download, LogOut, Lightbulb, FileCheck } from "lucide-vue-next";
 import { toast } from "vue-sonner";
+import type { AvailableRole } from "~/types/api";
 
 const {
   user,
@@ -32,19 +33,21 @@ const {
 const userAvatar = computed(() => user.value?.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.value?.full_name || 'User')}&background=0ea5e9&color=fff`);
 const userName = computed(() => user.value?.full_name || "Pengguna");
 
-const hasRole = (role: string) => userRoles.value.includes(role);
+const hasRole = (role: AvailableRole) => userRoles.value.includes(role);
 
-const menuGroups = computed(() => {
+type MenuGroup =
+  | { type: 'link'; label: string; path: string; icon: any }
+  | { type: 'dropdown'; label: string; icon: any; items: Array<{ label: string; path: string; icon: any; description: string }> };
+
+const menuGroups = computed<MenuGroup[]>(() => {
   if (!isAuthenticated.value) {
     return [];
   }
 
-  const groups = [];
+  const groups: MenuGroup[] = [];
 
-  // Always show Beranda as a simple link
   groups.push({ type: 'link', label: "Beranda", path: "/beranda", icon: Home });
 
-  // Admin menus - based on actual pages in admin folder
   if (hasRole("Admin")) {
     groups.push({
       type: 'dropdown',
