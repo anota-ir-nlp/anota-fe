@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 text-white">
     <!-- Welcome Section -->
-    <section class="w-full max-w-7xl mx-auto px-4 pb-20 pt-20">
+    <section class="w-full max-w-7xl mx-auto px-4 pb-20 pt-20 flex flex-col gap-8">
       <Card variant="glassmorphism" class="p-8">
         <div class="flex flex-col md:flex-row items-center gap-8">
           <Avatar class="w-24 h-24 ring-4 ring-blue-500/30 shadow-xl">
@@ -36,6 +36,25 @@
               Ke Halaman Utama
             </Button>
           </div>
+        </div>
+      </Card>
+      
+      <!-- Activity Timeline -->
+      <Card variant="glassmorphism" class="p-8">
+        <h3 class="text-2xl font-bold mb-6 flex items-center gap-3">
+          <Clock class="w-7 h-7 text-blue-400" />
+          Aktivitas Terbaru
+        </h3>
+        <div class="space-y-4">
+          <Card v-for="activity in recentActivities" :key="activity.id" variant="glassmorphism"
+            class="flex items-start gap-4 p-6 hover:bg-white/5 transition-colors duration-200">
+            <component :is="getIcon(activity.icon)" :class="`w-6 h-6 mt-1 ${activity.color}`" />
+            <div class="flex-1">
+              <p class="text-white font-semibold text-lg">{{ activity.title }}</p>
+              <p class="text-sm text-slate-400 mt-1 leading-relaxed">{{ activity.description }}</p>
+              <p class="text-xs text-slate-500 mt-2 font-medium">{{ activity.time }}</p>
+            </div>
+          </Card>
         </div>
       </Card>
     </section>
@@ -336,25 +355,6 @@
           </div>
         </Card>
       </div>
-
-      <!-- Activity Timeline -->
-      <Card variant="glassmorphism" class="p-8">
-        <h3 class="text-2xl font-bold mb-6 flex items-center gap-3">
-          <Clock class="w-7 h-7 text-blue-400" />
-          Aktivitas Terbaru
-        </h3>
-        <div class="space-y-4">
-          <Card v-for="activity in recentActivities" :key="activity.id" variant="glassmorphism"
-            class="flex items-start gap-4 p-6 hover:bg-white/5 transition-colors duration-200">
-            <component :is="getIcon(activity.icon)" :class="`w-6 h-6 mt-1 ${activity.color}`" />
-            <div class="flex-1">
-              <p class="text-white font-semibold text-lg">{{ activity.title }}</p>
-              <p class="text-sm text-slate-400 mt-1 leading-relaxed">{{ activity.description }}</p>
-              <p class="text-xs text-slate-500 mt-2 font-medium">{{ activity.time }}</p>
-            </div>
-          </Card>
-        </div>
-      </Card>
     </section>
   </div>
 </template>

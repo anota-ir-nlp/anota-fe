@@ -8,7 +8,7 @@
     <!-- Main content container -->
     <div class="mx-auto p-4 py-8 lg:p-12 relative z-10 max-w-7xl">
       <!-- Login Section -->
-      <section class="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] text-center relative overflow-hidden animate-fade-in">
+      <section class="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] text-center relative overflow-hidden">
         <!-- Giant background text for techy vibe -->
         <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[15rem] md:text-[8rem] font-black text-white/3 opacity-5 pointer-events-none select-none whitespace-nowrap z-0">
           ANOTA
@@ -39,7 +39,7 @@
       </section>
 
       <!-- Informasi Utama -->
-      <section class="py-16 animate-fade-in-delayed">
+      <section class="py-16 delay-300">
         <h2 class="text-3xl md:text-5xl font-bold text-center mb-12 text-white drop-shadow-md leading-none">
           Informasi Penting
         </h2>
@@ -129,7 +129,7 @@
       </section>
 
       <!-- FAQ Section (Centered Accordion) -->
-      <section class="py-16 animate-fade-in-delayed">
+      <section class="py-16 delay-300">
         <h2 class="text-3xl md:text-5xl font-bold text-center mb-12 text-white drop-shadow-md leading-none">
           Pertanyaan Umum (FAQ)
         </h2>
@@ -583,25 +583,3 @@ useHead({
   ],
 });
 </script>
-
-<style scoped>
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in {
-  animation: fadeIn 1s ease-out forwards;
-}
-
-.animate-fade-in-delayed {
-  animation: fadeIn 1s ease-out 0.3s forwards;
-  opacity: 0;
-}
-</style>
