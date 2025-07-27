@@ -1,11 +1,12 @@
 import { useAuth } from "~/data/auth";
 import type { UseFetchOptions } from "nuxt/app";
 import type { FetchRequest } from "ofetch";
+import { toast } from "vue-sonner";
+
 
 export const useProtectedFetcher = () => {
   const { getAccessToken, refreshAccessToken, logout } = useAuth();
   const runtimeConfig = useRuntimeConfig();
-  const toast = useToast();
 
   const fetcher = $fetch.create({
     baseURL: runtimeConfig.public.apiBaseUrl,
@@ -17,12 +18,9 @@ export const useProtectedFetcher = () => {
         // Try to refresh token
         token = await refreshAccessToken();
         if (!token) {
-          toast.add({
-            title: "Sesi berakhir",
+          toast.message("Sesi berakhir", {
             description: "Silakan login kembali",
-            color: "error",
           });
-          await navigateTo("/login");
           return;
         }
       }
@@ -44,20 +42,12 @@ export const useProtectedFetcher = () => {
           try {
             return await fetcher(request);
           } catch {
-            toast.add({
-              title: "Sesi berakhir",
-              description: "Token tidak valid, silakan login kembali",
-              color: "error",
-            });
+            toast.error("Sesi berakhir. Token tidak valid, silakan login kembali");
             await logout();
             await navigateTo("/login");
           }
         } else {
-          toast.add({
-            title: "Sesi berakhir",
-            description: "Token tidak valid, silakan login kembali",
-            color: "error",
-          });
+          toast.error("Sesi berakhir. Token tidak valid, silakan login kembali");
           await logout();
           await navigateTo("/login");
         }

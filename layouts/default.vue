@@ -31,8 +31,9 @@ import {
   Lightbulb,
   FileCheck,
 } from "lucide-vue-next";
+import { toast } from "vue-sonner";
+import type { AvailableRole } from "~/types/api";
 
-const toast = useToast();
 const { user, isAuthenticated, userRoles, logout, initializeAuth } = useAuth();
 
 const userAvatar = computed(
@@ -44,19 +45,31 @@ const userAvatar = computed(
 );
 const userName = computed(() => user.value?.full_name || "Pengguna");
 
-const hasRole = (role: string) => userRoles.value.includes(role);
+const hasRole = (role: AvailableRole) => userRoles.value.includes(role);
 
-const menuGroups = computed(() => {
+type MenuGroup =
+  | { type: "link"; label: string; path: string; icon: any }
+  | {
+      type: "dropdown";
+      label: string;
+      icon: any;
+      items: Array<{
+        label: string;
+        path: string;
+        icon: any;
+        description: string;
+      }>;
+    };
+
+const menuGroups = computed<MenuGroup[]>(() => {
   if (!isAuthenticated.value) {
     return [];
   }
 
-  const groups = [];
+  const groups: MenuGroup[] = [];
 
-  // Always show Beranda as a simple link
   groups.push({ type: "link", label: "Beranda", path: "/beranda", icon: Home });
 
-  // Admin menus - based on actual pages in admin folder
   if (hasRole("Admin")) {
     groups.push({
       type: "dropdown",
@@ -161,11 +174,7 @@ const handleLoginClick = () => {
 
 const handleLogout = async () => {
   await logout();
-  toast.add({
-    title: "Berhasil Keluar",
-    description: "Anda telah keluar dari akun.",
-    color: "success",
-  });
+  toast.success("Anda telah keluar dari akun.");
   navigateTo("/");
 };
 </script>

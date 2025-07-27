@@ -3,25 +3,15 @@
     <h1 class="text-4xl font-bold mb-20 text-blue-400">Kelola Dokumen</h1>
 
     <!-- Add Document Button -->
-    <div class="mb-6 w-full">
+    <div class="mb-6 w-full flex gap-3 max-w-6xl mx-auto">
       <Dialog v-model:open="isCreateDialogOpen">
-        <div class="flex gap-3 items-start w-full max-w-6xl mx-auto">
+        <div class="flex gap-3 items-start">
           <DialogTrigger as-child>
             <Button class="flex items-center gap-2">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-              </svg>
+              <Plus class="w-4 h-4" />
               Tambah Dokumen Baru
             </Button>
           </DialogTrigger>
-
-          <Button variant="outline" class="flex items-center gap-2" @click="navigateTo('/beranda')">
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-            </svg>
-            Kembali ke Beranda
-          </Button>
         </div>
         <DialogContent class="sm:max-w-lg">
           <DialogHeader>
@@ -37,7 +27,7 @@
             </div>
             <div class="grid gap-2">
               <label for="text" class="text-sm font-medium text-left">Teks Dokumen</label>
-              <Textarea id="text" v-model="newDocument.text" placeholder="Masukkan teks dokumen..." 
+              <Textarea id="text" v-model="newDocument.text" placeholder="Masukkan teks dokumen..."
                 class="w-full min-h-32" />
             </div>
           </div>
@@ -46,16 +36,74 @@
               Reset
             </Button>
             <Button @click="createDocument" :disabled="isCreating" class="flex items-center gap-2">
-              <svg v-if="!isCreating" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-              </svg>
-              <svg v-else class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor"
-                  d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                </path>
-              </svg>
+              <Plus v-if="!isCreating" class="w-4 h-4" />
+              <Loader2 v-else class="w-4 h-4 animate-spin" />
               {{ isCreating ? 'Menambah...' : 'Tambah Dokumen' }}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <!-- Bulk Upload CSV Button & Dialog -->
+      <Dialog v-model:open="isBulkDialogOpen">
+        <div class="flex gap-3 items-start">
+          <DialogTrigger as-child>
+            <Button variant="outline" class="flex items-center gap-2">
+              <Upload class="w-4 h-4" />
+              Upload CSV Dokumen
+            </Button>
+          </DialogTrigger>
+        </div>
+        <DialogContent class="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Bulk Upload Dokumen via CSV</DialogTitle>
+            <DialogDescription>
+              Upload file CSV dengan kolom <b>title</b> dan <b>text</b>. Setiap baris akan menjadi dokumen baru.
+            </DialogDescription>
+          </DialogHeader>
+          <div class="grid gap-4 py-4">
+            <Input
+              type="file"
+              accept=".csv"
+              @change="handleCsvFile"
+              class="mb-2"
+            />
+            <div v-if="csvPreview.length" class="font-semibold">
+              Total {{ csvPreview.length }} dokumen
+            </div>
+            <div v-if="csvPreview.length" class="bg-slate-800 rounded p-2 text-sm mb-2">
+              <div class="w-full max-w-2xl mx-auto">
+                <Table class="w-full text-left border-collapse table-fixed">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead class="px-3 py-2 border-b border-slate-700 text-blue-300 font-semibold w-1/4">Judul</TableHead>
+                      <TableHead class="px-3 py-2 border-b border-slate-700 text-gray-400 font-semibold w-3/4">Teks</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow v-for="(row, idx) in csvPreview.slice(0, 5)" :key="idx">
+                      <TableCell
+                        class="px-3 py-2 border-b border-slate-700 align-top truncate whitespace-nowrap overflow-hidden"
+                        :title="row.title">{{ row.title }}</TableCell>
+                      <TableCell
+                        class="px-3 py-2 border-b border-slate-700 text-gray-400 align-top truncate whitespace-nowrap overflow-hidden"
+                        :title="row.text">{{ row.text }}</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+            <div v-if="csvError" class="text-red-400 text-sm">{{ csvError }}</div>
+            <Progress v-if="isBulkUploading" :model-value="bulkProgress" class="mt-2" />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" @click="resetBulkForm">
+              Reset
+            </Button>
+            <Button @click="bulkCreateDocuments" :disabled="isBulkUploading || !csvPreview.length"
+              class="flex items-center gap-2">
+              <Upload v-if="!isBulkUploading" class="w-4 h-4" />
+              <Loader2 v-else class="w-4 h-4 animate-spin" />
+              {{ isBulkUploading ? 'Mengupload...' : 'Upload CSV' }}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -78,7 +126,7 @@
           </div>
           <div class="grid gap-2">
             <label for="edit_text" class="text-sm font-medium text-left">Teks Dokumen</label>
-            <Textarea id="edit_text" v-model="editingDocument.text" placeholder="Masukkan teks dokumen..." 
+            <Textarea id="edit_text" v-model="editingDocument.text" placeholder="Masukkan teks dokumen..."
               class="w-full min-h-32" />
           </div>
         </div>
@@ -87,15 +135,8 @@
             Batal
           </Button>
           <Button @click="updateDocument" :disabled="isUpdating" class="flex items-center gap-2">
-            <svg v-if="!isUpdating" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-            </svg>
-            <svg v-else class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor"
-                d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-              </path>
-            </svg>
+            <Check v-if="!isUpdating" class="w-4 h-4" />
+            <Loader2 v-else class="w-4 h-4 animate-spin" />
             {{ isUpdating ? 'Mengupdate...' : 'Update Dokumen' }}
           </Button>
         </DialogFooter>
@@ -108,22 +149,21 @@
 
     <div v-if="documents.length"
       class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl shadow-lg p-6 mb-6 w-full max-w-6xl">
-      <h2 class="text-xl font-semibold mb-4 text-blue-300">Daftar Dokumen</h2>
       <div class="rounded-md overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow class="bg-gray-800/60 hover:bg-gray-800/60">
-              <TableHead class="text-gray-300 font-medium text-left">Judul</TableHead>
-              <TableHead class="text-gray-300 font-medium text-left">ID</TableHead>
+              <TableHead class="text-gray-300 font-medium text-left w-96 truncate">Judul</TableHead>
               <TableHead class="text-gray-300 font-medium text-left">Assigned To</TableHead>
               <TableHead class="text-gray-300 font-medium text-left">Tanggal Dibuat</TableHead>
-              <TableHead class="text-gray-300 font-medium text-left">Aksi</TableHead>
+              <TableHead class="text-gray-300 font-medium text-right"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             <TableRow v-for="doc in documents" :key="doc.id" class="border-white/10 hover:bg-white/5">
-              <TableCell class="font-semibold text-white text-left">{{ doc.title }}</TableCell>
-              <TableCell class="text-white text-left">{{ doc.id }}</TableCell>
+              <TableCell class="font-semibold text-white text-left w-96 truncate">
+                <span class="block truncate">{{ doc.title }}</span>
+              </TableCell>
               <TableCell class="text-left">
                 <div class="flex flex-wrap gap-1">
                   <Badge v-for="userId in doc.assigned_to" :key="userId" variant="blue">
@@ -133,22 +173,16 @@
                 </div>
               </TableCell>
               <TableCell class="text-white text-left">{{ formatDate(doc.created_at) }}</TableCell>
-              <TableCell class="text-left">
-                <div class="flex gap-2">
+              <TableCell class="text-right">
+                <div class="flex gap-2 w-full justify-end">
                   <Button size="sm" variant="outline" @click="editDocument(doc)"
                     class="rounded-full px-4 py-1 font-semibold">
-                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
+                    <Pencil class="w-4 h-4 mr-1" />
                     Edit
                   </Button>
                   <Button size="sm" variant="destructive" @click="deleteDocument(doc.id)"
                     class="rounded-full px-4 py-1 font-semibold">
-                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
+                    <Trash2 class="w-4 h-4 mr-1" />
                     Hapus
                   </Button>
                 </div>
@@ -158,9 +192,30 @@
         </Table>
       </div>
     </div>
+    <!-- Pagination Controls: moved outside the card -->
+    <div v-if="documents.length" class="mt-4 flex justify-center w-full max-w-6xl">
+      <Pagination :page="currentPage" :total="totalPages" :items-per-page="documents.length > 0 ? documents.length : 1"
+        @update:page="fetchDocuments">
+        <PaginationContent>
+          <PaginationPrevious :disabled="currentPage === 1" @click="fetchDocuments(currentPage - 1)">
+            <ArrowLeft class="w-4 h-4" />
+          </PaginationPrevious>
+          <template v-for="(page, idx) in paginationPages" :key="idx">
+            <PaginationItem v-if="typeof page === 'number'" :value="page" :is-active="page === currentPage"
+              @click="fetchDocuments(page)">{{ page }}</PaginationItem>
+            <PaginationEllipsis v-else>
+              <MoreHorizontal class="w-4 h-4" />
+            </PaginationEllipsis>
+          </template>
+          <PaginationNext :disabled="currentPage === totalPages" @click="fetchDocuments(currentPage + 1)">
+            <ArrowRight class="w-4 h-4" />
+          </PaginationNext>
+        </PaginationContent>
+      </Pagination>
+    </div>
 
     <div v-if="!documents.length && !isLoading"
-      class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl shadow-lg p-6 text-center">
+      class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl shadow-lg p-6 w-full max-w-6xl text-center">
       <span class="text-gray-400">Tidak ada dokumen ditemukan.</span>
     </div>
 
@@ -168,9 +223,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useDocumentsApi } from "~/data/documents";
-import { navigateTo } from "#app";
 import type { DocumentResponse, DocumentRequest } from "~/types/api";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
@@ -193,9 +247,22 @@ import {
   TableHeader,
   TableRow
 } from "~/components/ui/table";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationPrevious,
+  PaginationNext,
+  PaginationEllipsis
+} from "~/components/ui/pagination";
+import Papa from "papaparse";
+import {
+  Plus, Upload, Loader2, Check, Pencil, Trash2, ArrowLeft, ArrowRight, MoreHorizontal
+} from "lucide-vue-next";
+import { toast } from "vue-sonner";
+import { Progress } from "~/components/ui/progress";
 
 const { getDocuments, createDocument: apiCreateDocument, deleteDocument: apiDeleteDocument, updateDocument: apiUpdateDocument } = useDocumentsApi();
-const toast = useToast();
 
 const documents = ref<DocumentResponse[]>([]);
 const isLoading = ref(false);
@@ -203,33 +270,37 @@ const isCreating = ref(false);
 const isUpdating = ref(false);
 const isCreateDialogOpen = ref(false);
 const isEditDialogOpen = ref(false);
+const isBulkDialogOpen = ref(false);
+const isBulkUploading = ref(false);
 
 const newDocument = ref<DocumentRequest>({
   title: "",
   text: "",
 });
 
-const editingDocument = ref<{
-  id?: number;
-  title: string;
-  text: string;
-}>({
+const editingDocument = ref<Partial<DocumentResponse>>({
   title: "",
   text: "",
 });
 
-async function fetchDocuments() {
+const csvPreview = ref<DocumentRequest[]>([]);
+const csvError = ref("");
+const bulkProgress = ref(0);
+
+const currentPage = ref(1);
+const totalPages = ref(1);
+
+async function fetchDocuments(page = 1) {
   isLoading.value = true;
   try {
-    const response = await getDocuments();
+    const response = await getDocuments(page);
     documents.value = response.results;
+    currentPage.value = page;
+    totalPages.value = Math.max(1, Math.ceil(response.count / 20));
+    console.log(response)
   } catch (error) {
     console.error('Error fetching documents:', error);
-    toast.add({
-      title: "Error",
-      description: "Gagal memuat data dokumen",
-      color: "error",
-    });
+    toast.error("Gagal memuat data dokumen");
   } finally {
     isLoading.value = false;
   }
@@ -237,10 +308,8 @@ async function fetchDocuments() {
 
 async function createDocument() {
   if (!newDocument.value.title || !newDocument.value.text) {
-    toast.add({
-      title: "Validasi Error",
+    toast.message("Validasi Error", {
       description: "Judul dan teks dokumen harus diisi",
-      color: "error",
     });
     return;
   }
@@ -248,21 +317,13 @@ async function createDocument() {
   isCreating.value = true;
   try {
     await apiCreateDocument(newDocument.value);
-    toast.add({
-      title: "Berhasil",
-      description: `Dokumen "${newDocument.value.title}" berhasil dibuat`,
-      color: "success",
-    });
+    toast.success(`Dokumen "${newDocument.value.title}" berhasil dibuat`);
     resetForm();
     isCreateDialogOpen.value = false;
-    await fetchDocuments();
+    await fetchDocuments(currentPage.value);
   } catch (error) {
     console.error('Error creating document:', error);
-    toast.add({
-      title: "Error",
-      description: "Gagal membuat dokumen baru",
-      color: "error",
-    });
+    toast.error("Gagal membuat dokumen baru");
   } finally {
     isCreating.value = false;
   }
@@ -270,10 +331,8 @@ async function createDocument() {
 
 async function updateDocument() {
   if (!editingDocument.value.id || !editingDocument.value.title || !editingDocument.value.text) {
-    toast.add({
-      title: "Validasi Error",
+    toast.message("Validasi Error", {
       description: "Judul dan teks dokumen harus diisi",
-      color: "error",
     });
     return;
   }
@@ -286,20 +345,12 @@ async function updateDocument() {
     };
 
     await apiUpdateDocument(editingDocument.value.id, updateData);
-    toast.add({
-      title: "Berhasil",
-      description: `Dokumen "${editingDocument.value.title}" berhasil diupdate`,
-      color: "success",
-    });
+    toast.success(`Dokumen "${editingDocument.value.title}" berhasil diupdate`);
     isEditDialogOpen.value = false;
-    await fetchDocuments();
+    await fetchDocuments(currentPage.value);
   } catch (error) {
     console.error('Error updating document:', error);
-    toast.add({
-      title: "Error",
-      description: "Gagal mengupdate dokumen",
-      color: "error",
-    });
+    toast.error("Gagal mengupdate dokumen");
   } finally {
     isUpdating.value = false;
   }
@@ -312,19 +363,11 @@ async function deleteDocument(id: number) {
 
   try {
     await apiDeleteDocument(id);
-    toast.add({
-      title: "Berhasil",
-      description: "Dokumen berhasil dihapus",
-      color: "success",
-    });
-    await fetchDocuments();
+    toast.success("Dokumen berhasil dihapus");
+    await fetchDocuments(currentPage.value);
   } catch (error) {
     console.error('Error deleting document:', error);
-    toast.add({
-      title: "Error",
-      description: "Gagal menghapus dokumen",
-      color: "error",
-    });
+    toast.error("Gagal menghapus dokumen");
   }
 }
 
@@ -352,11 +395,89 @@ function resetForm() {
   };
 }
 
+function handleCsvFile(e: Event) {
+  csvError.value = "";
+  csvPreview.value = [];
+  const files = (e.target as HTMLInputElement).files;
+  if (!files || !files[0]) return;
+  const file = files[0];
+  Papa.parse(file, {
+    header: true,
+    skipEmptyLines: true,
+    complete: (results) => {
+      if (!results.data || !Array.isArray(results.data)) {
+        csvError.value = "Format CSV tidak valid.";
+        return;
+      }
+
+      const docs: DocumentRequest[] = [];
+      for (const row of results.data as any[]) {
+        if (row.title && row.text) {
+          docs.push({ title: row.title, text: row.text });
+        }
+      }
+      if (!docs.length) {
+        csvError.value = "Tidak ada baris valid ditemukan (pastikan kolom 'title' dan 'text' ada).";
+      }
+      csvPreview.value = docs;
+    },
+    error: (err) => {
+      csvError.value = "Gagal membaca file CSV: " + err.message;
+    }
+  });
+}
+
+function resetBulkForm() {
+  csvPreview.value = [];
+  csvError.value = "";
+  isBulkDialogOpen.value = false;
+}
+
+async function bulkCreateDocuments() {
+  if (!csvPreview.value.length) return;
+  isBulkUploading.value = true;
+  bulkProgress.value = 0;
+  let successCount = 0;
+  let failCount = 0;
+  const total = csvPreview.value.length;
+  for (const [idx, doc] of csvPreview.value.entries()) {
+    try {
+      await apiCreateDocument(doc);
+      successCount++;
+    } catch (error) {
+      failCount++;
+    }
+    bulkProgress.value = Math.round(((idx + 1) / total) * 100);
+  }
+  toast.warning("Bulk Upload Selesai", {
+    description: `Berhasil: ${successCount}, Gagal: ${failCount}`,
+  });
+  resetBulkForm();
+  await fetchDocuments(currentPage.value);
+  isBulkUploading.value = false;
+  bulkProgress.value = 0;
+}
+
 function formatDate(dateString: string) {
   return new Date(dateString).toLocaleDateString('id-ID');
 }
 
-onMounted(fetchDocuments);
+const paginationPages = computed(() => {
+  const pages: (number | string)[] = [];
+  if (totalPages.value <= 5) {
+    for (let i = 1; i <= totalPages.value; i++) pages.push(i);
+  } else if (currentPage.value <= 3) {
+    pages.push(1, 2, 3, 4, 5, 'ellipsis', totalPages.value);
+  } else if (currentPage.value >= totalPages.value - 2) {
+    pages.push(1, 'ellipsis');
+    for (let i = totalPages.value - 4; i <= totalPages.value; i++) pages.push(i);
+  } else {
+    pages.push(1, 'ellipsis', currentPage.value - 1, currentPage.value, currentPage.value + 1, 'ellipsis', totalPages.value);
+  }
+  return pages;
+});
+
+onMounted(() => fetchDocuments(currentPage.value));
 
 useHead({
   title: "Kelola Dokumen - ANOTA",

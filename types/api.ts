@@ -29,7 +29,12 @@ export interface UserResponse {
   date_joined: string;
 }
 
-export interface UsersListResponse extends UserResponse {}
+export interface UsersListResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: UserResponse[];
+}
 
 export interface UserDetailResponse extends UserResponse {
   created_at: string;
@@ -205,6 +210,14 @@ export interface ErrorTypeResponse {
   description: string;
   created_at: string;
   updated_at: string;
+}
+
+// Paginated response for error types (matches API docs)
+export interface ErrorTypesListResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: ErrorTypeResponse[];
 }
 
 export interface ReviewRequest {
