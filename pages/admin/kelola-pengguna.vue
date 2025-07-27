@@ -65,7 +65,7 @@
                   <ComboboxList class="w-[--reka-popper-anchor-width]" align="start">
                     <ComboboxEmpty />
                     <ComboboxGroup>
-                      <ComboboxItem
+                      <ComboboxItem class="uppercase"
                         v-for="role in availableRoles.filter(r => r.toLowerCase().includes(searchTermCreate?.toLowerCase() || '') && !newUserRoles.includes(r))"
                         :key="role" :value="role" @select.prevent="(ev) => {
                           if (typeof ev.detail.value === 'string') {
@@ -148,7 +148,7 @@
                 <ComboboxList class="w-[--reka-popper-anchor-width]">
                   <ComboboxEmpty />
                   <ComboboxGroup>
-                    <ComboboxItem
+                    <ComboboxItem class="uppercase"
                       v-for="role in availableRoles.filter(r => r.toLowerCase().includes(searchTermEdit?.toLowerCase() || '') && !editingUserRoles.includes(r))"
                       :key="role" :value="role" @select.prevent="(ev) => {
                         if (typeof ev.detail.value === 'string') {
