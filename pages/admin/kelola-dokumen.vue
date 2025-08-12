@@ -9,68 +9,77 @@
           <DialogTrigger as-child>
             <Button class="flex items-center gap-2">
               <Plus class="w-4 h-4" />
-              Tambah Dokumen Baru
+              Upload Dokumen TXT
             </Button>
           </DialogTrigger>
         </div>
         <DialogContent class="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Tambah Dokumen Baru</DialogTitle>
+            <DialogTitle>Upload Dokumen TXT</DialogTitle>
             <DialogDescription>
-              Masukkan judul dan teks dokumen. Teks akan otomatis dipecah menjadi kalimat-kalimat.
-            </DialogDescription>
-          </DialogHeader>
-          <div class="grid gap-4 py-4">
-            <div class="grid gap-2">
-              <label for="title" class="text-sm font-medium text-left">Judul Dokumen</label>
-              <Input id="title" v-model="newDocument.title" placeholder="Judul dokumen" class="w-full" />
-            </div>
-            <div class="grid gap-2">
-              <label for="text" class="text-sm font-medium text-left">Teks Dokumen</label>
-              <Textarea id="text" v-model="newDocument.text" placeholder="Masukkan teks dokumen..."
-                class="w-full min-h-32" />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" @click="resetForm">
-              Reset
-            </Button>
-            <Button @click="createDocument" :disabled="isCreating" class="flex items-center gap-2">
-              <Plus v-if="!isCreating" class="w-4 h-4" />
-              <Loader2 v-else class="w-4 h-4 animate-spin" />
-              {{ isCreating ? 'Menambah...' : 'Tambah Dokumen' }}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      <!-- Bulk Upload CSV Button & Dialog -->
-      <Dialog v-model:open="isBulkDialogOpen">
-        <div class="flex gap-3 items-start">
-          <DialogTrigger as-child>
-            <Button variant="outline" class="flex items-center gap-2">
-              <Upload class="w-4 h-4" />
-              Upload CSV Dokumen
-            </Button>
-          </DialogTrigger>
-        </div>
-        <DialogContent class="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Bulk Upload Dokumen via CSV</DialogTitle>
-            <DialogDescription>
-              Upload file CSV dengan kolom <b>title</b> dan <b>text</b>. Setiap baris akan menjadi dokumen baru.
+              Pilih file TXT untuk diupload. Nama file akan menjadi judul dokumen.
             </DialogDescription>
           </DialogHeader>
           <div class="grid gap-4 py-4">
             <Input
               type="file"
-              accept=".csv"
-              @change="handleCsvFile"
+              accept=".txt"
+              @change="handleSingleTxtFile"
               class="mb-2"
             />
-            <div v-if="csvPreview.length" class="font-semibold">
-              Total {{ csvPreview.length }} dokumen
+            <div v-if="singleFilePreview" class="bg-slate-800 rounded p-3 text-sm">
+              <div class="font-semibold text-blue-300 mb-2">Preview:</div>
+              <div class="text-left">
+                <div class="font-medium">Judul: {{ singleFilePreview.title }}</div>
+                <div class="text-gray-400 mt-2 max-h-32 overflow-y-auto">
+                  {{ singleFilePreview.text.substring(0, 200) }}{{ singleFilePreview.text.length > 200 ? '...' : '' }}
+                </div>
+              </div>
             </div>
-            <div v-if="csvPreview.length" class="bg-slate-800 rounded p-2 text-sm mb-2">
+            <div v-if="singleFileError" class="text-red-400 text-sm">{{ singleFileError }}</div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" @click="resetSingleForm">
+              Reset
+            </Button>
+            <Button @click="createSingleDocument" :disabled="isCreating || !singleFilePreview" class="flex items-center gap-2">
+              <Plus v-if="!isCreating" class="w-4 h-4" />
+              <Loader2 v-else class="w-4 h-4 animate-spin" />
+              {{ isCreating ? 'Mengupload...' : 'Upload Dokumen' }}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <!-- Bulk Upload Folder Button & Dialog -->
+      <Dialog v-model:open="isBulkDialogOpen">
+        <div class="flex gap-3 items-start">
+          <DialogTrigger as-child>
+            <Button variant="outline" class="flex items-center gap-2">
+              <Upload class="w-4 h-4" />
+              Upload Folder TXT
+            </Button>
+          </DialogTrigger>
+        </div>
+        <DialogContent class="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Bulk Upload Dokumen dari Folder</DialogTitle>
+            <DialogDescription>
+              Pilih folder yang berisi file-file TXT. Setiap file akan menjadi dokumen baru dengan nama file sebagai judul.
+            </DialogDescription>
+          </DialogHeader>
+          <div class="grid gap-4 py-4">
+            <Input
+              type="file"
+              webkitdirectory
+              multiple
+              accept=".txt"
+              @change="handleBulkTxtFiles"
+              class="mb-2"
+            />
+            <div v-if="bulkFilesPreview.length" class="font-semibold">
+              Total {{ bulkFilesPreview.length }} file TXT
+            </div>
+            <div v-if="bulkFilesPreview.length" class="bg-slate-800 rounded p-2 text-sm mb-2">
               <div class="w-full max-w-2xl mx-auto">
                 <Table class="w-full text-left border-collapse table-fixed">
                   <TableHeader>
@@ -80,30 +89,30 @@
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    <TableRow v-for="(row, idx) in csvPreview.slice(0, 5)" :key="idx">
+                    <TableRow v-for="(file, idx) in bulkFilesPreview.slice(0, 5)" :key="idx">
                       <TableCell
                         class="px-3 py-2 border-b border-slate-700 align-top truncate whitespace-nowrap overflow-hidden"
-                        :title="row.title">{{ row.title }}</TableCell>
+                        :title="file.title">{{ file.title }}</TableCell>
                       <TableCell
                         class="px-3 py-2 border-b border-slate-700 text-gray-400 align-top truncate whitespace-nowrap overflow-hidden"
-                        :title="row.text">{{ row.text }}</TableCell>
+                        :title="file.text">{{ file.text }}</TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
               </div>
             </div>
-            <div v-if="csvError" class="text-red-400 text-sm">{{ csvError }}</div>
+            <div v-if="bulkFilesError" class="text-red-400 text-sm">{{ bulkFilesError }}</div>
             <Progress v-if="isBulkUploading" :model-value="bulkProgress" class="mt-2" />
           </div>
           <DialogFooter>
             <Button variant="outline" @click="resetBulkForm">
               Reset
             </Button>
-            <Button @click="bulkCreateDocuments" :disabled="isBulkUploading || !csvPreview.length"
+            <Button @click="bulkCreateDocuments" :disabled="isBulkUploading || !bulkFilesPreview.length"
               class="flex items-center gap-2">
               <Upload v-if="!isBulkUploading" class="w-4 h-4" />
               <Loader2 v-else class="w-4 h-4 animate-spin" />
-              {{ isBulkUploading ? 'Mengupload...' : 'Upload CSV' }}
+              {{ isBulkUploading ? 'Mengupload...' : 'Upload Folder' }}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -143,6 +152,81 @@
       </DialogContent>
     </Dialog>
 
+    <!-- Assign Document Dialog -->
+    <Dialog v-model:open="isAssignDialogOpen">
+      <DialogContent class="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Assign Dokumen</DialogTitle>
+          <DialogDescription>
+            Pilih user yang akan di-assign untuk dokumen "{{ documentToAssign?.title }}".
+          </DialogDescription>
+        </DialogHeader>
+        <div class="grid gap-4 py-4">
+          <div class="grid gap-2">
+            <label for="assign_users" class="text-sm font-medium text-left">Pilih User</label>
+            <Combobox v-model="selectedUserIds" v-model:open="openAssignUsers" :ignore-filter="true">
+              <ComboboxAnchor as-child>
+                <TagsInput v-model="selectedUserIds" class="px-2 w-full">
+                  <div class="flex flex-col">
+                    <div v-if="selectedUserIds.length" class="flex gap-2 flex-wrap items-center p-1 font-semibold">
+                      <TagsInputItem v-for="userId in selectedUserIds" :key="userId" :value="userId">
+                        <TagsInputItemText class="text-xs">{{ getUserName(userId) }}</TagsInputItemText>
+                        <TagsInputItemDelete @click="removeUserFromAssignment(userId)" />
+                      </TagsInputItem>
+                    </div>
+                    <ComboboxInput v-model="searchTermAssign" as-child>
+                      <TagsInputInput placeholder="Pilih user untuk di-assign..." class="w-full" @keydown.enter.prevent />
+                    </ComboboxInput>
+                  </div>
+                </TagsInput>
+                <ComboboxList class="w-[--reka-popper-anchor-width]" align="start">
+                  <ComboboxEmpty />
+                  <ComboboxGroup>
+                    <ComboboxItem
+                      v-for="user in availableUsersForAssignment"
+                      :key="user.id"
+                      :value="user.id"
+                      @select.prevent="(ev: { detail: { value: string | unknown } }) => {
+                        if (typeof ev.detail.value === 'string') {
+                          searchTermAssign = ''
+                          selectedUserIds.push(ev.detail.value)
+                        }
+                        if (availableUsersForAssignment.length === 0) {
+                          openAssignUsers = false
+                        }
+                      }">
+                      {{ user.full_name }}
+                    </ComboboxItem>
+                  </ComboboxGroup>
+                </ComboboxList>
+              </ComboboxAnchor>
+            </Combobox>
+          </div>
+          <div v-if="documentToAssign" class="bg-slate-800 rounded p-3 text-sm">
+            <div class="font-semibold text-blue-300 mb-2">Dokumen:</div>
+            <div class="text-left">
+              <div class="font-medium">{{ documentToAssign.title }}</div>
+              <div class="text-gray-400 mt-1">
+                Currently assigned to:
+                <span v-if="documentToAssign.assigned_to.length === 0" class="text-gray-500">No one</span>
+                <span v-else>{{ documentToAssign.assigned_to.length }} user(s)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" @click="cancelAssign">
+            Batal
+          </Button>
+          <Button @click="assignDocument" :disabled="isAssigning || selectedUserIds.length === 0" class="flex items-center gap-2">
+            <UserPlus v-if="!isAssigning" class="w-4 h-4" />
+            <Loader2 v-else class="w-4 h-4 animate-spin" />
+            {{ isAssigning ? 'Assigning...' : 'Assign Dokumen' }}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
     <div v-if="isLoading" class="text-gray-300 mb-4">
       Memuat data dokumen...
     </div>
@@ -175,6 +259,11 @@
               <TableCell class="text-white text-left">{{ formatDate(doc.created_at) }}</TableCell>
               <TableCell class="text-right">
                 <div class="flex gap-2 w-full justify-end">
+                  <Button size="sm" variant="outline" @click="showAssignDialog(doc)"
+                    class="rounded-full px-4 py-1 font-semibold">
+                    <UserPlus class="w-4 h-4 mr-1" />
+                    Assign
+                  </Button>
                   <Button size="sm" variant="outline" @click="editDocument(doc)"
                     class="rounded-full px-4 py-1 font-semibold">
                     <Pencil class="w-4 h-4 mr-1" />
@@ -225,7 +314,9 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
 import { useDocumentsApi } from "~/data/documents";
-import type { DocumentResponse, DocumentRequest } from "~/types/api";
+import { useUsersApi } from "~/data/users";
+import { useAssignmentsApi } from "~/data/document-assignments";
+import type { DocumentResponse, DocumentRequest, UserResponse } from "~/types/api";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
 import { Button } from "~/components/ui/button";
@@ -257,12 +348,16 @@ import {
 } from "~/components/ui/pagination";
 import Papa from "papaparse";
 import {
-  Plus, Upload, Loader2, Check, Pencil, Trash2, ArrowLeft, ArrowRight, MoreHorizontal
+  Plus, Upload, Loader2, Check, Pencil, Trash2, ArrowLeft, ArrowRight, MoreHorizontal, UserPlus
 } from "lucide-vue-next";
 import { toast } from "vue-sonner";
 import { Progress } from "~/components/ui/progress";
+import { TagsInput, TagsInputItem, TagsInputInput, TagsInputItemDelete, TagsInputItemText } from "~/components/ui/tags-input";
+import { Combobox, ComboboxAnchor, ComboboxEmpty, ComboboxGroup, ComboboxInput, ComboboxItem, ComboboxList } from '@/components/ui/combobox'
 
 const { getDocuments, createDocument: apiCreateDocument, deleteDocument: apiDeleteDocument, updateDocument: apiUpdateDocument } = useDocumentsApi();
+const { getUsers } = useUsersApi();
+const { assignDocument: apiAssignDocument, unassignDocument: apiUnassignDocument } = useAssignmentsApi();
 
 const documents = ref<DocumentResponse[]>([]);
 const isLoading = ref(false);
@@ -272,6 +367,8 @@ const isCreateDialogOpen = ref(false);
 const isEditDialogOpen = ref(false);
 const isBulkDialogOpen = ref(false);
 const isBulkUploading = ref(false);
+const isAssignDialogOpen = ref(false);
+const isAssigning = ref(false);
 
 const newDocument = ref<DocumentRequest>({
   title: "",
@@ -283,12 +380,20 @@ const editingDocument = ref<Partial<DocumentResponse>>({
   text: "",
 });
 
-const csvPreview = ref<DocumentRequest[]>([]);
-const csvError = ref("");
+const singleFilePreview = ref<DocumentRequest | null>(null);
+const singleFileError = ref("");
+const bulkFilesPreview = ref<DocumentRequest[]>([]);
+const bulkFilesError = ref("");
 const bulkProgress = ref(0);
 
 const currentPage = ref(1);
 const totalPages = ref(1);
+
+const users = ref<UserResponse[]>([]);
+const documentToAssign = ref<DocumentResponse | null>(null);
+const selectedUserIds = ref<string[]>([]);
+const openAssignUsers = ref(false);
+const searchTermAssign = ref('');
 
 async function fetchDocuments(page = 1) {
   isLoading.value = true;
@@ -297,7 +402,6 @@ async function fetchDocuments(page = 1) {
     documents.value = response.results;
     currentPage.value = page;
     totalPages.value = Math.max(1, Math.ceil(response.count / 20));
-    console.log(response)
   } catch (error) {
     console.error('Error fetching documents:', error);
     toast.error("Gagal memuat data dokumen");
@@ -306,19 +410,19 @@ async function fetchDocuments(page = 1) {
   }
 }
 
-async function createDocument() {
-  if (!newDocument.value.title || !newDocument.value.text) {
+async function createSingleDocument() {
+  if (!singleFilePreview.value) {
     toast.message("Validasi Error", {
-      description: "Judul dan teks dokumen harus diisi",
+      description: "Pilih file TXT terlebih dahulu",
     });
     return;
   }
 
   isCreating.value = true;
   try {
-    await apiCreateDocument(newDocument.value);
-    toast.success(`Dokumen "${newDocument.value.title}" berhasil dibuat`);
-    resetForm();
+    await apiCreateDocument(singleFilePreview.value);
+    toast.success(`Dokumen "${singleFilePreview.value.title}" berhasil dibuat`);
+    resetSingleForm();
     isCreateDialogOpen.value = false;
     await fetchDocuments(currentPage.value);
   } catch (error) {
@@ -388,59 +492,119 @@ function cancelEdit() {
   isEditDialogOpen.value = false;
 }
 
-function resetForm() {
-  newDocument.value = {
-    title: "",
-    text: "",
-  };
+function resetSingleForm() {
+  singleFilePreview.value = null;
+  singleFileError.value = "";
+  // Reset file input
+  const fileInput = document.querySelector('input[type="file"][accept=".txt"]') as HTMLInputElement;
+  if (fileInput) fileInput.value = '';
 }
 
-function handleCsvFile(e: Event) {
-  csvError.value = "";
-  csvPreview.value = [];
+function handleSingleTxtFile(e: Event) {
+  singleFileError.value = "";
+  singleFilePreview.value = null;
+
   const files = (e.target as HTMLInputElement).files;
   if (!files || !files[0]) return;
+
   const file = files[0];
-  Papa.parse(file, {
-    header: true,
-    skipEmptyLines: true,
-    complete: (results) => {
-      if (!results.data || !Array.isArray(results.data)) {
-        csvError.value = "Format CSV tidak valid.";
-        return;
+
+  if (!file.name.endsWith('.txt')) {
+    singleFileError.value = "File harus berformat .txt";
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    const text = event.target?.result as string;
+    if (!text || text.trim().length === 0) {
+      singleFileError.value = "File tidak boleh kosong";
+      return;
+    }
+
+    const title = file.name.replace('.txt', '');
+    singleFilePreview.value = {
+      title,
+      text: text.trim()
+    };
+  };
+
+  reader.onerror = () => {
+    singleFileError.value = "Gagal membaca file";
+  };
+
+  reader.readAsText(file);
+}
+
+function handleBulkTxtFiles(e: Event) {
+  bulkFilesError.value = "";
+  bulkFilesPreview.value = [];
+
+  const files = (e.target as HTMLInputElement).files;
+  if (!files || files.length === 0) return;
+
+  const txtFiles = Array.from(files).filter(file => file.name.endsWith('.txt'));
+
+  if (txtFiles.length === 0) {
+    bulkFilesError.value = "Tidak ada file .txt ditemukan dalam folder";
+    return;
+  }
+
+  let processedCount = 0;
+  const totalFiles = txtFiles.length;
+  const documents: DocumentRequest[] = [];
+
+  txtFiles.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result as string;
+      if (text && text.trim().length > 0) {
+        const title = file.name.replace('.txt', '');
+        documents.push({
+          title,
+          text: text.trim()
+        });
       }
 
-      const docs: DocumentRequest[] = [];
-      for (const row of results.data as any[]) {
-        if (row.title && row.text) {
-          docs.push({ title: row.title, text: row.text });
+      processedCount++;
+      if (processedCount === totalFiles) {
+        if (documents.length === 0) {
+          bulkFilesError.value = "Tidak ada file dengan konten valid ditemukan";
+        } else {
+          bulkFilesPreview.value = documents;
         }
       }
-      if (!docs.length) {
-        csvError.value = "Tidak ada baris valid ditemukan (pastikan kolom 'title' dan 'text' ada).";
+    };
+
+    reader.onerror = () => {
+      processedCount++;
+      if (processedCount === totalFiles && documents.length === 0) {
+        bulkFilesError.value = "Gagal membaca file-file dalam folder";
       }
-      csvPreview.value = docs;
-    },
-    error: (err) => {
-      csvError.value = "Gagal membaca file CSV: " + err.message;
-    }
+    };
+
+    reader.readAsText(file);
   });
 }
 
 function resetBulkForm() {
-  csvPreview.value = [];
-  csvError.value = "";
+  bulkFilesPreview.value = [];
+  bulkFilesError.value = "";
   isBulkDialogOpen.value = false;
+  const fileInput = document.querySelector('input[webkitdirectory]') as HTMLInputElement;
+  if (fileInput) fileInput.value = '';
 }
 
 async function bulkCreateDocuments() {
-  if (!csvPreview.value.length) return;
+  if (!bulkFilesPreview.value.length) return;
+
   isBulkUploading.value = true;
   bulkProgress.value = 0;
   let successCount = 0;
   let failCount = 0;
-  const total = csvPreview.value.length;
-  for (const [idx, doc] of csvPreview.value.entries()) {
+  const total = bulkFilesPreview.value.length;
+
+  for (const [idx, doc] of bulkFilesPreview.value.entries()) {
     try {
       await apiCreateDocument(doc);
       successCount++;
@@ -449,9 +613,11 @@ async function bulkCreateDocuments() {
     }
     bulkProgress.value = Math.round(((idx + 1) / total) * 100);
   }
+
   toast.warning("Bulk Upload Selesai", {
     description: `Berhasil: ${successCount}, Gagal: ${failCount}`,
   });
+
   resetBulkForm();
   await fetchDocuments(currentPage.value);
   isBulkUploading.value = false;
@@ -477,7 +643,108 @@ const paginationPages = computed(() => {
   return pages;
 });
 
-onMounted(() => fetchDocuments(currentPage.value));
+const availableUsersForAssignment = computed(() => {
+  if (!users.value || users.value.length === 0) {
+    return [];
+  }
+  return users.value.filter(user =>
+    (user.roles.includes("Annotator") || user.roles.includes("Reviewer")) &&
+    (user.full_name.toLowerCase().includes(searchTermAssign.value.toLowerCase()) ||
+     user.username.toLowerCase().includes(searchTermAssign.value.toLowerCase())) &&
+    !selectedUserIds.value.includes(user.id)
+  );
+});
+
+function getUserName(userId: string) {
+  const user = users.value.find(u => u.id === userId);
+  return user ? user.full_name : 'Unknown User';
+}
+
+function removeUserFromAssignment(userId: string) {
+  const index = selectedUserIds.value.indexOf(userId);
+  if (index > -1) {
+    selectedUserIds.value.splice(index, 1);
+  }
+}
+
+async function fetchUsers() {
+  try {
+    const response = await getUsers();
+    users.value = response.results;
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    toast.error("Gagal memuat daftar user");
+  }
+}
+
+function showAssignDialog(doc: DocumentResponse) {
+  documentToAssign.value = doc;
+  selectedUserIds.value = [];
+  searchTermAssign.value = '';
+  isAssignDialogOpen.value = true;
+}
+
+function cancelAssign() {
+  documentToAssign.value = null;
+  selectedUserIds.value = [];
+  searchTermAssign.value = '';
+  isAssignDialogOpen.value = false;
+}
+
+async function assignDocument() {
+  if (!documentToAssign.value || selectedUserIds.value.length === 0) {
+    toast.error("Pilih minimal satu user untuk di-assign");
+    return;
+  }
+
+  isAssigning.value = true;
+  try {
+    toast.promise(
+      (async () => {
+        let successCount = 0;
+        let failCount = 0;
+
+        for (const userId of selectedUserIds.value) {
+          try {
+            await apiAssignDocument({
+              document_id: documentToAssign.value!.id,
+              user_id: userId
+            });
+            successCount++;
+          } catch (error) {
+            failCount++;
+            console.error(`Failed to assign to user ${userId}:`, error);
+          }
+        }
+
+        return { successCount, failCount, totalUsers: selectedUserIds.value.length };
+      })(),
+      {
+        loading: "Assigning dokumen ke user...",
+        success: (result: { successCount: number; failCount: number; totalUsers: number }) => {
+          fetchDocuments(currentPage.value);
+          cancelAssign();
+
+          if (result.failCount === 0) {
+            return `Dokumen berhasil di-assign ke ${result.successCount} user.`;
+          } else {
+            return `Dokumen di-assign ke ${result.successCount} user, ${result.failCount} gagal.`;
+          }
+        },
+        error: "Gagal melakukan assignment dokumen",
+      }
+    );
+  } catch (error) {
+    console.error('Error assigning document:', error);
+  } finally {
+    isAssigning.value = false;
+  }
+}
+
+onMounted(async () => {
+  await fetchUsers();
+  await fetchDocuments(currentPage.value);
+});
 
 useHead({
   title: "Kelola Dokumen - ANOTA",

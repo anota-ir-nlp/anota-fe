@@ -70,10 +70,44 @@ const menuGroups = computed<MenuGroup[]>(() => {
 
   groups.push({ type: "link", label: "Beranda", path: "/beranda", icon: Home });
 
+  if (hasRole("Kepala Riset")) {
+    groups.push({
+      type: "dropdown",
+      label: "Kepala Riset",
+      icon: BarChart3,
+      items: [
+        {
+          label: "Kelola Project",
+          path: "/kepala-riset/kelola-project",
+          icon: BarChart3,
+          description: "Manage research projects",
+        },
+        {
+          label: "Kelola Pengguna",
+          path: "/admin/kelola-pengguna",
+          icon: Users,
+          description: "Manage system users",
+        },
+        {
+          label: "Rekap Kinerja",
+          path: "/kepala-riset/rekap-kinerja",
+          icon: BarChart3,
+          description: "Performance summary",
+        },
+        {
+          label: "Generate Dataset",
+          path: "/kepala-riset/generate-dataset",
+          icon: Download,
+          description: "Generate dataset files",
+        },
+      ],
+    });
+  }
+
   if (hasRole("Admin")) {
     groups.push({
       type: "dropdown",
-      label: "Administrator",
+      label: "Administrator Project",
       icon: Users,
       items: [
         {
@@ -98,24 +132,6 @@ const menuGroups = computed<MenuGroup[]>(() => {
     });
   }
 
-  // Annotator menus - single page with document list functionality
-  if (hasRole("Annotator")) {
-    groups.push({
-      type: "dropdown",
-      label: "Anotator",
-      icon: Pencil,
-      items: [
-        {
-          label: "Daftar Dokumen",
-          path: "/anotator/anotasi",
-          icon: FileText,
-          description: "List of documents to annotate",
-        },
-      ],
-    });
-  }
-
-  // Reviewer menus - single page for reviewing annotations
   if (hasRole("Reviewer")) {
     groups.push({
       type: "dropdown",
@@ -132,30 +148,17 @@ const menuGroups = computed<MenuGroup[]>(() => {
     });
   }
 
-  // Kepala Riset menus - based on actual pages in kepala-riset folder
-  if (hasRole("Kepala Riset")) {
+  if (hasRole("Annotator")) {
     groups.push({
       type: "dropdown",
-      label: "Kepala Riset",
-      icon: BarChart3,
+      label: "Anotator",
+      icon: Pencil,
       items: [
         {
-          label: "Rekap Kinerja",
-          path: "/kepala-riset/rekap-kinerja",
-          icon: BarChart3,
-          description: "Performance summary",
-        },
-        {
-          label: "Rekap Dokumen",
-          path: "/kepala-riset/rekap-dokumen",
-          icon: ClipboardList,
-          description: "Document summary",
-        },
-        {
-          label: "Generate Dataset",
-          path: "/kepala-riset/generate-dataset",
-          icon: Download,
-          description: "Generate dataset files",
+          label: "Daftar Dokumen",
+          path: "/anotator/anotasi",
+          icon: FileText,
+          description: "List of documents to annotate",
         },
       ],
     });

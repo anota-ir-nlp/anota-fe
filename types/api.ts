@@ -125,8 +125,8 @@ export interface AssignmentResponse {
   created_at: string;
 }
 export interface AssignDocumentRequest {
-  assignee_id: string;
-  document_id: string;
+  document_id: number;
+  user_id: string;
 }
 
 export interface DocumentResponse {
@@ -212,7 +212,6 @@ export interface ErrorTypeResponse {
   updated_at: string;
 }
 
-// Paginated response for error types (matches API docs)
 export interface ErrorTypesListResponse {
   count: number;
   next: string | null;
@@ -292,5 +291,43 @@ export interface AvailableRolesResponse {
   roles: string[];
 }
 
-// Add a type for the available roles based on API docs
+export interface ProjectRequest {
+  name: string;
+  description?: string;
+  documents?: number[];
+}
+
+export interface ProjectResponse {
+  id: number;
+  name: string;
+  description: string;
+  created_at: string;
+  updated_at: string;
+  documents: number[];
+  assigned_admins: string[];
+}
+
+export interface ProjectsListResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: ProjectResponse[];
+}
+
+export interface AssignAdminRequest {
+  user_id: string;
+}
+
+export interface AssignAdminResponse {
+  message: string;
+}
+
+export interface UnassignAdminRequest {
+  user_id: string;
+}
+
+export interface UnassignAdminResponse {
+  message: string;
+}
+
 export type AvailableRole = 'Admin' | 'Annotator' | 'Reviewer' | 'Kepala Riset';

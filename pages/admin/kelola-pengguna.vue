@@ -41,7 +41,7 @@
                     <div class="flex flex-col">
                       <div v-if="newUserRoles.length" class="flex gap-2 flex-wrap items-center p-1 font-semibold">
                         <TagsInputItem v-for="item in newUserRoles" :key="item" :value="item">
-                          <TagsInputItemText  class="text-xs"/>
+                          <TagsInputItemText class="text-xs" />
                           <TagsInputItemDelete @click="newUserRoles.splice(newUserRoles.indexOf(item), 1)" />
                         </TagsInputItem>
                       </div>
@@ -54,13 +54,13 @@
                     <ComboboxEmpty />
                     <ComboboxGroup>
                       <ComboboxItem
-                        v-for="role in availableRoles.filter(r => r.includes(searchTermCreate || '') && !newUserRoles.includes(r))"
-                        :key="role" :value="role" @select.prevent="(ev) => {
+                        v-for="role in availableRoles.filter((r: string) => r.includes(searchTermCreate || '') && !newUserRoles.includes(r))"
+                        :key="role" :value="role" @select.prevent="(ev: { detail: { value: string | unknown } }) => {
                           if (typeof ev.detail.value === 'string') {
                             searchTermCreate = ''
                             newUserRoles.push(ev.detail.value)
                           }
-                          if (availableRoles.filter(r => r.includes(searchTermCreate || '') && !newUserRoles.includes(r)).length === 0) {
+                          if (availableRoles.filter((r: string) => r.includes(searchTermCreate || '') && !newUserRoles.includes(r)).length === 0) {
                             openCreateRoles = false
                           }
                         }">
@@ -116,7 +116,7 @@
                   <div class="flex flex-col">
                     <div v-if="editingUserRoles.length" class="flex gap-2 flex-wrap items-center p-1 font-semibold">
                       <TagsInputItem v-for="item in editingUserRoles" :key="item" :value="item">
-                        <TagsInputItemText class="text-xs"/>
+                        <TagsInputItemText class="text-xs" />
                         <TagsInputItemDelete @click="editingUserRoles.splice(editingUserRoles.indexOf(item), 1)" />
                       </TagsInputItem>
                     </div>
@@ -125,17 +125,17 @@
                     </ComboboxInput>
                   </div>
                 </TagsInput>
-                <ComboboxList class="w-[--reka-popper-anchor-width]">
+                <ComboboxList class="w-[--reka-popper-anchor-width]" align="start">
                   <ComboboxEmpty />
                   <ComboboxGroup>
                     <ComboboxItem
-                      v-for="role in availableRoles.filter(r => r.includes(searchTermEdit || '') && !editingUserRoles.includes(r))"
-                      :key="role" :value="role" @select.prevent="(ev) => {
+                      v-for="role in availableRoles.filter((r: string) => r.includes(searchTermEdit || '') && !editingUserRoles.includes(r))"
+                      :key="role" :value="role" @select.prevent="(ev: { detail: { value: string | unknown } }) => {
                         if (typeof ev.detail.value === 'string') {
                           searchTermEdit = ''
                           editingUserRoles.push(ev.detail.value)
                         }
-                        if (availableRoles.filter(r => r.includes(searchTermEdit || '') && !editingUserRoles.includes(r)).length === 0) {
+                        if (availableRoles.filter((r: string) => r.includes(searchTermEdit || '') && !editingUserRoles.includes(r)).length === 0) {
                           openEditRoles = false
                         }
                       }">
@@ -155,6 +155,29 @@
             <Check v-if="!isUpdating" class="w-4 h-4" />
             <Loader2 v-else class="w-4 h-4 animate-spin" />
             {{ isUpdating ? 'Mengupdate...' : 'Update Pengguna' }}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    <!-- Delete Confirmation Dialog -->
+    <Dialog v-model:open="isDeleteDialogOpen">
+      <DialogContent class="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Konfirmasi Hapus</DialogTitle>
+          <DialogDescription>
+            Apakah Anda yakin ingin menghapus pengguna "{{ userToDelete?.full_name }}"?
+            Tindakan ini tidak dapat dibatalkan.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline" @click="cancelDelete">
+            Batal
+          </Button>
+          <Button variant="destructive" @click="confirmDelete" :disabled="isDeleting" class="flex items-center gap-2">
+            <Trash2 v-if="!isDeleting" class="w-4 h-4" />
+            <Loader2 v-else class="w-4 h-4 animate-spin" />
+            {{ isDeleting ? 'Menghapus...' : 'Hapus' }}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -198,7 +221,7 @@
                     <Pencil class="w-4 h-4 mr-1" />
                     Edit
                   </Button>
-                  <Button size="sm" variant="destructive" @click="deleteUser(user.id)"
+                  <Button size="sm" variant="destructive" @click="showDeleteDialog(user)"
                     class="rounded-full px-4 py-1 font-semibold">
                     <Trash2 class="w-4 h-4 mr-1" />
                     Hapus
@@ -213,23 +236,15 @@
 
     <!-- Pagination Controls: moved outside the card -->
     <div v-if="users.length" class="mt-4 flex justify-center w-full max-w-6xl">
-      <Pagination
-        :page="currentPage"
-        :total="totalPages"
-        :items-per-page="users.length > 0 ? users.length : 1"
-        @update:page="fetchUsers"
-      >
+      <Pagination :page="currentPage" :total="totalPages" :items-per-page="users.length > 0 ? users.length : 1"
+        @update:page="fetchUsers">
         <PaginationContent>
           <PaginationPrevious :disabled="currentPage === 1" @click="fetchUsers(currentPage - 1)">
             <ArrowLeft class="w-4 h-4" />
           </PaginationPrevious>
           <template v-for="(page, idx) in paginationPages" :key="idx">
-            <PaginationItem
-              v-if="typeof page === 'number'"
-              :value="page"
-              :is-active="page === currentPage"
-              @click="fetchUsers(page)"
-            >{{ page }}</PaginationItem>
+            <PaginationItem v-if="typeof page === 'number'" :value="page" :is-active="page === currentPage"
+              @click="fetchUsers(page)">{{ page }}</PaginationItem>
             <PaginationEllipsis v-else>
               <MoreHorizontal class="w-4 h-4" />
             </PaginationEllipsis>
@@ -283,8 +298,8 @@ import {
 } from "~/components/ui/pagination";
 import { TagsInput, TagsInputItem, TagsInputInput, TagsInputItemDelete, TagsInputItemText } from "~/components/ui/tags-input";
 import { Combobox, ComboboxAnchor, ComboboxEmpty, ComboboxGroup, ComboboxInput, ComboboxItem, ComboboxList } from '@/components/ui/combobox'
-import { 
-  Plus, Loader2, Check, Pencil, Trash2, ArrowLeft, ArrowRight, MoreHorizontal 
+import {
+  Plus, Loader2, Check, Pencil, Trash2, ArrowLeft, ArrowRight, MoreHorizontal
 } from "lucide-vue-next";
 import { toast } from "vue-sonner";
 
@@ -301,8 +316,10 @@ const users = ref<UserResponse[]>([]);
 const isLoading = ref(false);
 const isCreating = ref(false);
 const isUpdating = ref(false);
+const isDeleting = ref(false);
 const isCreateDialogOpen = ref(false);
 const isEditDialogOpen = ref(false);
+const isDeleteDialogOpen = ref(false);
 
 const newUser = ref<UserRegistrationRequest>({
   username: "",
@@ -324,11 +341,11 @@ const openEditRoles = ref(false);
 const searchTermCreate = ref('');
 const searchTermEdit = ref('');
 
-// Pagination state
 const currentPage = ref(1);
 const totalPages = ref(1);
 
-// Fetch available roles for dropdown
+const userToDelete = ref<UserResponse | null>(null);
+
 async function fetchAvailableRoles() {
   try {
     const res = await getAvailableRoles();
@@ -341,7 +358,6 @@ async function fetchAvailableRoles() {
 async function fetchUsers(page = 1) {
   isLoading.value = true;
   try {
-    // getUsers should return { results, count }
     const response = await getUsers(page);
     users.value = response.results;
     currentPage.value = page;
@@ -377,7 +393,7 @@ async function createUser() {
 
   isCreating.value = true;
   try {
-    await toast.promise(
+    toast.promise(
       (async () => {
         const result = await apiCreateUser(newUser.value);
         for (const role of newUserRoles.value) {
@@ -391,16 +407,16 @@ async function createUser() {
       })(),
       {
         loading: "Menambah pengguna...",
-        success: (result: UserRegistrationResponse) => `Pengguna ${result.data.username} berhasil dibuat. Password: ${result.data.password}`,
+        success: (result: UserRegistrationResponse) => {
+          resetForm();
+          fetchUsers(currentPage.value);
+          return `Pengguna ${result.data.username} berhasil dibuat. Password: ${result.data.password}`;
+        },
         error: "Gagal membuat pengguna baru",
       }
     );
-    resetForm();
-    isCreateDialogOpen.value = false;
-    await fetchUsers();
   } catch (error) {
     console.error('Error creating user:', error);
-    // toast handled by promise
   } finally {
     isCreating.value = false;
   }
@@ -414,7 +430,7 @@ async function updateUser() {
 
   isUpdating.value = true;
   try {
-    await toast.promise(
+    toast.promise(
       (async () => {
         const updateData = {
           username: editingUser.value.username,
@@ -445,38 +461,58 @@ async function updateUser() {
       })(),
       {
         loading: "Mengupdate pengguna...",
-        success: (user: typeof editingUser.value) => `Pengguna ${user.username} berhasil diupdate`,
+        success: (user: typeof editingUser.value) => {
+          fetchUsers(currentPage.value);
+          isEditDialogOpen.value = false;
+          return `Pengguna ${user.username} berhasil diupdate.`;
+        },
         error: "Gagal mengupdate pengguna",
       }
     );
-    isEditDialogOpen.value = false;
-    await fetchUsers();
   } catch (error) {
     console.error('Error updating user:', error);
-    // toast handled by promise
   } finally {
     isUpdating.value = false;
   }
 }
 
-async function deleteUser(id: string) {
-  if (!confirm('Apakah Anda yakin ingin menghapus pengguna ini?')) {
-    return;
-  }
+function showDeleteDialog(user: UserResponse) {
+  userToDelete.value = user;
+  isDeleteDialogOpen.value = true;
+}
 
+function cancelDelete() {
+  userToDelete.value = null;
+  isDeleteDialogOpen.value = false;
+}
+
+async function confirmDelete() {
+  if (!userToDelete.value) return;
+
+  isDeleting.value = true;
   try {
     await toast.promise(
-      apiDeleteUser(id),
+      apiDeleteUser(userToDelete.value.id),
       {
         loading: "Menghapus pengguna...",
         success: "Pengguna berhasil dihapus",
         error: "Gagal menghapus pengguna",
       }
     );
-    await fetchUsers();
+
+    const response = await getUsers(currentPage.value);
+    if (response.results.length === 0 && currentPage.value > 1) {
+      await fetchUsers(currentPage.value - 1);
+    } else {
+      await fetchUsers(currentPage.value);
+    }
+
+    isDeleteDialogOpen.value = false;
+    userToDelete.value = null;
   } catch (error) {
     console.error('Error deleting user:', error);
-    // toast handled by promise
+  } finally {
+    isDeleting.value = false;
   }
 }
 
@@ -515,6 +551,7 @@ function resetForm() {
     full_name: "",
   };
   newUserRoles.value = [];
+  isCreateDialogOpen.value = false;
 }
 
 function formatDate(dateString: string) {

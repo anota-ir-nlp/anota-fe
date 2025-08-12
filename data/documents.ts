@@ -9,21 +9,25 @@ const BASE = "/documents";
 export function useDocumentsApi() {
   const { fetcher } = useProtectedFetcher();
 
-  const getDocuments = (page?: number) => {
-    const params = page ? `?page=${page}` : '';
-    return fetcher<{ count: number; next: string | null; previous: string | null; results: DocumentResponse[] }>(`${BASE}/${params}`);
-  };
+  const getDocuments = (page?: number) =>
+    fetcher<{ count: number; next: string | null; previous: string | null; results: DocumentResponse[] }>(
+      page ? `${BASE}/?page=${page}` : `${BASE}/`
+    );
 
-  const getDocument = (id: number) => fetcher<DocumentResponse>(`${BASE}/${id}/`);
+  const getDocument = (id: number) =>
+    fetcher<DocumentResponse>(`${BASE}/${id}`);
 
   const createDocument = (data: DocumentRequest) =>
     fetcher<DocumentResponse>(BASE, { method: "POST", body: data });
 
   const updateDocument = (id: number, data: Partial<DocumentRequest>) =>
-    fetcher<DocumentResponse>(`${BASE}/${id}/`, { method: "PATCH", body: data });
+    fetcher<DocumentResponse>(`${BASE}/${id}`, {
+      method: "PATCH",
+      body: data,
+    });
 
   const deleteDocument = (id: number) =>
-    fetcher(`${BASE}/${id}/`, { method: "DELETE" });
+    fetcher(`${BASE}/${id}`, { method: "DELETE" });
 
   return {
     getDocuments,

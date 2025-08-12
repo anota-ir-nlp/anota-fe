@@ -4,7 +4,7 @@ import type {
   ReviewResponse,
 } from "~/types/api";
 
-const BASE = "/annotation/reviews";
+const BASE = "/annotations/reviews";
 
 export function useReviewsApi() {
   const { fetcher } = useProtectedFetcher();
