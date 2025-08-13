@@ -152,30 +152,30 @@
       </DialogContent>
     </Dialog>
 
-    <!-- Assign Document Dialog -->
-    <Dialog v-model:open="isAssignDialogOpen">
+    <!-- Manage Assignment Dialog -->
+    <Dialog v-model:open="isManageAssignmentDialogOpen">
       <DialogContent class="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Assign Dokumen</DialogTitle>
+          <DialogTitle>Kelola Assignment Dokumen</DialogTitle>
           <DialogDescription>
-            Pilih user yang akan di-assign untuk dokumen "{{ documentToAssign?.title }}".
+            Kelola user yang di-assign untuk dokumen "{{ documentToManage?.title }}". Anda dapat menambah atau menghapus assignment.
           </DialogDescription>
         </DialogHeader>
         <div class="grid gap-4 py-4">
           <div class="grid gap-2">
-            <label for="assign_users" class="text-sm font-medium text-left">Pilih User</label>
-            <Combobox v-model="selectedUserIds" v-model:open="openAssignUsers" :ignore-filter="true">
+            <label for="manage_users" class="text-sm font-medium text-left">User yang Ditugaskan</label>
+            <Combobox v-model="managedUserIds" v-model:open="openManageUsers" :ignore-filter="true">
               <ComboboxAnchor as-child>
-                <TagsInput v-model="selectedUserIds" class="px-2 w-full">
+                <TagsInput v-model="managedUserIds" class="px-2 w-full">
                   <div class="flex flex-col">
-                    <div v-if="selectedUserIds.length" class="flex gap-2 flex-wrap items-center p-1 font-semibold">
-                      <TagsInputItem v-for="userId in selectedUserIds" :key="userId" :value="userId">
+                    <div v-if="managedUserIds.length" class="flex gap-2 flex-wrap items-center p-1 font-semibold">
+                      <TagsInputItem v-for="userId in managedUserIds" :key="userId" :value="getUserName(userId)">
                         <TagsInputItemText class="text-xs">{{ getUserName(userId) }}</TagsInputItemText>
-                        <TagsInputItemDelete @click="removeUserFromAssignment(userId)" />
+                        <TagsInputItemDelete @click="removeUserFromManagement(userId)" />
                       </TagsInputItem>
                     </div>
-                    <ComboboxInput v-model="searchTermAssign" as-child>
-                      <TagsInputInput placeholder="Pilih user untuk di-assign..." class="w-full" @keydown.enter.prevent />
+                    <ComboboxInput v-model="searchTermManage" as-child>
+                      <TagsInputInput placeholder="Tambah atau hapus user assignment..." class="w-full" @keydown.enter.prevent />
                     </ComboboxInput>
                   </div>
                 </TagsInput>
@@ -183,16 +183,16 @@
                   <ComboboxEmpty />
                   <ComboboxGroup>
                     <ComboboxItem
-                      v-for="user in availableUsersForAssignment"
+                      v-for="user in availableUsersForManagement"
                       :key="user.id"
                       :value="user.id"
                       @select.prevent="(ev: { detail: { value: string | unknown } }) => {
                         if (typeof ev.detail.value === 'string') {
-                          searchTermAssign = ''
-                          selectedUserIds.push(ev.detail.value)
+                          searchTermManage = ''
+                          managedUserIds.push(ev.detail.value)
                         }
-                        if (availableUsersForAssignment.length === 0) {
-                          openAssignUsers = false
+                        if (availableUsersForManagement.length === 0) {
+                          openManageUsers = false
                         }
                       }">
                       {{ user.full_name }}
@@ -202,26 +202,26 @@
               </ComboboxAnchor>
             </Combobox>
           </div>
-          <div v-if="documentToAssign" class="bg-slate-800 rounded p-3 text-sm">
+          <div v-if="documentToManage" class="bg-slate-800 rounded p-3 text-sm">
             <div class="font-semibold text-blue-300 mb-2">Dokumen:</div>
             <div class="text-left">
-              <div class="font-medium">{{ documentToAssign.title }}</div>
+              <div class="font-medium">{{ documentToManage.title }}</div>
               <div class="text-gray-400 mt-1">
-                Currently assigned to:
-                <span v-if="documentToAssign.assigned_to.length === 0" class="text-gray-500">No one</span>
-                <span v-else>{{ documentToAssign.assigned_to.length }} user(s)</span>
+                Previously assigned to:
+                <span v-if="originalAssignedUsers.length === 0" class="text-gray-500">No one</span>
+                <span v-else>{{ originalAssignedUsers.length }} user(s)</span>
               </div>
             </div>
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" @click="cancelAssign">
+          <Button variant="outline" @click="cancelManageAssignment">
             Batal
           </Button>
-          <Button @click="assignDocument" :disabled="isAssigning || selectedUserIds.length === 0" class="flex items-center gap-2">
-            <UserPlus v-if="!isAssigning" class="w-4 h-4" />
+          <Button @click="saveAssignmentChanges" :disabled="isManaging" class="flex items-center gap-2">
+            <UserPlus v-if="!isManaging" class="w-4 h-4" />
             <Loader2 v-else class="w-4 h-4 animate-spin" />
-            {{ isAssigning ? 'Assigning...' : 'Assign Dokumen' }}
+            {{ isManaging ? 'Menyimpan...' : 'Simpan Perubahan' }}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -250,8 +250,8 @@
               </TableCell>
               <TableCell class="text-left">
                 <div class="flex flex-wrap gap-1">
-                  <Badge v-for="userId in doc.assigned_to" :key="userId" variant="blue">
-                    User {{ userId }}
+                  <Badge v-for="userId in doc.assigned_to" :key="getUserName(userId)" variant="blue">
+                    {{ getUserName(userId.toString()) }}
                   </Badge>
                   <span v-if="!doc.assigned_to.length" class="text-gray-400 text-sm">Belum ada assignment</span>
                 </div>
@@ -259,10 +259,10 @@
               <TableCell class="text-white text-left">{{ formatDate(doc.created_at) }}</TableCell>
               <TableCell class="text-right">
                 <div class="flex gap-2 w-full justify-end">
-                  <Button size="sm" variant="outline" @click="showAssignDialog(doc)"
+                  <Button size="sm" variant="outline" @click="showManageAssignmentDialog(doc)"
                     class="rounded-full px-4 py-1 font-semibold">
                     <UserPlus class="w-4 h-4 mr-1" />
-                    Assign
+                    Kelola Assignment
                   </Button>
                   <Button size="sm" variant="outline" @click="editDocument(doc)"
                     class="rounded-full px-4 py-1 font-semibold">
@@ -348,7 +348,7 @@ import {
 } from "~/components/ui/pagination";
 import Papa from "papaparse";
 import {
-  Plus, Upload, Loader2, Check, Pencil, Trash2, ArrowLeft, ArrowRight, MoreHorizontal, UserPlus
+  Plus, Upload, Loader2, Check, Pencil, Trash2, ArrowLeft, ArrowRight, MoreHorizontal, UserPlus, UserMinus
 } from "lucide-vue-next";
 import { toast } from "vue-sonner";
 import { Progress } from "~/components/ui/progress";
@@ -357,7 +357,7 @@ import { Combobox, ComboboxAnchor, ComboboxEmpty, ComboboxGroup, ComboboxInput, 
 
 const { getDocuments, createDocument: apiCreateDocument, deleteDocument: apiDeleteDocument, updateDocument: apiUpdateDocument } = useDocumentsApi();
 const { getUsers } = useUsersApi();
-const { assignDocument: apiAssignDocument, unassignDocument: apiUnassignDocument } = useAssignmentsApi();
+const { assignDocument: apiAssignDocument, unassignDocument: apiUnassignDocument, bulkUnassignDocument: apiBulkUnassignDocument } = useAssignmentsApi();
 
 const documents = ref<DocumentResponse[]>([]);
 const isLoading = ref(false);
@@ -367,8 +367,8 @@ const isCreateDialogOpen = ref(false);
 const isEditDialogOpen = ref(false);
 const isBulkDialogOpen = ref(false);
 const isBulkUploading = ref(false);
-const isAssignDialogOpen = ref(false);
-const isAssigning = ref(false);
+const isManageAssignmentDialogOpen = ref(false);
+const isManaging = ref(false);
 
 const newDocument = ref<DocumentRequest>({
   title: "",
@@ -390,10 +390,11 @@ const currentPage = ref(1);
 const totalPages = ref(1);
 
 const users = ref<UserResponse[]>([]);
-const documentToAssign = ref<DocumentResponse | null>(null);
-const selectedUserIds = ref<string[]>([]);
-const openAssignUsers = ref(false);
-const searchTermAssign = ref('');
+const documentToManage = ref<DocumentResponse | null>(null);
+const managedUserIds = ref<string[]>([]);
+const originalAssignedUsers = ref<string[]>([]);
+const openManageUsers = ref(false);
+const searchTermManage = ref('');
 
 async function fetchDocuments(page = 1) {
   isLoading.value = true;
@@ -643,15 +644,15 @@ const paginationPages = computed(() => {
   return pages;
 });
 
-const availableUsersForAssignment = computed(() => {
+const availableUsersForManagement = computed(() => {
   if (!users.value || users.value.length === 0) {
     return [];
   }
   return users.value.filter(user =>
     (user.roles.includes("Annotator") || user.roles.includes("Reviewer")) &&
-    (user.full_name.toLowerCase().includes(searchTermAssign.value.toLowerCase()) ||
-     user.username.toLowerCase().includes(searchTermAssign.value.toLowerCase())) &&
-    !selectedUserIds.value.includes(user.id)
+    (user.full_name.toLowerCase().includes(searchTermManage.value.toLowerCase()) ||
+     user.username.toLowerCase().includes(searchTermManage.value.toLowerCase())) &&
+    !managedUserIds.value.includes(user.id)
   );
 });
 
@@ -660,10 +661,10 @@ function getUserName(userId: string) {
   return user ? user.full_name : 'Unknown User';
 }
 
-function removeUserFromAssignment(userId: string) {
-  const index = selectedUserIds.value.indexOf(userId);
+function removeUserFromManagement(userId: string) {
+  const index = managedUserIds.value.indexOf(userId);
   if (index > -1) {
-    selectedUserIds.value.splice(index, 1);
+    managedUserIds.value.splice(index, 1);
   }
 }
 
@@ -677,37 +678,46 @@ async function fetchUsers() {
   }
 }
 
-function showAssignDialog(doc: DocumentResponse) {
-  documentToAssign.value = doc;
-  selectedUserIds.value = [];
-  searchTermAssign.value = '';
-  isAssignDialogOpen.value = true;
+function showManageAssignmentDialog(doc: DocumentResponse) {
+  documentToManage.value = doc;
+  managedUserIds.value = [...doc.assigned_to.map(id => id.toString())];
+  originalAssignedUsers.value = [...doc.assigned_to.map(id => id.toString())];
+  searchTermManage.value = '';
+  isManageAssignmentDialogOpen.value = true;
 }
 
-function cancelAssign() {
-  documentToAssign.value = null;
-  selectedUserIds.value = [];
-  searchTermAssign.value = '';
-  isAssignDialogOpen.value = false;
+function cancelManageAssignment() {
+  documentToManage.value = null;
+  managedUserIds.value = [];
+  originalAssignedUsers.value = [];
+  searchTermManage.value = '';
+  isManageAssignmentDialogOpen.value = false;
 }
 
-async function assignDocument() {
-  if (!documentToAssign.value || selectedUserIds.value.length === 0) {
-    toast.error("Pilih minimal satu user untuk di-assign");
+async function saveAssignmentChanges() {
+  if (!documentToManage.value) {
+    toast.error("Tidak ada dokumen yang dipilih");
     return;
   }
 
-  isAssigning.value = true;
+  isManaging.value = true;
   try {
     toast.promise(
       (async () => {
+        const currentAssigned = originalAssignedUsers.value;
+        const newAssigned = managedUserIds.value;
+        
+        const toAssign = newAssigned.filter(id => !currentAssigned.includes(id));
+        const toUnassign = currentAssigned.filter(id => !newAssigned.includes(id));
+
         let successCount = 0;
         let failCount = 0;
 
-        for (const userId of selectedUserIds.value) {
+        // Assign new users
+        for (const userId of toAssign) {
           try {
             await apiAssignDocument({
-              document_id: documentToAssign.value!.id,
+              document_id: documentToManage.value!.id,
               user_id: userId
             });
             successCount++;
@@ -717,27 +727,50 @@ async function assignDocument() {
           }
         }
 
-        return { successCount, failCount, totalUsers: selectedUserIds.value.length };
+        // Unassign removed users
+        for (const userId of toUnassign) {
+          try {
+            await apiUnassignDocument({
+              document_id: documentToManage.value!.id,
+              user_id: userId
+            });
+            successCount++;
+          } catch (error) {
+            failCount++;
+            console.error(`Failed to unassign from user ${userId}:`, error);
+          }
+        }
+
+        return { 
+          successCount, 
+          failCount, 
+          totalChanges: toAssign.length + toUnassign.length,
+          assigned: toAssign.length,
+          unassigned: toUnassign.length
+        };
       })(),
       {
-        loading: "Assigning dokumen ke user...",
-        success: (result: { successCount: number; failCount: number; totalUsers: number }) => {
+        loading: "Menyimpan perubahan assignment...",
+        success: (result: { successCount: number; failCount: number; totalChanges: number; assigned: number; unassigned: number }) => {
           fetchDocuments(currentPage.value);
-          cancelAssign();
+          cancelManageAssignment();
 
           if (result.failCount === 0) {
-            return `Dokumen berhasil di-assign ke ${result.successCount} user.`;
+            if (result.totalChanges === 0) {
+              return "Tidak ada perubahan assignment.";
+            }
+            return `Assignment berhasil diperbarui: ${result.assigned} user ditambah, ${result.unassigned} user dihapus.`;
           } else {
-            return `Dokumen di-assign ke ${result.successCount} user, ${result.failCount} gagal.`;
+            return `Assignment diperbarui: ${result.successCount} berhasil, ${result.failCount} gagal.`;
           }
         },
-        error: "Gagal melakukan assignment dokumen",
+        error: "Gagal menyimpan perubahan assignment",
       }
     );
   } catch (error) {
-    console.error('Error assigning document:', error);
+    console.error('Error managing assignment:', error);
   } finally {
-    isAssigning.value = false;
+    isManaging.value = false;
   }
 }
 

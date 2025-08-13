@@ -44,7 +44,7 @@
                     <TagsInput v-model="newProjectAdminIds" class="px-2 w-full">
                       <div class="flex flex-col">
                         <div v-if="newProjectAdminIds.length" class="flex gap-2 flex-wrap items-center p-1 font-semibold">
-                          <TagsInputItem v-for="adminId in newProjectAdminIds" :key="adminId" :value="adminId">
+                          <TagsInputItem v-for="adminId in newProjectAdminIds" :key="adminId" :value="getAdminName(adminId)">
                             <TagsInputItemText class="text-xs">{{ getAdminName(adminId) }}</TagsInputItemText>
                             <TagsInputItemDelete @click="removeAdminFromNewProject(adminId)" />
                           </TagsInputItem>
@@ -170,7 +170,7 @@
                   <TagsInput v-model="editingProjectAdminIds" class="px-2 w-full">
                     <div class="flex flex-col">
                       <div v-if="editingProjectAdminIds.length" class="flex gap-2 flex-wrap items-center p-1 font-semibold">
-                        <TagsInputItem v-for="adminId in editingProjectAdminIds" :key="adminId" :value="adminId">
+                        <TagsInputItem v-for="adminId in editingProjectAdminIds" :key="adminId" :value="getAdminName(adminId)">
                           <TagsInputItemText class="text-xs">{{ getAdminName(adminId) }}</TagsInputItemText>
                           <TagsInputItemDelete @click="removeAdminFromEditingProject(adminId)" />
                         </TagsInputItem>

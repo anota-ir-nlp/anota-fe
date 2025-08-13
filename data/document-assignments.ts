@@ -12,9 +12,17 @@ export function useAssignmentsApi() {
   const unassignDocument = (data: AssignDocumentRequest) =>
     fetcher(`${BASE}/`, { method: "DELETE", body: data });
 
+  const bulkUnassignDocument = (documentId: number, userIds: string[]) =>
+    Promise.all(
+      userIds.map(userId => 
+        unassignDocument({ document_id: documentId, user_id: userId })
+      )
+    );
+
   return {
     assignDocument,
     unassignDocument,
+    bulkUnassignDocument,
   };
 }
 
