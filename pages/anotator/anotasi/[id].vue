@@ -12,9 +12,7 @@
           <UButton
             label="Kembali"
             icon="i-heroicons-arrow-left"
-            color="neutral"
-            variant="ghost"
-            class="rounded-full px-4 py-2 font-semibold"
+            class="rounded-full px-4 py-2 font-semibold bg-blue-500 text-white shadow-lg hover:bg-blue-600 focus:ring-2 focus:ring-blue-500"
             @click="router.back()"
             title="Kembali"
           />
@@ -38,20 +36,16 @@
           </div>
 
           <!-- Right: Navigation Buttons -->
-          <div class="flex gap-2">
+          <div class="flex items-center gap-2 flex-wrap">
             <UButton
               icon="i-heroicons-chevron-left"
-              color="neutral"
-              variant="ghost"
-              class="rounded-full px-3 py-2"
+              class="rounded-full px-3 py-2 bg-blue-500 text-white shadow-lg hover:bg-blue-600 focus:ring-2 focus:ring-blue-500"
               title="Dokumen Sebelumnya"
               @click="navigateDocument(-1)"
             />
             <UButton
               icon="i-heroicons-chevron-right"
-              color="neutral"
-              variant="ghost"
-              class="rounded-full px-3 py-2"
+              class="rounded-full px-3 py-2 bg-blue-500 text-white shadow-lg hover:bg-blue-600 focus:ring-2 focus:ring-blue-500"
               title="Dokumen Selanjutnya"
               @click="navigateDocument(1)"
             />
@@ -105,6 +99,7 @@
           <div class="flex items-center gap-2 mb-4">
             <UIcon name="i-heroicons-document" class="w-5 h-5 text-blue-400" />
             <h2 class="text-lg font-semibold">Teks Asli</h2>
+            <div class="ml-auto" />
           </div>
 
           <div v-if="isLoading" class="text-center py-8">
@@ -131,6 +126,18 @@
               >
                 <UIcon name="i-heroicons-list-bullet" class="w-3 h-3" />
                 {{ document.sentences.length }} kalimat
+              </span>
+              <span
+                class="bg-green-500/20 text-green-300 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1"
+              >
+                <UIcon name="i-heroicons-building-office" class="w-3 h-3" />
+                {{ document.agency_name }}
+              </span>
+              <span
+                class="bg-orange-500/20 text-orange-300 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1"
+              >
+                <UIcon name="i-heroicons-user" class="w-3 h-3" />
+                {{ document.assigned_by_name }}
               </span>
             </div>
 
@@ -197,7 +204,7 @@
               />
             </div>
             <div class="text-white text-sm mb-3">
-              {{ getCurrentSentenceText(selectedSentence.id) }}
+              {{ getOriginalSentenceText(selectedSentence.id) }}
             </div>
 
             <!-- Annotation Controls -->
@@ -244,63 +251,20 @@
             </div>
           </div>
 
-          <!-- Annotated Text Content -->
+          <!-- Selection Area (no chips) -->
           <div class="bg-gray-900/30 rounded-lg p-4 border border-gray-700">
             <div
               ref="editableArea"
               class="text-white leading-relaxed whitespace-pre-wrap select-text relative"
               @mouseup="handleTextSelection"
             >
-              <template
-                v-for="(segment, index) in documentSegments"
-                :key="index"
-              >
-                <!-- Text segment -->
-                <span v-if="segment.type === 'text'" class="relative">
-                  {{ segment.text }}
-                </span>
-
-                <!-- Annotation chip -->
-                <span
-                  v-else-if="
-                    segment.type === 'annotation' && segment.annotation
-                  "
-                  class="relative inline-block"
-                >
-                  <span
-                    class="annotation-chip"
-                    :class="getChipColor(segment.annotation.color)"
-                    @click="viewAnnotation(segment.annotation)"
-                    @mouseenter="hoveredAnnotation = segment.annotation"
-                    @mouseleave="hoveredAnnotation = null"
-                  >
-                    {{ segment.annotation.correction }}
-                    <div
-                      v-if="hoveredAnnotation === segment.annotation"
-                      class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg shadow-lg text-sm z-50 whitespace-nowrap"
-                    >
-                      <div class="flex flex-wrap gap-1 mb-1">
-                        <span
-                          v-for="errorType in segment.annotation.errorTypes"
-                          :key="errorType"
-                          class="bg-red-500/20 text-red-300 px-1.5 py-0.5 rounded text-xs"
-                        >
-                          {{ errorType }}
-                        </span>
-                      </div>
-                      <div class="text-xs text-gray-400">
-                        "{{ segment.annotation.original }}"
-                      </div>
-                      <div
-                        class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"
-                      ></div>
-                    </div>
-                  </span>
-                </span>
-
-                <!-- Line break -->
-                <br v-else-if="segment.type === 'br'" />
-              </template>
+              <span>
+                {{
+                  selectedSentence
+                    ? getOriginalSentenceText(selectedSentence.id)
+                    : ""
+                }}
+              </span>
             </div>
           </div>
         </div>
@@ -330,7 +294,9 @@
           </div>
 
           <div
-            v-else-if="getSentenceAnnotations(selectedSentence.id).length === 0"
+            v-else-if="
+              getSentenceAnnotationsSortedDesc(selectedSentence.id).length === 0
+            "
             class="text-center py-8"
           >
             <UIcon
@@ -342,7 +308,7 @@
 
           <div v-else class="space-y-3 max-h-96 overflow-y-auto">
             <div
-              v-for="(annotation, index) in getSentenceAnnotations(
+              v-for="(annotation, index) in getSentenceAnnotationsSortedDesc(
                 selectedSentence.id
               )"
               :key="annotation.id"
@@ -350,19 +316,41 @@
               @click="viewAnnotation(annotation)"
             >
               <div class="flex items-center justify-between mb-2">
-                <span class="text-sm text-blue-400 font-medium">
-                  Anotasi #{{ index + 1 }}
+                <span class="text-sm font-semibold text-white">
+                  Anotasi #{{
+                    getDescendingIndexLabel(index, selectedSentence.id)
+                  }}
                 </span>
                 <span class="text-xs text-gray-400">
                   {{ formatDate(annotation.timestamp) }}
                 </span>
               </div>
-              <div class="text-sm">
-                <div class="text-gray-400 mb-1">Sebelum:</div>
-                <div class="text-white mb-2">{{ annotation.original }}</div>
-                <div class="text-gray-400 mb-1">Sesudah:</div>
-                <div class="text-green-400">{{ annotation.correction }}</div>
+              <!-- Full sentence preview with this annotation chipped -->
+              <div
+                class="bg-gray-900/30 rounded border border-gray-700 p-2 text-sm mb-2"
+              >
+                <template
+                  v-for="(seg, i) in buildSegmentsForAnnotation(
+                    selectedSentence.id,
+                    annotation
+                  )"
+                  :key="i"
+                >
+                  <span v-if="seg.type === 'text'">{{ seg.text }}</span>
+                  <span v-else class="relative inline-block">
+                    <span
+                      class="annotation-chip"
+                      :class="getChipColor(annotation.color)"
+                      @mouseenter="hoveredAnnotation = annotation"
+                      @mouseleave="hoveredAnnotation = null"
+                    >
+                      {{ annotation.correction }}
+                    </span>
+                  </span>
+                </template>
               </div>
+
+              <!-- Detail sebelum/sesudah dipindahkan ke modal saat chip diklik -->
               <div class="flex flex-wrap gap-1 mt-2">
                 <span
                   v-for="errorType in annotation.errorTypes"
@@ -545,6 +533,31 @@
           </div>
         </div>
       </div>
+
+      <!-- Footer Actions -->
+      <div class="sticky bottom-0 mt-6">
+        <div
+          class="bg-gray-900/60 backdrop-blur-sm border border-gray-800 rounded-2xl px-4 py-3 flex items-center justify-between shadow-lg"
+        >
+          <div class="text-xs text-gray-400">
+            Gunakan Simpan untuk menyimpan sementara. Submit untuk kirim final.
+          </div>
+          <div class="flex gap-2">
+            <UButton
+              label="Simpan"
+              icon="mdi-floppy"
+              class="rounded-full px-4 py-2 bg-blue-500 text-white shadow-lg hover:bg-blue-600 focus:ring-2 focus:ring-blue-500"
+              @click="saveAllAnnotations"
+            />
+            <UButton
+              label="Submit"
+              icon="i-heroicons-paper-airplane"
+              class="rounded-full px-4 py-2 bg-blue-500 text-white shadow-lg hover:bg-blue-600 focus:ring-2 focus:ring-blue-500"
+              @click="submitAllAnnotations"
+            />
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Floating Annotation UI -->
@@ -554,15 +567,20 @@
       @click="showAnnotationUI = false"
     >
       <div
-        class="bg-gray-900 border border-gray-700 rounded-lg p-6 w-full max-w-md mx-4"
+        class="bg-gray-900 border border-gray-700 rounded-xl p-6 w-full max-w-md mx-4 shadow-2xl"
         @click.stop
       >
-        <h3 class="text-lg font-semibold mb-4">Buat Anotasi</h3>
+        <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+          <UIcon name="i-heroicons-sparkles" class="w-5 h-5 text-blue-400" />
+          Buat Anotasi
+        </h3>
 
         <div class="space-y-4">
           <div>
             <label class="block text-sm font-medium mb-2">Teks Terpilih:</label>
-            <div class="bg-gray-800 p-3 rounded border border-gray-600 text-sm">
+            <div
+              class="bg-gray-800 p-3 rounded border border-gray-600 text-sm font-mono"
+            >
               "{{ selectedText }}"
             </div>
           </div>
@@ -581,7 +599,7 @@
             <select
               v-model="selectedErrorTypes"
               multiple
-              class="w-full bg-gray-800 border border-gray-600 rounded p-2 text-sm"
+              class="w-full bg-gray-800 border border-gray-600 rounded p-2 text-sm focus:ring-2 focus:ring-blue-500"
             >
               <option value="Spelling">Spelling</option>
               <option value="Grammar">Grammar</option>
@@ -594,7 +612,8 @@
           <div class="flex gap-2 pt-4">
             <UButton
               label="Simpan"
-              color="primary"
+              icon="i-heroicons-device-floppy"
+              class="rounded-full px-4 py-2 bg-blue-500 text-white shadow-lg hover:bg-blue-600 focus:ring-2 focus:ring-blue-500"
               @click="saveAnnotation"
               :disabled="!correctionInput || selectedErrorTypes.length === 0"
             />
@@ -603,6 +622,7 @@
               color="neutral"
               variant="ghost"
               @click="showAnnotationUI = false"
+              class="hover:bg-gray-800/60"
             />
           </div>
         </div>
@@ -616,11 +636,17 @@
       @click="showAnnotationModal = false"
     >
       <div
-        class="bg-gray-900 border border-gray-700 rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto"
+        class="bg-gray-900 border border-gray-700 rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto shadow-2xl"
         @click.stop
       >
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-semibold">Detail Anotasi</h3>
+          <h3 class="text-lg font-semibold flex items-center gap-2">
+            <UIcon
+              name="i-heroicons-information-circle"
+              class="w-5 h-5 text-blue-400"
+            />
+            Detail Anotasi
+          </h3>
           <UButton
             icon="i-heroicons-x-mark"
             color="neutral"
@@ -802,11 +828,13 @@ function handleTextSelection() {
   //FIX: Get the selected text including spaces
   selectedText.value = selection.toString();
 
-  //FIX: Get the current modified text (with previous annotations applied)
-  const currentSentenceText = getCurrentSentenceText(selectedSentence.value.id);
+  // Use original sentence text for selection indexing
+  const originalSentenceText = getOriginalSentenceText(
+    selectedSentence.value.id
+  );
 
-  //FIX: Find the selected text in the current modified text
-  const startIndex = currentSentenceText.indexOf(selectedText.value);
+  // Find the selected text in the original sentence text
+  const startIndex = originalSentenceText.indexOf(selectedText.value);
 
   if (startIndex === -1) {
     console.error("Selected text not found in current sentence");
@@ -822,7 +850,7 @@ function handleTextSelection() {
   };
 
   console.log(
-    `//FIX: Selected "${selectedText.value}" at positions ${startIndex}-${endIndex} in current text`
+    `Selected "${selectedText.value}" at positions ${startIndex}-${endIndex} in original text`
   );
   console.log(`//FIX: Selected text length: ${selectedText.value.length}`);
   console.log(`//FIX: Selected text includes spaces: "${selectedText.value}"`);
@@ -927,10 +955,19 @@ function getCurrentSentenceText(sentenceId: number): string {
   //FIX: Apply annotations to get current text
   let currentText = sentence.text;
 
-  //FIX: Sort annotations by start position (apply them in order)
-  const sortedAnnotations = [...sentenceAnnotations].sort(
-    (a, b) => a.start - b.start
-  );
+  // Work on a local copy of positions so we don't mutate stored annotations
+  const sortedAnnotations = [...sentenceAnnotations]
+    .sort((a, b) => a.start - b.start)
+    .map((a) => ({
+      id: a.id,
+      original: a.original,
+      correction: a.correction,
+      errorTypes: a.errorTypes,
+      color: a.color,
+      start: a.start,
+      end: a.end,
+      timestamp: a.timestamp,
+    }));
 
   console.log(
     `//FIX: Applying ${sortedAnnotations.length} annotations to sentence ${sentenceId}`
@@ -953,7 +990,7 @@ function getCurrentSentenceText(sentenceId: number): string {
       `//FIX: Replaced "${annotation.original}" (${annotation.original.length} chars) with "${annotation.correction}" (${annotation.correction.length} chars)`
     );
 
-    //FIX: Update positions of subsequent annotations
+    // Update positions of subsequent annotations (local copy only)
     const lengthDiff =
       annotation.correction.length - annotation.original.length;
     for (
@@ -1062,6 +1099,63 @@ function getOriginalText() {
   return document.value.text;
 }
 
+function getOriginalSentenceText(sentenceId: number): string {
+  if (!document.value) return "";
+  const sentence = document.value.sentences.find((s) => s.id === sentenceId);
+  return sentence ? sentence.text : "";
+}
+
+// Build segments for a specific annotation to preview in history (chip in full sentence)
+function buildSegmentsForAnnotation(
+  sentenceId: number,
+  annotation: Annotation
+) {
+  // Build preview from ORIGINAL sentence + ONLY this annotation
+  const original = getOriginalSentenceText(sentenceId);
+  const segments: Array<any> = [];
+
+  const start = annotation.start;
+  const end = annotation.end;
+
+  // Guard invalid ranges
+  if (start < 0 || end > original.length || start >= end) {
+    return [{ type: "text", text: original }];
+  }
+
+  // Before
+  if (start > 0) {
+    segments.push({ type: "text", text: original.slice(0, start) });
+  }
+  // Chip (correction)
+  segments.push({
+    type: "annotation",
+    annotation,
+    start,
+    end: start + annotation.correction.length,
+  });
+  // After
+  const afterText = original.slice(end);
+  if (afterText.length > 0) {
+    segments.push({ type: "text", text: afterText });
+  }
+
+  return segments;
+}
+
+// Sorted (DESC) annotations for a sentence by timestamp
+function getSentenceAnnotationsSortedDesc(sentenceId: number): Annotation[] {
+  return getSentenceAnnotations(sentenceId).sort(
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+  );
+}
+
+// Label numbering: newest should have highest number (1..N ascending overall)
+function getDescendingIndexLabel(idxDesc: number, sentenceId: number): number {
+  const total = getSentenceAnnotations(sentenceId).length;
+  // idxDesc is 0-based for sorted DESC; label should be total - idxDesc
+  return total - idxDesc;
+}
+
 function formatDate(date: string | Date) {
   return new Date(date).toLocaleDateString("id-ID", {
     year: "numeric",
@@ -1132,13 +1226,53 @@ function navigateDocument(direction: number) {
   }
 }
 
+// Actions
+function saveAllAnnotations() {
+  // TODO: Integrate with API when ready
+  console.log("Saving annotations:", annotations.value);
+}
+
+function submitAllAnnotations() {
+  // TODO: Integrate with API when ready
+  console.log("Submitting annotations:", annotations.value);
+}
+
+// Helper functions for generating realistic data
+function getInstitutionName(id: number): string {
+  const institutions = [
+    "Universitas Indonesia",
+    "Institut Teknologi Bandung",
+    "Universitas Gadjah Mada",
+    "Universitas Padjadjaran",
+    "Universitas Diponegoro",
+    "Universitas Airlangga",
+    "Universitas Brawijaya",
+    "Universitas Hasanuddin",
+  ];
+  return institutions[id % institutions.length];
+}
+
+function getAdminName(id: number): string {
+  const admins = [
+    "Dr. Ahmad Supriyadi",
+    "Prof. Siti Nurhaliza",
+    "Dr. Bambang Sutejo",
+    "Prof. Rina Marlina",
+    "Dr. Hendra Gunawan",
+    "Prof. Dewi Sartika",
+    "Dr. Agus Setiawan",
+    "Prof. Maya Indah",
+  ];
+  return admins[id % admins.length];
+}
+
 // Load data
 async function fetchDocument() {
   try {
     const docId = Number(route.params.id);
 
     // For now, use dummy data that matches the index.vue structure
-    const dummyDocuments = [
+    const dummyDocuments: DocumentResponse[] = [
       {
         id: 1,
         title: "Artikel Bahasa Indonesia 1",
@@ -1146,6 +1280,8 @@ async function fetchDocument() {
         created_at: "2024-01-15T10:30:00Z",
         updated_at: "2024-01-15T10:30:00Z",
         assigned_to: [1, 2],
+        agency_name: getInstitutionName(1),
+        assigned_by_name: getAdminName(1),
         sentences: [
           {
             id: 1,
@@ -1196,6 +1332,8 @@ async function fetchDocument() {
         created_at: "2024-01-16T14:20:00Z",
         updated_at: "2024-01-16T14:20:00Z",
         assigned_to: [2, 3],
+        agency_name: getInstitutionName(2),
+        assigned_by_name: getAdminName(2),
         sentences: [
           {
             id: 5,
@@ -1246,6 +1384,8 @@ async function fetchDocument() {
         created_at: "2024-01-17T09:15:00Z",
         updated_at: "2024-01-17T09:15:00Z",
         assigned_to: [1],
+        agency_name: getInstitutionName(1),
+        assigned_by_name: getAdminName(1),
         sentences: [
           {
             id: 9,
@@ -1296,7 +1436,7 @@ async function fetchDocument() {
 
     const foundDocument = dummyDocuments.find((doc) => doc.id === docId);
     if (foundDocument) {
-      document.value = foundDocument as DocumentResponse;
+      document.value = foundDocument;
     } else {
       console.error("Document not found");
       // Redirect to index if document not found

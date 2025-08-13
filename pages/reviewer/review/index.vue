@@ -8,7 +8,7 @@
         <Card variant="glassmorphism" class="p-6 text-center">
           <UIcon
             name="i-lucide-file-text"
-            class="w-10 h-10 text-blue-400 mx-auto mb-2"
+            class="w-10 h-10 text-blue-400 mx-auto mb-4"
           />
           <span class="text-2xl font-bold text-white block">{{
             stats.annotated
@@ -18,7 +18,7 @@
         <Card variant="glassmorphism" class="p-6 text-center">
           <UIcon
             name="i-lucide-check-circle"
-            class="w-10 h-10 text-green-400 mx-auto mb-2"
+            class="w-10 h-10 text-green-400 mx-auto mb-4"
           />
           <span class="text-2xl font-bold text-white block">{{
             stats.reviewed
@@ -28,7 +28,7 @@
         <Card variant="glassmorphism" class="p-6 text-center">
           <UIcon
             name="i-lucide-bar-chart-2"
-            class="w-10 h-10 text-purple-400 mx-auto mb-2"
+            class="w-10 h-10 text-purple-400 mx-auto mb-4"
           />
           <span class="text-2xl font-bold text-white block">{{
             stats.total
@@ -49,7 +49,7 @@
             :key="i"
             class="flex flex-col items-center flex-1"
           >
-            <div class="relative w-full group">
+            <div class="relative w-full">
               <div
                 class="bg-gradient-to-t from-blue-600 to-blue-400 rounded-t shadow-lg transition-all duration-300 hover:from-blue-500 hover:to-blue-300"
                 :style="{ height: `${Math.max(val.count * 8, 20)}px` }"
@@ -178,15 +178,8 @@
           </div>
         </div>
 
-        <div v-if="isLoading" class="py-4">
-          <div class="animate-pulse">
-            <div class="h-6 bg-white/10 rounded w-1/3 mb-4"></div>
-            <div class="space-y-2">
-              <div class="h-10 bg-white/5 rounded"></div>
-              <div class="h-10 bg-white/5 rounded"></div>
-              <div class="h-10 bg-white/5 rounded"></div>
-            </div>
-          </div>
+        <div v-if="isLoading" class="text-center py-8">
+          <span class="text-gray-400">Memuat dokumen...</span>
         </div>
 
         <div v-else class="overflow-x-auto rounded-lg">
@@ -194,63 +187,12 @@
             <thead>
               <tr class="bg-gray-800/60 text-gray-300 sticky top-0 z-10">
                 <th class="px-4 py-3 text-left">No</th>
-                <th class="px-4 py-3 text-left">
-                  <button
-                    class="flex items-center gap-1"
-                    @click="setSort('title')"
-                  >
-                    Judul
-                    <UIcon :name="sortIcon('title')" class="w-4 h-4" />
-                  </button>
-                </th>
-                <th class="px-4 py-3 text-left">
-                  <button
-                    class="flex items-center gap-1"
-                    @click="setSort('agency_name')"
-                  >
-                    Lembaga Asal
-                    <UIcon :name="sortIcon('agency_name')" class="w-4 h-4" />
-                  </button>
-                </th>
-                <th class="px-4 py-3 text-left">
-                  <button
-                    class="flex items-center gap-1"
-                    @click="setSort('assigned_by_name')"
-                  >
-                    Assigned By
-                    <UIcon
-                      :name="sortIcon('assigned_by_name')"
-                      class="w-4 h-4"
-                    />
-                  </button>
-                </th>
-                <th class="px-4 py-3 text-left">
-                  <button
-                    class="flex items-center gap-1"
-                    @click="setSort('status')"
-                  >
-                    Status
-                    <UIcon :name="sortIcon('status')" class="w-4 h-4" />
-                  </button>
-                </th>
-                <th class="px-4 py-3 text-left">
-                  <button
-                    class="flex items-center gap-1"
-                    @click="setSort('created_at')"
-                  >
-                    Tanggal
-                    <UIcon :name="sortIcon('created_at')" class="w-4 h-4" />
-                  </button>
-                </th>
-                <th class="px-4 py-3 text-left">
-                  <button
-                    class="flex items-center gap-1"
-                    @click="setSort('sentences')"
-                  >
-                    Sentences
-                    <UIcon :name="sortIcon('sentences')" class="w-4 h-4" />
-                  </button>
-                </th>
+                <th class="px-4 py-3 text-left">Judul</th>
+                <th class="px-4 py-3 text-left">Lembaga Asal</th>
+                <th class="px-4 py-3 text-left">Assigned By</th>
+                <th class="px-4 py-3 text-left">Status</th>
+                <th class="px-4 py-3 text-left">Tanggal</th>
+                <th class="px-4 py-3 text-left">Sentences</th>
                 <th class="px-4 py-3 text-left">Aksi</th>
               </tr>
             </thead>
@@ -279,7 +221,7 @@
                     variant="default"
                     size="sm"
                     @click="goToDetail(doc.id)"
-                    class="bg-blue-500 hover:bg-blue-600 text-white shadow"
+                    class="bg-blue-600 hover:bg-blue-700 text-white"
                   >
                     <UIcon name="i-heroicons-pencil-square" class="w-4 h-4" />
                     Anotasi
@@ -287,20 +229,8 @@
                 </td>
               </tr>
               <tr v-if="filteredDocs.length === 0">
-                <td colspan="8" class="py-10">
-                  <div class="flex flex-col items-center gap-3 text-gray-400">
-                    <UIcon
-                      name="i-heroicons-document-magnifying-glass"
-                      class="w-10 h-10"
-                    />
-                    <div>Tidak ada dokumen ditemukan.</div>
-                    <button
-                      @click="resetFilters"
-                      class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs"
-                    >
-                      Reset Filter
-                    </button>
-                  </div>
+                <td colspan="8" class="text-center text-gray-400 py-8">
+                  Tidak ada dokumen ditemukan.
                 </td>
               </tr>
             </tbody>
@@ -378,14 +308,10 @@ const filter = ref({
   dateTo: "",
 });
 const dateFilterType = ref("");
-const sort = ref<{ key: string; dir: "asc" | "desc" }>({
-  key: "created_at",
-  dir: "desc",
-});
 
 // Filtering logic
 const filteredDocs = computed(() => {
-  const base = docs.value.filter((doc) => {
+  return docs.value.filter((doc) => {
     // Search filter
     const matchSearch =
       !search.value ||
@@ -436,38 +362,6 @@ const filteredDocs = computed(() => {
 
     return matchSearch && matchStatus && matchDate;
   });
-
-  // sort
-  const sorted = [...base].sort((a, b) => {
-    const dir = sort.value.dir === "asc" ? 1 : -1;
-    const key = sort.value.key;
-    if (
-      key === "title" ||
-      key === "agency_name" ||
-      key === "assigned_by_name"
-    ) {
-      const av = (a as any)[key] || "";
-      const bv = (b as any)[key] || "";
-      return av.localeCompare(bv) * dir;
-    }
-    if (key === "status") {
-      const av = getDocumentStatus(a);
-      const bv = getDocumentStatus(b);
-      return av.localeCompare(bv) * dir;
-    }
-    if (key === "sentences") {
-      const av = a.sentences?.length || 0;
-      const bv = b.sentences?.length || 0;
-      return (av - bv) * dir;
-    }
-    // default by created_at
-    return (
-      (new Date(a.created_at).getTime() - new Date(b.created_at).getTime()) *
-      dir
-    );
-  });
-
-  return sorted;
 });
 
 // Methods
@@ -488,24 +382,6 @@ function handleDateFilterChange() {
     filter.value.dateTo = "";
   }
 }
-
-function setSort(key: string) {
-  if (sort.value.key === key) {
-    sort.value.dir = sort.value.dir === "asc" ? "desc" : "asc";
-  } else {
-    sort.value.key = key;
-    sort.value.dir = "asc";
-  }
-}
-
-function sortIcon(key: string) {
-  if (sort.value.key !== key) return "i-heroicons-arrows-up-down";
-  return sort.value.dir === "asc"
-    ? "i-heroicons-arrow-up"
-    : "i-heroicons-arrow-down";
-}
-
-// removed quick status chips
 
 function goToDetail(id: number) {
   navigateTo(`/anotator/anotasi/${id}`);

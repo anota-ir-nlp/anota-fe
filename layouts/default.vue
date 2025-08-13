@@ -124,7 +124,7 @@ const menuGroups = computed<MenuGroup[]>(() => {
       items: [
         {
           label: "Daftar Dokumen",
-          path: "/peninjau/tinjauan",
+          path: "/reviewer/review",
           icon: FileCheck,
           description: "Documents to review",
         },

@@ -137,6 +137,8 @@ export interface DocumentResponse {
   updated_at: string;
   assigned_to: number[];
   sentences: SentenceResponse[];
+  agency_name?: string;
+  assigned_by_name?: string;
 }
 export interface CreateDocumentRequest {
   title: string;
@@ -279,7 +281,7 @@ export interface UserPasswordResetRequest {
 export interface UserRoleManagementRequest {
   user_id: string;
   role: string;
-  action: 'add' | 'remove';
+  action: "add" | "remove";
 }
 
 export interface UserUpdateRequest {
@@ -293,4 +295,4 @@ export interface AvailableRolesResponse {
 }
 
 // Add a type for the available roles based on API docs
-export type AvailableRole = 'Admin' | 'Annotator' | 'Reviewer' | 'Kepala Riset';
+export type AvailableRole = "Admin" | "Annotator" | "Reviewer" | "Kepala Riset";
