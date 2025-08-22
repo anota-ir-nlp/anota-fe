@@ -43,17 +43,14 @@ async function onSubmit() {
     return;
   }
 
-  await toast.promise(
-    login(loginData.username, loginData.password),
-    {
-      loading: "Mencoba masuk...",
-      success: () => {
-        navigateTo("/beranda");
-        return "Berhasil Masuk. Selamat datang!";
-      },
-      error: () => "Gagal Masuk. Username atau kata sandi salah.",
-    }
-  );
+  await toast.promise(login(loginData.username, loginData.password), {
+    loading: "Mencoba masuk...",
+    success: () => {
+      navigateTo("/beranda");
+      return "Berhasil Masuk. Selamat datang!";
+    },
+    error: () => "Gagal Masuk. Username atau kata sandi salah.",
+  });
 }
 
 const goBack = () => {
@@ -62,7 +59,9 @@ const goBack = () => {
 </script>
 
 <template>
-  <div class="min-h-[calc(100vh-8rem)] flex items-center justify-center bg-slate-900">
+  <div
+    class="min-h-[calc(100vh-8rem)] flex items-center justify-center bg-slate-900"
+  >
     <Card variant="glassmorphism" class="w-full max-w-md p-10 relative">
       <Button
         variant="ghost"
@@ -84,7 +83,9 @@ const goBack = () => {
 
       <form @submit.prevent="onSubmit" class="flex flex-col gap-4">
         <div>
-          <label for="username" class="block text-slate-300 text-sm mb-1">Username</label>
+          <label for="username" class="block text-slate-300 text-sm mb-1"
+            >Username</label
+          >
           <Input
             id="username"
             v-model="username"
@@ -94,11 +95,15 @@ const goBack = () => {
             class="w-full px-4 py-4 text-base bg-slate-900 border border-slate-600 rounded-md text-white outline-none transition-all duration-200 placeholder:text-slate-400 placeholder:opacity-70 focus:border-blue-500 focus:shadow-[0_0_0_1px_rgb(59,130,246)]"
             :class="{ '!border-red-400': usernameError }"
           />
-          <p v-if="usernameError" class="text-red-400 text-xs mt-1">{{ usernameError }}</p>
+          <p v-if="usernameError" class="text-red-400 text-xs mt-1">
+            {{ usernameError }}
+          </p>
         </div>
 
         <div>
-          <label for="password" class="block text-slate-300 text-sm mb-1">Kata Sandi</label>
+          <label for="password" class="block text-slate-300 text-sm mb-1"
+            >Kata Sandi</label
+          >
           <Input
             id="password"
             v-model="password"
@@ -108,15 +113,12 @@ const goBack = () => {
             class="w-full px-4 py-4 text-base bg-slate-900 border border-slate-600 rounded-md text-white outline-none transition-all duration-200 placeholder:text-slate-400 placeholder:opacity-70 focus:border-blue-500 focus:shadow-[0_0_0_1px_rgb(59,130,246)]"
             :class="{ '!border-red-400': passwordError }"
           />
-          <p v-if="passwordError" class="text-red-400 text-xs mt-1">{{ passwordError }}</p>
+          <p v-if="passwordError" class="text-red-400 text-xs mt-1">
+            {{ passwordError }}
+          </p>
         </div>
 
-        <Button
-          type="submit"
-          variant="gradient"
-          size="xl"
-          class="w-full mt-2"
-        >
+        <Button type="submit" variant="gradient" size="xl" class="w-full mt-2">
           Lanjutkan
         </Button>
       </form>

@@ -824,6 +824,238 @@
       },
       "parameters": []
     },
+    "/projects/": {
+      "get": {
+        "operationId": "projects_list",
+        "summary": "List Projects",
+        "description": "",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "A page number within the paginated result set.",
+            "required": false,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "required": ["count", "results"],
+              "type": "object",
+              "properties": {
+                "count": { "type": "integer" },
+                "next": {
+                  "type": "string",
+                  "format": "uri",
+                  "x-nullable": true
+                },
+                "previous": {
+                  "type": "string",
+                  "format": "uri",
+                  "x-nullable": true
+                },
+                "results": {
+                  "type": "array",
+                  "items": { "$ref": "#/definitions/Project" }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["📁 Project Management"]
+      },
+      "post": {
+        "operationId": "projects_create",
+        "summary": "Create Project",
+        "description": "Hanya Admin dan Kepala Riset yang dapat membuat project",
+        "parameters": [
+          {
+            "name": "data",
+            "in": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/Project" }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "schema": { "$ref": "#/definitions/Project" }
+          }
+        },
+        "tags": ["📁 Project Management"]
+      },
+      "parameters": []
+    },
+    "/projects/{id}/": {
+      "get": {
+        "operationId": "projects_read",
+        "summary": "Retrieve Project",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": { "$ref": "#/definitions/Project" }
+          }
+        },
+        "tags": ["📁 Project Management"]
+      },
+      "put": {
+        "operationId": "projects_update",
+        "summary": "Update Project",
+        "description": "",
+        "parameters": [
+          {
+            "name": "data",
+            "in": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/Project" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": { "$ref": "#/definitions/Project" }
+          }
+        },
+        "tags": ["📁 Project Management"]
+      },
+      "patch": {
+        "operationId": "projects_partial_update",
+        "summary": "Partial Update Project",
+        "description": "",
+        "parameters": [
+          {
+            "name": "data",
+            "in": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/Project" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": { "$ref": "#/definitions/Project" }
+          }
+        },
+        "tags": ["📁 Project Management"]
+      },
+      "delete": {
+        "operationId": "projects_delete",
+        "summary": "Delete Project",
+        "description": "",
+        "parameters": [],
+        "responses": { "204": { "description": "" } },
+        "tags": ["📁 Project Management"]
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "description": "A unique integer value identifying this project.",
+          "required": true,
+          "type": "integer"
+        }
+      ]
+    },
+    "/projects/{id}/assign_admin/": {
+      "post": {
+        "operationId": "projects_assign_admin",
+        "summary": "Assign Admin to Project",
+        "description": "Hanya Kepala Riset yang dapat assign admin ke project",
+        "parameters": [
+          {
+            "name": "data",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "required": ["user_id"],
+              "type": "object",
+              "properties": {
+                "user_id": {
+                  "description": "UUID admin yang akan di-assign",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Berhasil assign admin ke project",
+            "examples": {
+              "application/json": {
+                "message": "Admin assigned to project successfully"
+              }
+            }
+          },
+          "403": {
+            "description": "Hanya Kepala Riset yang dapat assign admin"
+          },
+          "404": { "description": "User tidak ditemukan" }
+        },
+        "tags": ["📁 Project Management"]
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "description": "A unique integer value identifying this project.",
+          "required": true,
+          "type": "integer"
+        }
+      ]
+    },
+    "/projects/{id}/unassign_admin/": {
+      "post": {
+        "operationId": "projects_unassign_admin",
+        "summary": "Unassign Admin from Project",
+        "description": "Hanya Kepala Riset yang dapat unassign admin dari project",
+        "parameters": [
+          {
+            "name": "data",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "required": ["user_id"],
+              "type": "object",
+              "properties": {
+                "user_id": {
+                  "description": "UUID admin yang akan di-unassign",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Berhasil unassign admin dari project",
+            "examples": {
+              "application/json": {
+                "message": "Admin unassigned from project successfully"
+              }
+            }
+          },
+          "403": {
+            "description": "Hanya Kepala Riset yang dapat unassign admin"
+          },
+          "404": { "description": "User tidak ditemukan" }
+        },
+        "tags": ["📁 Project Management"]
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "description": "A unique integer value identifying this project.",
+          "required": true,
+          "type": "integer"
+        }
+      ]
+    },
     "/token/refresh/": {
       "post": {
         "operationId": "token_refresh_create",
@@ -1454,6 +1686,42 @@
       "properties": {
         "username": { "title": "Username", "type": "string", "minLength": 1 },
         "password": { "title": "Password", "type": "string", "minLength": 1 }
+      }
+    },
+    "Project": {
+      "required": ["name"],
+      "type": "object",
+      "properties": {
+        "id": { "title": "ID", "type": "integer", "readOnly": true },
+        "name": {
+          "title": "Name",
+          "type": "string",
+          "maxLength": 255,
+          "minLength": 1
+        },
+        "description": { "title": "Description", "type": "string" },
+        "created_at": {
+          "title": "Created at",
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "updated_at": {
+          "title": "Updated at",
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "documents": {
+          "type": "array",
+          "items": { "type": "integer" },
+          "uniqueItems": true
+        },
+        "assigned_admins": {
+          "type": "array",
+          "items": { "type": "string", "format": "uuid" },
+          "uniqueItems": true
+        }
       }
     },
     "TokenRefresh": {
