@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useAuth } from "~/data/auth";
 import { onMounted, onBeforeUnmount, ref, computed } from "vue";
-import { navigateTo } from "#app";
+import { useRoute, navigateTo } from "#app";
 import { Button } from "~/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import {
@@ -30,11 +30,14 @@ import {
   LogOut,
   Lightbulb,
   FileCheck,
+  Menu as MenuIcon,
+  X as CloseIcon,
 } from "lucide-vue-next";
 import { toast } from "vue-sonner";
 import type { AvailableRole } from "~/types/api";
 
 const { user, isAuthenticated, userRoles, logout, initializeAuth } = useAuth();
+const route = useRoute();
 
 const userAvatar = computed(
   () =>
@@ -61,12 +64,20 @@ type MenuGroup =
       }>;
     };
 
+// --- Menu groups: Beranda is now a direct link with Home icon ---
 const menuGroups = computed<MenuGroup[]>(() => {
   if (!isAuthenticated.value) {
     return [];
   }
 
   const groups: MenuGroup[] = [];
+
+  groups.push({
+    type: "link",
+    label: "Beranda",
+    path: "/beranda",
+    icon: Home,
+  });
 
   if (hasRole("Admin")) {
     groups.push({
@@ -96,7 +107,6 @@ const menuGroups = computed<MenuGroup[]>(() => {
     });
   }
 
-  // Annotator menus - single page with document list functionality
   if (hasRole("Annotator")) {
     groups.push({
       type: "dropdown",
@@ -113,7 +123,6 @@ const menuGroups = computed<MenuGroup[]>(() => {
     });
   }
 
-  // Reviewer menus - single page for reviewing annotations
   if (hasRole("Reviewer")) {
     groups.push({
       type: "dropdown",
@@ -130,7 +139,6 @@ const menuGroups = computed<MenuGroup[]>(() => {
     });
   }
 
-  // Kepala Riset menus - based on actual pages in kepala-riset folder
   if (hasRole("Kepala Riset")) {
     groups.push({
       type: "dropdown",
@@ -195,14 +203,20 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   window.removeEventListener("scroll", handleScroll as EventListener);
 });
+
+// --- Mobile menu toggle for authenticated navbar ---
+const toggleMobileMenu = () => {
+  isMobileMenuOpen.value = !isMobileMenuOpen.value;
+};
+const closeMobileMenu = () => {
+  isMobileMenuOpen.value = false;
+};
 </script>
 
 <template>
   <div
     :class="[
-      'flex flex-col min-h-screen',
-      // Authenticated: dark background, Not authenticated: white background
-      isAuthenticated ? 'bg-slate-950' : 'bg-white',
+      'flex flex-col min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100',
     ]"
   >
     <!-- SVG Glass Distortion Filter -->
@@ -271,7 +285,7 @@ onBeforeUnmount(() => {
           <div class="navbar-glass-tint"></div>
           <div class="navbar-glass-shine"></div>
           <div class="relative z-10 w-full">
-            <!-- Adjust flex: left = brand + menu, right = profile -->
+            <!-- Responsive Navbar -->
             <div class="flex items-center justify-between w-full">
               <!-- Left: Brand + Menubar -->
               <div class="flex items-center gap-6">
@@ -282,7 +296,16 @@ onBeforeUnmount(() => {
                   <Lightbulb class="w-5 h-5 text-blue-500" />
                   <span class="text-xl font-medium">Anota</span>
                 </NuxtLink>
-                <!-- Move Menubar here (left side) -->
+                <!-- Hamburger for mobile -->
+                <button
+                  class="md:hidden flex items-center justify-center p-2 rounded-lg hover:bg-gray-100 transition"
+                  @click="toggleMobileMenu"
+                  aria-label="Toggle menu"
+                >
+                  <MenuIcon v-if="!isMobileMenuOpen" class="w-6 h-6" />
+                  <CloseIcon v-else class="w-6 h-6" />
+                </button>
+                <!-- Desktop Menubar -->
                 <Menubar
                   class="hidden md:flex bg-transparent border-none shadow-none space-x-4 my-auto"
                 >
@@ -291,20 +314,25 @@ onBeforeUnmount(() => {
                       <MenubarTrigger as-child>
                         <NuxtLink
                           :to="group.path"
-                          class="flex items-center space-x-2 px-3 py-3 text-slate-700 hover:text-blue-600 hover:bg-blue-100/50 data-[state=open]:bg-blue-100/50 data-[state=open]:text-blue-600 transition-all duration-200"
-                          active-class="text-blue-600 bg-blue-100/50"
+                          class="flex items-center space-x-2 px-3 py-3 text-slate-700 hover:text-blue-600 hover:bg-blue-100/50 transition-all duration-200 relative"
+                          :class="{
+                            'font-semibold text-blue-600':
+                              route.path === group.path,
+                          }"
                         >
                           <component :is="group.icon" class="w-4 h-4" />
                           <span class="font-medium">{{ group.label }}</span>
+                          <!-- indicator removed -->
                         </NuxtLink>
                       </MenubarTrigger>
                     </MenubarMenu>
                     <MenubarMenu v-else-if="group.type === 'dropdown'">
                       <MenubarTrigger
-                        class="flex items-center space-x-2 px-3 py-3 text-slate-700 hover:text-blue-600 hover:bg-blue-100/50 data-[state=open]:bg-blue-100/50 data-[state=open]:text-blue-600"
+                        class="flex items-center space-x-2 px-3 py-3 text-slate-700 hover:text-blue-600 hover:bg-blue-100/50 data-[state=open]:bg-blue-100/50 data-[state=open]:text-blue-600 relative"
                       >
                         <component :is="group.icon" class="w-4 h-4" />
                         <span class="font-medium">{{ group.label }}</span>
+                        <!-- indicator removed -->
                       </MenubarTrigger>
                       <MenubarContent
                         class="bg-white border border-gray-200 shadow-lg"
@@ -318,7 +346,10 @@ onBeforeUnmount(() => {
                           <NuxtLink
                             :to="item.path"
                             class="flex items-start space-x-3 w-full"
-                            active-class="bg-blue-100/50 text-blue-600"
+                            :class="{
+                              'text-blue-600 font-semibold bg-blue-100/50':
+                                route.path.startsWith(item.path),
+                            }"
                           >
                             <component
                               :is="item.icon"
@@ -386,6 +417,54 @@ onBeforeUnmount(() => {
                 </DropdownMenu>
               </div>
             </div>
+            <!-- Mobile Menu (slide down) -->
+            <transition name="fade">
+              <div
+                v-if="isMobileMenuOpen"
+                class="md:hidden absolute left-0 right-0 top-full bg-white border-t border-gray-200 shadow-lg rounded-b-2xl z-20"
+              >
+                <nav class="flex flex-col py-2">
+                  <template v-for="group in menuGroups" :key="group.label">
+                    <NuxtLink
+                      v-if="group.type === 'link'"
+                      :to="group.path"
+                      @click="closeMobileMenu"
+                      class="flex items-center gap-2 px-6 py-3 text-slate-700 hover:text-blue-600 hover:bg-blue-100/50 transition-all duration-200 relative"
+                      :class="{
+                        'font-semibold text-blue-600':
+                          route.path === group.path,
+                      }"
+                    >
+                      <component :is="group.icon" class="w-5 h-5" />
+                      <span class="font-medium">{{ group.label }}</span>
+                      <!-- indicator removed -->
+                    </NuxtLink>
+                    <div v-else-if="group.type === 'dropdown'">
+                      <div
+                        class="px-6 pt-3 pb-1 text-xs text-gray-400 font-semibold uppercase"
+                      >
+                        {{ group.label }}
+                      </div>
+                      <NuxtLink
+                        v-for="item in group.items"
+                        :key="item.path"
+                        :to="item.path"
+                        @click="closeMobileMenu"
+                        class="flex items-center gap-2 px-8 py-3 text-slate-700 hover:text-blue-600 hover:bg-blue-100/50 transition-all duration-200 relative"
+                        :class="{
+                          'font-semibold text-blue-600 bg-blue-100/50':
+                            route.path.startsWith(item.path),
+                        }"
+                      >
+                        <component :is="item.icon" class="w-5 h-5" />
+                        <span class="font-medium">{{ item.label }}</span>
+                        <!-- indicator removed -->
+                      </NuxtLink>
+                    </div>
+                  </template>
+                </nav>
+              </div>
+            </transition>
           </div>
         </div>
       </div>
@@ -420,20 +499,15 @@ onBeforeUnmount(() => {
                 <!-- Right: Actions -->
                 <div class="flex items-center gap-3">
                   <Button
-                    class="hidden md:inline-flex btn-rect btn-rect-outline"
+                    class="hidden md:inline-flex btn-rect btn-rect-outline animated-gradient-btn-greenblue"
                     @click="handleLoginClick"
                   >
                     Masuk
                   </Button>
-                  <Button
-                    class="hidden md:inline-flex btn-rect btn-rect-primary"
-                    @click="handleLoginClick"
-                  >
-                    Mulai
-                  </Button>
+
                   <!-- Mobile primary CTA -->
                   <Button
-                    class="md:hidden btn-rect btn-rect-primary"
+                    class="md:hidden btn-rect btn-rect-primary animated-gradient-btn-greenblue"
                     @click="handleLoginClick"
                   >
                     Masuk
@@ -453,19 +527,9 @@ onBeforeUnmount(() => {
 
     <!-- Footer -->
     <!-- Authenticated: keep dark footer -->
-    <footer
-      v-if="isAuthenticated"
-      class="border-t border-slate-800 bg-slate-900/50 px-8 py-6 text-center"
-    >
-      <div class="max-w-5xl mx-auto flex flex-col items-center space-y-4">
-        <p class="text-slate-300">
-          &copy; {{ new Date().getFullYear() }} ANOTA. All rights reserved.
-        </p>
-      </div>
-    </footer>
 
     <!-- Public: light, minimal footer matching landing style -->
-    <footer v-else class="py-12 bg-gray-50 border-t border-gray-200">
+    <footer class="py-12 bg-gray-50 border-t border-gray-200">
       <div class="max-w-7xl mx-auto px-6 text-center">
         <div class="mb-6">
           <div class="text-2xl text-gray-800 mb-2 font-light">Anota</div>
@@ -495,6 +559,14 @@ onBeforeUnmount(() => {
 
 <style scoped>
 /* Custom styles for better dark theme compatibility */
+.animated-gradient-btn-greenblue {
+  background: linear-gradient(270deg, #22c55e, #38bdf8, #2563eb, #22c55e);
+  background-size: 400% 400%;
+  animation: gradientMoveGreenBlue 6s ease-in-out infinite;
+  color: #fff !important;
+  border: none;
+  transition: background 0.2s;
+}
 :deep(.menubar-content) {
   background-color: #1f2937 !important;
   border-color: #374151 !important;
@@ -549,5 +621,15 @@ onBeforeUnmount(() => {
   overflow: hidden;
   border-radius: inherit;
   /* box-shadow: inset 2px 2px 1px 0 #ffffff80, inset -1px -1px 1px 1px #ffffff80; */
+}
+
+/* Fade transition for mobile menu */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

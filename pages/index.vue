@@ -32,14 +32,14 @@
       >
         <div class="mb-12">
           <h1
-            class="text-5xl md:text-7xl mb-6 tracking-tight text-gray-900 font-light"
+            class="text-8xl md:text-8xl mb-6 tracking-tight text-gray-900 font-light"
           >
             Anota
           </h1>
           <div
-            class="w-24 h-1 bg-gradient-to-r from-green-500 to-pink-500 mx-auto rounded-full mb-8"
+            class="w-24 h-1 animated-gradient-pinkgreen mx-auto rounded-full mb-8"
           ></div>
-          <p class="text-xl text-gray-600 mb-4 tracking-wide font-light">
+          <p class="text-xl text-gray-600 mb-2 tracking-wide font-light">
             Anotasi Cerdas. Dataset Sempurna.
           </p>
           <p
@@ -53,13 +53,17 @@
         <div class="flex gap-4 justify-center flex-wrap mb-8">
           <Button
             size="lg"
-            class="btn-rect btn-rect-primary"
+            class="btn-rect btn-rect-primary text-base animated-gradient-btn-greenblue"
             @click="handleLogin"
           >
             Masuk ke Anota
             <ArrowRightFromLine class="ml-3 w-5 h-5" />
           </Button>
-          <Button variant="outline" size="lg" class="btn-rect btn-rect-outline">
+          <Button
+            variant="outline"
+            size="lg"
+            class="btn-rect btn-rect-outline text-base"
+          >
             Learn More
           </Button>
         </div>
@@ -75,113 +79,280 @@
       </div>
     </section>
 
-    <!-- Built for Researchers, Loved by Linguists Section -->
-    <section class="py-24 bg-gradient-to-b from-white to-gray-50">
+    <!-- Mengapa Memilih Anota Section -->
+    <section class="py-16 bg-gradient-to-b from-white to-gray-50">
       <div class="max-w-7xl mx-auto px-6">
         <div class="text-center mb-12">
           <h2 class="text-3xl mb-2 text-gray-900 font-light">
-            Built for Researchers,
+            Mengapa Memilih Anota?
           </h2>
-          <h2 class="text-3xl mb-4 text-green-600 font-light">
-            Loved by Linguists
-          </h2>
-          <p class="text-lg text-gray-600 max-w-2xl mx-auto font-light">
-            Join thousands of researchers and developers who trust Anota for
-            their grammatical error correction projects.
+          <div
+            class="w-16 h-1 animated-gradient-pinkgreen mx-auto rounded-full mb-4"
+          ></div>
+          <p class="text-base text-gray-600 max-w-3xl mx-auto font-light">
+            Platform kami menggabungkan teknologi canggih dan desain intuitif
+            untuk membuat anotasi dataset lebih cepat, akurat, dan menyenangkan.
           </p>
         </div>
-        <div class="grid md:grid-cols-3 gap-8 mb-12">
-          <div class="card-outline p-8 text-center">
-            <Zap class="w-8 h-8 text-green-500 mx-auto mb-4" />
-            <div class="text-lg mb-2 text-gray-900 font-light">
-              10x Faster Annotation
+        <div class="grid md:grid-cols-3 gap-8">
+          <div
+            class="card-outline p-6 text-center hover:shadow-xl hover:scale-[1.03] transition-all duration-200 border-gray-200/50 backdrop-blur-sm group cursor-pointer"
+            title="Proses lebih cepat dengan Anota"
+          >
+            <div
+              class="w-14 h-14 bg-gradient-to-br from-green-400 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform"
+            >
+              <Zap class="w-7 h-7 text-white" />
             </div>
-            <div class="text-gray-600 font-light">
-              AI-powered suggestions reduce manual work by 90%
-            </div>
+            <h3 class="text-base mb-2 text-gray-900 font-light">
+              Proses Cepat
+            </h3>
+            <p class="text-base text-gray-600 leading-relaxed font-light">
+              Anota membantu mempercepat proses anotasi dengan fitur-fitur yang
+              memudahkan pengguna dalam menandai kesalahan tata bahasa.
+            </p>
           </div>
-          <div class="card-outline p-8 text-center">
-            <Target class="w-8 h-8 text-pink-500 mx-auto mb-4" />
-            <div class="text-lg mb-2 text-gray-900 font-light">
-              Research-Grade Accuracy
+          <div
+            class="card-outline p-6 text-center hover:shadow-xl hover:scale-[1.03] transition-all duration-200 border-gray-200/50 backdrop-blur-sm group cursor-pointer"
+            title="Akurasi tinggi untuk hasil terbaik"
+          >
+            <div
+              class="w-14 h-14 bg-gradient-to-br from-pink-400 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform"
+            >
+              <Target class="w-7 h-7 text-white" />
             </div>
-            <div class="text-gray-600 font-light">
-              Validated annotation schemas ensure consistent quality
+            <h3 class="text-base mb-2 text-gray-900 font-light">
+              Akurasi Tinggi
+            </h3>
+            <p class="text-base text-gray-600 leading-relaxed font-light">
+              Skema anotasi yang tervalidasi memastikan kualitas data yang
+              konsisten dan siap digunakan untuk penelitian.
+            </p>
+          </div>
+          <div
+            class="card-outline p-6 text-center hover:shadow-xl hover:scale-[1.03] transition-all duration-200 border-gray-200/50 backdrop-blur-sm group cursor-pointer"
+            title="Kolaborasi mudah dengan tim"
+          >
+            <div
+              class="w-14 h-14 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform"
+            >
+              <Users class="w-7 h-7 text-white" />
             </div>
-          </div>
-          <div class="card-outline p-8 text-center">
-            <Users class="w-8 h-8 text-blue-500 mx-auto mb-4" />
-            <div class="text-lg mb-2 text-gray-900 font-light">
-              Collaborative Features
-            </div>
-            <div class="text-gray-600 font-light">
-              Work with your team in real-time with built-in review tools
-            </div>
-          </div>
-        </div>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-          <div class="card-outline text-center p-6">
-            <Zap class="w-6 h-6 text-green-500 mx-auto mb-2" />
-            <div class="text-2xl text-green-600 font-light">10x</div>
-            <div class="text-xs text-gray-600 font-light">
-              Faster Processing
-            </div>
-          </div>
-          <div class="card-outline text-center p-6">
-            <Target class="w-6 h-6 text-pink-500 mx-auto mb-2" />
-            <div class="text-2xl text-pink-600 font-light">99%</div>
-            <div class="text-xs text-gray-600 font-light">Accuracy Rate</div>
-          </div>
-          <div class="card-outline text-center p-6">
-            <Users class="w-6 h-6 text-blue-500 mx-auto mb-2" />
-            <div class="text-2xl text-blue-600 font-light">1000+</div>
-            <div class="text-xs text-gray-600 font-light">Happy Users</div>
-          </div>
-          <div class="card-outline text-center p-6">
-            <Book class="w-6 h-6 text-purple-500 mx-auto mb-2" />
-            <div class="text-2xl text-purple-600 font-light">50M+</div>
-            <div class="text-xs text-gray-600 font-light">Annotations</div>
+            <h3 class="text-base mb-2 text-gray-900 font-light">
+              Kolaborasi Mudah
+            </h3>
+            <p class="text-base text-gray-600 leading-relaxed font-light">
+              Bekerja bersama tim secara real-time dengan fitur review dan
+              monitoring progres yang terintegrasi.
+            </p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- CTA Section -->
-    <section
-      class="py-24 bg-gradient-to-r from-gray-900 to-black text-white relative overflow-hidden"
-    >
-      <div class="max-w-4xl mx-auto px-6 text-center relative">
-        <h2 class="text-3xl mb-4 font-light">
-          Ready to Transform Your
-          <span class="block text-green-400">Dataset Annotation?</span>
-        </h2>
-        <p class="text-lg text-gray-300 mb-8 max-w-2xl mx-auto font-light">
-          Join the revolution in grammatical error correction research. Start
-          creating perfect datasets today.
-        </p>
-        <div class="flex gap-4 justify-center flex-wrap mb-4">
-          <Button size="lg" class="btn-rect btn-rect-primary">
-            <Zap class="mr-2 w-5 h-5" />
-            Get Started Free
-          </Button>
-          <Button variant="outline" size="lg" class="btn-rect btn-rect-outline">
-            <Users class="mr-2 w-5 h-5" />
-            Contact Sales
-          </Button>
+    <!-- Cara Kerja Anota Section -->
+    <section class="py-16 bg-white relative overflow-hidden">
+      <div class="w-full p-6 md:p-10">
+        <div
+          class="rounded-2xl border border-gray-200 bg-white/80 w-full p-4 md:p-8"
+        >
+          <div class="text-center mb-12">
+            <h2 class="text-3xl mb-2 text-gray-900 font-light">
+              Cara Kerja Anota
+            </h2>
+            <div
+              class="w-16 h-1 animated-gradient-pinkgreen mx-auto rounded-full mb-4"
+            ></div>
+            <p class="text-base text-gray-600 font-light">
+              Mulai dengan proses tiga langkah mudah berikut
+            </p>
+          </div>
+          <div class="grid md:grid-cols-3 gap-8">
+            <div
+              class="text-center group cursor-pointer hover:bg-green-50 hover:shadow-lg rounded-xl p-6 transition-all duration-200"
+              title="Unggah data teks Anda"
+            >
+              <div
+                class="w-14 h-14 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform"
+              >
+                <span class="text-base text-white font-bold">1</span>
+              </div>
+              <h3 class="text-base mb-2 text-gray-900 font-light">
+                Unggah Teks Anda
+              </h3>
+              <p class="text-base text-gray-600 leading-relaxed font-light">
+                Impor data teks mentah Anda dalam berbagai format. Anota
+                mendukung banyak tipe file dan unggahan massal untuk dataset
+                besar.
+              </p>
+            </div>
+            <div
+              class="text-center group cursor-pointer hover:bg-pink-50 hover:shadow-lg rounded-xl p-6 transition-all duration-200"
+              title="Anotasi cerdas dan mudah"
+            >
+              <div
+                class="w-14 h-14 bg-gradient-to-br from-pink-400 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform"
+              >
+                <span class="text-base text-white font-bold">2</span>
+              </div>
+              <h3 class="text-base mb-2 text-gray-900 font-light">
+                Anotasi Cerdas
+              </h3>
+              <p class="text-base text-gray-600 leading-relaxed font-light">
+                Gunakan alat anotasi interaktif untuk menandai kesalahan tata
+                bahasa, koreksi, dan kategori. Fitur-fitur Anota mempercepat
+                proses anotasi Anda.
+              </p>
+            </div>
+            <div
+              class="text-center group cursor-pointer hover:bg-blue-50 hover:shadow-lg rounded-xl p-6 transition-all duration-200"
+              title="Ekspor dataset siap pakai"
+            >
+              <div
+                class="w-14 h-14 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform"
+              >
+                <span class="text-base text-white font-bold">3</span>
+              </div>
+              <h3 class="text-base mb-2 text-gray-900 font-light">
+                Ekspor & Gunakan
+              </h3>
+              <p class="text-base text-gray-600 leading-relaxed font-light">
+                Unduh dataset yang telah dianotasi dengan sempurna, siap
+                digunakan untuk pelatihan model GEC atau penelitian linguistik.
+              </p>
+            </div>
+          </div>
         </div>
-        <p class="text-gray-400 mt-6 font-light">
-          No credit card required • Free trial available • Cancel anytime
-        </p>
       </div>
     </section>
 
-    <!-- FAQ Section (minimal, outlined, consistent style) -->
-    <section class="py-24 bg-gradient-to-b from-white to-gray-50">
+    <!-- Keunggulan Anota Section (Benefits) -->
+    <section class="py-16 bg-gradient-to-b from-gray-50 to-white">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <h2 class="text-3xl mb-2 text-gray-900 font-light">
+              Keunggulan <span class="block text-green-600">Anota</span>
+            </h2>
+            <div
+              class="w-16 h-1 animated-gradient-pinkgreen mb-4 rounded-full"
+            ></div>
+            <p class="text-base text-gray-600 mb-6 font-light">
+              Bergabunglah bersama ribuan peneliti dan pengembang yang
+              mempercayai Anota untuk proyek koreksi kesalahan tata bahasa
+              mereka.
+            </p>
+            <div class="space-y-4">
+              <div
+                class="flex items-start gap-3 group cursor-pointer hover:bg-green-50 rounded-lg p-2 transition-all duration-200"
+                title="Lebih cepat dengan Anota"
+              >
+                <CheckCircle
+                  class="w-6 h-6 text-green-500 mt-1 flex-shrink-0 group-hover:scale-110 transition-transform"
+                />
+                <div>
+                  <h4 class="text-base text-gray-900 mb-1 font-light">
+                    10x Lebih Cepat
+                  </h4>
+                  <p class="text-base text-gray-600 font-light">
+                    Fitur Anota mempercepat proses anotasi hingga 10 kali lipat
+                    dibandingkan cara manual.
+                  </p>
+                </div>
+              </div>
+              <div
+                class="flex items-start gap-3 group cursor-pointer hover:bg-pink-50 rounded-lg p-2 transition-all duration-200"
+                title="Akurasi penelitian"
+              >
+                <CheckCircle
+                  class="w-6 h-6 text-green-500 mt-1 flex-shrink-0 group-hover:scale-110 transition-transform"
+                />
+                <div>
+                  <h4 class="text-base text-gray-900 mb-1 font-light">
+                    Akurasi Penelitian
+                  </h4>
+                  <p class="text-base text-gray-600 font-light">
+                    Skema anotasi yang tervalidasi memastikan kualitas data yang
+                    konsisten dan siap untuk penelitian.
+                  </p>
+                </div>
+              </div>
+              <div
+                class="flex items-start gap-3 group cursor-pointer hover:bg-blue-50 rounded-lg p-2 transition-all duration-200"
+                title="Kolaborasi tim"
+              >
+                <CheckCircle
+                  class="w-6 h-6 text-green-500 mt-1 flex-shrink-0 group-hover:scale-110 transition-transform"
+                />
+                <div>
+                  <h4 class="text-base text-gray-900 mb-1 font-light">
+                    Kolaborasi Tim
+                  </h4>
+                  <p class="text-base text-gray-600 font-light">
+                    Bekerja bersama tim secara real-time dengan fitur review dan
+                    monitoring progres yang terintegrasi.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="relative">
+            <!-- Decorative background -->
+            <div
+              class="absolute inset-0 bg-gradient-to-br from-green-100 to-pink-100 rounded-3xl transform rotate-6"
+            ></div>
+            <div class="relative bg-white p-8 rounded-3xl shadow-xl">
+              <div class="grid grid-cols-2 gap-6">
+                <div
+                  class="text-center p-4 group cursor-pointer hover:bg-green-50 rounded-xl transition-all duration-200"
+                  title="Proses lebih cepat"
+                >
+                  <div class="text-3xl mb-2">⚡</div>
+                  <div class="text-2xl text-green-600 mb-1">10x</div>
+                  <div class="text-base text-gray-600">Proses Lebih Cepat</div>
+                </div>
+                <div
+                  class="text-center p-4 group cursor-pointer hover:bg-pink-50 rounded-xl transition-all duration-200"
+                  title="Akurasi tinggi"
+                >
+                  <div class="text-3xl mb-2">🎯</div>
+                  <div class="text-2xl text-pink-600 mb-1">99%</div>
+                  <div class="text-base text-gray-600">Tingkat Akurasi</div>
+                </div>
+                <div
+                  class="text-center p-4 group cursor-pointer hover:bg-blue-50 rounded-xl transition-all duration-200"
+                  title="Pengguna puas"
+                >
+                  <div class="text-3xl mb-2">👥</div>
+                  <div class="text-2xl text-blue-600 mb-1">1000+</div>
+                  <div class="text-base text-gray-600">Pengguna Puas</div>
+                </div>
+                <div
+                  class="text-center p-4 group cursor-pointer hover:bg-purple-50 rounded-xl transition-all duration-200"
+                  title="Jumlah anotasi"
+                >
+                  <div class="text-3xl mb-2">📚</div>
+                  <div class="text-2xl text-purple-600 mb-1">50Jt+</div>
+                  <div class="text-base text-gray-600">Anotasi</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pertanyaan Umum Section -->
+    <section class="py-16 bg-gradient-to-b from-white to-gray-50">
       <div class="max-w-7xl mx-auto px-6 relative">
-        <div class="text-center mb-12">
-          <h2 class="text-2xl mb-4 text-gray-900 font-light">
-            Pertanyaan Umum (FAQ)
-          </h2>
+        <div class="text-center mb-10 flex flex-col items-center">
+          <div class="flex items-center justify-center gap-2 mb-2">
+            <HelpCircle class="w-7 h-7 text-green-500" />
+            <h2 class="text-3xl text-gray-900 font-light">Pertanyaan Umum</h2>
+          </div>
+          <div
+            class="w-16 h-1 animated-gradient-pinkgreen mx-auto rounded-full mb-4"
+          ></div>
         </div>
         <div class="card-outline max-w-4xl mx-auto p-8">
           <Accordion type="single" collapsible class="w-full">
@@ -191,16 +362,56 @@
               :value="`item-${index}`"
             >
               <AccordionTrigger
-                class="text-gray-900 hover:text-gray-700 font-light"
+                class="text-gray-900 hover:text-blue-600 font-light transition-colors text-base"
               >
                 {{ item.label }}
               </AccordionTrigger>
-              <AccordionContent class="text-gray-600 font-light">
+              <AccordionContent class="text-base text-gray-600 font-light">
                 {{ item.content }}
               </AccordionContent>
             </AccordionItem>
           </Accordion>
         </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-16 bg-black text-white relative overflow-hidden">
+      <div class="max-w-4xl mx-auto px-6 text-center relative">
+        <h2 class="text-3xl mb-2 font-light">
+          Siap Meningkatkan
+          <span class="animated-gradient-text-pinkgreen font-light"
+            >Proses Anotasi</span
+          >
+          Anda?
+        </h2>
+        <div
+          class="w-16 h-1 animated-gradient-pinkgreen mx-auto rounded-full mb-4"
+        ></div>
+        <p class="text-base text-gray-300 mb-6 max-w-2xl mx-auto font-light">
+          Mulai gunakan Anota secara gratis dan rasakan kemudahan dalam membuat
+          dataset berkualitas tinggi untuk penelitian atau pengembangan Anda.
+        </p>
+        <div class="flex gap-4 justify-center flex-wrap mb-4">
+          <Button
+            size="lg"
+            class="btn-rect btn-rect-primary group hover:scale-105 transition-transform duration-200 text-base animated-gradient-btn-greenblue"
+          >
+            <Zap class="mr-2 w-5 h-5" />
+            Mulai Gratis
+          </Button>
+          <Button
+            variant="outline"
+            size="lg"
+            class="btn-rect btn-rect-outline group hover:scale-105 transition-transform duration-200 text-base"
+          >
+            <Users class="mr-2 w-5 h-5" />
+            Pelajari Lebih Lanjut
+          </Button>
+        </div>
+        <p class="text-base text-gray-400 mt-4 font-light">
+          Tidak perlu kartu kredit • Gratis dicoba • Bisa berhenti kapan saja
+        </p>
       </div>
     </section>
   </div>
@@ -221,6 +432,8 @@ import {
   Target,
   Users,
   Book,
+  CheckCircle,
+  HelpCircle,
 } from "lucide-vue-next";
 
 const handleLogin = () => {
@@ -605,6 +818,56 @@ const faqItems = [
   }
   50% {
     bottom: -7rem; /* Moves up by 1rem at the midpoint */
+  }
+}
+
+/* Animated gradient for pink-green elements (lines, text) */
+.animated-gradient-pinkgreen {
+  background: linear-gradient(270deg, #22c55e, #ec4899, #f472b6, #22c55e);
+  background-size: 400% 400%;
+  animation: gradientMovePinkGreen 6s ease-in-out infinite;
+}
+.animated-gradient-text-pinkgreen {
+  background: linear-gradient(270deg, #22c55e, #ec4899, #f472b6, #22c55e);
+  background-size: 400% 400%;
+  animation: gradientMovePinkGreen 6s ease-in-out infinite;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+@keyframes gradientMovePinkGreen {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Animated gradient for green-blue buttons */
+.animated-gradient-btn-greenblue {
+  background: linear-gradient(270deg, #22c55e, #38bdf8, #2563eb, #22c55e);
+  background-size: 400% 400%;
+  animation: gradientMoveGreenBlue 6s ease-in-out infinite;
+  color: #fff !important;
+  border: none;
+  transition: background 0.2s;
+}
+.animated-gradient-btn-greenblue:hover {
+  filter: brightness(1.1);
+}
+@keyframes gradientMoveGreenBlue {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
   }
 }
 </style>
