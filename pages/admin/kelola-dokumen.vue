@@ -4,6 +4,7 @@
 
     <!-- Add Document Button -->
     <div class="mb-6 w-full flex gap-3 max-w-6xl mx-auto">
+      <!-- Single Upload Dialog -->
       <Dialog v-model:open="isCreateDialogOpen">
         <div class="flex gap-3 items-start">
           <DialogTrigger as-child>
@@ -50,6 +51,7 @@
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
       <!-- Bulk Upload Folder Button & Dialog -->
       <Dialog v-model:open="isBulkDialogOpen">
         <div class="flex gap-3 items-start">
@@ -117,36 +119,86 @@
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <!-- Bulk Assignment Button -->
+      <Button
+        v-if="selectedDocuments.length > 0"
+        variant="outline"
+        class="flex items-center gap-2 ml-auto"
+        @click="showBulkAssignmentDialog"
+      >
+        <UserPlus class="w-4 h-4" />
+        Kelola Assignment ({{ selectedDocuments.length }})
+      </Button>
     </div>
 
-    <!-- Edit Document Dialog -->
-    <Dialog v-model:open="isEditDialogOpen">
+    <!-- Bulk Assignment Dialog -->
+    <Dialog v-model:open="isBulkAssignmentDialogOpen">
       <DialogContent class="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Edit Dokumen</DialogTitle>
+          <DialogTitle>Kelola Assignment Dokumen</DialogTitle>
           <DialogDescription>
-            Update informasi dokumen. Mengubah teks akan me-regenerate semua kalimat.
+            Kelola assignment untuk {{ selectedDocuments.length }} dokumen terpilih. Anda dapat menambah atau menghapus assignment.
           </DialogDescription>
         </DialogHeader>
         <div class="grid gap-4 py-4">
           <div class="grid gap-2">
-            <label for="edit_title" class="text-sm font-medium text-left">Judul Dokumen</label>
-            <Input id="edit_title" v-model="editingDocument.title" placeholder="Judul dokumen" class="w-full" />
+            <label for="bulk_users" class="text-sm font-medium text-left">User yang Ditugaskan</label>
+            <Combobox v-model="bulkAssignedUserIds" v-model:open="openBulkUsers" :ignore-filter="true">
+              <ComboboxAnchor as-child>
+                <TagsInput v-model="bulkAssignedUserIds" class="px-2 w-full">
+                  <div class="flex flex-col">
+                    <div v-if="bulkAssignedUserIds.length" class="flex gap-2 flex-wrap items-center p-1 font-semibold">
+                      <TagsInputItem v-for="userId in bulkAssignedUserIds" :key="userId" :value="getUserName(userId)">
+                        <TagsInputItemText class="text-xs">{{ getUserName(userId) }}</TagsInputItemText>
+                        <TagsInputItemDelete @click="removeUserFromBulkAssignment(userId)" />
+                      </TagsInputItem>
+                    </div>
+                    <ComboboxInput v-model="searchTermBulk" as-child>
+                      <TagsInputInput placeholder="Tambah user assignment..." class="w-full" @keydown.enter.prevent />
+                    </ComboboxInput>
+                  </div>
+                </TagsInput>
+                <ComboboxList class="w-[--reka-popper-anchor-width]" align="start">
+                  <ComboboxEmpty />
+                  <ComboboxGroup>
+                    <ComboboxItem
+                      v-for="user in availableUsersForBulkAssignment"
+                      :key="user.id"
+                      :value="user.id"
+                      @select.prevent="(ev) => {
+                        if (typeof ev.detail.value === 'string') {
+                          searchTermBulk = ''
+                          bulkAssignedUserIds.push(ev.detail.value)
+                        }
+                        if (availableUsersForBulkAssignment.length === 0) {
+                          openBulkUsers = false
+                        }
+                      }">
+                      {{ user.full_name }}
+                    </ComboboxItem>
+                  </ComboboxGroup>
+                </ComboboxList>
+              </ComboboxAnchor>
+            </Combobox>
           </div>
-          <div class="grid gap-2">
-            <label for="edit_text" class="text-sm font-medium text-left">Teks Dokumen</label>
-            <Textarea id="edit_text" v-model="editingDocument.text" placeholder="Masukkan teks dokumen..."
-              class="w-full min-h-32" />
+          <div class="bg-slate-800 rounded p-3 text-sm">
+            <div class="font-semibold text-blue-300 mb-2">Dokumen Terpilih:</div>
+            <div class="text-left max-h-32 overflow-y-auto">
+              <div v-for="doc in selectedDocuments" :key="doc.id" class="text-gray-400 mb-1">
+                • {{ doc.title }}
+              </div>
+            </div>
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" @click="cancelEdit">
+          <Button variant="outline" @click="cancelBulkAssignment">
             Batal
           </Button>
-          <Button @click="updateDocument" :disabled="isUpdating" class="flex items-center gap-2">
-            <Check v-if="!isUpdating" class="w-4 h-4" />
+          <Button @click="saveBulkAssignmentChanges" :disabled="isBulkManaging" class="flex items-center gap-2">
+            <UserPlus v-if="!isBulkManaging" class="w-4 h-4" />
             <Loader2 v-else class="w-4 h-4 animate-spin" />
-            {{ isUpdating ? 'Mengupdate...' : 'Update Dokumen' }}
+            {{ isBulkManaging ? 'Menyimpan...' : 'Simpan Assignment' }}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -186,7 +238,7 @@
                       v-for="user in availableUsersForManagement"
                       :key="user.id"
                       :value="user.id"
-                      @select.prevent="(ev: { detail: { value: string | unknown } }) => {
+                      @select.prevent="(ev) => {
                         if (typeof ev.detail.value === 'string') {
                           searchTermManage = ''
                           managedUserIds.push(ev.detail.value)
@@ -233,54 +285,14 @@
 
     <div v-if="documents.length"
       class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl shadow-lg p-6 mb-6 w-full max-w-6xl">
-      <div class="rounded-md overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow class="bg-gray-800/60 hover:bg-gray-800/60">
-              <TableHead class="text-gray-300 font-medium text-left w-96 truncate">Judul</TableHead>
-              <TableHead class="text-gray-300 font-medium text-left">Assigned To</TableHead>
-              <TableHead class="text-gray-300 font-medium text-left">Tanggal Dibuat</TableHead>
-              <TableHead class="text-gray-300 font-medium text-right"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow v-for="doc in documents" :key="doc.id" class="border-white/10 hover:bg-white/5">
-              <TableCell class="font-semibold text-white text-left w-96 truncate">
-                <span class="block truncate">{{ doc.title }}</span>
-              </TableCell>
-              <TableCell class="text-left">
-                <div class="flex flex-wrap gap-1">
-                  <Badge v-for="userId in doc.assigned_to" :key="getUserName(userId)" variant="blue">
-                    {{ getUserName(userId.toString()) }}
-                  </Badge>
-                  <span v-if="!doc.assigned_to.length" class="text-gray-400 text-sm">Belum ada assignment</span>
-                </div>
-              </TableCell>
-              <TableCell class="text-white text-left">{{ formatDate(doc.created_at) }}</TableCell>
-              <TableCell class="text-right">
-                <div class="flex gap-2 w-full justify-end">
-                  <Button size="sm" variant="outline" @click="showManageAssignmentDialog(doc)"
-                    class="rounded-full px-4 py-1 font-semibold">
-                    <UserPlus class="w-4 h-4 mr-1" />
-                    Kelola Assignment
-                  </Button>
-                  <Button size="sm" variant="outline" @click="editDocument(doc)"
-                    class="rounded-full px-4 py-1 font-semibold">
-                    <Pencil class="w-4 h-4 mr-1" />
-                    Edit
-                  </Button>
-                  <Button size="sm" variant="destructive" @click="deleteDocument(doc.id)"
-                    class="rounded-full px-4 py-1 font-semibold">
-                    <Trash2 class="w-4 h-4 mr-1" />
-                    Hapus
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </div>
+      <DataTable
+        :columns="documentColumns"
+        :data="documents"
+        @selection-change="handleSelectionChange"
+        @delete-document="handleDeleteDocument"
+      />
     </div>
+
     <!-- Pagination Controls: moved outside the card -->
     <div v-if="documents.length" class="mt-4 flex justify-center w-full max-w-6xl">
       <Pagination :page="currentPage" :total="totalPages" :items-per-page="documents.length > 0 ? documents.length : 1"
@@ -312,13 +324,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { useDocumentsApi } from "~/data/documents";
 import { useUsersApi } from "~/data/users";
 import { useAssignmentsApi } from "~/data/document-assignments";
 import type { DocumentResponse, DocumentRequest, UserResponse } from "~/types/api";
 import { Input } from "~/components/ui/input";
-import { Textarea } from "~/components/ui/textarea";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import {
@@ -348,34 +359,32 @@ import {
 } from "~/components/ui/pagination";
 import Papa from "papaparse";
 import {
-  Plus, Upload, Loader2, Check, Pencil, Trash2, ArrowLeft, ArrowRight, MoreHorizontal, UserPlus, UserMinus
+  Plus, Upload, Loader2, Trash2, ArrowLeft, ArrowRight, MoreHorizontal, UserPlus, UserMinus
 } from "lucide-vue-next";
 import { toast } from "vue-sonner";
 import { Progress } from "~/components/ui/progress";
 import { TagsInput, TagsInputItem, TagsInputInput, TagsInputItemDelete, TagsInputItemText } from "~/components/ui/tags-input";
 import { Combobox, ComboboxAnchor, ComboboxEmpty, ComboboxGroup, ComboboxInput, ComboboxItem, ComboboxList } from '@/components/ui/combobox'
+import DataTable from "~/components/ui/data-table/data-table.vue";
+import { createColumns } from "~/components/documents/columns";
 
-const { getDocuments, createDocument: apiCreateDocument, deleteDocument: apiDeleteDocument, updateDocument: apiUpdateDocument } = useDocumentsApi();
+const { getDocuments, createDocument: apiCreateDocument, deleteDocument: apiDeleteDocument } = useDocumentsApi();
 const { getUsers } = useUsersApi();
-const { assignDocument: apiAssignDocument, unassignDocument: apiUnassignDocument, bulkUnassignDocument: apiBulkUnassignDocument } = useAssignmentsApi();
+const { assignDocument: apiAssignDocument, unassignDocument: apiUnassignDocument, bulkUnassignDocument: apiBulkUnassignDocument, bulkAssignDocument: apiBulkAssignDocument } = useAssignmentsApi();
 
 const documents = ref<DocumentResponse[]>([]);
 const isLoading = ref(false);
 const isCreating = ref(false);
-const isUpdating = ref(false);
 const isCreateDialogOpen = ref(false);
-const isEditDialogOpen = ref(false);
 const isBulkDialogOpen = ref(false);
 const isBulkUploading = ref(false);
 const isManageAssignmentDialogOpen = ref(false);
 const isManaging = ref(false);
+const selectedDocuments = ref<DocumentResponse[]>([]);
+const isBulkAssignmentDialogOpen = ref(false);
+const isBulkManaging = ref(false);
 
 const newDocument = ref<DocumentRequest>({
-  title: "",
-  text: "",
-});
-
-const editingDocument = ref<Partial<DocumentResponse>>({
   title: "",
   text: "",
 });
@@ -395,6 +404,10 @@ const managedUserIds = ref<string[]>([]);
 const originalAssignedUsers = ref<string[]>([]);
 const openManageUsers = ref(false);
 const searchTermManage = ref('');
+const bulkAssignedUserIds = ref<string[]>([]);
+const openBulkUsers = ref(false);
+const searchTermBulk = ref('');
+
 
 async function fetchDocuments(page = 1) {
   isLoading.value = true;
@@ -432,65 +445,6 @@ async function createSingleDocument() {
   } finally {
     isCreating.value = false;
   }
-}
-
-async function updateDocument() {
-  if (!editingDocument.value.id || !editingDocument.value.title || !editingDocument.value.text) {
-    toast.message("Validasi Error", {
-      description: "Judul dan teks dokumen harus diisi",
-    });
-    return;
-  }
-
-  isUpdating.value = true;
-  try {
-    const updateData = {
-      title: editingDocument.value.title,
-      text: editingDocument.value.text,
-    };
-
-    await apiUpdateDocument(editingDocument.value.id, updateData);
-    toast.success(`Dokumen "${editingDocument.value.title}" berhasil diupdate`);
-    isEditDialogOpen.value = false;
-    await fetchDocuments(currentPage.value);
-  } catch (error) {
-    console.error('Error updating document:', error);
-    toast.error("Gagal mengupdate dokumen");
-  } finally {
-    isUpdating.value = false;
-  }
-}
-
-async function deleteDocument(id: number) {
-  if (!confirm('Apakah Anda yakin ingin menghapus dokumen ini? Semua annotations yang terkait akan ikut terhapus.')) {
-    return;
-  }
-
-  try {
-    await apiDeleteDocument(id);
-    toast.success("Dokumen berhasil dihapus");
-    await fetchDocuments(currentPage.value);
-  } catch (error) {
-    console.error('Error deleting document:', error);
-    toast.error("Gagal menghapus dokumen");
-  }
-}
-
-function editDocument(doc: DocumentResponse) {
-  editingDocument.value = {
-    id: doc.id,
-    title: doc.title,
-    text: doc.text,
-  };
-  isEditDialogOpen.value = true;
-}
-
-function cancelEdit() {
-  editingDocument.value = {
-    title: "",
-    text: "",
-  };
-  isEditDialogOpen.value = false;
 }
 
 function resetSingleForm() {
@@ -656,6 +610,18 @@ const availableUsersForManagement = computed(() => {
   );
 });
 
+const availableUsersForBulkAssignment = computed(() => {
+  if (!users.value || users.value.length === 0) {
+    return [];
+  }
+  return users.value.filter(user =>
+    (user.roles.includes("Annotator") || user.roles.includes("Reviewer")) &&
+    (user.full_name.toLowerCase().includes(searchTermBulk.value.toLowerCase()) ||
+     user.username.toLowerCase().includes(searchTermBulk.value.toLowerCase())) &&
+    !bulkAssignedUserIds.value.includes(user.id)
+  );
+});
+
 function getUserName(userId: string) {
   const user = users.value.find(u => u.id === userId);
   return user ? user.full_name : 'Unknown User';
@@ -665,6 +631,13 @@ function removeUserFromManagement(userId: string) {
   const index = managedUserIds.value.indexOf(userId);
   if (index > -1) {
     managedUserIds.value.splice(index, 1);
+  }
+}
+
+function removeUserFromBulkAssignment(userId: string) {
+  const index = bulkAssignedUserIds.value.indexOf(userId);
+  if (index > -1) {
+    bulkAssignedUserIds.value.splice(index, 1);
   }
 }
 
@@ -686,12 +659,24 @@ function showManageAssignmentDialog(doc: DocumentResponse) {
   isManageAssignmentDialogOpen.value = true;
 }
 
+function showBulkAssignmentDialog() {
+  bulkAssignedUserIds.value = [];
+  searchTermBulk.value = '';
+  isBulkAssignmentDialogOpen.value = true;
+}
+
 function cancelManageAssignment() {
   documentToManage.value = null;
   managedUserIds.value = [];
   originalAssignedUsers.value = [];
   searchTermManage.value = '';
   isManageAssignmentDialogOpen.value = false;
+}
+
+function cancelBulkAssignment() {
+  bulkAssignedUserIds.value = [];
+  searchTermBulk.value = '';
+  isBulkAssignmentDialogOpen.value = false;
 }
 
 async function saveAssignmentChanges() {
@@ -706,7 +691,7 @@ async function saveAssignmentChanges() {
       (async () => {
         const currentAssigned = originalAssignedUsers.value;
         const newAssigned = managedUserIds.value;
-        
+
         const toAssign = newAssigned.filter(id => !currentAssigned.includes(id));
         const toUnassign = currentAssigned.filter(id => !newAssigned.includes(id));
 
@@ -741,9 +726,9 @@ async function saveAssignmentChanges() {
           }
         }
 
-        return { 
-          successCount, 
-          failCount, 
+        return {
+          successCount,
+          failCount,
           totalChanges: toAssign.length + toUnassign.length,
           assigned: toAssign.length,
           unassigned: toUnassign.length
@@ -774,9 +759,90 @@ async function saveAssignmentChanges() {
   }
 }
 
+async function saveBulkAssignmentChanges() {
+  if (selectedDocuments.value.length === 0) {
+    toast.error("Tidak ada dokumen yang dipilih");
+    return;
+  }
+
+  isBulkManaging.value = true;
+  try {
+    toast.promise(
+      (async () => {
+        let successCount = 0;
+        let failCount = 0;
+
+        for (const doc of selectedDocuments.value) {
+          const usersToAssign = bulkAssignedUserIds.value.filter(userId =>
+            !doc.assigned_to.includes(parseInt(userId))
+          );
+
+          if (usersToAssign.length > 0) {
+            try {
+              await apiBulkAssignDocument(doc.id, usersToAssign);
+              successCount += usersToAssign.length;
+            } catch (error) {
+              failCount += usersToAssign.length;
+              console.error(`Failed to bulk assign to document ${doc.id}:`, error);
+            }
+          }
+        }
+
+        return { successCount, failCount };
+      })(),
+      {
+        loading: "Menyimpan assignment untuk dokumen terpilih...",
+        success: (result: { successCount: number; failCount: number }) => {
+          fetchDocuments(currentPage.value);
+          selectedDocuments.value = [];
+          cancelBulkAssignment();
+
+          if (result.failCount === 0) {
+            return `Assignment berhasil disimpan: ${result.successCount} assignment baru ditambahkan.`;
+          } else {
+            return `Assignment disimpan: ${result.successCount} berhasil, ${result.failCount} gagal.`;
+          }
+        },
+        error: "Gagal menyimpan bulk assignment",
+      }
+    );
+  } catch (error) {
+    console.error('Error bulk managing assignment:', error);
+  } finally {
+    isBulkManaging.value = false;
+  }
+}
+
+function handleDeleteDocument(documentId: string) {
+  const numericId = parseInt(documentId);
+  if (!confirm('Apakah Anda yakin ingin menghapus dokumen ini? Semua annotations yang terkait akan ikut terhapus.')) {
+    return;
+  }
+
+  apiDeleteDocument(numericId)
+    .then(() => {
+      toast.success("Dokumen berhasil dihapus");
+      fetchDocuments(currentPage.value);
+    })
+    .catch((error) => {
+      console.error('Error deleting document:', error);
+      toast.error("Gagal menghapus dokumen");
+    });
+}
+
+const documentColumns = computed(() => createColumns(getUserName, handleDeleteDocument));
+
 onMounted(async () => {
   await fetchUsers();
   await fetchDocuments(currentPage.value);
+});
+
+function handleSelectionChange(selection: DocumentResponse[]) {
+  selectedDocuments.value = selection;
+}
+
+watch(currentPage, () => {
+  selectedDocuments.value = [];
 });
 
 useHead({

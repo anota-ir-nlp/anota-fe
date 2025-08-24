@@ -61,7 +61,7 @@
                           v-for="admin in availableAdminsForNewProject"
                           :key="admin.id"
                           :value="admin.id"
-                          @select.prevent="(ev: { detail: { value: string | unknown } }) => {
+                          @select.prevent="(ev) => {
                             if (typeof ev.detail.value === 'string') {
                               searchTermCreateAdmin = ''
                               newProjectAdminIds.push(ev.detail.value)
@@ -106,7 +106,7 @@
                           v-for="doc in availableDocumentsForNewProject"
                           :key="doc.id"
                           :value="doc.id.toString()"
-                          @select.prevent="(ev: { detail: { value: string | unknown } }) => {
+                          @select.prevent="(ev) => {
                             if (typeof ev.detail.value === 'string') {
                               searchTermCreateDocument = ''
                               newProjectDocumentIds.push(ev.detail.value)
@@ -187,7 +187,7 @@
                         v-for="admin in availableAdminsForEditingProject"
                         :key="admin.id"
                         :value="admin.id"
-                        @select.prevent="(ev: { detail: { value: string | unknown } }) => {
+                        @select.prevent="(ev) => {
                           if (typeof ev.detail.value === 'string') {
                             searchTermEditAdmin = ''
                             editingProjectAdminIds.push(ev.detail.value)
@@ -228,7 +228,7 @@
                         v-for="doc in availableDocumentsForEditingProject"
                         :key="doc.id"
                         :value="doc.id.toString()"
-                        @select.prevent="(ev: { detail: { value: string | unknown } }) => {
+                        @select.prevent="(ev) => {
                           if (typeof ev.detail.value === 'string') {
                             searchTermEditDocument = ''
                             editingProjectDocumentIds.push(ev.detail.value)

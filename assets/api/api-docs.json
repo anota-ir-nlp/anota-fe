@@ -789,6 +789,84 @@
       },
       "parameters": []
     },
+    "/dashboard/": {
+      "get": {
+        "operationId": "dashboard_list",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "dashboard"
+        ]
+      },
+      "parameters": []
+    },
+    "/dashboard/annotators/{user_id}/": {
+      "get": {
+        "operationId": "dashboard_annotators_read",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "dashboard"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "user_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ]
+    },
+    "/dashboard/iaa/": {
+      "get": {
+        "operationId": "dashboard_iaa_list",
+        "description": "Hitung IAA antara annotator dan reviewer sesuai ketentuan:\n1) Sama-sama tidak ada anotasi → benar\n2) Salah satu ada anotasi, lainnya tidak → salah\n3) Sama-sama ada → jika error_type berbeda → salah; jika sama → benar\nPerhitungan didasarkan oleh annotation per kalimat.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "dashboard"
+        ]
+      },
+      "parameters": []
+    },
+    "/dashboard/reviewers/{user_id}/": {
+      "get": {
+        "operationId": "dashboard_reviewers_read",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "dashboard"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "user_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ]
+    },
     "/documents/": {
       "get": {
         "operationId": "documents_list",
@@ -999,6 +1077,35 @@
           "description": "A unique integer value identifying this document.",
           "required": true,
           "type": "integer"
+        }
+      ]
+    },
+    "/documents/{id}/export/{fmt}/": {
+      "get": {
+        "operationId": "documents_export_read",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "documents"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        },
+        {
+          "name": "fmt",
+          "in": "path",
+          "required": true,
+          "type": "string"
         }
       ]
     },
@@ -1396,9 +1503,8 @@
               "application/json": {
                 "roles": [
                   "Admin",
-                  "Annotators",
-                  "Reviewers",
-                  "Researcher",
+                  "Annotator",
+                  "Reviewer",
                   "Kepala Riset"
                 ]
               }
@@ -1654,7 +1760,7 @@
       "post": {
         "operationId": "users_role-management_create",
         "summary": "Manage User Roles",
-        "description": "\nMenambahkan atau menghapus role dari user.\n\n**Actions:**\n- `add`: Menambahkan role ke user\n- `remove`: Menghapus role dari user\n\n**Available Roles:**\n- Admin\n- Annotators\n- Reviewers\n- Researcher\n- Kepala Riset\n\n**Constraints:**\n- Admin tidak dapat menghapus role Admin dari diri sendiri\n- Sistem harus memiliki minimal 2 admin\n",
+        "description": "\nMenambahkan atau menghapus role dari user.\n\n**Actions:**\n- `add`: Menambahkan role ke user\n- `remove`: Menghapus role dari user\n\n**Available Roles:**\n- Admin\n- Annotator\n- Reviewer\n- Kepala Riset\n\n**Constraints:**\n- Kepala Riset tidak dapat menghapus role Kepala Riset dari diri sendiri\n- Admin hanya bisa assign role Annotator dan Reviewer\n",
         "parameters": [
           {
             "name": "data",

@@ -136,7 +136,7 @@ export interface DocumentResponse {
   created_at: string;
   updated_at: string;
   assigned_to: number[];
-  sentences: SentenceResponse[];
+  sentences?: SentenceResponse[];
 }
 export interface CreateDocumentRequest {
   title: string;

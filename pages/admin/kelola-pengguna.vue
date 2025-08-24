@@ -55,7 +55,7 @@
                     <ComboboxGroup>
                       <ComboboxItem
                         v-for="role in availableRoles.filter((r: string) => r.includes(searchTermCreate || '') && !newUserRoles.includes(r))"
-                        :key="role" :value="role" @select.prevent="(ev: { detail: { value: string | unknown } }) => {
+                        :key="role" :value="role" @select.prevent="(ev) => {
                           if (typeof ev.detail.value === 'string') {
                             searchTermCreate = ''
                             newUserRoles.push(ev.detail.value)
@@ -130,7 +130,7 @@
                   <ComboboxGroup>
                     <ComboboxItem
                       v-for="role in availableRoles.filter((r: string) => r.includes(searchTermEdit || '') && !editingUserRoles.includes(r))"
-                      :key="role" :value="role" @select.prevent="(ev: { detail: { value: string | unknown } }) => {
+                      :key="role" :value="role" @select.prevent="(ev) => {
                         if (typeof ev.detail.value === 'string') {
                           searchTermEdit = ''
                           editingUserRoles.push(ev.detail.value)
