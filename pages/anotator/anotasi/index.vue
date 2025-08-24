@@ -1,91 +1,292 @@
 <template>
-  <div
-    class="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-blue-950 text-white font-inter px-4 py-8"
-  >
-    <div class="max-w-7xl mx-auto">
-      <!-- Statistic Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <Card variant="glassmorphism" class="p-6 text-center">
-          <UIcon
-            name="i-lucide-file-text"
-            class="w-10 h-10 text-blue-400 mx-auto mb-2"
-          />
-          <span class="text-2xl font-bold text-white block">{{
-            stats.annotated
-          }}</span>
-          <span class="text-slate-300 text-sm">Dokumen Dianotasi</span>
+  <div class="min-h-screen px-2 sm:px-4 py-10 font-inter">
+    <div class="w-full max-w-[95vw] mx-auto px-2 sm:px-4 pb-16">
+      <!-- Header & Lanjutkan Anotasi -->
+      <div
+        class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8"
+      >
+        <div>
+          <h1 class="text-2xl font-bold text-black mb-1">Anotator</h1>
+          <p class="text-gray-700">
+            Kelola dan lakukan anotasi pada dataset yang ditugaskan
+          </p>
+        </div>
+        <div v-if="firstInProgressDoc">
+          <Button
+            class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold px-6 py-2 rounded-lg transition-all flex items-center gap-2"
+            @click="goToDetail(firstInProgressDoc.id)"
+          >
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <path d="M5 3v18l15-9L5 3z"></path>
+            </svg>
+            Lanjutkan Anotasi
+          </Button>
+        </div>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+        <Card
+          class="p-6 bg-white border border-gray-200 rounded-xl group cursor-pointer"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-500 mb-1">Total Anotasi</p>
+              <p class="text-2xl font-bold text-black">
+                {{ stats.annotated }}
+              </p>
+            </div>
+            <div
+              class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center group-hover:scale-105 transition"
+            >
+              <svg
+                class="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M4 19.5A2.5 2.5 0 0 0 6.5 22h11a2.5 2.5 0 0 0 2.5-2.5v-15A2.5 2.5 0 0 0 17.5 2h-11A2.5 2.5 0 0 0 4 4.5v15ZM8 6h8M8 10h8m-8 4h6"
+                />
+              </svg>
+            </div>
+          </div>
         </Card>
-        <Card variant="glassmorphism" class="p-6 text-center">
-          <UIcon
-            name="i-lucide-check-circle"
-            class="w-10 h-10 text-green-400 mx-auto mb-2"
-          />
-          <span class="text-2xl font-bold text-white block">{{
-            stats.reviewed
-          }}</span>
-          <span class="text-slate-300 text-sm">Dokumen Ditinjau</span>
+        <Card
+          class="p-6 bg-white border border-gray-200 rounded-xl group cursor-pointer"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-500 mb-1">Hari Ini</p>
+              <p class="text-2xl font-bold text-black">
+                {{ todayAnnotated }}
+              </p>
+            </div>
+            <div
+              class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center group-hover:scale-105 transition"
+            >
+              <svg
+                class="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+              </svg>
+            </div>
+          </div>
         </Card>
-        <Card variant="glassmorphism" class="p-6 text-center">
-          <UIcon
-            name="i-lucide-bar-chart-2"
-            class="w-10 h-10 text-purple-400 mx-auto mb-2"
-          />
-          <span class="text-2xl font-bold text-white block">{{
-            stats.total
-          }}</span>
-          <span class="text-slate-300 text-sm">Total Dokumen</span>
+        <Card
+          class="p-6 bg-white border border-gray-200 rounded-xl group cursor-pointer"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-500 mb-1">Akurasi</p>
+              <p class="text-2xl font-bold text-black">{{ accuracy }}%</p>
+            </div>
+            <div
+              class="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center group-hover:scale-105 transition"
+            >
+              <svg
+                class="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M12 17.75 18.2 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
+                />
+              </svg>
+            </div>
+          </div>
+        </Card>
+        <Card
+          class="p-6 bg-white border border-gray-200 rounded-xl group cursor-pointer"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-500 mb-1">Total Dokumen</p>
+              <p class="text-2xl font-bold text-black">{{ stats.total }}</p>
+            </div>
+            <div
+              class="w-12 h-12 bg-gray-700 rounded-xl flex items-center justify-center group-hover:scale-105 transition"
+            >
+              <svg
+                class="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M4 19.5A2.5 2.5 0 0 0 6.5 22h11a2.5 2.5 0 0 0 2.5-2.5v-15A2.5 2.5 0 0 0 17.5 2h-11A2.5 2.5 0 0 0 4 4.5v15Z"
+                />
+              </svg>
+            </div>
+          </div>
         </Card>
       </div>
 
-      <!-- Improved Weekly Statistics -->
-      <Card variant="glassmorphism" class="p-6 mb-10">
-        <h3 class="text-lg font-semibold mb-6 flex items-center gap-2">
-          <UIcon name="i-lucide-bar-chart" class="w-6 h-6 text-blue-400" />
-          Statistik Anotasi Mingguan
-        </h3>
-        <div class="flex items-end gap-4 h-40">
-          <div
-            v-for="(val, i) in weeklyStats"
-            :key="i"
-            class="flex flex-col items-center flex-1"
+      <!-- 2 Column Layout: Statistik Anotasi Mingguan & Aksi Cepat (same height) -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+        <!-- Statistik Anotasi Mingguan -->
+        <Card
+          class="p-6 bg-white border border-gray-200 rounded-xl flex flex-col h-full lg:col-span-2"
+        >
+          <h3
+            class="text-lg font-semibold mb-6 flex items-center gap-3 text-black"
           >
-            <div class="relative w-full group">
-              <div
-                class="bg-gradient-to-t from-blue-600 to-blue-400 rounded-t shadow-lg transition-all duration-300 hover:from-blue-500 hover:to-blue-300"
-                :style="{ height: `${Math.max(val.count * 8, 20)}px` }"
-              ></div>
-              <div
-                class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+            <span
+              class="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-gray-200 bg-gray-100"
+            >
+              <!-- Use BarChart3 icon from lucide-vue-next or fallback to a simple bar icon -->
+              <svg
+                class="w-6 h-6 text-black"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
               >
-                {{ val.count }} dokumen
+                <rect x="3" y="10" width="4" height="11" rx="1" />
+                <rect x="9" y="3" width="4" height="18" rx="1" />
+                <rect x="15" y="6" width="4" height="15" rx="1" />
+              </svg>
+            </span>
+            Statistik Anotasi Mingguan
+          </h3>
+          <div class="flex items-end gap-4 h-40">
+            <div
+              v-for="(val, i) in weeklyStats"
+              :key="i"
+              class="flex flex-col items-center flex-1"
+            >
+              <div class="relative w-full group">
+                <div
+                  class="bg-black rounded-t transition-all duration-300 group-hover:bg-gray-800"
+                  :style="{ height: `${Math.max(val.count * 8, 20)}px` }"
+                ></div>
+                <div
+                  class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  {{ val.count }} dokumen
+                </div>
               </div>
+              <span class="text-sm text-gray-700 mt-3 font-medium">{{
+                val.label
+              }}</span>
             </div>
-            <span class="text-sm text-gray-300 mt-3 font-medium">{{
-              val.label
-            }}</span>
           </div>
-        </div>
-        <div class="mt-4 text-center">
-          <span class="text-sm text-gray-400"
-            >Total minggu ini: {{ weeklyTotal }} dokumen</span
-          >
-        </div>
-      </Card>
+          <div class="mt-4 text-center">
+            <span class="text-sm text-gray-500"
+              >Total minggu ini: {{ weeklyTotal }} dokumen</span
+            >
+          </div>
+        </Card>
+        <!-- Aksi Cepat -->
+        <Card
+          class="p-6 bg-white border border-gray-200 rounded-xl flex flex-col h-full justify-between"
+        >
+          <h3 class="text-lg text-black mb-4 font-semibold">Aksi Cepat</h3>
+          <div class="space-y-3 flex-1">
+            <Button
+              class="w-full justify-start bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800 font-medium transition"
+            >
+              <svg
+                class="w-4 h-4 mr-2"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M4 19.5A2.5 2.5 0 0 0 6.5 22h11a2.5 2.5 0 0 0 2.5-2.5v-15A2.5 2.5 0 0 0 17.5 2h-11A2.5 2.5 0 0 0 4 4.5v15Z"
+                />
+              </svg>
+              Laporan Harian
+            </Button>
+            <Button
+              class="w-full justify-start bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800 font-medium transition"
+            >
+              <svg
+                class="w-4 h-4 mr-2"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+              </svg>
+              Target Mingguan
+            </Button>
+            <Button
+              class="w-full justify-start bg-purple-50 text-purple-700 hover:bg-purple-100 hover:text-purple-800 font-medium transition"
+            >
+              <svg
+                class="w-4 h-4 mr-2"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M12 17.75 18.2 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
+                />
+              </svg>
+              Skor Kualitas
+            </Button>
+            <Button
+              class="w-full justify-start bg-yellow-50 text-yellow-700 hover:bg-yellow-100 hover:text-yellow-800 font-medium transition"
+            >
+              <svg
+                class="w-4 h-4 mr-2"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+              </svg>
+              Riwayat Kerja
+            </Button>
+          </div>
+        </Card>
+      </div>
 
-      <!-- Document List -->
-      <Card variant="glassmorphism" class="p-6">
+      <!-- Daftar Dokumen (full row) -->
+      <Card class="p-6 bg-white border border-gray-200 rounded-xl mb-10">
         <div
           class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6"
         >
-          <h2 class="text-xl font-bold flex items-center gap-2">
-            <UIcon
-              name="i-heroicons-document-text"
-              class="w-6 h-6 text-blue-400"
-            />
+          <h2 class="text-xl font-bold flex items-center gap-3 text-black">
+            <span
+              class="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-gray-200 bg-blue-50"
+            >
+              <!-- Use FileText icon from lucide-vue-next or fallback to a simple doc icon -->
+              <svg
+                class="w-6 h-6 text-blue-500"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <rect x="4" y="4" width="16" height="16" rx="2" />
+                <line x1="8" y1="8" x2="16" y2="8" />
+                <line x1="8" y1="12" x2="16" y2="12" />
+                <line x1="8" y1="16" x2="12" y2="16" />
+              </svg>
+            </span>
             Daftar Dokumen
           </h2>
-
-          <!-- Improved Filters -->
+          <!-- Filters -->
           <div class="flex flex-wrap gap-3 items-center">
             <!-- Search -->
             <div class="relative">
@@ -93,7 +294,7 @@
                 v-model="search"
                 type="text"
                 placeholder="Cari dokumen..."
-                class="w-48 md:w-64 px-4 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                class="w-48 md:w-64 px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
               />
               <UIcon
                 name="i-heroicons-magnifying-glass"
@@ -105,7 +306,7 @@
             <div class="relative">
               <select
                 v-model="filter.status"
-                class="w-40 px-4 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all appearance-none cursor-pointer"
+                class="w-40 px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all appearance-none cursor-pointer"
               >
                 <option value="">Semua Status</option>
                 <option value="belum_dianotasi">Belum Dianotasi</option>
@@ -119,12 +320,12 @@
               />
             </div>
 
-            <!-- Unified Date Filter -->
+            <!-- Date Filter -->
             <div class="relative">
               <select
                 v-model="dateFilterType"
                 @change="handleDateFilterChange"
-                class="w-48 px-4 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all appearance-none cursor-pointer"
+                class="w-48 px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all appearance-none cursor-pointer"
               >
                 <option value="">Semua Tanggal</option>
                 <option value="today">Hari Ini</option>
@@ -139,7 +340,7 @@
               />
             </div>
 
-            <!-- Custom Date Range (shown when custom is selected) -->
+            <!-- Custom Date Range -->
             <div
               v-if="dateFilterType === 'custom'"
               class="flex gap-2 items-center"
@@ -148,7 +349,7 @@
                 <input
                   v-model="filter.dateFrom"
                   type="date"
-                  class="w-36 px-4 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  class="w-36 px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
                 />
                 <span class="absolute -bottom-6 left-0 text-xs text-gray-400"
                   >Dari</span
@@ -159,7 +360,7 @@
                 <input
                   v-model="filter.dateTo"
                   type="date"
-                  class="w-36 px-4 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  class="w-36 px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
                 />
                 <span class="absolute -bottom-6 left-0 text-xs text-gray-400"
                   >Sampai</span
@@ -170,7 +371,7 @@
             <!-- Clear Filters Button -->
             <button
               @click="resetFilters"
-              class="px-4 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white hover:bg-white/20 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center gap-2"
+              class="px-4 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-700 hover:bg-blue-100 hover:text-blue-700 transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 flex items-center gap-2"
               title="Clear Filters"
             >
               <UIcon name="i-heroicons-arrow-path" class="w-4 h-4" />
@@ -180,11 +381,11 @@
 
         <div v-if="isLoading" class="py-4">
           <div class="animate-pulse">
-            <div class="h-6 bg-white/10 rounded w-1/3 mb-4"></div>
+            <div class="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
             <div class="space-y-2">
-              <div class="h-10 bg-white/5 rounded"></div>
-              <div class="h-10 bg-white/5 rounded"></div>
-              <div class="h-10 bg-white/5 rounded"></div>
+              <div class="h-10 bg-gray-100 rounded"></div>
+              <div class="h-10 bg-gray-100 rounded"></div>
+              <div class="h-10 bg-gray-100 rounded"></div>
             </div>
           </div>
         </div>
@@ -192,11 +393,11 @@
         <div v-else class="overflow-x-auto rounded-lg">
           <table class="min-w-full text-sm table-auto">
             <thead>
-              <tr class="bg-gray-800/60 text-gray-300 sticky top-0 z-10">
+              <tr class="bg-black text-white sticky top-0 z-10">
                 <th class="px-4 py-3 text-left">No</th>
                 <th class="px-4 py-3 text-left">
                   <button
-                    class="flex items-center gap-1"
+                    class="flex items-center gap-1 hover:text-blue-200 transition"
                     @click="setSort('title')"
                   >
                     Judul
@@ -205,7 +406,7 @@
                 </th>
                 <th class="px-4 py-3 text-left">
                   <button
-                    class="flex items-center gap-1"
+                    class="flex items-center gap-1 hover:text-blue-200 transition"
                     @click="setSort('agency_name')"
                   >
                     Lembaga Asal
@@ -214,7 +415,7 @@
                 </th>
                 <th class="px-4 py-3 text-left">
                   <button
-                    class="flex items-center gap-1"
+                    class="flex items-center gap-1 hover:text-blue-200 transition"
                     @click="setSort('assigned_by_name')"
                   >
                     Assigned By
@@ -226,7 +427,7 @@
                 </th>
                 <th class="px-4 py-3 text-left">
                   <button
-                    class="flex items-center gap-1"
+                    class="flex items-center gap-1 hover:text-blue-200 transition"
                     @click="setSort('status')"
                   >
                     Status
@@ -235,7 +436,7 @@
                 </th>
                 <th class="px-4 py-3 text-left">
                   <button
-                    class="flex items-center gap-1"
+                    class="flex items-center gap-1 hover:text-blue-200 transition"
                     @click="setSort('created_at')"
                   >
                     Tanggal
@@ -244,7 +445,7 @@
                 </th>
                 <th class="px-4 py-3 text-left">
                   <button
-                    class="flex items-center gap-1"
+                    class="flex items-center gap-1 hover:text-blue-200 transition"
                     @click="setSort('sentences')"
                   >
                     Sentences
@@ -258,7 +459,7 @@
               <tr
                 v-for="(doc, index) in filteredDocs"
                 :key="doc.id"
-                class="border-b border-white/10 hover:bg-blue-900/20 transition-colors"
+                class="border-b border-gray-200 hover:bg-blue-50 transition-colors"
               >
                 <td class="px-4 py-3 font-semibold">{{ index + 1 }}</td>
                 <td class="px-4 py-3 font-semibold">{{ doc.title }}</td>
@@ -276,10 +477,10 @@
                 <td class="px-4 py-3">{{ doc.sentences?.length || 0 }}</td>
                 <td class="px-4 py-3">
                   <Button
-                    variant="default"
+                    variant="outline"
                     size="sm"
                     @click="goToDetail(doc.id)"
-                    class="bg-blue-500 hover:bg-blue-600 text-white shadow"
+                    class="bg-blue-500 hover:bg-blue-600 text-white shadow hover:scale-105 transition-all duration-150"
                   >
                     <UIcon name="i-heroicons-pencil-square" class="w-4 h-4" />
                     Anotasi
@@ -296,7 +497,7 @@
                     <div>Tidak ada dokumen ditemukan.</div>
                     <button
                       @click="resetFilters"
-                      class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs"
+                      class="px-3 py-1.5 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-700 text-xs transition"
                     >
                       Reset Filter
                     </button>
@@ -543,13 +744,41 @@ function getStatusText(status: string) {
 
 function getStatusClass(status: string) {
   const classMap: Record<string, string> = {
-    belum_dianotasi: "bg-gray-500 text-white",
-    sedang_dianotasi: "bg-yellow-500 text-white",
-    sudah_dianotasi: "bg-blue-500 text-white",
-    sudah_direview: "bg-green-500 text-white",
+    belum_dianotasi: "bg-gray-200 text-gray-700",
+    sedang_dianotasi: "bg-yellow-100 text-yellow-700",
+    sudah_dianotasi: "bg-blue-100 text-blue-700",
+    sudah_direview: "bg-green-100 text-green-700",
   };
-  return classMap[status] || "bg-gray-500 text-white";
+  return classMap[status] || "bg-gray-200 text-gray-700";
 }
+
+// Find first in-progress doc for "Lanjutkan Anotasi"
+const firstInProgressDoc = computed(() =>
+  filteredDocs.value.find(
+    (doc) =>
+      getDocumentStatus(doc) === "sedang_dianotasi" ||
+      getDocumentStatus(doc) === "sudah_dianotasi"
+  )
+);
+
+// Today annotated count
+const todayAnnotated = computed(() => {
+  const todayStr = new Date().toISOString().split("T")[0];
+  return docs.value.filter(
+    (doc) =>
+      doc.sentences.some((s) => s.has_error) &&
+      doc.created_at.startsWith(todayStr)
+  ).length;
+});
+
+// Dummy accuracy calculation
+const accuracy = computed(() => {
+  if (!docs.value.length) return 0;
+  // Example: ratio of reviewed to annotated
+  return stats.value.annotated
+    ? ((stats.value.reviewed / stats.value.annotated) * 100).toFixed(1)
+    : "0.0";
+});
 
 // Helper functions for generating realistic data
 function getInstitutionName(id: number): string {
@@ -753,65 +982,9 @@ onMounted(fetchData);
 </script>
 
 <style scoped>
-/* Custom styles for better dark theme compatibility */
+/* Remove dark theme, use light theme defaults */
 select option {
-  background-color: #1f2937;
-  color: white;
-}
-
-/* Glassmorphism styles */
-.glassmorphism-custom {
-  background-color: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 1.25rem;
-  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15), 0 12px 20px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  padding: 2rem;
-}
-.glassmorphism-custom:hover {
-  background-color: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.25);
-  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2), 0 15px 25px rgba(0, 0, 0, 0.15);
-}
-.stat-card {
-  background-color: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 1.25rem;
-  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15), 0 12px 20px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  padding: 1.5rem 0.5rem;
-  margin-bottom: 0;
-}
-.stat-icon {
-  width: 2.5rem;
-  height: 2.5rem;
-  margin-bottom: 0.5rem;
-  filter: drop-shadow(0 0 5px rgba(59, 130, 246, 0.18));
-}
-.stat-value {
-  font-size: 2rem;
-  font-weight: bold;
-  color: white;
-}
-.stat-label {
-  color: #cbd5e1;
-  margin-top: 0.25rem;
-  font-size: 0.95rem;
-}
-.filter-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.75rem;
-}
-.filter-bar > * {
-  margin-right: 0.25rem;
-}
-.filter-bar > *:last-child {
-  margin-right: 0;
+  background-color: #fff;
+  color: #222;
 }
 </style>

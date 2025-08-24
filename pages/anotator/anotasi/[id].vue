@@ -1,18 +1,14 @@
 <template>
-  <div
-    class="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-blue-950 text-white font-inter px-4 py-6"
-  >
-    <div class="max-w-7xl mx-auto">
+  <div class="min-h-screen px-2 sm:px-4 py-10 font-inter bg-white text-black">
+    <div class="w-full max-w-[95vw] mx-auto px-2 sm:px-4 pb-16">
       <!-- Header Row: Full Width -->
-      <div
-        class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl shadow-lg p-6 mb-6"
-      >
+      <div class="bg-white border border-gray-200 rounded-3xl p-6 mb-6">
         <div class="flex items-center justify-between">
           <!-- Left: Kembali Button -->
           <UButton
             label="Kembali"
             icon="i-heroicons-arrow-left"
-            class="rounded-full px-4 py-2 font-semibold bg-blue-500 text-white shadow-lg hover:bg-blue-600 focus:ring-2 focus:ring-blue-500"
+            class="rounded-full px-4 py-2 font-semibold bg-black text-white border border-gray-200 hover:bg-gray-900 focus:ring-2 focus:ring-black shadow-none"
             @click="router.back()"
             title="Kembali"
           />
@@ -20,17 +16,29 @@
           <!-- Center: Title and Document Info -->
           <div class="text-center flex-1">
             <h1
-              class="text-2xl font-bold flex items-center gap-2 justify-center"
+              class="text-2xl font-bold flex items-center gap-2 justify-center text-black"
             >
-              <UIcon
-                name="i-heroicons-document-text"
-                class="w-6 h-6 text-blue-400"
-              />
+              <span
+                class="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-gray-200 bg-blue-50"
+              >
+                <svg
+                  class="w-6 h-6 text-blue-500"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                >
+                  <rect x="4" y="4" width="16" height="16" rx="2" />
+                  <line x1="8" y1="8" x2="16" y2="8" />
+                  <line x1="8" y1="12" x2="16" y2="12" />
+                  <line x1="8" y1="16" x2="12" y2="16" />
+                </svg>
+              </span>
               Anotasi Dokumen
             </h1>
-            <div class="text-gray-400 text-sm mt-1" v-if="document">
+            <div class="text-gray-500 text-sm mt-1" v-if="document">
               Dokumen
-              <span class="font-semibold text-white">#{{ document.id }}</span>
+              <span class="font-semibold text-black">#{{ document.id }}</span>
               &mdash; {{ document.title }}
             </div>
           </div>
@@ -39,13 +47,13 @@
           <div class="flex items-center gap-2 flex-wrap">
             <UButton
               icon="i-heroicons-chevron-left"
-              class="rounded-full px-3 py-2 bg-blue-500 text-white shadow-lg hover:bg-blue-600 focus:ring-2 focus:ring-blue-500"
+              class="rounded-full px-3 py-2 bg-black text-white border border-gray-200 hover:bg-gray-900 focus:ring-2 focus:ring-black shadow-none"
               title="Dokumen Sebelumnya"
               @click="navigateDocument(-1)"
             />
             <UButton
               icon="i-heroicons-chevron-right"
-              class="rounded-full px-3 py-2 bg-blue-500 text-white shadow-lg hover:bg-blue-600 focus:ring-2 focus:ring-blue-500"
+              class="rounded-full px-3 py-2 bg-black text-white border border-gray-200 hover:bg-gray-900 focus:ring-2 focus:ring-black shadow-none"
               title="Dokumen Selanjutnya"
               @click="navigateDocument(1)"
             />
@@ -54,33 +62,30 @@
       </div>
 
       <!-- View Mode Tabs -->
-      <div
-        class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl shadow-lg p-4 mb-6"
-      >
+      <div class="bg-white border border-gray-200 rounded-3xl p-4 mb-6">
         <div class="flex gap-2">
           <button
             v-for="mode in viewModes"
             :key="mode.id"
             @click="currentViewMode = mode.id"
-            class="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+            class="px-4 py-2 rounded-lg text-sm font-medium transition-all border border-gray-200"
             :class="
               currentViewMode === mode.id
-                ? 'bg-blue-500 text-white shadow-lg'
-                : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700/50'
+                ? 'bg-black text-white'
+                : 'bg-gray-100 text-black hover:bg-gray-200'
             "
           >
             <UIcon :name="mode.icon" class="w-4 h-4 mr-2" />
             {{ mode.label }}
           </button>
-
           <!-- Debug Toggle -->
           <button
             @click="showDebug = !showDebug"
-            class="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+            class="px-4 py-2 rounded-lg text-sm font-medium transition-all border border-gray-200"
             :class="
               showDebug
-                ? 'bg-red-500 text-white shadow-lg'
-                : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700/50'
+                ? 'bg-red-600 text-white'
+                : 'bg-gray-100 text-black hover:bg-gray-200'
             "
           >
             <UIcon name="i-heroicons-bug-ant" class="w-4 h-4 mr-2" />
@@ -94,11 +99,26 @@
         <!-- Teks Asli Column -->
         <div
           v-if="showTeksAsli"
-          class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl shadow-lg p-6"
+          class="bg-white border border-gray-200 rounded-3xl p-6"
         >
           <div class="flex items-center gap-2 mb-4">
-            <UIcon name="i-heroicons-document" class="w-5 h-5 text-blue-400" />
-            <h2 class="text-lg font-semibold">Teks Asli</h2>
+            <span
+              class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 bg-blue-50"
+            >
+              <svg
+                class="w-5 h-5 text-blue-500"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <rect x="4" y="4" width="16" height="16" rx="2" />
+                <line x1="8" y1="8" x2="16" y2="8" />
+                <line x1="8" y1="12" x2="16" y2="12" />
+                <line x1="8" y1="16" x2="12" y2="16" />
+              </svg>
+            </span>
+            <h2 class="text-lg font-semibold text-black">Teks Asli</h2>
             <div class="ml-auto" />
           </div>
 
@@ -110,31 +130,31 @@
             <!-- Document Info Badges -->
             <div class="flex flex-wrap gap-2 mb-4">
               <span
-                class="bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1"
+                class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 border border-gray-200"
               >
                 <UIcon name="i-heroicons-document" class="w-3 h-3" />
                 Dokumen
               </span>
               <span
-                class="bg-gray-500/20 text-gray-300 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1"
+                class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 border border-gray-200"
               >
                 <UIcon name="i-heroicons-calendar" class="w-3 h-3" />
                 {{ formatDate(document.created_at) }}
               </span>
               <span
-                class="bg-purple-500/20 text-purple-300 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1"
+                class="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 border border-gray-200"
               >
                 <UIcon name="i-heroicons-list-bullet" class="w-3 h-3" />
                 {{ document.sentences.length }} kalimat
               </span>
               <span
-                class="bg-green-500/20 text-green-300 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1"
+                class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 border border-gray-200"
               >
                 <UIcon name="i-heroicons-building-office" class="w-3 h-3" />
                 {{ document.agency_name }}
               </span>
               <span
-                class="bg-orange-500/20 text-orange-300 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1"
+                class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 border border-gray-200"
               >
                 <UIcon name="i-heroicons-user" class="w-3 h-3" />
                 {{ document.assigned_by_name }}
@@ -142,16 +162,16 @@
             </div>
 
             <!-- Original Text Content -->
-            <div class="bg-gray-900/30 rounded-lg p-4 border border-gray-700">
-              <div class="text-white leading-relaxed whitespace-pre-wrap">
+            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <div class="text-black leading-relaxed whitespace-pre-wrap">
                 <template
                   v-for="(sentence, index) in document?.sentences"
                   :key="sentence.id"
                 >
                   <span
-                    class="sentence-selector cursor-pointer hover:bg-blue-500/20 px-1 py-0.5 rounded transition-colors"
+                    class="sentence-selector cursor-pointer hover:bg-blue-100 px-1 py-0.5 rounded transition-colors"
                     :class="{
-                      'bg-blue-500/20': selectedSentence?.id === sentence.id,
+                      'bg-blue-100': selectedSentence?.id === sentence.id,
                     }"
                     @click="selectSentence(sentence.id)"
                     :title="`Klik untuk memilih kalimat #${sentence.id}`"
@@ -176,23 +196,35 @@
         <!-- Anotasi Kalimat Column -->
         <div
           v-if="showAnotasiKalimat"
-          class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl shadow-lg p-6"
+          class="bg-white border border-gray-200 rounded-3xl p-6"
         >
           <div class="flex items-center gap-2 mb-4">
-            <UIcon
-              name="i-heroicons-pencil-square"
-              class="w-5 h-5 text-blue-400"
-            />
-            <h2 class="text-lg font-semibold">Anotasi Kalimat</h2>
+            <span
+              class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 bg-green-50"
+            >
+              <svg
+                class="w-5 h-5 text-green-500"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"
+                />
+                <path d="M15 2v4a1 1 0 0 0 1 1h4" />
+              </svg>
+            </span>
+            <h2 class="text-lg font-semibold text-black">Anotasi Kalimat</h2>
           </div>
 
           <!-- Selected Sentence Info -->
           <div
             v-if="selectedSentence"
-            class="mb-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg"
+            class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg"
           >
             <div class="flex items-center justify-between mb-2">
-              <span class="text-sm text-blue-300 font-medium">
+              <span class="text-sm text-blue-700 font-medium">
                 Kalimat Terpilih #{{ selectedSentence.id }}
               </span>
               <UButton
@@ -200,20 +232,19 @@
                 color="neutral"
                 variant="ghost"
                 size="sm"
+                class="shadow-none"
                 @click="clearSelection"
               />
             </div>
-            <div class="text-white text-sm mb-3">
+            <div class="text-black text-sm mb-3">
               {{ getOriginalSentenceText(selectedSentence.id) }}
             </div>
-
-            <!-- Annotation Controls -->
             <div class="flex items-center gap-2 mb-2">
               <UIcon
                 name="i-heroicons-cursor-arrow-rays"
-                class="w-4 h-4 text-blue-400"
+                class="w-4 h-4 text-blue-500"
               />
-              <span class="text-sm text-blue-300"
+              <span class="text-sm text-blue-700"
                 >Pilih teks dalam kalimat untuk anotasi</span
               >
             </div>
@@ -223,12 +254,13 @@
                 icon="i-heroicons-plus-circle"
                 color="primary"
                 size="sm"
+                class="shadow-none"
                 :disabled="!canAnnotate"
                 @click="showAnnotationUI = true"
               />
               <span
                 v-if="selectedText"
-                class="text-xs text-gray-400 self-center"
+                class="text-xs text-gray-500 self-center"
               >
                 Terpilih: "{{ selectedText }}"
               </span>
@@ -238,24 +270,24 @@
           <!-- Sentence Selection Instructions -->
           <div
             v-else
-            class="mb-4 p-4 bg-gray-500/10 border border-gray-500/30 rounded-lg"
+            class="mb-4 p-4 bg-gray-100 border border-gray-200 rounded-lg"
           >
             <div class="flex items-center gap-2 mb-2">
               <UIcon
                 name="i-heroicons-cursor-arrow-rays"
                 class="w-4 h-4 text-gray-400"
               />
-              <span class="text-sm text-gray-300"
+              <span class="text-sm text-gray-700"
                 >Klik kalimat untuk memulai anotasi</span
               >
             </div>
           </div>
 
           <!-- Selection Area (no chips) -->
-          <div class="bg-gray-900/30 rounded-lg p-4 border border-gray-700">
+          <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
             <div
               ref="editableArea"
-              class="text-white leading-relaxed whitespace-pre-wrap select-text relative"
+              class="text-black leading-relaxed whitespace-pre-wrap select-text relative"
               @mouseup="handleTextSelection"
             >
               <span>
@@ -272,11 +304,23 @@
         <!-- History Column -->
         <div
           v-if="showHistory"
-          class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl shadow-lg p-6"
+          class="bg-white border border-gray-200 rounded-3xl p-6"
         >
           <div class="flex items-center gap-2 mb-4">
-            <UIcon name="i-heroicons-clock" class="w-5 h-5 text-blue-400" />
-            <h2 class="text-lg font-semibold">
+            <span
+              class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 bg-purple-50"
+            >
+              <svg
+                class="w-5 h-5 text-purple-500"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+              </svg>
+            </span>
+            <h2 class="text-lg font-semibold text-black">
               {{
                 selectedSentence
                   ? `Riwayat Kalimat #${selectedSentence.id}`
@@ -288,9 +332,9 @@
           <div v-if="!selectedSentence" class="text-center py-8">
             <UIcon
               name="i-heroicons-cursor-arrow-rays"
-              class="w-12 h-12 text-gray-500 mx-auto mb-4"
+              class="w-12 h-12 text-gray-400 mx-auto mb-4"
             />
-            <p class="text-gray-400">Pilih kalimat untuk melihat riwayat</p>
+            <p class="text-gray-500">Pilih kalimat untuk melihat riwayat</p>
           </div>
 
           <div
@@ -301,9 +345,9 @@
           >
             <UIcon
               name="i-heroicons-clock"
-              class="w-12 h-12 text-gray-500 mx-auto mb-4"
+              class="w-12 h-12 text-gray-400 mx-auto mb-4"
             />
-            <p class="text-gray-400">Belum ada anotasi untuk kalimat ini</p>
+            <p class="text-gray-500">Belum ada anotasi untuk kalimat ini</p>
           </div>
 
           <div v-else class="space-y-3 max-h-96 overflow-y-auto">
@@ -312,22 +356,22 @@
                 selectedSentence.id
               )"
               :key="annotation.id"
-              class="p-3 bg-gray-800/50 rounded-lg border border-gray-700 cursor-pointer hover:bg-gray-700/50 transition-colors"
+              class="p-3 bg-gray-50 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors"
               @click="viewAnnotation(annotation)"
             >
               <div class="flex items-center justify-between mb-2">
-                <span class="text-sm font-semibold text-white">
+                <span class="text-sm font-semibold text-black">
                   Anotasi #{{
                     getDescendingIndexLabel(index, selectedSentence.id)
                   }}
                 </span>
-                <span class="text-xs text-gray-400">
+                <span class="text-xs text-gray-500">
                   {{ formatDate(annotation.timestamp) }}
                 </span>
               </div>
               <!-- Full sentence preview with this annotation chipped -->
               <div
-                class="bg-gray-900/30 rounded border border-gray-700 p-2 text-sm mb-2"
+                class="bg-gray-100 rounded border border-gray-200 p-2 text-sm mb-2 text-black"
               >
                 <template
                   v-for="(seg, i) in buildSegmentsForAnnotation(
@@ -355,7 +399,7 @@
                 <span
                   v-for="errorType in annotation.errorTypes"
                   :key="errorType"
-                  class="bg-red-500/20 text-red-300 px-2 py-1 rounded text-xs"
+                  class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs"
                 >
                   {{ errorType }}
                 </span>
@@ -367,7 +411,7 @@
         <!-- Debug Panel -->
         <div
           v-if="showDebug"
-          class="bg-red-900/20 backdrop-blur-sm border border-red-500/30 rounded-3xl shadow-lg p-6"
+          class="bg-red-50 border border-red-200 rounded-3xl p-6"
         >
           <div class="flex items-center gap-2 mb-4">
             <UIcon name="i-heroicons-bug-ant" class="w-5 h-5 text-red-400" />
@@ -537,22 +581,22 @@
       <!-- Footer Actions -->
       <div class="sticky bottom-0 mt-6">
         <div
-          class="bg-gray-900/60 backdrop-blur-sm border border-gray-800 rounded-2xl px-4 py-3 flex items-center justify-between shadow-lg"
+          class="bg-black border border-gray-900 rounded-2xl px-4 py-3 flex items-center justify-between"
         >
-          <div class="text-xs text-gray-400">
+          <div class="text-xs text-white">
             Gunakan Simpan untuk menyimpan sementara. Submit untuk kirim final.
           </div>
           <div class="flex gap-2">
             <UButton
               label="Simpan"
               icon="mdi-floppy"
-              class="rounded-full px-4 py-2 bg-blue-500 text-white shadow-lg hover:bg-blue-600 focus:ring-2 focus:ring-blue-500"
+              class="rounded-full px-4 py-2 bg-black text-white border border-gray-900 hover:bg-gray-900 focus:ring-2 focus:ring-black shadow-none"
               @click="saveAllAnnotations"
             />
             <UButton
               label="Submit"
               icon="i-heroicons-paper-airplane"
-              class="rounded-full px-4 py-2 bg-blue-500 text-white shadow-lg hover:bg-blue-600 focus:ring-2 focus:ring-blue-500"
+              class="rounded-full px-4 py-2 bg-black text-white border border-gray-900 hover:bg-gray-900 focus:ring-2 focus:ring-black shadow-none"
               @click="submitAllAnnotations"
             />
           </div>
@@ -613,7 +657,7 @@
             <UButton
               label="Simpan"
               icon="i-heroicons-device-floppy"
-              class="rounded-full px-4 py-2 bg-blue-500 text-white shadow-lg hover:bg-blue-600 focus:ring-2 focus:ring-blue-500"
+              class="rounded-full px-4 py-2 bg-black text-white border border-gray-900 hover:bg-gray-900 focus:ring-2 focus:ring-black shadow-none"
               @click="saveAnnotation"
               :disabled="!correctionInput || selectedErrorTypes.length === 0"
             />
@@ -1469,32 +1513,33 @@ watch(
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(0, 0, 0, 0.12);
   font-weight: 500;
+  background: #f3f4f6;
+  color: #111;
 }
-
 .annotation-chip:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  background: #e5e7eb;
 }
-
 .bg-blue-500 {
-  background-color: rgba(59, 130, 246, 0.8);
+  background-color: #3b82f6 !important;
+  color: #fff !important;
 }
-
 .bg-green-500 {
-  background-color: rgba(34, 197, 94, 0.8);
+  background-color: #22c55e !important;
+  color: #fff !important;
 }
-
 .bg-purple-500 {
-  background-color: rgba(168, 85, 247, 0.8);
+  background-color: #a855f7 !important;
+  color: #fff !important;
 }
-
 .bg-indigo-500 {
-  background-color: rgba(99, 102, 241, 0.8);
+  background-color: #6366f1 !important;
+  color: #fff !important;
 }
-
 .bg-pink-500 {
-  background-color: rgba(236, 72, 153, 0.8);
+  background-color: #ec4899 !important;
+  color: #fff !important;
 }
 </style>
