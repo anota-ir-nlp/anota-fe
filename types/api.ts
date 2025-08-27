@@ -208,6 +208,11 @@ export interface ErrorTypeResponse {
   id: number;
   error_code: string;
   description: string;
+  project?: number | null;
+  project_name?: string | null;
+  is_default: boolean;
+  created_by?: string | null;
+  created_by_username?: string | null;
   created_at: string;
   updated_at: string;
 }

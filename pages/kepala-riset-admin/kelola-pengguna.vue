@@ -1,6 +1,14 @@
 <template>
   <div class="flex flex-col items-center justify-start text-center bg-slate-900 text-white p-8 min-h-screen">
-    <h1 class="text-4xl font-bold mb-20 text-blue-400">Kelola Pengguna</h1>
+    <div class="flex items-center justify-center gap-4 mb-20">
+      <h1 class="text-4xl font-bold text-blue-400">Kelola Pengguna</h1>
+      <div v-if="selectedProject" class="text-sm text-slate-400 bg-slate-800 px-3 py-1 rounded-full">
+        Project: {{ selectedProject.name }}
+      </div>
+      <div v-else class="text-sm text-slate-400 bg-slate-800 px-3 py-1 rounded-full">
+        Semua Project
+      </div>
+    </div>
 
     <!-- Add User Button -->
     <div class="mb-6 w-full">
@@ -265,8 +273,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { useUsersApi } from "~/data/users";
+import { useProjectContext } from "~/composables/project-context";
 import type { UserResponse, UserRegistrationRequest, UserRegistrationResponse } from "~/types/api";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
@@ -302,15 +311,19 @@ import {
   Plus, Loader2, Check, Pencil, Trash2, ArrowLeft, ArrowRight, MoreHorizontal
 } from "lucide-vue-next";
 import { toast } from "vue-sonner";
+import { useAuth } from "~/data/auth";
 
 const {
   getUsers,
+  getUsersInProject,
   createUser: apiCreateUser,
   deleteUser: apiDeleteUser,
   updateUser: apiUpdateUser,
   getAvailableRoles,
   manageUserRole,
 } = useUsersApi();
+
+const { selectedProject, selectedProjectId, isAllProjects } = useProjectContext();
 
 const users = ref<UserResponse[]>([]);
 const isLoading = ref(false);
@@ -358,7 +371,16 @@ async function fetchAvailableRoles() {
 async function fetchUsers(page = 1) {
   isLoading.value = true;
   try {
-    const response = await getUsers(page);
+    let response;
+
+    if (isAllProjects.value) {
+      response = await getUsers(page);
+    } else if (selectedProjectId.value) {
+      response = await getUsersInProject(selectedProjectId.value, page);
+    } else {
+      response = await getUsers(page);
+    }
+
     users.value = response.results;
     currentPage.value = page;
     totalPages.value = Math.max(1, Math.ceil(response.count / 20));
@@ -558,13 +580,24 @@ function formatDate(dateString: string) {
   return new Date(dateString).toLocaleDateString('id-ID');
 }
 
+const pageTitle = computed(() => {
+  if (selectedProject.value) {
+    return `Kelola Pengguna - ${selectedProject.value.name}`;
+  }
+  return "Kelola Pengguna - Semua Project";
+});
+
+watch(selectedProjectId, async () => {
+  await fetchUsers(1);
+}, { immediate: false });
+
 onMounted(async () => {
   await fetchAvailableRoles();
   await fetchUsers(currentPage.value);
 });
 
 useHead({
-  title: "Kelola Pengguna - ANOTA",
+  title: pageTitle.value + " - ANOTA",
   meta: [
     { name: "description", content: "Halaman kelola pengguna aplikasi ANOTA." },
   ],

@@ -29,11 +29,31 @@ export function useDocumentsApi() {
   const deleteDocument = (id: number) =>
     fetcher(`${BASE}/${id}`, { method: "DELETE" });
 
+  const getDocumentsInProject = (projectId: number, page?: number) =>
+    fetcher<{ count: number; next: string | null; previous: string | null; results: DocumentResponse[] }>(
+      page ? `/projects/${projectId}/documents/?page=${page}` : `/projects/${projectId}/documents/`
+    );
+
+  const assignDocumentsToProject = (projectId: number, documentIds: number[]) =>
+    fetcher(`/projects/${projectId}/`, {
+      method: "PATCH",
+      body: { documents: documentIds },
+    });
+
+  const removeDocumentsFromProject = (projectId: number, documentIds: number[]) =>
+    fetcher(`/projects/${projectId}/`, {
+      method: "PATCH", 
+      body: { documents: documentIds },
+    });
+
   return {
     getDocuments,
     getDocument,
     createDocument,
     updateDocument,
     deleteDocument,
+    getDocumentsInProject,
+    assignDocumentsToProject,
+    removeDocumentsFromProject,
   };
 }

@@ -1,6 +1,14 @@
 <template>
   <div class="flex flex-col items-center justify-start text-center bg-slate-900 text-white p-8 min-h-screen">
-    <h1 class="text-4xl font-bold mb-20 text-blue-400">Kelola Dokumen</h1>
+    <div class="flex items-center justify-center gap-4 mb-20">
+      <h1 class="text-4xl font-bold text-blue-400">Kelola Dokumen</h1>
+      <div v-if="selectedProject" class="text-sm text-slate-400 bg-slate-800 px-3 py-1 rounded-full">
+        Project: {{ selectedProject.name }}
+      </div>
+      <div v-else class="text-sm text-slate-400 bg-slate-800 px-3 py-1 rounded-full">
+        Semua Project
+      </div>
+    </div>
 
     <!-- Add Document Button -->
     <div class="mb-6 w-full flex gap-3 max-w-6xl mx-auto">
@@ -129,6 +137,17 @@
       >
         <UserPlus class="w-4 h-4" />
         Kelola Assignment ({{ selectedDocuments.length }})
+      </Button>
+
+      <!-- Bulk Project Assignment Button -->
+      <Button
+        v-if="selectedDocuments.length > 0"
+        variant="outline"
+        class="flex items-center gap-2"
+        @click="showBulkProjectAssignmentDialog"
+      >
+        <FolderPlus class="w-4 h-4" />
+        Assign ke Project ({{ selectedDocuments.length }})
       </Button>
     </div>
 
@@ -279,6 +298,67 @@
       </DialogContent>
     </Dialog>
 
+    <!-- Bulk Project Assignment Dialog -->
+    <Dialog v-model:open="isBulkProjectAssignmentDialogOpen">
+      <DialogContent class="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Assign Dokumen ke Project</DialogTitle>
+          <DialogDescription>
+            Assign {{ selectedDocuments.length }} dokumen terpilih ke project tertentu. Dokumen yang sudah ada di project akan tetap berada di project tersebut.
+          </DialogDescription>
+        </DialogHeader>
+        <div class="grid gap-4 py-4">
+          <div class="grid gap-2">
+            <label for="target_project" class="text-sm font-medium text-left">Pilih Project Target</label>
+            <Combobox v-model="selectedTargetProjectId" v-model:open="openProjectSelect" :ignore-filter="true">
+              <ComboboxAnchor as-child>
+                <Button variant="outline" class="w-full justify-between">
+                  {{ selectedTargetProjectId ? getProjectName(selectedTargetProjectId) : "Pilih project..." }}
+                  <ChevronDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </ComboboxAnchor>
+              <ComboboxList class="w-[--reka-popper-anchor-width]" align="start">
+                <ComboboxEmpty>Project tidak ditemukan</ComboboxEmpty>
+                <ComboboxGroup>
+                  <ComboboxItem
+                    v-for="project in availableProjects.filter(p => p.name.toLowerCase().includes(searchTermProject.toLowerCase()))"
+                    :key="project.id"
+                    :value="project.id.toString()"
+                    @select.prevent="(ev) => {
+                      if (typeof ev.detail.value === 'string') {
+                        selectedTargetProjectId = ev.detail.value
+                        openProjectSelect = false
+                      }
+                    }">
+                    {{ project.name }}
+                  </ComboboxItem>
+                </ComboboxGroup>
+              </ComboboxList>
+            </Combobox>
+            <ComboboxInput v-model="searchTermProject" placeholder="Cari project..." class="hidden" />
+          </div>
+          <div class="bg-slate-800 rounded p-3 text-sm">
+            <div class="font-semibold text-blue-300 mb-2">Dokumen yang akan di-assign:</div>
+            <div class="text-left max-h-32 overflow-y-auto">
+              <div v-for="doc in selectedDocuments" :key="doc.id" class="text-gray-400 mb-1">
+                • {{ doc.title }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" @click="cancelBulkProjectAssignment">
+            Batal
+          </Button>
+          <Button @click="saveBulkProjectAssignment" :disabled="isBulkProjectAssigning || !selectedTargetProjectId" class="flex items-center gap-2">
+            <FolderPlus v-if="!isBulkProjectAssigning" class="w-4 h-4" />
+            <Loader2 v-else class="w-4 h-4 animate-spin" />
+            {{ isBulkProjectAssigning ? 'Mengassign...' : 'Assign ke Project' }}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
     <div v-if="isLoading" class="text-gray-300 mb-4">
       Memuat data dokumen...
     </div>
@@ -328,10 +408,11 @@ import { ref, onMounted, computed, watch } from "vue";
 import { useDocumentsApi } from "~/data/documents";
 import { useUsersApi } from "~/data/users";
 import { useAssignmentsApi } from "~/data/document-assignments";
-import type { DocumentResponse, DocumentRequest, UserResponse } from "~/types/api";
+import { useProjectsApi } from "~/data/projects";
+import { useProjectContext } from "~/composables/project-context";
+import type { DocumentResponse, DocumentRequest, UserResponse, ProjectResponse } from "~/types/api";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
-import { Badge } from "~/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -357,9 +438,8 @@ import {
   PaginationNext,
   PaginationEllipsis
 } from "~/components/ui/pagination";
-import Papa from "papaparse";
 import {
-  Plus, Upload, Loader2, Trash2, ArrowLeft, ArrowRight, MoreHorizontal, UserPlus, UserMinus
+  Plus, Upload, Loader2, ArrowLeft, ArrowRight, MoreHorizontal, UserPlus, UserMinus, FolderPlus, ChevronDown
 } from "lucide-vue-next";
 import { toast } from "vue-sonner";
 import { Progress } from "~/components/ui/progress";
@@ -368,9 +448,11 @@ import { Combobox, ComboboxAnchor, ComboboxEmpty, ComboboxGroup, ComboboxInput, 
 import DataTable from "~/components/ui/data-table/data-table.vue";
 import { createColumns } from "~/components/documents/columns";
 
-const { getDocuments, createDocument: apiCreateDocument, deleteDocument: apiDeleteDocument } = useDocumentsApi();
-const { getUsers } = useUsersApi();
+const { getDocuments, getDocumentsInProject, createDocument: apiCreateDocument, deleteDocument: apiDeleteDocument, assignDocumentsToProject } = useDocumentsApi();
+const { getUsers, getUsersInProject } = useUsersApi();
 const { assignDocument: apiAssignDocument, unassignDocument: apiUnassignDocument, bulkUnassignDocument: apiBulkUnassignDocument, bulkAssignDocument: apiBulkAssignDocument } = useAssignmentsApi();
+const { getProjects } = useProjectsApi();
+const { selectedProject, selectedProjectId, isAllProjects } = useProjectContext();
 
 const documents = ref<DocumentResponse[]>([]);
 const isLoading = ref(false);
@@ -383,6 +465,8 @@ const isManaging = ref(false);
 const selectedDocuments = ref<DocumentResponse[]>([]);
 const isBulkAssignmentDialogOpen = ref(false);
 const isBulkManaging = ref(false);
+const isBulkProjectAssignmentDialogOpen = ref(false);
+const isBulkProjectAssigning = ref(false);
 
 const newDocument = ref<DocumentRequest>({
   title: "",
@@ -407,12 +491,25 @@ const searchTermManage = ref('');
 const bulkAssignedUserIds = ref<string[]>([]);
 const openBulkUsers = ref(false);
 const searchTermBulk = ref('');
+const selectedTargetProjectId = ref<string>("");
+const availableProjects = ref<ProjectResponse[]>([]);
+const openProjectSelect = ref(false);
+const searchTermProject = ref('');
 
 
 async function fetchDocuments(page = 1) {
   isLoading.value = true;
   try {
-    const response = await getDocuments(page);
+    let response;
+
+    if (isAllProjects.value) {
+      response = await getDocuments(page);
+    } else if (selectedProjectId.value) {
+      response = await getDocumentsInProject(selectedProjectId.value, page);
+    } else {
+      response = await getDocuments(page);
+    }
+
     documents.value = response.results;
     currentPage.value = page;
     totalPages.value = Math.max(1, Math.ceil(response.count / 20));
@@ -643,7 +740,16 @@ function removeUserFromBulkAssignment(userId: string) {
 
 async function fetchUsers() {
   try {
-    const response = await getUsers();
+    let response;
+
+    if (isAllProjects.value) {
+      response = await getUsers();
+    } else if (selectedProjectId.value) {
+      response = await getUsersInProject(selectedProjectId.value);
+    } else {
+      response = await getUsers();
+    }
+
     users.value = response.results;
   } catch (error) {
     console.error('Error fetching users:', error);
@@ -651,18 +757,31 @@ async function fetchUsers() {
   }
 }
 
-function showManageAssignmentDialog(doc: DocumentResponse) {
-  documentToManage.value = doc;
-  managedUserIds.value = [...doc.assigned_to.map(id => id.toString())];
-  originalAssignedUsers.value = [...doc.assigned_to.map(id => id.toString())];
-  searchTermManage.value = '';
-  isManageAssignmentDialogOpen.value = true;
+async function fetchProjects() {
+  try {
+    const response = await getProjects();
+    availableProjects.value = response.results;
+  } catch (error) {
+    console.error('Error fetching projects:', error);
+    toast.error("Gagal memuat daftar project");
+  }
+}
+
+function getProjectName(projectId: string) {
+  const project = availableProjects.value.find(p => p.id.toString() === projectId);
+  return project ? project.name : 'Unknown Project';
 }
 
 function showBulkAssignmentDialog() {
   bulkAssignedUserIds.value = [];
   searchTermBulk.value = '';
   isBulkAssignmentDialogOpen.value = true;
+}
+
+function showBulkProjectAssignmentDialog() {
+  selectedTargetProjectId.value = "";
+  searchTermProject.value = '';
+  isBulkProjectAssignmentDialogOpen.value = true;
 }
 
 function cancelManageAssignment() {
@@ -677,6 +796,12 @@ function cancelBulkAssignment() {
   bulkAssignedUserIds.value = [];
   searchTermBulk.value = '';
   isBulkAssignmentDialogOpen.value = false;
+}
+
+function cancelBulkProjectAssignment() {
+  selectedTargetProjectId.value = "";
+  searchTermProject.value = '';
+  isBulkProjectAssignmentDialogOpen.value = false;
 }
 
 async function saveAssignmentChanges() {
@@ -698,7 +823,6 @@ async function saveAssignmentChanges() {
         let successCount = 0;
         let failCount = 0;
 
-        // Assign new users
         for (const userId of toAssign) {
           try {
             await apiAssignDocument({
@@ -712,7 +836,6 @@ async function saveAssignmentChanges() {
           }
         }
 
-        // Unassign removed users
         for (const userId of toUnassign) {
           try {
             await apiUnassignDocument({
@@ -813,6 +936,52 @@ async function saveBulkAssignmentChanges() {
   }
 }
 
+async function saveBulkProjectAssignment() {
+  if (selectedDocuments.value.length === 0 || !selectedTargetProjectId.value) {
+    toast.error("Pilih project target terlebih dahulu");
+    return;
+  }
+
+  isBulkProjectAssigning.value = true;
+  try {
+    toast.promise(
+      (async () => {
+        const targetProject = availableProjects.value.find(p => p.id.toString() === selectedTargetProjectId.value);
+        if (!targetProject) {
+          throw new Error("Project tidak ditemukan");
+        }
+
+        const currentDocumentIds = targetProject.documents || [];
+
+        const selectedDocumentIds = selectedDocuments.value.map(doc => doc.id);
+        const updatedDocumentIds = [...new Set([...currentDocumentIds, ...selectedDocumentIds])];
+
+        await assignDocumentsToProject(parseInt(selectedTargetProjectId.value), updatedDocumentIds);
+
+        return {
+          projectName: targetProject.name,
+          documentCount: selectedDocumentIds.length,
+          totalDocuments: updatedDocumentIds.length
+        };
+      })(),
+      {
+        loading: "Mengassign dokumen ke project...",
+        success: (result: { projectName: string; documentCount: number; totalDocuments: number }) => {
+          fetchDocuments(currentPage.value);
+          selectedDocuments.value = [];
+          cancelBulkProjectAssignment();
+          return `${result.documentCount} dokumen berhasil di-assign ke project "${result.projectName}". Total dokumen di project: ${result.totalDocuments}`;
+        },
+        error: "Gagal mengassign dokumen ke project",
+      }
+    );
+  } catch (error) {
+    console.error('Error bulk assigning to project:', error);
+  } finally {
+    isBulkProjectAssigning.value = false;
+  }
+}
+
 function handleDeleteDocument(documentId: string) {
   const numericId = parseInt(documentId);
   if (!confirm('Apakah Anda yakin ingin menghapus dokumen ini? Semua annotations yang terkait akan ikut terhapus.')) {
@@ -834,8 +1003,15 @@ const documentColumns = computed(() => createColumns(getUserName, handleDeleteDo
 
 onMounted(async () => {
   await fetchUsers();
+  await fetchProjects();
   await fetchDocuments(currentPage.value);
 });
+
+
+watch(selectedProjectId, async () => {
+  await fetchUsers();
+  await fetchDocuments(1);
+}, { immediate: false });
 
 function handleSelectionChange(selection: DocumentResponse[]) {
   selectedDocuments.value = selection;
@@ -845,8 +1021,15 @@ watch(currentPage, () => {
   selectedDocuments.value = [];
 });
 
+const pageTitle = computed(() => {
+  if (selectedProject.value) {
+    return `Kelola Dokumen - ${selectedProject.value.name}`;
+  }
+  return "Kelola Dokumen - Semua Project";
+});
+
 useHead({
-  title: "Kelola Dokumen - ANOTA",
+  title: pageTitle.value + " - ANOTA",
   meta: [
     { name: "description", content: "Halaman kelola dokumen aplikasi ANOTA." },
   ],
