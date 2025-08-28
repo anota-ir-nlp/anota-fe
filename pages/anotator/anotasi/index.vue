@@ -455,11 +455,11 @@
                 <th class="px-4 py-3 text-left">Aksi</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody class="text-black-900">
               <tr
                 v-for="(doc, index) in filteredDocs"
                 :key="doc.id"
-                class="border-b border-gray-200 hover:bg-blue-50 transition-colors"
+                class="border-b border-gray-200 hover:bg-blue-50 text-gray-900 transition-colors"
               >
                 <td class="px-4 py-3 font-semibold">{{ index + 1 }}</td>
                 <td class="px-4 py-3 font-semibold">{{ doc.title }}</td>
