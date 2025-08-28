@@ -68,27 +68,27 @@
             v-for="mode in viewModes"
             :key="mode.id"
             @click="currentViewMode = mode.id"
-            class="px-4 py-2 rounded-lg text-sm font-medium transition-all border border-gray-200 flex items-center"
+            class="px-4 py-2 rounded-lg text-sm font-medium transition-all border border-gray-200"
             :class="
               currentViewMode === mode.id
                 ? 'bg-black text-white'
                 : 'bg-gray-100 text-black hover:bg-gray-200'
             "
           >
-            <UIcon :name="mode.icon" class="mr-2 align-middle flex-shrink-0" style="vertical-align: middle;" />
-            <span class="inline-block align-middle">{{ mode.label }}</span>
+            <UIcon :name="mode.icon" class="w-4 h-4 mr-2" />
+            {{ mode.label }}
           </button>
           <!-- Debug Toggle -->
           <button
             @click="showDebug = !showDebug"
-            class="px-4 py-2 rounded-lg text-sm font-medium transition-all border border-gray-200 flex items-center"
+            class="px-4 py-2 rounded-lg text-sm font-medium transition-all border border-gray-200"
             :class="
               showDebug
                 ? 'bg-red-600 text-white'
                 : 'bg-gray-100 text-black hover:bg-gray-200'
             "
           >
-            <UIcon name="i-heroicons-bug-ant" class="w-4 h-4 mr-2 align-middle flex-shrink-0" style="vertical-align: middle;" />
+            <UIcon name="i-heroicons-bug-ant" class="w-4 h-4 mr-2" />
             Debug
           </button>
         </div>
@@ -303,185 +303,269 @@
 
         <!-- Combined Tab: Teks Asli + Anotasi Kalimat -->
         <div v-if="currentViewMode === 'combined'" class="space-y-6">
-          <!-- Section 2: Document Info (moved here, at the top, separated by a line) -->
-          <div class="bg-white border border-gray-200 rounded-3xl p-6">
-            <!-- Document Info at the top -->
-            <div class="flex flex-wrap gap-4 items-center mb-4">
-              <span
-                class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 bg-blue-50"
-              >
-                <svg
-                  class="w-5 h-5 text-blue-500"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  viewBox="0 0 24 24"
-                >
-                  <rect x="4" y="4" width="16" height="16" rx="2" />
-                  <line x1="8" y1="8" x2="16" y2="8" />
-                  <line x1="8" y1="12" x2="16" y2="12" />
-                  <line x1="8" y1="16" x2="12" y2="16" />
-                </svg>
-              </span>
-              <div class="flex flex-wrap gap-10">
-                <div class="text-lg text-black">Teks & Anotasi</div>
-                <div class="flex flex-wrap gap-2">
-                  <span
-                    class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 border border-gray-200"
-                  >
-                    <UIcon name="i-heroicons-document" class="w-3 h-3" />
-                    Dokumen
-                  </span>
-                  <span
-                    class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 border border-gray-200"
-                  >
-                    <UIcon name="i-heroicons-calendar" class="w-3 h-3" />
-                    {{ document ? formatDate(document.created_at) : "" }}
-                  </span>
-                  <span
-                    class="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 border border-gray-200"
-                  >
-                    <UIcon name="i-heroicons-list-bullet" class="w-3 h-3" />
-                    {{ document?.sentences.length || 0 }} kalimat
-                  </span>
-                  <span
-                    class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 border border-gray-200"
-                  >
-                    <UIcon name="i-heroicons-building-office" class="w-3 h-3" />
-                    {{ document?.agency_name }}
-                  </span>
-                  <span
-                    class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 border border-gray-200"
-                  >
-                    <UIcon name="i-heroicons-user" class="w-3 h-3" />
-                    {{ document?.assigned_by_name }}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <hr class="my-4 border-gray-200 bg-gray-200 text-gray-200" />
-
-            <!-- Annotation controls: always shown, disabled if no sentence selected -->
-            <div class="mb-4 flex flex-col gap-2">
-              <div class="flex flex-wrap items-center gap-2 justify-between">
-                <span
-                  class="px-2 py-1 rounded-full"
-                  :class="
-                    selectedSentence
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-200 text-gray-500'
-                  "
-                >
-                  {{
-                    selectedSentence
-                      ? `Kalimat Terpilih #${selectedSentence.id}`
-                      : "Klik Kalimat"
-                  }}
-                </span>
-                <div class="flex items-center gap-2 ml-auto">
-                  <UButton
-                    icon="i-heroicons-plus-circle"
-                    size="sm"
-                    class="rounded-2xl bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 flex items-center"
-                    :disabled="!selectedSentence || !canAnnotate"
-                    @click="showAnnotationUI = true"
-                    variant="ghost"
-                  >
-                    <span class="flex items-center">
-                      Anotasi
-                      <UKbd as="span" size="sm" class="ml-2">Enter</UKbd>
-                    </span>
-                  </UButton>
-                  <UButton
-                    icon="i-heroicons-clock"
-                    size="sm"
-                    class="rounded-2xl bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 flex items-center"
-                    :disabled="!selectedSentence"
-                    @click="showCombinedHistory = true"
-                    variant="ghost"
-                  >
-                    <span class="flex items-center">
-                      Riwayat Kalimat
-                      <UKbd as="span" size="sm" class="ml-2">Shift+Enter</UKbd>
-                    </span>
-                  </UButton>
-                  <UButton
-                    icon="i-heroicons-x-mark"
-                    size="sm"
-                    class="rounded-2xl bg-red-100 text-red-700 border border-red-200 hover:bg-red-200 flex items-center"
-                    :disabled="!selectedSentence"
-                    @click="clearSelection"
-                    variant="ghost"
-                  >
-                    <span class="flex items-center">
-                      Ganti Kalimat
-                      <UKbd as="span" size="sm" class="ml-2">Shift+X</UKbd>
-                    </span>
-                  </UButton>
-                </div>
-              </div>
-              <div class="flex items-center gap-2">
-                <UIcon
-                  name="i-heroicons-cursor-arrow-rays"
-                  class="w-4 h-4"
-                  :class="selectedSentence ? 'text-blue-500' : 'text-gray-400'"
-                />
-                <span
-                  :class="
-                    selectedSentence
-                      ? 'text-sm text-blue-700'
-                      : 'text-sm text-gray-500'
-                  "
-                >
-                  Pilih teks dalam kalimat untuk anotasi
-                </span>
-                <span
-                  v-if="selectedText && selectedSentence"
-                  class="text-xs text-gray-500 self-center ml-2"
-                >
-                  Terpilih: "<span class="font-mono">{{ selectedText }}</span
-                  >"
-                </span>
-              </div>
-            </div>
-            <!-- Paragraph rendering, highlight selected sentence, others are disabled -->
-            <div
-              class="text-black leading-relaxed whitespace-pre-wrap paragraph-annotasi"
+          <!-- Section 1: Header Info -->
+          <div
+            class="bg-white border border-gray-200 rounded-3xl p-6 flex flex-wrap gap-4 items-center"
+          >
+            <span
+              class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 bg-blue-50"
             >
+              <svg
+                class="w-5 h-5 text-blue-500"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <rect x="4" y="4" width="16" height="16" rx="2" />
+                <line x1="8" y1="8" x2="16" y2="8" />
+                <line x1="8" y1="12" x2="16" y2="12" />
+                <line x1="8" y1="16" x2="12" y2="16" />
+              </svg>
+            </span>
+            <h2 class="text-lg font-semibold text-black mr-4">
+              Teks & Anotasi
+            </h2>
+            <div class="flex flex-wrap gap-2">
+              <span
+                class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 border border-gray-200"
+              >
+                <UIcon name="i-heroicons-document" class="w-3 h-3" />
+                Dokumen
+              </span>
+              <span
+                class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 border border-gray-200"
+              >
+                <UIcon name="i-heroicons-calendar" class="w-3 h-3" />
+                {{ document ? formatDate(document.created_at) : "" }}
+              </span>
+              <span
+                class="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 border border-gray-200"
+              >
+                <UIcon name="i-heroicons-list-bullet" class="w-3 h-3" />
+                {{ document?.sentences.length || 0 }} kalimat
+              </span>
+              <span
+                class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 border border-gray-200"
+              >
+                <UIcon name="i-heroicons-building-office" class="w-3 h-3" />
+                {{ document?.agency_name }}
+              </span>
+              <span
+                class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 border border-gray-200"
+              >
+                <UIcon name="i-heroicons-user" class="w-3 h-3" />
+                {{ document?.assigned_by_name }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Section 2: Anotasi Navbar -->
+          <transition name="fade">
+            <div v-if="currentViewMode === 'combined'" class="z-40">
+              <div
+                class="bg-white border border-gray-200 rounded-3xl p-6 flex flex-col gap-3 items-stretch mx-auto"
+              >
+                <!-- Always show header -->
+                <div class="flex items-center gap-3 mb-2">
+                  <span
+                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 bg-green-50"
+                  >
+                    <svg
+                      class="w-5 h-5 text-green-500"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"
+                      />
+                      <path d="M15 2v4a1 1 0 0 0 1 1h4" />
+                    </svg>
+                  </span>
+                  <div>
+                    <div class="text-lg font-semibold text-black">
+                      Anotasi Kalimat
+                    </div>
+                    <div class="text-sm text-gray-700">
+                      Klik kalimat untuk memulai anotasi
+                    </div>
+                  </div>
+                </div>
+
+                <!-- No sentence selected -->
+                <div
+                  v-if="!selectedSentence"
+                  class="flex flex-col items-center py-8"
+                >
+                  <UIcon
+                    name="i-heroicons-cursor-arrow-rays"
+                    class="w-10 h-10 text-gray-300 mb-2"
+                  />
+                  <span class="text-gray-500 text-base">
+                    Pilih kalimat untuk memulai anotasi
+                  </span>
+                </div>
+
+                <!-- Sentence selected, no text selected -->
+                <div
+                  v-else
+                  class="flex flex-col gap-3 bg-blue-50 border border-blue-200 rounded-xl p-4"
+                >
+                  <!-- Make header row more horizontal and balanced -->
+                  <div class="flex items-center justify-between gap-4">
+                    <span
+                      class="text-base text-blue-700 font-semibold flex items-center gap-2"
+                    >
+                      <UIcon
+                        name="i-heroicons-pencil-square"
+                        class="w-5 h-5 text-blue-500"
+                      />
+                      Kalimat Terpilih #{{ selectedSentence.id }}
+                    </span>
+                    <!-- Move buttons to the right, next to close -->
+                    <div class="flex gap-2 items-center">
+                      <UButton
+                        icon="i-heroicons-plus-circle"
+                        color="primary"
+                        size="sm"
+                        class="rounded-2xl flex items-center anotasi-btn"
+                        :disabled="!canAnnotate"
+                        @click="showAnnotationUI = true"
+                        title="(Enter)"
+                      >
+                        <span class="flex items-center">
+                          Anotasi
+                          <UKbd as="span" size="sm" class="ml-2">Enter</UKbd>
+                        </span>
+                      </UButton>
+                      <UButton
+                        icon="i-heroicons-clock"
+                        size="sm"
+                        class="rounded-2xl bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 flex items-center"
+                        @click="showCombinedHistory = true"
+                        title="(Shift+Enter)"
+                      >
+                        <span class="flex items-center">
+                          Riwayat Kalimat
+                          <UKbd as="span" size="sm" class="ml-2"
+                            >Shift+Enter</UKbd
+                          >
+                        </span>
+                      </UButton>
+                      <UButton
+                        icon="i-heroicons-x-mark"
+                        color="neutral"
+                        variant="ghost"
+                        size="sm"
+                        class="shadow-none"
+                        @click="clearSelection"
+                      />
+                    </div>
+                  </div>
+                  <!-- Move instructions and selected text below, horizontally -->
+                  <div class="flex items-center gap-3 mt-2">
+                    <UIcon
+                      name="i-heroicons-cursor-arrow-rays"
+                      class="w-4 h-4 text-blue-500"
+                    />
+                    <span class="text-sm text-blue-700">
+                      Pilih teks dalam kalimat untuk anotasi
+                    </span>
+                    <span
+                      v-if="selectedText"
+                      class="text-xs text-gray-500 self-center ml-2"
+                    >
+                      Terpilih: "<span class="font-mono">{{
+                        selectedText
+                      }}</span
+                      >"
+                    </span>
+                  </div>
+                  <div class="w-full mt-2">
+                    <div
+                      class="bg-gray-50 rounded-2xl p-4 border border-gray-200"
+                    >
+                      <div
+                        ref="editableArea"
+                        class="text-black leading-relaxed whitespace-pre-wrap select-text relative"
+                        @mouseup="handleTextSelection"
+                        tabindex="0"
+                        @keydown="handleSentenceKeydown"
+                      >
+                        <span>
+                          {{
+                            selectedSentence
+                              ? getOriginalSentenceText(selectedSentence.id)
+                              : ""
+                          }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </transition>
+
+          <!-- Section 3: Teks Asli for Selecting Sentences -->
+          <div
+            class="bg-white border border-gray-200 rounded-3xl p-6 flex flex-wrap gap-4 items-center"
+          >
+            <div class="text-black leading-relaxed whitespace-pre-wrap">
               <template
-                v-for="(sentence, idx) in document?.sentences"
+                v-for="(sentence, index) in document?.sentences"
                 :key="sentence.id"
               >
-                <div
-                  v-if="selectedSentence && selectedSentence.id === sentence.id"
-                  ref="combinedEditableArea"
-                  :class="'sentence-in-paragraph px-1 py-0.5 rounded transition-colors active-sentence bg-blue-100 cursor-text'"
-                  @mouseup="handleTextSelection"
-                  style="user-select: auto; display: inline-block"
-                  tabindex="0"
-                  :aria-disabled="false"
-                >
-                  {{ sentence.text }}
-                </div>
                 <span
-                  v-else
-                  :class="
-                    ('sentence-in-paragraph px-1 py-0.5 rounded transition-colors',
-                    selectedSentence
-                      ? 'disabled-sentence bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'hover:bg-blue-50 cursor-pointer')
-                  "
-                  @click="!selectedSentence && selectSentence(sentence.id)"
-                  :tabindex="selectedSentence ? -1 : 0"
-                  :aria-disabled="
-                    selectedSentence && selectedSentence.id !== sentence.id
-                  "
-                  style="user-select: none"
+                  class="sentence-selector cursor-pointer hover:bg-blue-100 px-1 py-0.5 rounded transition-colors"
+                  :class="{
+                    'bg-blue-100': selectedSentence?.id === sentence.id,
+                  }"
+                  @click="selectSentence(sentence.id)"
+                  :title="`Klik untuk memilih kalimat #${sentence.id}`"
                 >
                   {{ sentence.text }}
                 </span>
-                <span v-if="idx < document.sentences.length - 1"> </span>
+                <span
+                  v-if="index < document.sentences.length - 1"
+                  class="text-gray-400"
+                >
+                </span>
               </template>
+            </div>
+            <!-- Quick shortcut bar for selected text -->
+            <div
+              v-if="selectedSentence && selectedText"
+              class="flex gap-2 mt-4 items-center"
+            >
+              <!-- Anotasi Button with Enter shortcut next to label -->
+              <UButton
+                icon="i-heroicons-plus-circle"
+                color="primary"
+                size="sm"
+                class="rounded-2xl flex items-center anotasi-btn"
+                :disabled="!canAnnotate"
+                @click="showAnnotationUI = true"
+              >
+                <span class="flex items-center">
+                  Anotasi
+                  <UKbd as="span" size="sm" class="ml-2">Enter</UKbd>
+                </span>
+              </UButton>
+              <!-- Riwayat Kalimat Button with Shift+Enter shortcut next to label -->
+              <UButton
+                icon="i-heroicons-clock"
+                size="sm"
+                class="rounded-2xl bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 flex items-center"
+                @click="showCombinedHistory = true"
+              >
+                <span class="flex items-center">
+                  Riwayat Kalimat
+                  <UKbd as="span" size="sm" class="ml-2">Shift+Enter</UKbd>
+                </span>
+              </UButton>
             </div>
           </div>
         </div>
@@ -532,60 +616,62 @@
               name="i-heroicons-clock"
               class="w-12 h-12 text-gray-400 mx-auto mb-4"
             />
-            <p class="text-gray-500">Belum ada riwayat untuk kalimat ini</p>
+            <p class="text-gray-500">Belum ada anotasi untuk kalimat ini</p>
           </div>
 
-          <div v-else class="space-y-4">
-            <!-- Annotation chips for the selected sentence -->
-            <div class="flex flex-col gap-2">
+          <div v-else class="space-y-3 max-h-96 overflow-y-auto">
+            <div
+              v-for="(annotation, index) in getSentenceAnnotationsSortedDesc(
+                selectedSentence.id
+              )"
+              :key="annotation.id"
+              class="p-3 bg-gray-50 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors"
+              @click="viewAnnotation(annotation)"
+            >
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-semibold text-black">
+                  Anotasi #{{
+                    getDescendingIndexLabel(index, selectedSentence.id)
+                  }}
+                </span>
+                <span class="text-xs text-gray-500">
+                  {{ formatDate(annotation.timestamp) }}
+                </span>
+              </div>
+              <!-- Full sentence preview with this annotation chipped -->
               <div
-                v-for="(annotation, index) in getSentenceAnnotationsSortedDesc(
-                  selectedSentence.id
-                )"
-                :key="annotation.id"
-                class="p-3 bg-gray-50 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors"
-                @click="viewAnnotation(annotation)"
+                class="bg-gray-100 rounded border border-gray-200 p-2 text-sm mb-2 text-black"
               >
-                <div class="flex items-center justify-between mb-2">
-                  <span class="text-sm font-semibold text-black">
-                    Anotasi #{{
-                      getDescendingIndexLabel(index, selectedSentence.id)
-                    }}
-                  </span>
-                  <span class="text-xs text-gray-500">
-                    {{ formatDate(annotation.timestamp) }}
-                  </span>
-                </div>
-                <div
-                  class="bg-gray-100 rounded border border-gray-200 p-2 text-sm mb-2 text-black"
+                <template
+                  v-for="(seg, i) in buildSegmentsForAnnotation(
+                    selectedSentence.id,
+                    annotation
+                  )"
+                  :key="i"
                 >
-                  <template
-                    v-for="(seg, i) in buildSegmentsForAnnotation(
-                      selectedSentence.id,
-                      annotation
-                    )"
-                    :key="i"
-                  >
-                    <span v-if="seg.type === 'text'">{{ seg.text }}</span>
-                    <span v-else class="relative inline-block">
-                      <span
-                        class="annotation-chip"
-                        :class="getChipColor(annotation.color)"
-                      >
-                        {{ annotation.correction }}
-                      </span>
+                  <span v-if="seg.type === 'text'">{{ seg.text }}</span>
+                  <span v-else class="relative inline-block">
+                    <span
+                      class="annotation-chip"
+                      :class="getChipColor(annotation.color)"
+                      @mouseenter="hoveredAnnotation = annotation"
+                      @mouseleave="hoveredAnnotation = null"
+                    >
+                      {{ annotation.correction }}
                     </span>
-                  </template>
-                </div>
-                <div class="flex flex-wrap gap-1 mt-2">
-                  <span
-                    v-for="errorType in annotation.errorTypes"
-                    :key="errorType"
-                    class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs"
-                  >
-                    {{ errorType }}
                   </span>
-                </div>
+                </template>
+              </div>
+
+              <!-- Detail sebelum/sesudah dipindahkan ke modal saat chip diklik -->
+              <div class="flex flex-wrap gap-1 mt-2">
+                <span
+                  v-for="errorType in annotation.errorTypes"
+                  :key="errorType"
+                  class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs"
+                >
+                  {{ errorType }}
+                </span>
               </div>
             </div>
           </div>
@@ -1087,7 +1173,6 @@ const selectedSentence = ref<{ id: number; text: string } | null>(null);
 // Text selection within sentence
 const { text: selectedTextVueuse } = useTextSelection();
 const editableArea = ref<HTMLElement>();
-const combinedEditableArea = ref<HTMLElement>(); // NEW
 const selectedText = ref("");
 const selectedRange = ref<{ start: number; end: number } | null>(null);
 const canAnnotate = computed(
@@ -1103,6 +1188,7 @@ const hoveredAnnotation = ref<Annotation | null>(null);
 const showAnnotationModal = ref(false);
 const selectedAnnotation = ref<Annotation | null>(null);
 
+// Debug state
 const showDebug = ref(false);
 
 // Computed properties for view modes
@@ -1155,34 +1241,17 @@ function getGridLayout() {
   }
 }
 
-function handleTextSelection(event?: MouseEvent) {
-  // Use the correct ref depending on the current view mode
-  let area: HTMLElement | undefined | null;
-  if (currentViewMode.value === "combined") {
-    area = combinedEditableArea.value;
-  } else {
-    area = editableArea.value;
-  }
-
-  if (!area || !selectedSentence.value) {
-    return;
-  }
-  // Defensive: sometimes Vue ref can be an array if used in v-for, check for array and pick first element
-  if (Array.isArray(area)) {
-    area = area[0];
-  }
-  if (!area || typeof area.contains !== "function") {
-    return;
-  }
+//FIX: TEXT SELECTION - Gets selected text and calculates current positions
+function handleTextSelection() {
+  if (!editableArea.value || !selectedSentence.value) return;
 
   const selection = window.getSelection();
   if (!selection || selection.rangeCount === 0) return;
 
   const range = selection.getRangeAt(0);
-  if (!area.contains(range.commonAncestorContainer)) {
-    return;
-  }
+  if (!editableArea.value.contains(range.commonAncestorContainer)) return;
 
+  //FIX: Get the selected text including spaces
   selectedText.value = selection.toString();
 
   // Use original sentence text for selection indexing
@@ -1194,17 +1263,26 @@ function handleTextSelection(event?: MouseEvent) {
   const startIndex = originalSentenceText.indexOf(selectedText.value);
 
   if (startIndex === -1) {
+    console.error("Selected text not found in current sentence");
     return;
   }
 
+  //FIX: Use current positions (not original positions)
   const endIndex = startIndex + selectedText.value.length;
 
   selectedRange.value = {
     start: startIndex,
     end: endIndex,
   };
+
+  console.log(
+    `Selected "${selectedText.value}" at positions ${startIndex}-${endIndex} in original text`
+  );
+  console.log(`//FIX: Selected text length: ${selectedText.value.length}`);
+  console.log(`//FIX: Selected text includes spaces: "${selectedText.value}"`);
 }
 
+//FIX: ANNOTATION SAVING - Creates new annotation with current positions
 function saveAnnotation() {
   if (
     !selectedText.value ||
@@ -1215,8 +1293,10 @@ function saveAnnotation() {
   )
     return;
 
+  //FIX: Trim the correction to prevent extra spaces
   const trimmedCorrection = correctionInput.value.trim();
 
+  //FIX: Create new annotation with current positions
   const annotation: Annotation = {
     id: Date.now().toString(),
     sentenceId: selectedSentence.value.id,
@@ -1228,6 +1308,13 @@ function saveAnnotation() {
     end: selectedRange.value.end,
     timestamp: new Date(),
   };
+
+  console.log(
+    `//FIX: Creating annotation "${annotation.original}" -> "${annotation.correction}" at positions ${annotation.start}-${annotation.end}`
+  );
+  console.log(
+    `//FIX: Original length: ${annotation.original.length}, Correction length: ${annotation.correction.length}`
+  );
 
   annotations.value.push(annotation);
 
@@ -1268,14 +1355,20 @@ function getChipColor(color: string) {
   return color;
 }
 
+//FIX: M2 FORMAT GENERATION - Uses current annotation positions
 function generateM2ForAnnotation(annotation: Annotation) {
+  //FIX: M2 format: A start end|||error_types|||correction|||REQUIRED|||-NONE-|||0
+  //FIX: Uses current positions from the annotation object
   const m2Format = `A ${annotation.start} ${
     annotation.end
   }|||${annotation.errorTypes.join(";")}|||${
     annotation.correction
   }|||REQUIRED|||-NONE-|||0`;
+  console.log(`//FIX: Generated M2 format: ${m2Format}`);
   return m2Format;
 }
+
+//FIX: TEXT REPLACEMENT - Applies all annotations to get current text with updated positions
 function getCurrentSentenceText(sentenceId: number): string {
   if (!document.value) return "";
 
@@ -1285,6 +1378,7 @@ function getCurrentSentenceText(sentenceId: number): string {
   const sentenceAnnotations = getSentenceAnnotations(sentenceId);
   if (sentenceAnnotations.length === 0) return sentence.text;
 
+  //FIX: Apply annotations to get current text
   let currentText = sentence.text;
 
   // Work on a local copy of positions so we don't mutate stored annotations
@@ -1301,10 +1395,26 @@ function getCurrentSentenceText(sentenceId: number): string {
       timestamp: a.timestamp,
     }));
 
+  console.log(
+    `//FIX: Applying ${sortedAnnotations.length} annotations to sentence ${sentenceId}`
+  );
+
+  //FIX: Apply each annotation sequentially
   for (const annotation of sortedAnnotations) {
+    console.log(
+      `//FIX: Applying annotation "${annotation.original}" -> "${annotation.correction}" at ${annotation.start}-${annotation.end}`
+    );
+    console.log(`//FIX: Before replacement: "${currentText}"`);
+
+    //FIX: Replace the text at the specified position
     const beforeText = currentText.substring(0, annotation.start);
     const afterText = currentText.substring(annotation.end);
     currentText = beforeText + annotation.correction + afterText;
+
+    console.log(`//FIX: After replacement: "${currentText}"`);
+    console.log(
+      `//FIX: Replaced "${annotation.original}" (${annotation.original.length} chars) with "${annotation.correction}" (${annotation.correction.length} chars)`
+    );
 
     // Update positions of subsequent annotations (local copy only)
     const lengthDiff =
@@ -1320,38 +1430,54 @@ function getCurrentSentenceText(sentenceId: number): string {
         const oldEnd = nextAnnotation.end;
         nextAnnotation.start += lengthDiff;
         nextAnnotation.end += lengthDiff;
+        console.log(
+          `//FIX: Updated annotation "${nextAnnotation.original}" from ${oldStart}-${oldEnd} to ${nextAnnotation.start}-${nextAnnotation.end}`
+        );
       }
     }
   }
 
+  console.log(`//FIX: Final text: "${currentText}"`);
   return currentText;
 }
 
+//FIX: Get annotations for a specific sentence
 function getSentenceAnnotations(sentenceId: number): Annotation[] {
   return annotations.value.filter((a) => a.sentenceId === sentenceId);
 }
 
+//FIX: Get the latest annotation for a sentence (for display purposes)
 function getLatestAnnotation(sentenceId: number): Annotation | null {
   const sentenceAnnotations = getSentenceAnnotations(sentenceId);
   if (sentenceAnnotations.length === 0) return null;
 
+  //FIX: Return the most recent annotation (by timestamp)
   return sentenceAnnotations.sort(
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   )[0];
 }
 
+//FIX: CHIP RENDERING - Creates segments for displaying chips in the right positions
 const documentSegments = computed(() => {
   if (!document.value || !selectedSentence.value) return [];
 
+  //FIX: Get current text with all annotations applied
   const sentenceText = getCurrentSentenceText(selectedSentence.value.id);
   const segments = [];
 
+  //FIX: Get the latest annotation for this sentence (only show the most recent one)
   const latestAnnotation = getLatestAnnotation(selectedSentence.value.id);
 
   if (latestAnnotation) {
+    //FIX: Find the correction text in the current sentence text
     const correctionIndex = sentenceText.indexOf(latestAnnotation.correction);
 
+    console.log(
+      `//FIX: Rendering chip for "${latestAnnotation.correction}" at position ${correctionIndex}`
+    );
+
     if (correctionIndex !== -1) {
+      //FIX: Add text before annotation
       if (correctionIndex > 0) {
         segments.push({
           type: "text",
@@ -1359,6 +1485,7 @@ const documentSegments = computed(() => {
         });
       }
 
+      //FIX: Add annotation chip
       segments.push({
         type: "annotation",
         annotation: latestAnnotation,
@@ -1366,6 +1493,7 @@ const documentSegments = computed(() => {
         end: correctionIndex + latestAnnotation.correction.length,
       });
 
+      //FIX: Add text after annotation
       const afterIndex = correctionIndex + latestAnnotation.correction.length;
       if (afterIndex < sentenceText.length) {
         segments.push({
@@ -1374,12 +1502,14 @@ const documentSegments = computed(() => {
         });
       }
     } else {
+      //FIX: Fallback: just show the text as-is
       segments.push({
         type: "text",
         text: sentenceText,
       });
     }
   } else {
+    //FIX: No annotations, just show the text
     segments.push({
       type: "text",
       text: sentenceText,
@@ -1389,6 +1519,7 @@ const documentSegments = computed(() => {
   return segments;
 });
 
+//FIX: Methods
 function getOriginalText() {
   if (!document.value) return "";
   return document.value.text;
@@ -1463,6 +1594,7 @@ function selectSentence(sentenceId: number) {
   const sentence = document.value?.sentences.find((s) => s.id === sentenceId);
   if (sentence) {
     selectedSentence.value = { id: sentenceId, text: sentence.text };
+    //FIX: Clear any existing text selection
     selectedText.value = "";
     selectedRange.value = null;
   }
@@ -1474,10 +1606,14 @@ function clearSelection() {
   selectedRange.value = null;
 }
 
+//FIX: DEBUG FUNCTIONS
 function clearAllAnnotations() {
   if (selectedSentence.value) {
     annotations.value = annotations.value.filter(
       (a) => a.sentenceId !== selectedSentence.value!.id
+    );
+    console.log(
+      `//FIX: Cleared all annotations for sentence ${selectedSentence.value.id}`
     );
   }
 }
@@ -1682,7 +1818,7 @@ async function fetchDocument() {
       {
         id: 3,
         title: "Artikel Bahasa Indonesia 3",
-        text: "Artikel ketiga dengan konten yang lebih panjang.",
+        text: "Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda.",
         created_at: "2024-01-17T09:15:00Z",
         updated_at: "2024-01-17T09:15:00Z",
         assigned_to: [1],
@@ -1691,10 +1827,10 @@ async function fetchDocument() {
         sentences: [
           {
             id: 9,
-            text: "Artikel ketiga dengan konten yang lebih panjang. ",
+            text: "Artikel ketiga dengan konten yang lebih panjang. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. ",
             m2_text: "",
             corrected_text:
-              "Artikel ketiga dengan konten yang lebih panjang. Artikel ketiga dengan konten yang lebih panjang.  ",
+              "Artikel ketiga dengan konten yang lebih panjang. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. ",
             has_error: true,
             created_at: "2024-01-17T09:15:00Z",
             updated_at: "2024-01-17T09:15:00Z",
@@ -1805,12 +1941,24 @@ function stopDrag() {
 }
 
 // Keyboard shortcuts for annotation actions
-function globalKeyHandler(e: KeyboardEvent) {
-  // Check if we are in a state where we can use shortcuts
-  if (showAnnotationUI.value || !selectedSentence.value) {
-    return;
-  }
+function handleSentenceKeydown(e: KeyboardEvent) {
+  if (!selectedText.value) return;
 
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    if (canAnnotate.value) showAnnotationUI.value = true;
+  }
+  if (e.key === "Enter" && e.shiftKey) {
+    e.preventDefault();
+    showCombinedHistory.value = true;
+  }
+}
+
+// Global keyboard shortcuts for save/submit
+onMounted(() => {
+  window.addEventListener("keydown", globalKeyHandler);
+});
+function globalKeyHandler(e: KeyboardEvent) {
   // Ctrl+S: Save
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s" && !e.shiftKey) {
     e.preventDefault();
@@ -1821,30 +1969,7 @@ function globalKeyHandler(e: KeyboardEvent) {
     e.preventDefault();
     submitAllAnnotations();
   }
-  // Enter (without Shift): Open annotation UI
-  if (e.key === "Enter" && !e.shiftKey) {
-    e.preventDefault();
-    if (canAnnotate.value) {
-      showAnnotationUI.value = true;
-    }
-  }
-  // Shift+Enter: Show history popup
-  if (e.key === "Enter" && e.shiftKey) {
-    e.preventDefault();
-    showCombinedHistory.value = true;
-  }
-  // Shift+X: Clear selection
-  if (e.key.toLowerCase() === "x" && e.shiftKey) {
-    e.preventDefault();
-    clearSelection();
-  }
 }
-
-// Global keyboard shortcuts for save/submit
-onMounted(() => {
-  window.addEventListener("keydown", globalKeyHandler);
-});
-
 onUnmounted(() => {
   window.removeEventListener("keydown", globalKeyHandler);
 });
@@ -1930,19 +2055,5 @@ onUnmounted(() => {
   cursor: not-allowed !important;
   opacity: 0.7;
   box-shadow: none !important;
-}
-
-/* New styles for combined tab sentence rendering */
-.sentence-in-paragraph {
-  display: inline-block;
-}
-.active-sentence {
-  background-color: #d6e8ff !important; /* blue-200 */
-}
-.disabled-sentence {
-  background-color: #f3f4f6 !important; /* gray-100 */
-  color: #9ca3af !important; /* gray-400 */
-  cursor: not-allowed;
-  user-select: none !important;
 }
 </style>
