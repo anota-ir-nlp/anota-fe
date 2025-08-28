@@ -227,14 +227,25 @@
               <span class="text-sm text-blue-700 font-medium">
                 Kalimat Terpilih #{{ selectedSentence.id }}
               </span>
-              <UButton
-                icon="i-heroicons-x-mark"
-                color="neutral"
-                variant="ghost"
-                size="sm"
-                class="shadow-none"
-                @click="clearSelection"
-              />
+              <div class="flex gap-2 items-center">
+                <UButton
+                  label="Anotasi"
+                  icon="i-heroicons-plus-circle"
+                  color="primary"
+                  size="sm"
+                  class="shadow-none anotasi-btn"
+                  :disabled="!canAnnotate"
+                  @click="showAnnotationUI = true"
+                />
+                <UButton
+                  icon="i-heroicons-x-mark"
+                  color="neutral"
+                  variant="ghost"
+                  size="sm"
+                  class="shadow-none"
+                  @click="clearSelection"
+                />
+              </div>
             </div>
             <div class="text-black text-sm mb-3">
               {{ getOriginalSentenceText(selectedSentence.id) }}
@@ -247,20 +258,9 @@
               <span class="text-sm text-blue-700"
                 >Pilih teks dalam kalimat untuk anotasi</span
               >
-            </div>
-            <div class="flex gap-2">
-              <UButton
-                label="Anotasi"
-                icon="i-heroicons-plus-circle"
-                color="primary"
-                size="sm"
-                class="shadow-none"
-                :disabled="!canAnnotate"
-                @click="showAnnotationUI = true"
-              />
               <span
                 v-if="selectedText"
-                class="text-xs text-gray-500 self-center"
+                class="text-xs text-gray-500 self-center ml-2"
               >
                 Terpilih: "{{ selectedText }}"
               </span>
@@ -362,102 +362,146 @@
 
           <!-- Section 2: Anotasi Navbar -->
           <transition name="fade">
-            <div v-if="selectedSentence" class="z-40">
+            <div v-if="currentViewMode === 'combined'" class="z-40">
               <div
                 class="bg-white border border-gray-200 rounded-3xl p-6 flex flex-col gap-3 items-stretch mx-auto"
               >
+                <!-- Always show header -->
+                <div class="flex items-center gap-3 mb-2">
+                  <span
+                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 bg-green-50"
+                  >
+                    <svg
+                      class="w-5 h-5 text-green-500"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"
+                      />
+                      <path d="M15 2v4a1 1 0 0 0 1 1h4" />
+                    </svg>
+                  </span>
+                  <div>
+                    <div class="text-lg font-semibold text-black">
+                      Anotasi Kalimat
+                    </div>
+                    <div class="text-sm text-gray-700">
+                      Klik kalimat untuk memulai anotasi
+                    </div>
+                  </div>
+                </div>
+
+                <!-- No sentence selected -->
                 <div
-                  class="flex flex-col md:flex-row md:items-center md:justify-between gap-2"
+                  v-if="!selectedSentence"
+                  class="flex flex-col items-center py-8"
                 >
-                  <div class="flex items-center gap-3 flex-wrap">
+                  <UIcon
+                    name="i-heroicons-cursor-arrow-rays"
+                    class="w-10 h-10 text-gray-300 mb-2"
+                  />
+                  <span class="text-gray-500 text-base">
+                    Pilih kalimat untuk memulai anotasi
+                  </span>
+                </div>
+
+                <!-- Sentence selected, no text selected -->
+                <div
+                  v-else
+                  class="flex flex-col gap-3 bg-blue-50 border border-blue-200 rounded-xl p-4"
+                >
+                  <!-- Make header row more horizontal and balanced -->
+                  <div class="flex items-center justify-between gap-4">
                     <span
-                      class="inline-flex items-center gap-2 px-2 py-1 bg-blue-50 border border-gray-200 rounded-lg"
+                      class="text-base text-blue-700 font-semibold flex items-center gap-2"
                     >
                       <UIcon
                         name="i-heroicons-pencil-square"
                         class="w-5 h-5 text-blue-500"
                       />
-                      <span class="text-base text-blue-700"
-                        >Kalimat Terpilih #{{ selectedSentence.id }}</span
-                      >
+                      Kalimat Terpilih #{{ selectedSentence.id }}
                     </span>
-                    <UButton
-                      icon="i-heroicons-x-mark"
-                      color="neutral"
-                      variant="ghost"
-                      size="sm"
-                      class="shadow-none"
-                      @click="clearSelection"
+                    <!-- Move buttons to the right, next to close -->
+                    <div class="flex gap-2 items-center">
+                      <UButton
+                        icon="i-heroicons-plus-circle"
+                        color="primary"
+                        size="sm"
+                        class="rounded-2xl flex items-center anotasi-btn"
+                        :disabled="!canAnnotate"
+                        @click="showAnnotationUI = true"
+                        title="(Enter)"
+                      >
+                        <span class="flex items-center">
+                          Anotasi
+                          <UKbd as="span" size="sm" class="ml-2">Enter</UKbd>
+                        </span>
+                      </UButton>
+                      <UButton
+                        icon="i-heroicons-clock"
+                        size="sm"
+                        class="rounded-2xl bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 flex items-center"
+                        @click="showCombinedHistory = true"
+                        title="(Shift+Enter)"
+                      >
+                        <span class="flex items-center">
+                          Riwayat Kalimat
+                          <UKbd as="span" size="sm" class="ml-2"
+                            >Shift+Enter</UKbd
+                          >
+                        </span>
+                      </UButton>
+                      <UButton
+                        icon="i-heroicons-x-mark"
+                        color="neutral"
+                        variant="ghost"
+                        size="sm"
+                        class="shadow-none"
+                        @click="clearSelection"
+                      />
+                    </div>
+                  </div>
+                  <!-- Move instructions and selected text below, horizontally -->
+                  <div class="flex items-center gap-3 mt-2">
+                    <UIcon
+                      name="i-heroicons-cursor-arrow-rays"
+                      class="w-4 h-4 text-blue-500"
                     />
-                  </div>
-                  <div class="flex items-center gap-2 flex-wrap">
-                    <!-- Anotasi Button with Enter shortcut next to label -->
-                    <UButton
-                      icon="i-heroicons-plus-circle"
-                      color="primary"
-                      size="sm"
-                      class="rounded-2xl flex items-center"
-                      :disabled="!canAnnotate"
-                      @click="showAnnotationUI = true"
-                      title="(Enter)"
-                    >
-                      <span class="flex items-center">
-                        Anotasi
-                        <UKbd as="span" size="sm" class="ml-2">Enter</UKbd>
-                      </span>
-                    </UButton>
-                    <!-- Riwayat Kalimat Button with Shift+Enter shortcut next to label -->
-                    <UButton
-                      icon="i-heroicons-clock"
-                      size="sm"
-                      class="rounded-2xl bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 flex items-center"
-                      @click="showCombinedHistory = true"
-                      title="(Shift+Enter)"
-                    >
-                      <span class="flex items-center">
-                        Riwayat Kalimat
-                        <UKbd as="span" size="sm" class="ml-2"
-                          >Shift+Enter</UKbd
-                        >
-                      </span>
-                    </UButton>
-                  </div>
-                </div>
-                <div
-                  class="flex flex-col md:flex-row md:items-center md:justify-between gap-2"
-                >
-                  <div class="flex-1">
-                    <span class="text-sm text-gray-700"
-                      >Pilih teks dalam kalimat untuk anotasi</span
-                    >
+                    <span class="text-sm text-blue-700">
+                      Pilih teks dalam kalimat untuk anotasi
+                    </span>
                     <span
                       v-if="selectedText"
-                      class="ml-2 text-xs text-gray-500"
+                      class="text-xs text-gray-500 self-center ml-2"
                     >
-                      Terpilih: "
-                      <span class="font-mono">{{ selectedText }}</span
+                      Terpilih: "<span class="font-mono">{{
+                        selectedText
+                      }}</span
                       >"
                     </span>
                   </div>
-                </div>
-                <div class="w-full">
-                  <div
-                    class="bg-gray-50 rounded-2xl p-4 border border-gray-200"
-                  >
+                  <div class="w-full mt-2">
                     <div
-                      ref="editableArea"
-                      class="text-black leading-relaxed whitespace-pre-wrap select-text relative"
-                      @mouseup="handleTextSelection"
-                      tabindex="0"
-                      @keydown="handleSentenceKeydown"
+                      class="bg-gray-50 rounded-2xl p-4 border border-gray-200"
                     >
-                      <span>
-                        {{
-                          selectedSentence
-                            ? getOriginalSentenceText(selectedSentence.id)
-                            : ""
-                        }}
-                      </span>
+                      <div
+                        ref="editableArea"
+                        class="text-black leading-relaxed whitespace-pre-wrap select-text relative"
+                        @mouseup="handleTextSelection"
+                        tabindex="0"
+                        @keydown="handleSentenceKeydown"
+                      >
+                        <span>
+                          {{
+                            selectedSentence
+                              ? getOriginalSentenceText(selectedSentence.id)
+                              : ""
+                          }}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -501,7 +545,7 @@
                 icon="i-heroicons-plus-circle"
                 color="primary"
                 size="sm"
-                class="rounded-2xl flex items-center"
+                class="rounded-2xl flex items-center anotasi-btn"
                 :disabled="!canAnnotate"
                 @click="showAnnotationUI = true"
               >
@@ -989,7 +1033,7 @@
             <UButton
               label="Simpan"
               icon="i-heroicons-device-floppy"
-              class="rounded-full px-4 py-2 bg-black text-white border border-gray-900 hover:bg-gray-900 focus:ring-2 focus:ring-black shadow-none"
+              class="rounded-full px-4 py-2 bg-black text-white border border-gray-900 hover:bg-gray-900 focus:ring-2 focus:ring-black shadow-none anotasi-btn"
               @click="saveAnnotation"
               :disabled="!correctionInput || selectedErrorTypes.length === 0"
             />
@@ -1783,7 +1827,7 @@ async function fetchDocument() {
         sentences: [
           {
             id: 9,
-            text: "Artikel ketiga dengan konten yang lebih panjang. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. ",
+            text: "Artikel ketiga dengan konten yang lebih panjang. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. ",
             m2_text: "",
             corrected_text:
               "Artikel ketiga dengan konten yang lebih panjang. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. Artikel ketiga dengan konten yang lebih panjang. Paragraf ini berisi beberapa kalimat yang dapat dianotasi. Kami dapat menambahkan lebih banyak paragraf jika diperlukan. Setiap kalimat dapat memiliki anotasi yang berbeda. ",
@@ -1987,5 +2031,29 @@ onUnmounted(() => {
 }
 .bg-gray-50 {
   border-radius: 18px !important;
+}
+
+/* Anotasi button custom style for better feedback */
+.anotasi-btn {
+  transition: background 0.2s, color 0.2s, border 0.2s, opacity 0.2s;
+  background-color: #2563eb !important; /* blue-600 */
+  color: #fff !important;
+  border: 1.5px solid #2563eb !important;
+  opacity: 1;
+}
+.anotasi-btn:hover:not(:disabled) {
+  background-color: #1d4ed8 !important; /* blue-700 */
+  color: #fff !important;
+  border-color: #1d4ed8 !important;
+  box-shadow: 0 2px 8px 0 #2563eb22;
+}
+.anotasi-btn:disabled,
+.anotasi-btn[disabled] {
+  background-color: #e5e7eb !important; /* gray-200 */
+  color: #9ca3af !important; /* gray-400 */
+  border-color: #e5e7eb !important;
+  cursor: not-allowed !important;
+  opacity: 0.7;
+  box-shadow: none !important;
 }
 </style>
