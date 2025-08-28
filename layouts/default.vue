@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { useAuth } from "~/data/auth";
-import { onMounted, onBeforeUnmount, ref, computed } from "vue";
-import { useRoute, navigateTo } from "#app";
+import { useProjectsApi } from "~/data/projects";
+import { useProjectContext } from "~/composables/project-context";
+import { onMounted, ref, computed, onBeforeUnmount } from "vue";
+import { navigateTo, useRoute } from "#app";
 import { Button } from "~/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import {
@@ -37,6 +39,7 @@ import {
   LogOut,
   Lightbulb,
   FileCheck,
+  Building2,
   Menu as MenuIcon,
   X as CloseIcon,
 } from "lucide-vue-next";
@@ -45,7 +48,9 @@ import type { AvailableRole, ProjectResponse } from "~/types/api";
 import type { AcceptableValue } from "reka-ui";
 
 const { user, isAuthenticated, userRoles, logout, initializeAuth } = useAuth();
-const route = useRoute();
+const { getProjects } = useProjectsApi();
+const { selectedProject, setSelectedProject, clearSelectedProject } =
+  useProjectContext();
 
 const userAvatar = computed(
   () =>
@@ -104,7 +109,7 @@ type MenuGroup =
       }>;
     };
 
-// --- Menu groups: Beranda is now a direct link with Home icon ---
+// --- Merge: Always add Beranda as first group ---
 const menuGroups = computed<MenuGroup[]>(() => {
   if (!isAuthenticated.value) {
     return [];
@@ -112,12 +117,42 @@ const menuGroups = computed<MenuGroup[]>(() => {
 
   const groups: MenuGroup[] = [];
 
-  groups.push({
-    type: "link",
-    label: "Beranda",
-    path: "/beranda",
-    icon: Home,
-  });
+  // Always add Beranda as first group
+  groups.push({ type: "link", label: "Beranda", path: "/beranda", icon: Home });
+
+  if (hasRole("Kepala Riset")) {
+    groups.push({
+      type: "dropdown",
+      label: "Kepala Riset",
+      icon: BarChart3,
+      items: [
+        {
+          label: "Kelola Project",
+          path: "/kepala-riset/kelola-project",
+          icon: BarChart3,
+          description: "Manage research projects",
+        },
+        {
+          label: "Kelola Pengguna",
+          path: "/kepala-riset-admin/kelola-pengguna",
+          icon: Users,
+          description: "Manage system users",
+        },
+        {
+          label: "Rekap Kinerja",
+          path: "/kepala-riset/rekap-kinerja",
+          icon: BarChart3,
+          description: "Performance summary",
+        },
+        {
+          label: "Generate Dataset",
+          path: "/kepala-riset/generate-dataset",
+          icon: Download,
+          description: "Generate dataset files",
+        },
+      ],
+    });
+  }
 
   if (hasRole("Admin")) {
     groups.push({
@@ -147,22 +182,6 @@ const menuGroups = computed<MenuGroup[]>(() => {
     });
   }
 
-  if (hasRole("Annotator")) {
-    groups.push({
-      type: "dropdown",
-      label: "Anotator",
-      icon: Pencil,
-      items: [
-        {
-          label: "Daftar Dokumen",
-          path: "/anotator/anotasi",
-          icon: FileText,
-          description: "List of documents to annotate",
-        },
-      ],
-    });
-  }
-
   if (hasRole("Reviewer")) {
     groups.push({
       type: "dropdown",
@@ -171,7 +190,7 @@ const menuGroups = computed<MenuGroup[]>(() => {
       items: [
         {
           label: "Daftar Dokumen",
-          path: "/reviewer/review",
+          path: "/peninjau/tinjauan",
           icon: FileCheck,
           description: "Documents to review",
         },
@@ -179,7 +198,7 @@ const menuGroups = computed<MenuGroup[]>(() => {
     });
   }
 
-  if (hasRole("Kepala Riset")) {
+  if (hasRole("Annotator")) {
     groups.push({
       type: "dropdown",
       label: "Anotator",
@@ -198,22 +217,8 @@ const menuGroups = computed<MenuGroup[]>(() => {
   return groups;
 });
 
-onMounted(async () => {
-  await initializeAuth();
-  await fetchUserProjects();
-});
+const route = useRoute();
 
-const handleLoginClick = () => {
-  navigateTo("/login");
-};
-
-const handleLogout = async () => {
-  await logout();
-  toast.success("Anda telah keluar dari akun.");
-  navigateTo("/");
-};
-
-// Public navbar behaviors (landing style)
 const isScrolled = ref(false);
 const isMobileMenuOpen = ref(false);
 
@@ -223,22 +228,30 @@ const handleScroll = () => {
 
 onMounted(async () => {
   await initializeAuth();
-  if (!isAuthenticated.value) {
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-  }
+  await fetchUserProjects();
+  window.addEventListener("scroll", handleScroll, { passive: true });
+  handleScroll();
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("scroll", handleScroll as EventListener);
 });
 
-// --- Mobile menu toggle for authenticated navbar ---
 const toggleMobileMenu = () => {
   isMobileMenuOpen.value = !isMobileMenuOpen.value;
 };
 const closeMobileMenu = () => {
   isMobileMenuOpen.value = false;
+};
+
+const handleLoginClick = () => {
+  navigateTo("/login");
+};
+
+const handleLogout = async () => {
+  await logout();
+  toast.success("Anda telah keluar dari akun.");
+  navigateTo("/");
 };
 </script>
 
