@@ -10,36 +10,35 @@ const ACCESS_TOKEN_KEY = "access_token";
 const REFRESH_TOKEN_KEY = "refresh_token";
 
 export function useAuth() {
-  // Global state
   const accessToken = useState<string | null>("access_token", () => null);
   const refreshToken = useState<string | null>("refresh_token", () => null);
   const user = useState<any | null>("auth_user", () => null);
 
   const runtimeConfig = useRuntimeConfig();
 
-  // Persist tokens in cookies
   const accessTokenCookie = useCookie<string | null>(ACCESS_TOKEN_KEY, {
-    maxAge: 60 * 60 * 24, // 24 hours
+    maxAge: 60 * 60 * 24,
     httpOnly: false,
     secure: false,
     sameSite: 'lax',
     default: () => null
   });
   const refreshTokenCookie = useCookie<string | null>(REFRESH_TOKEN_KEY, {
-    maxAge: 60 * 60 * 24 * 7, // 7 days
+    maxAge: 60 * 60 * 24 * 7,
     httpOnly: false,
     secure: false,
     sameSite: 'lax',
     default: () => null
   });
 
-  // Initialize state from cookies on first load
-  if (import.meta.client && !accessToken.value && accessTokenCookie.value) {
+
+  if (!accessToken.value && accessTokenCookie.value) {
     accessToken.value = accessTokenCookie.value;
+  }
+  if (!refreshToken.value && refreshTokenCookie.value) {
     refreshToken.value = refreshTokenCookie.value;
   }
 
-  // Helper to set tokens
   function setTokens(access: string | null, refresh?: string | null) {
     accessToken.value = access;
     accessTokenCookie.value = access;
@@ -120,14 +119,24 @@ export function useAuth() {
     user.value = null;
   }
 
-  // Initialize auth state on client-side
   async function initializeAuth() {
-    if (import.meta.client && getAccessToken() && !user.value) {
-      await fetchMe();
+    const token = getAccessToken();
+    if (token && !user.value) {
+      try {
+        await fetchMe();
+      } catch (error) {
+        const newToken = await refreshAccessToken();
+        if (newToken) {
+          await fetchMe();
+        }
+      }
     }
   }
 
-  const isAuthenticated = computed(() => !!getAccessToken() && !!user.value);
+  const isAuthenticated = computed(() => {
+    const token = getAccessToken();
+    return !!token && !!user.value;
+  });
   const userRoles = computed(() => user.value?.roles || []);
 
   return {

@@ -47,8 +47,17 @@ export function useUsersApi() {
   const generateBackupKey = (userId: string) =>
     fetcher(`${BASE}/generate-backup-key`, { method: "POST", body: { user_id: userId } });
 
+
+  const getUsersInProject = (projectId: number, page?: number) =>
+    fetcher<UsersListResponse>(
+      page
+        ? `/projects/${projectId}/assigned-users/?page=${page}`
+        : `/projects/${projectId}/assigned-users/`
+    );
+
   return {
     getUsers,
+    getUsersInProject,
     getDeletedUsers,
     getCurrentUser,
     createUser,

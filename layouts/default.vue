@@ -12,6 +12,13 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import {
   Menubar,
   MenubarContent,
   MenubarItem,
@@ -34,7 +41,8 @@ import {
   X as CloseIcon,
 } from "lucide-vue-next";
 import { toast } from "vue-sonner";
-import type { AvailableRole } from "~/types/api";
+import type { AvailableRole, ProjectResponse } from "~/types/api";
+import type { AcceptableValue } from "reka-ui";
 
 const { user, isAuthenticated, userRoles, logout, initializeAuth } = useAuth();
 const route = useRoute();
@@ -49,6 +57,38 @@ const userAvatar = computed(
 const userName = computed(() => user.value?.full_name || "Pengguna");
 
 const hasRole = (role: AvailableRole) => userRoles.value.includes(role);
+
+const userProjects = ref<ProjectResponse[]>([]);
+const isLoadingProjects = ref(false);
+
+async function fetchUserProjects() {
+  if (!hasRole("Admin") && !hasRole("Kepala Riset")) return;
+
+  isLoadingProjects.value = true;
+  try {
+    const response = await getProjects();
+    userProjects.value = response.results;
+  } catch (error) {
+    console.error("Error fetching projects:", error);
+    toast.error("Gagal memuat daftar project");
+  } finally {
+    isLoadingProjects.value = false;
+  }
+}
+
+function handleProjectChange(value: AcceptableValue) {
+  const projectId = value?.toString() || null;
+  if (!projectId || projectId === "all") {
+    clearSelectedProject();
+  } else {
+    const project = userProjects.value.find(
+      (p) => p.id.toString() === projectId
+    );
+    if (project) {
+      setSelectedProject(project);
+    }
+  }
+}
 
 type MenuGroup =
   | { type: "link"; label: string; path: string; icon: any }
@@ -82,12 +122,12 @@ const menuGroups = computed<MenuGroup[]>(() => {
   if (hasRole("Admin")) {
     groups.push({
       type: "dropdown",
-      label: "Administrator",
+      label: "Administrator Project",
       icon: Users,
       items: [
         {
           label: "Kelola Pengguna",
-          path: "/admin/kelola-pengguna",
+          path: "/kepala-riset-admin/kelola-pengguna",
           icon: Users,
           description: "Manage system users",
         },
@@ -142,26 +182,14 @@ const menuGroups = computed<MenuGroup[]>(() => {
   if (hasRole("Kepala Riset")) {
     groups.push({
       type: "dropdown",
-      label: "Kepala Riset",
-      icon: BarChart3,
+      label: "Anotator",
+      icon: Pencil,
       items: [
         {
-          label: "Rekap Kinerja",
-          path: "/kepala-riset/rekap-kinerja",
-          icon: BarChart3,
-          description: "Performance summary",
-        },
-        {
-          label: "Rekap Dokumen",
-          path: "/kepala-riset/rekap-dokumen",
-          icon: ClipboardList,
-          description: "Document summary",
-        },
-        {
-          label: "Generate Dataset",
-          path: "/kepala-riset/generate-dataset",
-          icon: Download,
-          description: "Generate dataset files",
+          label: "Daftar Dokumen",
+          path: "/anotator/anotasi",
+          icon: FileText,
+          description: "List of documents to annotate",
         },
       ],
     });
@@ -172,6 +200,7 @@ const menuGroups = computed<MenuGroup[]>(() => {
 
 onMounted(async () => {
   await initializeAuth();
+  await fetchUserProjects();
 });
 
 const handleLoginClick = () => {

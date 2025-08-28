@@ -4,7 +4,7 @@ import type {
   AnnotationResponse,
 } from "~/types/api";
 
-const BASE = "/annotation/annotations";
+const BASE = "/annotations";
 
 export function useAnnotationsApi() {
   const { fetcher } = useProtectedFetcher();

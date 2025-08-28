@@ -1,6 +1,14 @@
 <template>
   <div class="flex flex-col items-center justify-start text-center bg-slate-900 text-white p-8 min-h-screen">
-    <h1 class="text-4xl font-bold mb-20 text-blue-400">Kelola Error Types</h1>
+    <div class="flex items-center justify-center gap-4 mb-20">
+      <h1 class="text-4xl font-bold text-blue-400">Kelola Error Types</h1>
+      <div v-if="selectedProject" class="text-sm text-slate-400 bg-slate-800 px-3 py-1 rounded-full">
+        Project: {{ selectedProject.name }}
+      </div>
+      <div v-else class="text-sm text-slate-400 bg-slate-800 px-3 py-1 rounded-full">
+        Semua Project
+      </div>
+    </div>
 
     <!-- Add Error Type Button -->
     <div class="mb-6 w-full">
@@ -18,6 +26,7 @@
             <DialogTitle>Tambah Error Type Baru</DialogTitle>
             <DialogDescription>
               Masukkan kode error dan deskripsi error type.
+              {{ selectedProject ? `Error type akan dibuat untuk project "${selectedProject.name}".` : 'Error type akan dibuat sebagai default (tersedia untuk semua project).' }}
             </DialogDescription>
           </DialogHeader>
           <div class="grid gap-4 py-4">
@@ -157,8 +166,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { useErrorTypesApi } from "~/data/error-types";
+import { useProjectContext } from "~/composables/project-context";
 import type { ErrorTypeRequest, ErrorTypeResponse } from "~/types/api";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
@@ -187,8 +197,8 @@ import {
   PaginationNext,
   PaginationEllipsis
 } from "~/components/ui/pagination";
-import { 
-  Plus, Loader2, Check, Pencil, Trash2, ArrowLeft, ArrowRight, MoreHorizontal 
+import {
+  Plus, Loader2, Check, Pencil, Trash2, ArrowLeft, ArrowRight, MoreHorizontal
 } from "lucide-vue-next";
 import { toast } from "vue-sonner";
 
@@ -198,6 +208,8 @@ const {
   updateErrorType: apiUpdateErrorType,
   deleteErrorType: apiDeleteErrorType,
 } = useErrorTypesApi();
+
+const { selectedProject, selectedProjectId, isAllProjects } = useProjectContext();
 
 const errorTypes = ref<ErrorTypeResponse[]>([]);
 const isLoading = ref(false);
@@ -222,9 +234,9 @@ const totalPages = ref(1);
 async function fetchErrorTypes(page = 1) {
   isLoading.value = true;
   try {
-    // getErrorTypes should support pagination if backend supports it, otherwise fetch all
-    const response = await getErrorTypes(page);
-    // If paginated, response.results; else, response is array
+    const projectId = isAllProjects.value ? undefined : selectedProjectId.value;
+    const response = await getErrorTypes(page, projectId || undefined);
+
     if (Array.isArray(response)) {
       errorTypes.value = response;
       totalPages.value = 1;
@@ -252,7 +264,12 @@ async function createErrorType() {
 
   isCreating.value = true;
   try {
-    await apiCreateErrorType(newErrorType.value);
+    const createData = {
+      ...newErrorType.value,
+      project_id: isAllProjects.value ? undefined : selectedProjectId.value,
+    };
+
+    await apiCreateErrorType(createData);
     toast.success(`Error type "${newErrorType.value.error_code}" berhasil dibuat`);
     resetForm();
     isCreateDialogOpen.value = false;
@@ -350,15 +367,23 @@ const paginationPages = computed(() => {
   return pages;
 });
 
+watch(selectedProjectId, async () => {
+  await fetchErrorTypes(1);
+}, { immediate: false });
+
 onMounted(() => fetchErrorTypes(currentPage.value));
 
+const pageTitle = computed(() => {
+  if (selectedProject.value) {
+    return `Kelola Error Types - ${selectedProject.value.name}`;
+  }
+  return "Kelola Error Types - Semua Project";
+});
+
 useHead({
-  title: "Kelola Error Types - ANOTA",
+  title: pageTitle.value + " - ANOTA",
   meta: [
     { name: "description", content: "Halaman kelola error types aplikasi ANOTA." },
   ],
 });
 </script>
-    { name: "description", content: "Halaman kelola error types aplikasi ANOTA." },
-  ],
-});
