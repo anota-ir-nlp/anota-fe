@@ -2,8 +2,8 @@
 import { useAuth } from "~/data/auth";
 import { useProjectsApi } from "~/data/projects";
 import { useProjectContext } from "~/composables/project-context";
-import { onMounted, ref, computed } from "vue";
-import { navigateTo } from "#app";
+import { onMounted, ref, computed, watch } from "vue";
+import { navigateTo, useRoute } from "#app";
 import { Button } from "~/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import {
@@ -48,6 +48,7 @@ import type { AcceptableValue } from "reka-ui";
 const { user, isAuthenticated, userRoles, logout, initializeAuth } = useAuth();
 const { getProjects } = useProjectsApi();
 const { selectedProject, setSelectedProject, clearSelectedProject } = useProjectContext();
+const route = useRoute();
 
 const userAvatar = computed(
   () =>
@@ -64,7 +65,10 @@ const userProjects = ref<ProjectResponse[]>([]);
 const isLoadingProjects = ref(false);
 
 async function fetchUserProjects() {
-  if (!hasRole("Admin") && !hasRole("Kepala Riset")) return;
+  if (!isAuthenticated.value || (!hasRole("Admin") && !hasRole("Kepala Riset"))) {
+    userProjects.value = [];
+    return;
+  }
 
   isLoadingProjects.value = true;
   try {
@@ -73,15 +77,22 @@ async function fetchUserProjects() {
   } catch (error) {
     console.error('Error fetching projects:', error);
     toast.error("Gagal memuat daftar project");
+    userProjects.value = [];
   } finally {
     isLoadingProjects.value = false;
   }
 }
 
+const isKelolaSemuaProjects = computed(() => {
+  return route.path === '/admin/kelola-dokumen';
+});
+
 function handleProjectChange(value: AcceptableValue) {
   const projectId = value?.toString() || null;
-  if (!projectId || projectId === "all") {
+  if (!projectId || (projectId === "all" && !isKelolaSemuaProjects.value)) {
     clearSelectedProject();
+  } else if (projectId === "all" && isKelolaSemuaProjects.value) {
+    return;
   } else {
     const project = userProjects.value.find(p => p.id.toString() === projectId);
     if (project) {
@@ -104,6 +115,42 @@ type MenuGroup =
     }>;
   };
 
+// Add route access checking function
+function canAccessRoute(route: string): boolean {
+  if (!isAuthenticated.value) return false;
+  
+  const roleBasedRoutes = {
+    'Admin': [
+      '/admin/kelola-dokumen',
+      '/admin/kelola-error',
+      '/kepala-riset-admin/kelola-pengguna'
+    ],
+    'Annotator': [
+      '/anotator/anotasi'
+    ],
+    'Reviewer': [
+      '/peninjau/tinjauan'
+    ],
+    'Kepala Riset': [
+      '/kepala-riset/kelola-project',
+      '/kepala-riset-admin/kelola-pengguna',
+      '/admin/kelola-dokumen',
+      '/admin/kelola-error'
+    ]
+  };
+
+  const userRoleList = userRoles.value || [];
+  
+  for (const role of userRoleList) {
+    const allowedRoutes = roleBasedRoutes[role as keyof typeof roleBasedRoutes] || [];
+    if (allowedRoutes.some(allowedRoute => route.startsWith(allowedRoute))) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 const menuGroups = computed<MenuGroup[]>(() => {
   if (!isAuthenticated.value) {
     return [];
@@ -114,105 +161,131 @@ const menuGroups = computed<MenuGroup[]>(() => {
   groups.push({ type: "link", label: "Beranda", path: "/beranda", icon: Home });
 
   if (hasRole("Kepala Riset")) {
-    groups.push({
-      type: "dropdown",
-      label: "Kepala Riset",
-      icon: BarChart3,
-      items: [
-        {
-          label: "Kelola Project",
-          path: "/kepala-riset/kelola-project",
-          icon: BarChart3,
-          description: "Manage research projects",
-        },
-        {
-          label: "Kelola Pengguna",
-          path: "/kepala-riset-admin/kelola-pengguna",
-          icon: Users,
-          description: "Manage system users",
-        },
-        {
-          label: "Rekap Kinerja",
-          path: "/kepala-riset/rekap-kinerja",
-          icon: BarChart3,
-          description: "Performance summary",
-        },
-        {
-          label: "Generate Dataset",
-          path: "/kepala-riset/generate-dataset",
-          icon: Download,
-          description: "Generate dataset files",
-        },
-      ],
-    });
+    const items = [
+      {
+        label: "Kelola Project",
+        path: "/kepala-riset/kelola-project",
+        icon: BarChart3,
+        description: "Manage research projects",
+      },
+      {
+        label: "Kelola Pengguna",
+        path: "/kepala-riset-admin/kelola-pengguna",
+        icon: Users,
+        description: "Manage system users",
+      },
+    ].filter(item => canAccessRoute(item.path));
+
+    if (items.length > 0) {
+      groups.push({
+        type: "dropdown",
+        label: "Kepala Riset",
+        icon: BarChart3,
+        items,
+      });
+    }
   }
 
   if (hasRole("Admin")) {
-    groups.push({
-      type: "dropdown",
-      label: "Administrator Project",
-      icon: Users,
-      items: [
-        {
-          label: "Kelola Pengguna",
-          path: "/kepala-riset-admin/kelola-pengguna",
-          icon: Users,
-          description: "Manage system users",
-        },
-        {
-          label: "Kelola Dokumen",
-          path: "/admin/kelola-dokumen",
-          icon: FileText,
-          description: "Manage documents",
-        },
-        {
-          label: "Kelola Error",
-          path: "/admin/kelola-error",
-          icon: AlertTriangle,
-          description: "Manage system errors",
-        },
-      ],
-    });
+    const items = [
+      {
+        label: "Kelola Pengguna",
+        path: "/kepala-riset-admin/kelola-pengguna",
+        icon: Users,
+        description: "Manage system users",
+      },
+      {
+        label: "Kelola Dokumen",
+        path: "/admin/kelola-dokumen",
+        icon: FileText,
+        description: "Manage documents",
+      },
+      {
+        label: "Kelola Error",
+        path: "/admin/kelola-error",
+        icon: AlertTriangle,
+        description: "Manage system errors",
+      },
+    ].filter(item => canAccessRoute(item.path));
+
+    if (items.length > 0) {
+      groups.push({
+        type: "dropdown",
+        label: "Administrator Project",
+        icon: Users,
+        items,
+      });
+    }
   }
 
   if (hasRole("Reviewer")) {
-    groups.push({
-      type: "dropdown",
-      label: "Reviewer",
-      icon: FileCheck,
-      items: [
-        {
-          label: "Daftar Dokumen",
-          path: "/peninjau/tinjauan",
-          icon: FileCheck,
-          description: "Documents to review",
-        },
-      ],
-    });
+    const items = [
+      {
+        label: "Daftar Dokumen",
+        path: "/peninjau/tinjauan",
+        icon: FileCheck,
+        description: "Documents to review",
+      },
+    ].filter(item => canAccessRoute(item.path));
+
+    if (items.length > 0) {
+      groups.push({
+        type: "dropdown",
+        label: "Reviewer",
+        icon: FileCheck,
+        items,
+      });
+    }
   }
 
   if (hasRole("Annotator")) {
-    groups.push({
-      type: "dropdown",
-      label: "Anotator",
-      icon: Pencil,
-      items: [
-        {
-          label: "Daftar Dokumen",
-          path: "/anotator/anotasi",
-          icon: FileText,
-          description: "List of documents to annotate",
-        },
-      ],
-    });
+    const items = [
+      {
+        label: "Daftar Dokumen",
+        path: "/anotator/anotasi",
+        icon: FileText,
+        description: "List of documents to annotate",
+      },
+    ].filter(item => canAccessRoute(item.path));
+
+    if (items.length > 0) {
+      groups.push({
+        type: "dropdown",
+        label: "Anotator",
+        icon: Pencil,
+        items,
+      });
+    }
   }
 
   return groups;
 });
 
+// Watch for authentication state changes
+watch(isAuthenticated, async (newValue) => {
+  if (newValue) {
+    // User just logged in, fetch projects
+    await fetchUserProjects();
+  } else {
+    // User logged out, clear projects and selected project
+    userProjects.value = [];
+    clearSelectedProject();
+  }
+}, { immediate: false });
+
+// Watch for user roles changes (in case roles are updated after login)
+watch(userRoles, async () => {
+  if (isAuthenticated.value) {
+    await fetchUserProjects();
+  }
+}, { immediate: false });
+
 onMounted(async () => {
   await initializeAuth();
-  await fetchUserProjects();
+  // Only fetch projects after auth is initialized and user is authenticated
+  if (isAuthenticated.value) {
+    await fetchUserProjects();
+  }
 });
 
 const handleLoginClick = () => {
@@ -285,25 +358,29 @@ const handleLogout = async () => {
         </div>
 
 
-        <!-- Project Selector for Admin/Kepala Riset -->
-        <div v-if="(hasRole('Admin') || hasRole('Kepala Riset')) && userProjects.length > 0"
-          class="flex items-center gap-2 ml-4">
-          <Select :model-value="selectedProject?.id?.toString() || 'all'" @update:model-value="handleProjectChange">
-            <SelectTrigger class="w-[200px] bg-slate-800 border-slate-700 text-slate-200">
-              <SelectValue placeholder="Pilih Project" />
-            </SelectTrigger>
-            <SelectContent class="bg-slate-800 border-slate-700">
-              <SelectItem value="all" class="text-slate-200">
-                <div class="flex items-center gap-2">
-                  Semua Project
-                </div>
-              </SelectItem>
-              <SelectItem v-for="project in userProjects" :key="project.id" :value="project.id.toString()"
-                class="text-slate-200">
-                {{ project.name }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
+        <div class="flex items-center gap-4">
+          <!-- Project Selector for Admin/Kepala Riset -->
+          <div v-if="(hasRole('Admin')) && userProjects.length > 0"
+            class="flex items-center gap-2 ml-4">
+            <Select :model-value="selectedProject?.id?.toString() || (isKelolaSemuaProjects ? '' : 'all')"
+              @update:model-value="handleProjectChange">
+              <SelectTrigger class="w-[200px] bg-slate-800 border-slate-700 text-slate-200">
+                <SelectValue :placeholder="isKelolaSemuaProjects ? 'Pilih Project' : 'Pilih Project'" />
+              </SelectTrigger>
+              <SelectContent class="bg-slate-800 border-slate-700">
+                <SelectItem v-if="!isKelolaSemuaProjects" value="all" class="text-slate-200">
+                  <div class="flex items-center gap-2">
+                    Semua Project
+                  </div>
+                </SelectItem>
+                <SelectItem v-for="project in userProjects" :key="project.id" :value="project.id.toString()"
+                  class="text-slate-200">
+                  {{ project.name }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           <!-- Profile Dropdown -->
           <DropdownMenu>
             <DropdownMenuTrigger as-child>

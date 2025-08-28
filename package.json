@@ -26,7 +26,9 @@
     "lucide-vue-next": "^0.525.0",
     "next-auth": "^4.24.11",
     "nuxt": "^3.17.6",
+    "officeparser": "^5.2.0",
     "papaparse": "^5.5.3",
+    "pdf-parse": "^1.1.1",
     "postcss": "^8.5.6",
     "reka-ui": "^2.4.1",
     "shadcn-nuxt": "^2.2.0",
@@ -48,6 +50,7 @@
     "@nuxtjs/i18n": "^9.5.6",
     "@nuxtjs/tailwindcss": "7.0.0-beta.0",
     "@tailwindcss/postcss": "^4.1.11",
-    "@types/papaparse": "^5.3.16"
+    "@types/papaparse": "^5.3.16",
+    "@types/pdf-parse": "^1.1.5"
   }
 }

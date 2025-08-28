@@ -17,7 +17,7 @@
           <DialogHeader>
             <DialogTitle>Tambah Project Baru</DialogTitle>
             <DialogDescription>
-              Masukkan informasi project baru. Admin dan dokumen dapat ditugaskan sekarang atau nanti.
+              Masukkan informasi project baru. Admin dapat ditugaskan sekarang atau nanti.
             </DialogDescription>
           </DialogHeader>
           <div class="grid gap-6 py-4">
@@ -78,51 +78,6 @@
                 </Combobox>
               </div>
             </div>
-
-            <!-- Document Assignment (Optional) -->
-            <div class="grid gap-4">
-              <h3 class="text-lg font-medium text-left">Assign Dokumen <span class="text-sm text-gray-400 font-normal">(Opsional)</span></h3>
-              <div class="grid gap-2">
-                <label for="document_select" class="text-sm font-medium text-left">Dokumen yang Ditugaskan</label>
-                <Combobox v-model="newProjectDocumentIds" v-model:open="openCreateDocuments" :ignore-filter="true">
-                  <ComboboxAnchor as-child>
-                    <TagsInput v-model="newProjectDocumentIds" class="px-2 w-full">
-                      <div class="flex flex-col">
-                        <div v-if="newProjectDocumentIds.length" class="flex gap-2 flex-wrap items-center p-1 font-semibold">
-                          <TagsInputItem v-for="docId in newProjectDocumentIds" :key="docId" :value="docId">
-                            <TagsInputItemText class="text-xs">{{ getDocumentTitle(docId) }}</TagsInputItemText>
-                            <TagsInputItemDelete @click="removeDocumentFromNewProject(docId)" />
-                          </TagsInputItem>
-                        </div>
-                        <ComboboxInput v-model="searchTermCreateDocument" as-child>
-                          <TagsInputInput placeholder="Pilih dokumen (opsional)..." class="w-full" @keydown.enter.prevent />
-                        </ComboboxInput>
-                      </div>
-                    </TagsInput>
-                    <ComboboxList class="w-[--reka-popper-anchor-width]" align="start">
-                      <ComboboxEmpty />
-                      <ComboboxGroup>
-                        <ComboboxItem
-                          v-for="doc in availableDocumentsForNewProject"
-                          :key="doc.id"
-                          :value="doc.id.toString()"
-                          @select.prevent="(ev) => {
-                            if (typeof ev.detail.value === 'string') {
-                              searchTermCreateDocument = ''
-                              newProjectDocumentIds.push(ev.detail.value)
-                            }
-                            if (availableDocumentsForNewProject.length === 0) {
-                              openCreateDocuments = false
-                            }
-                          }">
-                          {{ doc.title }}
-                        </ComboboxItem>
-                      </ComboboxGroup>
-                    </ComboboxList>
-                  </ComboboxAnchor>
-                </Combobox>
-              </div>
-            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" @click="resetForm">
@@ -144,7 +99,7 @@
         <DialogHeader>
           <DialogTitle>Edit Project</DialogTitle>
           <DialogDescription>
-            Update informasi project. Admin dan dokumen dapat diubah sesuai kebutuhan.
+            Update informasi project. Admin dapat diubah sesuai kebutuhan.
           </DialogDescription>
         </DialogHeader>
         <div class="grid gap-6 py-4">
@@ -194,47 +149,6 @@
                           }
                         }">
                         {{ admin.full_name }}
-                      </ComboboxItem>
-                    </ComboboxGroup>
-                  </ComboboxList>
-                </ComboboxAnchor>
-              </Combobox>
-            </div>
-          </div>
-
-          <!-- Document Assignment (Optional) -->
-          <div class="grid gap-4">
-            <h3 class="text-lg font-medium text-left">Dokumen yang Ditugaskan <span class="text-sm text-gray-400 font-normal">(Opsional)</span></h3>
-            <div class="grid gap-2">
-              <Combobox v-model="editingProjectDocumentIds" v-model:open="openEditDocuments" :ignore-filter="true">
-                <ComboboxAnchor as-child>
-                  <TagsInput v-model="editingProjectDocumentIds" class="px-2 w-full">
-                    <div class="flex flex-col">
-                      <div v-if="editingProjectDocumentIds.length" class="flex gap-2 flex-wrap items-center p-1 font-semibold">
-                        <TagsInputItem v-for="docId in editingProjectDocumentIds" :key="docId" :value="docId">
-                          <TagsInputItemText class="text-xs">{{ getDocumentTitle(docId) }}</TagsInputItemText>
-                          <TagsInputItemDelete @click="removeDocumentFromEditingProject(docId)" />
-                        </TagsInputItem>
-                      </div>
-                      <ComboboxInput v-model="searchTermEditDocument" as-child>
-                        <TagsInputInput placeholder="Pilih dokumen (opsional)..." class="w-full" @keydown.enter.prevent />
-                      </ComboboxInput>
-                    </div>
-                  </TagsInput>
-                  <ComboboxList class="w-[--reka-popper-anchor-width]" align="start">
-                    <ComboboxEmpty />
-                    <ComboboxGroup>
-                      <ComboboxItem
-                        v-for="doc in availableDocumentsForEditingProject"
-                        :key="doc.id"
-                        :value="doc.id.toString()"
-                        @select.prevent="(ev) => {
-                          if (typeof ev.detail.value === 'string') {
-                            searchTermEditDocument = ''
-                            editingProjectDocumentIds.push(ev.detail.value)
-                          }
-                        }">
-                        {{ doc.title }}
                       </ComboboxItem>
                     </ComboboxGroup>
                   </ComboboxList>
@@ -292,7 +206,6 @@
               <TableHead class="text-gray-300 font-medium text-left">Nama Project</TableHead>
               <TableHead class="text-gray-300 font-medium text-left">Deskripsi</TableHead>
               <TableHead class="text-gray-300 font-medium text-left">Admin yang Ditugaskan</TableHead>
-              <TableHead class="text-gray-300 font-medium text-left">Jumlah Dokumen</TableHead>
               <TableHead class="text-gray-300 font-medium text-left">Tanggal Dibuat</TableHead>
               <TableHead class="text-gray-300 font-medium text-left"></TableHead>
             </TableRow>
@@ -309,7 +222,6 @@
                   <span v-if="project.assigned_admins.length === 0" class="text-gray-400 text-sm">Belum ada admin</span>
                 </div>
               </TableCell>
-              <TableCell class="text-white text-left">{{ project.documents.length }}</TableCell>
               <TableCell class="text-white text-left">{{ formatDate(project.created_at) }}</TableCell>
               <TableCell class="flex w-full justify-end">
                 <div class="flex gap-2">
@@ -365,8 +277,7 @@
 import { ref, onMounted, computed } from "vue";
 import { useProjectsApi } from "~/data/projects";
 import { useUsersApi } from "~/data/users";
-import { useDocumentsApi } from "~/data/documents";
-import type { ProjectResponse, ProjectRequest, UserResponse, DocumentResponse } from "~/types/api";
+import type { ProjectResponse, ProjectRequest, UserResponse } from "~/types/api";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
 import { Button } from "~/components/ui/button";
@@ -413,11 +324,9 @@ const {
 } = useProjectsApi();
 
 const { getUsers } = useUsersApi();
-const { getDocuments } = useDocumentsApi();
 
 const projects = ref<ProjectResponse[]>([]);
 const adminUsers = ref<UserResponse[]>([]);
-const documents = ref<DocumentResponse[]>([]);
 const isLoading = ref(false);
 const isCreating = ref(false);
 const isUpdating = ref(false);
@@ -439,18 +348,12 @@ const editingProject = ref<Partial<ProjectResponse>>({
 const projectToDelete = ref<ProjectResponse | null>(null);
 
 const newProjectAdminIds = ref<string[]>([]);
-const newProjectDocumentIds = ref<string[]>([]);
 const openCreateAdmins = ref(false);
-const openCreateDocuments = ref(false);
 const searchTermCreateAdmin = ref('');
-const searchTermCreateDocument = ref('');
 
 const editingProjectAdminIds = ref<string[]>([]);
-const editingProjectDocumentIds = ref<string[]>([]);
 const openEditAdmins = ref(false);
-const openEditDocuments = ref(false);
 const searchTermEditAdmin = ref('');
-const searchTermEditDocument = ref('');
 
 const selectedProject = ref<ProjectResponse | null>(null);
 
@@ -472,16 +375,6 @@ const availableAdminsForNewProject = computed(() => {
     );
 });
 
-const availableDocumentsForNewProject = computed(() => {
-    if (!documents.value || documents.value.length === 0) {
-        return [];
-    }
-    return documents.value.filter(doc =>
-        doc.title.toLowerCase().includes(searchTermCreateDocument.value.toLowerCase()) &&
-        !newProjectDocumentIds.value.includes(doc.id.toString())
-    );
-});
-
 const availableAdminsForEditingProject = computed(() => {
     if (!availableAdmins.value || availableAdmins.value.length === 0) {
         return [];
@@ -490,16 +383,6 @@ const availableAdminsForEditingProject = computed(() => {
         (admin.full_name.toLowerCase().includes(searchTermEditAdmin.value.toLowerCase()) ||
          admin.username.toLowerCase().includes(searchTermEditAdmin.value.toLowerCase())) &&
         !editingProjectAdminIds.value.includes(admin.id)
-    );
-});
-
-const availableDocumentsForEditingProject = computed(() => {
-    if (!documents.value || documents.value.length === 0) {
-        return [];
-    }
-    return documents.value.filter(doc =>
-        doc.title.toLowerCase().includes(searchTermEditDocument.value.toLowerCase()) &&
-        !editingProjectDocumentIds.value.includes(doc.id.toString())
     );
 });
 
@@ -523,22 +406,10 @@ function getAdminName(adminId: string) {
   return admin ? admin.full_name : 'Unknown';
 }
 
-function getDocumentTitle(docId: string) {
-  const doc = documents.value.find(d => d.id.toString() === docId);
-  return doc ? doc.title : 'Unknown Document';
-}
-
 function removeAdminFromNewProject(adminId: string) {
   const index = newProjectAdminIds.value.indexOf(adminId);
   if (index > -1) {
     newProjectAdminIds.value.splice(index, 1);
-  }
-}
-
-function removeDocumentFromNewProject(docId: string) {
-  const index = newProjectDocumentIds.value.indexOf(docId);
-  if (index > -1) {
-    newProjectDocumentIds.value.splice(index, 1);
   }
 }
 
@@ -549,13 +420,6 @@ function removeAdminFromEditingProject(adminId: string) {
   }
 }
 
-function removeDocumentFromEditingProject(docId: string) {
-  const index = editingProjectDocumentIds.value.indexOf(docId);
-  if (index > -1) {
-    editingProjectDocumentIds.value.splice(index, 1);
-  }
-}
-
 async function fetchAdminUsers() {
   try {
     const response = await getUsers();
@@ -563,16 +427,6 @@ async function fetchAdminUsers() {
   } catch (error) {
     console.error('Error fetching admin users:', error);
     toast.error("Gagal memuat daftar admin");
-  }
-}
-
-async function fetchDocuments() {
-  try {
-    const response = await getDocuments();
-    documents.value = response.results;
-  } catch (error) {
-    console.error('Error fetching documents:', error);
-    toast.error("Gagal memuat daftar dokumen");
   }
 }
 
@@ -601,13 +455,7 @@ async function createProject() {
   try {
     toast.promise(
       (async () => {
-        const projectData = {
-          ...newProject.value,
-          ...(newProjectDocumentIds.value.length > 0 && {
-            documents: newProjectDocumentIds.value.map(id => parseInt(id))
-          })
-        };
-        const projectResult = await apiCreateProject(projectData);
+        const projectResult = await apiCreateProject(newProject.value);
 
         for (const adminId of newProjectAdminIds.value) {
           await apiAssignAdmin(projectResult.id, { user_id: adminId });
@@ -622,14 +470,9 @@ async function createProject() {
           fetchProjects(currentPage.value);
 
           const adminCount = newProjectAdminIds.value.length;
-          const docCount = newProjectDocumentIds.value.length;
 
-          if (adminCount > 0 && docCount > 0) {
-            return `Project ${result.name} berhasil dibuat dengan ${adminCount} admin dan ${docCount} dokumen.`;
-          } else if (adminCount > 0) {
+          if (adminCount > 0) {
             return `Project ${result.name} berhasil dibuat dengan ${adminCount} admin.`;
-          } else if (docCount > 0) {
-            return `Project ${result.name} berhasil dibuat dengan ${docCount} dokumen.`;
           } else {
             return `Project ${result.name} berhasil dibuat.`;
           }
@@ -657,9 +500,6 @@ async function updateProject() {
         const updateData = {
           name: editingProject.value.name,
           description: editingProject.value.description,
-          ...(editingProjectDocumentIds.value.length >= 0 && {
-            documents: editingProjectDocumentIds.value.map(id => parseInt(id))
-          })
         };
         const projectResult = await apiUpdateProject(editingProject.value.id!, updateData);
 
@@ -703,7 +543,6 @@ function editProject(project: ProjectResponse) {
     description: project.description,
   };
   editingProjectAdminIds.value = [...project.assigned_admins];
-  editingProjectDocumentIds.value = project.documents.map(id => id.toString());
   isEditDialogOpen.value = true;
 }
 
@@ -713,7 +552,6 @@ function cancelEdit() {
     description: "",
   };
   editingProjectAdminIds.value = [];
-  editingProjectDocumentIds.value = [];
   selectedProject.value = null;
   isEditDialogOpen.value = false;
 }
@@ -764,9 +602,7 @@ function resetForm() {
     description: "",
   };
   newProjectAdminIds.value = [];
-  newProjectDocumentIds.value = [];
   searchTermCreateAdmin.value = "";
-  searchTermCreateDocument.value = "";
   isCreateDialogOpen.value = false;
 }
 
@@ -776,7 +612,6 @@ function formatDate(dateString: string) {
 
 onMounted(async () => {
   await fetchAdminUsers();
-  await fetchDocuments();
   await fetchProjects(currentPage.value);
 });
 

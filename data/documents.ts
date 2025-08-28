@@ -29,10 +29,8 @@ export function useDocumentsApi() {
   const deleteDocument = (id: number) =>
     fetcher(`${BASE}/${id}`, { method: "DELETE" });
 
-  const getDocumentsInProject = (projectId: number, page?: number) =>
-    fetcher<{ count: number; next: string | null; previous: string | null; results: DocumentResponse[] }>(
-      page ? `/projects/${projectId}/documents/?page=${page}` : `/projects/${projectId}/documents/`
-    );
+  const getDocumentsInProject = (projectId: number) =>
+    fetcher<DocumentResponse[]>(`/projects/${projectId}/documents/`);
 
   const assignDocumentsToProject = (projectId: number, documentIds: number[]) =>
     fetcher(`/projects/${projectId}/`, {
@@ -57,3 +55,4 @@ export function useDocumentsApi() {
     removeDocumentsFromProject,
   };
 }
+

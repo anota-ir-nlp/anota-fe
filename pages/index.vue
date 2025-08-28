@@ -516,9 +516,9 @@ const faqItems = [
       "ANOTA adalah aplikasi anotasi dataset Grammatical Error Correction (GEC) yang dirancang khusus untuk Bahasa Indonesia. Tujuannya adalah membantu annotator menandai 25 tipe kesalahan, serta menghasilkan dataset dalam format paralel dan M2 secara otomatis.",
   },
   {
-    label: "Siapa saja pengguna ANOTA?",
+    label: "Siapa saja yang dapat menggunakan ANOTA?",
     content:
-      "Pengguna ANOTA meliputi Admin (mengelola user dan dokumen), Annotator (menganotasi dokumen), Reviewer (meninjau anotasi), dan Kepala Riset (memantau progres dan menghasilkan dataset).",
+      "Pengguna ANOTA meliputi Admin (mengelola user dan dokumen dalam project tertentu), Annotator (menganotasi dokumen yang ditugaskan), Reviewer (meninjau anotasi yang dibuat), dan Kepala Riset (mengelola semua project dan menghasilkan dataset). Setiap peran memiliki akses terbatas sesuai dengan tanggung jawab mereka.",
   },
   {
     label: "Bagaimana cara kerja anotasi GEC di ANOTA?",
@@ -534,7 +534,7 @@ const faqItems = [
     label:
       "Apakah saya perlu memiliki latar belakang linguistik untuk menggunakan ANOTA?",
     content:
-      "Untuk peran Annotator dan Reviewer, pemahaman yang baik tentang tata bahasa Bahasa Indonesia sangat dianjurkan. ANOTA dirancang untuk mempermudah proses anotasi, namun keahlian linguistik akan sangat membantu dalam menghasilkan anotasi yang akurat.",
+      "Untuk peran Annotator dan Reviewer, pemahaman yang baik tentang tata bahasa Bahasa Indonesia sangat dianjurkan. ANOTA dirancang untuk mempermudah proses anotasi dengan kontrol akses yang ketat, namun keahlian linguistik akan sangat membantu dalam menghasilkan anotasi yang akurat.",
   },
 ];
 
