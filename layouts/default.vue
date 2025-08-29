@@ -3,7 +3,7 @@ import { useAuth } from "~/data/auth";
 import { useProjectsApi } from "~/data/projects";
 import { useProjectContext } from "~/composables/project-context";
 import { onMounted, ref, computed, onBeforeUnmount, watch } from "vue";
-import { navigateTo, useRoute, useRoute } from "#app";
+import { navigateTo, useRoute } from "#app";
 import { Button } from "~/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import {
@@ -265,8 +265,6 @@ const menuGroups = computed<MenuGroup[]>(() => {
 
   return groups;
 });
-
-const route = useRoute();
 
 const isScrolled = ref(false);
 const isMobileMenuOpen = ref(false);
