@@ -20,10 +20,12 @@ import { Toaster } from '@/components/ui/sonner';
 import 'vue-sonner/style.css';
 </script>
 <template>
-  <Toaster />
+  <Toaster :toastOptions="{
+    class: 'py-2',
+  }" />
   <div>
-      <NuxtLayout>
-        <NuxtPage />
-      </NuxtLayout>
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
   </div>
 </template>

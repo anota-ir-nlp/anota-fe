@@ -2,8 +2,8 @@
 import { useAuth } from "~/data/auth";
 import { useProjectsApi } from "~/data/projects";
 import { useProjectContext } from "~/composables/project-context";
-import { onMounted, ref, computed, onBeforeUnmount } from "vue";
-import { navigateTo, useRoute } from "#app";
+import { onMounted, ref, computed, onBeforeUnmount, watch } from "vue";
+import { navigateTo, useRoute, useRoute } from "#app";
 import { Button } from "~/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import {
@@ -51,6 +51,7 @@ const { user, isAuthenticated, userRoles, logout, initializeAuth } = useAuth();
 const { getProjects } = useProjectsApi();
 const { selectedProject, setSelectedProject, clearSelectedProject } =
   useProjectContext();
+const route = useRoute();
 
 const userAvatar = computed(
   () =>
@@ -67,7 +68,10 @@ const userProjects = ref<ProjectResponse[]>([]);
 const isLoadingProjects = ref(false);
 
 async function fetchUserProjects() {
-  if (!hasRole("Admin") && !hasRole("Kepala Riset")) return;
+  if (!isAuthenticated.value || (!hasRole("Admin") && !hasRole("Kepala Riset"))) {
+    userProjects.value = [];
+    return;
+  }
 
   isLoadingProjects.value = true;
   try {
@@ -76,15 +80,22 @@ async function fetchUserProjects() {
   } catch (error) {
     console.error("Error fetching projects:", error);
     toast.error("Gagal memuat daftar project");
+    userProjects.value = [];
   } finally {
     isLoadingProjects.value = false;
   }
 }
 
+const isKelolaSemuaProjects = computed(() => {
+  return route.path === '/admin/kelola-dokumen';
+});
+
 function handleProjectChange(value: AcceptableValue) {
   const projectId = value?.toString() || null;
-  if (!projectId || projectId === "all") {
+  if (!projectId || (projectId === "all" && !isKelolaSemuaProjects.value)) {
     clearSelectedProject();
+  } else if (projectId === "all" && isKelolaSemuaProjects.value) {
+    return;
   } else {
     const project = userProjects.value.find(
       (p) => p.id.toString() === projectId
@@ -109,7 +120,41 @@ type MenuGroup =
       }>;
     };
 
-// --- Merge: Always add Beranda as first group ---
+function canAccessRoute(route: string): boolean {
+  if (!isAuthenticated.value) return false;
+  
+  const roleBasedRoutes = {
+    'Admin': [
+      '/admin/kelola-dokumen',
+      '/admin/kelola-error',
+      '/kepala-riset-admin/kelola-pengguna'
+    ],
+    'Annotator': [
+      '/anotator/anotasi'
+    ],
+    'Reviewer': [
+      '/peninjau/tinjauan'
+    ],
+    'Kepala Riset': [
+      '/kepala-riset/kelola-project',
+      '/kepala-riset-admin/kelola-pengguna',
+      '/admin/kelola-dokumen',
+      '/admin/kelola-error'
+    ]
+  };
+
+  const userRoleList = userRoles.value || [];
+  
+  for (const role of userRoleList) {
+    const allowedRoutes = roleBasedRoutes[role as keyof typeof roleBasedRoutes] || [];
+    if (allowedRoutes.some(allowedRoute => route.startsWith(allowedRoute))) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 const menuGroups = computed<MenuGroup[]>(() => {
   if (!isAuthenticated.value) {
     return [];
@@ -121,97 +166,101 @@ const menuGroups = computed<MenuGroup[]>(() => {
   groups.push({ type: "link", label: "Beranda", path: "/beranda", icon: Home });
 
   if (hasRole("Kepala Riset")) {
-    groups.push({
-      type: "dropdown",
-      label: "Kepala Riset",
-      icon: BarChart3,
-      items: [
-        {
-          label: "Kelola Project",
-          path: "/kepala-riset/kelola-project",
-          icon: BarChart3,
-          description: "Manage research projects",
-        },
-        {
-          label: "Kelola Pengguna",
-          path: "/kepala-riset-admin/kelola-pengguna",
-          icon: Users,
-          description: "Manage system users",
-        },
-        {
-          label: "Rekap Kinerja",
-          path: "/kepala-riset/rekap-kinerja",
-          icon: BarChart3,
-          description: "Performance summary",
-        },
-        {
-          label: "Generate Dataset",
-          path: "/kepala-riset/generate-dataset",
-          icon: Download,
-          description: "Generate dataset files",
-        },
-      ],
-    });
+    const items = [
+      {
+        label: "Kelola Project",
+        path: "/kepala-riset/kelola-project",
+        icon: BarChart3,
+        description: "Manage research projects",
+      },
+      {
+        label: "Kelola Pengguna",
+        path: "/kepala-riset-admin/kelola-pengguna",
+        icon: Users,
+        description: "Manage system users",
+      },
+    ].filter(item => canAccessRoute(item.path));
+
+    if (items.length > 0) {
+      groups.push({
+        type: "dropdown",
+        label: "Kepala Riset",
+        icon: BarChart3,
+        items,
+      });
+    }
   }
 
   if (hasRole("Admin")) {
-    groups.push({
-      type: "dropdown",
-      label: "Administrator Project",
-      icon: Users,
-      items: [
-        {
-          label: "Kelola Pengguna",
-          path: "/kepala-riset-admin/kelola-pengguna",
-          icon: Users,
-          description: "Manage system users",
-        },
-        {
-          label: "Kelola Dokumen",
-          path: "/admin/kelola-dokumen",
-          icon: FileText,
-          description: "Manage documents",
-        },
-        {
-          label: "Kelola Error",
-          path: "/admin/kelola-error",
-          icon: AlertTriangle,
-          description: "Manage system errors",
-        },
-      ],
-    });
+    const items = [
+      {
+        label: "Kelola Pengguna",
+        path: "/kepala-riset-admin/kelola-pengguna",
+        icon: Users,
+        description: "Manage system users",
+      },
+      {
+        label: "Kelola Dokumen",
+        path: "/admin/kelola-dokumen",
+        icon: FileText,
+        description: "Manage documents",
+      },
+      {
+        label: "Kelola Error",
+        path: "/admin/kelola-error",
+        icon: AlertTriangle,
+        description: "Manage system errors",
+      },
+    ].filter(item => canAccessRoute(item.path));
+
+    if (items.length > 0) {
+      groups.push({
+        type: "dropdown",
+        label: "Administrator Project",
+        icon: Users,
+        items,
+      });
+    }
   }
 
   if (hasRole("Reviewer")) {
-    groups.push({
-      type: "dropdown",
-      label: "Reviewer",
-      icon: FileCheck,
-      items: [
-        {
-          label: "Daftar Dokumen",
-          path: "/peninjau/tinjauan",
-          icon: FileCheck,
-          description: "Documents to review",
-        },
-      ],
-    });
+    const items = [
+      {
+        label: "Daftar Dokumen",
+        path: "/peninjau/tinjauan",
+        icon: FileCheck,
+        description: "Documents to review",
+      },
+    ].filter(item => canAccessRoute(item.path));
+
+    if (items.length > 0) {
+      groups.push({
+        type: "dropdown",
+        label: "Reviewer",
+        icon: FileCheck,
+        items,
+      });
+    }
   }
 
   if (hasRole("Annotator")) {
-    groups.push({
-      type: "dropdown",
-      label: "Anotator",
-      icon: Pencil,
-      items: [
-        {
-          label: "Daftar Dokumen",
-          path: "/anotator/anotasi",
-          icon: FileText,
-          description: "List of documents to annotate",
-        },
-      ],
-    });
+    const items = [
+      {
+        label: "Daftar Dokumen",
+        path: "/anotator/anotasi",
+        icon: FileText,
+        description: "List of documents to annotate",
+      },
+    ].filter(item => canAccessRoute(item.path));
+
+    if (items.length > 0) {
+      groups.push({
+        type: "dropdown",
+        label: "Anotator",
+        icon: Pencil,
+        items,
+      });
+    }
   }
 
   return groups;
@@ -226,9 +275,31 @@ const handleScroll = () => {
   isScrolled.value = window.scrollY > 12;
 };
 
+// Watch for authentication state changes
+watch(isAuthenticated, async (newValue) => {
+  if (newValue) {
+    // User just logged in, fetch projects
+    await fetchUserProjects();
+  } else {
+    // User logged out, clear projects and selected project
+    userProjects.value = [];
+    clearSelectedProject();
+  }
+}, { immediate: false });
+
+// Watch for user roles changes (in case roles are updated after login)
+watch(userRoles, async () => {
+  if (isAuthenticated.value) {
+    await fetchUserProjects();
+  }
+}, { immediate: false });
+
 onMounted(async () => {
   await initializeAuth();
-  await fetchUserProjects();
+  // Only fetch projects after auth is initialized and user is authenticated
+  if (isAuthenticated.value) {
+    await fetchUserProjects();
+  }
   window.addEventListener("scroll", handleScroll, { passive: true });
   handleScroll();
 });
@@ -313,203 +384,118 @@ const handleLogout = async () => {
       </filter>
     </svg>
     <!-- Header/Navbar -->
-    <header class="sticky top-0 z-50">
-      <div v-if="isAuthenticated" class="w-full flex justify-center">
-        <div
-          :class="[
-            'relative w-full transition-all duration-200',
-            isScrolled
-              ? 'mx-12 mt-4 rounded-2xl border border-gray-200 px-4 py-2 shadow-sm'
-              : 'mx-4 mt-0 rounded-2xl border-gray-200 px-4 py-2 md:px-6',
-          ]"
-        >
-          <div class="navbar-glass-effect"></div>
-          <div class="navbar-glass-tint"></div>
-          <div class="navbar-glass-shine"></div>
-          <div class="relative z-10 w-full">
-            <!-- Responsive Navbar -->
-            <div class="flex items-center justify-between w-full">
-              <!-- Left: Brand + Menubar -->
-              <div class="flex items-center gap-6">
-                <NuxtLink
-                  to="/"
-                  class="flex items-center gap-2 text-gray-900 hover:text-blue-600 transition-colors"
-                >
-                  <Lightbulb class="w-5 h-5 text-blue-500" />
-                  <span class="text-xl font-medium">Anota</span>
-                </NuxtLink>
-                <!-- Hamburger for mobile -->
-                <button
-                  class="md:hidden flex items-center justify-center p-2 rounded-lg hover:bg-gray-100 transition"
-                  @click="toggleMobileMenu"
-                  aria-label="Toggle menu"
-                >
-                  <MenuIcon v-if="!isMobileMenuOpen" class="w-6 h-6" />
-                  <CloseIcon v-else class="w-6 h-6" />
-                </button>
-                <!-- Desktop Menubar -->
-                <Menubar
-                  class="hidden md:flex bg-transparent border-none shadow-none space-x-4 my-auto"
-                >
-                  <template v-for="group in menuGroups" :key="group.label">
-                    <MenubarMenu v-if="group.type === 'link'">
-                      <MenubarTrigger as-child>
-                        <NuxtLink
-                          :to="group.path"
-                          class="flex items-center space-x-2 px-3 py-3 text-slate-700 hover:text-blue-600 hover:bg-blue-100/50 transition-all duration-200 relative"
-                          :class="{
-                            'font-semibold text-blue-600':
-                              route.path === group.path,
-                          }"
-                        >
-                          <component :is="group.icon" class="w-4 h-4" />
-                          <span class="font-medium">{{ group.label }}</span>
-                          <!-- indicator removed -->
-                        </NuxtLink>
-                      </MenubarTrigger>
-                    </MenubarMenu>
-                    <MenubarMenu v-else-if="group.type === 'dropdown'">
-                      <MenubarTrigger
-                        class="flex items-center space-x-2 px-3 py-3 text-slate-700 hover:text-blue-600 hover:bg-blue-100/50 data-[state=open]:bg-blue-100/50 data-[state=open]:text-blue-600 relative"
-                      >
-                        <component :is="group.icon" class="w-4 h-4" />
-                        <span class="font-medium">{{ group.label }}</span>
-                        <!-- indicator removed -->
-                      </MenubarTrigger>
-                      <MenubarContent
-                        class="bg-white border border-gray-200 shadow-lg"
-                      >
-                        <MenubarItem
-                          v-for="item in group.items"
-                          :key="item.path"
-                          as-child
-                          class="flex items-start space-x-3 p-3 cursor-pointer hover:bg-blue-100/50 transition-colors group focus:bg-blue-100/50"
-                        >
-                          <NuxtLink
-                            :to="item.path"
-                            class="flex items-start space-x-3 w-full"
-                            :class="{
-                              'text-blue-600 font-semibold bg-blue-100/50':
-                                route.path.startsWith(item.path),
-                            }"
-                          >
-                            <component
-                              :is="item.icon"
-                              class="w-5 h-5 text-slate-400 group-hover:text-blue-500 mt-0.5 flex-shrink-0"
-                            />
-                            <div class="flex-1">
-                              <div
-                                class="text-sm font-medium text-slate-700 group-hover:text-blue-600"
-                              >
-                                {{ item.label }}
-                              </div>
-                              <div
-                                class="text-xs text-slate-400 mt-1 leading-relaxed"
-                              >
-                                {{ item.description }}
-                              </div>
-                            </div>
-                          </NuxtLink>
-                        </MenubarItem>
-                      </MenubarContent>
-                    </MenubarMenu>
-                  </template>
-                </Menubar>
-              </div>
-              <!-- Right: Profile Dropdown -->
-              <div class="flex items-center gap-3">
-                <DropdownMenu>
-                  <DropdownMenuTrigger as-child>
-                    <Button
-                      variant="ghost"
-                      class="flex items-center space-x-3 px-3 py-3 text-slate-700 hover:bg-blue-100/50 rounded-lg h-auto"
-                    >
-                      <Avatar class="ring-2 ring-blue-200">
-                        <AvatarImage :src="userAvatar" :alt="userName" />
-                        <AvatarFallback>{{
-                          userName.charAt(0).toUpperCase()
-                        }}</AvatarFallback>
-                      </Avatar>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    class="w-56 bg-white border border-gray-200 shadow-lg"
-                    align="end"
-                  >
-                    <div class="px-3 py-2">
-                      <div class="font-medium text-slate-800">
-                        {{ userName }}
+    <header
+      class="sticky top-0 z-50 flex justify-start gap-8 items-center px-4 md:px-8 py-4 bg-slate-900/95 backdrop-blur-sm border-b border-slate-800">
+      <NuxtLink to="/" class="flex items-center space-x-2 text-white hover:text-blue-400 transition-colors">
+        <Lightbulb class="text-blue-400" />
+        <span class="text-2xl font-bold">ANOTA</span>
+      </NuxtLink>
+
+      <nav v-if="isAuthenticated" class="w-full justify-between flex my-auto">
+        <div class="flex items-center gap-4">
+          <!-- Menubar -->
+          <Menubar class="hidden md:flex bg-transparent border-none shadow-none space-x-4 my-auto">
+            <template v-for="group in menuGroups" :key="group.label">
+              <!-- Simple Link Menu Item -->
+              <MenubarMenu v-if="group.type === 'link'">
+                <MenubarTrigger as-child>
+                  <NuxtLink :to="group.path"
+                    class="flex items-center space-x-2 px-3 py-3 text-slate-200 hover:text-white hover:bg-slate-800/50 data-[state=open]:bg-slate-800/50 data-[state=open]:text-white transition-all duration-200"
+                    active-class="text-blue-400 bg-blue-500/10">
+                    <component :is="group.icon" class="w-4 h-4" />
+                    <span class="font-medium">{{ group.label }}</span>
+                  </NuxtLink>
+                </MenubarTrigger>
+              </MenubarMenu>
+
+              <!-- Dropdown Menu Item -->
+              <MenubarMenu v-else-if="group.type === 'dropdown'">
+                <MenubarTrigger
+                  class="flex items-center space-x-2 px-3 py-3 text-slate-200 hover:text-white hover:bg-slate-800/50 data-[state=open]:bg-slate-800/50 data-[state=open]:text-white">
+                  <component :is="group.icon" class="w-4 h-4" />
+                  <span class="font-medium">{{ group.label }}</span>
+                </MenubarTrigger>
+                <MenubarContent class="bg-slate-800 border border-slate-700 shadow-lg">
+                  <MenubarItem v-for="item in group.items" :key="item.path" as-child
+                    class="flex items-start space-x-3 p-3 cursor-pointer hover:bg-slate-700/50 transition-colors group focus:bg-slate-700/50">
+                    <NuxtLink :to="item.path" class="flex items-start space-x-3 w-full"
+                      active-class="bg-blue-500/10 text-blue-400">
+                      <component :is="item.icon"
+                        class="w-5 h-5 text-slate-400 group-hover:text-slate-300 mt-0.5 flex-shrink-0" />
+                      <div class="flex-1">
+                        <div class="text-sm font-medium text-slate-200 group-hover:text-white">
+                          {{ item.label }}
+                        </div>
+                        <div class="text-xs text-slate-400 mt-1 leading-relaxed">
+                          {{ item.description }}
+                        </div>
                       </div>
-                      <div class="text-sm text-slate-500">
-                        {{ user?.email }}
-                      </div>
-                    </div>
-                    <DropdownMenuSeparator
-                      class="bg-gray-200"
-                    ></DropdownMenuSeparator>
-                    <DropdownMenuItem
-                      @click="handleLogout"
-                      variant="destructive"
-                      class="cursor-pointer hover:bg-red-100 focus:bg-red-100 text-red-600"
-                    >
-                      <LogOut class="w-4 h-4 mr-3" />
-                      <span>Keluar</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
-            <!-- Mobile Menu (slide down) -->
-            <transition name="fade">
-              <div
-                v-if="isMobileMenuOpen"
-                class="md:hidden absolute left-0 right-0 top-full bg-white border-t border-gray-200 shadow-lg rounded-b-2xl z-20"
-              >
-                <nav class="flex flex-col py-2">
-                  <template v-for="group in menuGroups" :key="group.label">
-                    <NuxtLink
-                      v-if="group.type === 'link'"
-                      :to="group.path"
-                      @click="closeMobileMenu"
-                      class="flex items-center gap-2 px-6 py-3 text-slate-700 hover:text-blue-600 hover:bg-blue-100/50 transition-all duration-200 relative"
-                      :class="{
-                        'font-semibold text-blue-600':
-                          route.path === group.path,
-                      }"
-                    >
-                      <component :is="group.icon" class="w-5 h-5" />
-                      <span class="font-medium">{{ group.label }}</span>
-                      <!-- indicator removed -->
                     </NuxtLink>
-                    <div v-else-if="group.type === 'dropdown'">
-                      <div
-                        class="px-6 pt-3 pb-1 text-xs text-gray-400 font-semibold uppercase"
-                      >
-                        {{ group.label }}
-                      </div>
-                      <NuxtLink
-                        v-for="item in group.items"
-                        :key="item.path"
-                        :to="item.path"
-                        @click="closeMobileMenu"
-                        class="flex items-center gap-2 px-8 py-3 text-slate-700 hover:text-blue-600 hover:bg-blue-100/50 transition-all duration-200 relative"
-                        :class="{
-                          'font-semibold text-blue-600 bg-blue-100/50':
-                            route.path.startsWith(item.path),
-                        }"
-                      >
-                        <component :is="item.icon" class="w-5 h-5" />
-                        <span class="font-medium">{{ item.label }}</span>
-                        <!-- indicator removed -->
-                      </NuxtLink>
-                    </div>
-                  </template>
-                </nav>
-              </div>
-            </transition>
-          </div>
+                  </MenubarItem>
+                </MenubarContent>
+              </MenubarMenu>
+            </template>
+          </Menubar>
+
         </div>
-      </div>
+
+
+        <div class="flex items-center gap-4">
+          <!-- Project Selector for Admin/Kepala Riset -->
+          <div v-if="(hasRole('Admin')) && userProjects.length > 0"
+            class="flex items-center gap-2 ml-4">
+            <Select :model-value="selectedProject?.id?.toString() || (isKelolaSemuaProjects ? '' : 'all')"
+              @update:model-value="handleProjectChange">
+              <SelectTrigger class="w-[200px] bg-slate-800 border-slate-700 text-slate-200">
+                <SelectValue :placeholder="isKelolaSemuaProjects ? 'Pilih Project' : 'Pilih Project'" />
+              </SelectTrigger>
+              <SelectContent class="bg-slate-800 border-slate-700">
+                <SelectItem v-if="!isKelolaSemuaProjects" value="all" class="text-slate-200">
+                  <div class="flex items-center gap-2">
+                    Semua Project
+                  </div>
+                </SelectItem>
+                <SelectItem v-for="project in userProjects" :key="project.id" :value="project.id.toString()"
+                  class="text-slate-200">
+                  {{ project.name }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <!-- Profile Dropdown -->
+          <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+              <Button variant="ghost"
+                class="flex items-center space-x-3 px-3 py-3 text-white hover:bg-slate-800/50 rounded-lg h-auto">
+                <Avatar class="ring-2 ring-slate-700">
+                  <AvatarImage :src="userAvatar" :alt="userName" />
+                  <AvatarFallback>{{
+                    userName.charAt(0).toUpperCase()
+                    }}</AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent class="w-56 bg-slate-800 border border-slate-700 shadow-lg" align="end">
+              <!-- Profile Info -->
+              <div class="px-3 py-2">
+                <div class="font-medium text-white">{{ userName }}</div>
+                <div class="text-sm text-slate-400">{{ user?.email }}</div>
+              </div>
+
+              <DropdownMenuSeparator class="bg-slate-700"></DropdownMenuSeparator>
+
+              <!-- Menu Items -->
+              <DropdownMenuItem @click="handleLogout" variant="destructive"
+                class="cursor-pointer hover:bg-red-600/20 focus:bg-red-600/20">
+                <LogOut class="w-4 h-4 mr-3" />
+                <span>Keluar</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </nav>
 
       <!-- Public Navigation (landing style, light, rounded on scroll) -->
       <div v-else>

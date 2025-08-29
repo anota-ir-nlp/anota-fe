@@ -36,7 +36,7 @@ export function createColumns(
         return h('span', {
           class: 'font-semibold text-white truncate block max-w-96',
           title: title
-        }, title)
+        }, title || 'N/A')
       },
       enableSorting: false,
     },
@@ -44,7 +44,7 @@ export function createColumns(
       accessorKey: 'assigned_to',
       header: 'Assigned To',
       cell: ({ row }) => {
-        const assignedTo = row.getValue('assigned_to') as number[]
+        const assignedTo = (row.getValue('assigned_to') as number[]) || []
 
         if (!assignedTo.length) {
           return h('span', { class: 'text-gray-400 text-sm' }, 'Belum ada assignment')
