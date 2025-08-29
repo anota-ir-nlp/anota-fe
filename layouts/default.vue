@@ -2,7 +2,7 @@
 import { useAuth } from "~/data/auth";
 import { useProjectsApi } from "~/data/projects";
 import { useProjectContext } from "~/composables/project-context";
-import { onMounted, ref, computed, onBeforeUnmount } from "vue";
+import { onMounted, ref, computed, onBeforeUnmount, watch } from "vue";
 import { navigateTo, useRoute } from "#app";
 import { Button } from "~/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -51,6 +51,7 @@ const { user, isAuthenticated, userRoles, logout, initializeAuth } = useAuth();
 const { getProjects } = useProjectsApi();
 const { selectedProject, setSelectedProject, clearSelectedProject } =
   useProjectContext();
+const route = useRoute();
 
 const userAvatar = computed(
   () =>
@@ -109,7 +110,41 @@ type MenuGroup =
       }>;
     };
 
-// --- Merge: Always add Beranda as first group ---
+function canAccessRoute(route: string): boolean {
+  if (!isAuthenticated.value) return false;
+  
+  const roleBasedRoutes = {
+    'Admin': [
+      '/admin/kelola-dokumen',
+      '/admin/kelola-error',
+      '/kepala-riset-admin/kelola-pengguna'
+    ],
+    'Annotator': [
+      '/anotator/anotasi'
+    ],
+    'Reviewer': [
+      '/peninjau/tinjauan'
+    ],
+    'Kepala Riset': [
+      '/kepala-riset/kelola-project',
+      '/kepala-riset-admin/kelola-pengguna',
+      '/admin/kelola-dokumen',
+      '/admin/kelola-error'
+    ]
+  };
+
+  const userRoleList = userRoles.value || [];
+  
+  for (const role of userRoleList) {
+    const allowedRoutes = roleBasedRoutes[role as keyof typeof roleBasedRoutes] || [];
+    if (allowedRoutes.some(allowedRoute => route.startsWith(allowedRoute))) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 const menuGroups = computed<MenuGroup[]>(() => {
   if (!isAuthenticated.value) {
     return [];
@@ -217,8 +252,6 @@ const menuGroups = computed<MenuGroup[]>(() => {
   return groups;
 });
 
-const route = useRoute();
-
 const isScrolled = ref(false);
 const isMobileMenuOpen = ref(false);
 
@@ -226,9 +259,31 @@ const handleScroll = () => {
   isScrolled.value = window.scrollY > 12;
 };
 
+// Watch for authentication state changes
+watch(isAuthenticated, async (newValue) => {
+  if (newValue) {
+    // User just logged in, fetch projects
+    await fetchUserProjects();
+  } else {
+    // User logged out, clear projects and selected project
+    userProjects.value = [];
+    clearSelectedProject();
+  }
+}, { immediate: false });
+
+// Watch for user roles changes (in case roles are updated after login)
+watch(userRoles, async () => {
+  if (isAuthenticated.value) {
+    await fetchUserProjects();
+  }
+}, { immediate: false });
+
 onMounted(async () => {
   await initializeAuth();
-  await fetchUserProjects();
+  // Only fetch projects after auth is initialized and user is authenticated
+  if (isAuthenticated.value) {
+    await fetchUserProjects();
+  }
   window.addEventListener("scroll", handleScroll, { passive: true });
   handleScroll();
 });
@@ -416,100 +471,19 @@ const handleLogout = async () => {
                   </template>
                 </Menubar>
               </div>
-              <!-- Right: Profile Dropdown -->
-              <div class="flex items-center gap-3">
-                <DropdownMenu>
-                  <DropdownMenuTrigger as-child>
-                    <Button
-                      variant="ghost"
-                      class="flex items-center space-x-3 px-3 py-3 text-slate-700 hover:bg-blue-100/50 rounded-lg h-auto"
-                    >
-                      <Avatar class="ring-2 ring-blue-200">
-                        <AvatarImage :src="userAvatar" :alt="userName" />
-                        <AvatarFallback>{{
-                          userName.charAt(0).toUpperCase()
-                        }}</AvatarFallback>
-                      </Avatar>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    class="w-56 bg-white border border-gray-200 shadow-lg"
-                    align="end"
-                  >
-                    <div class="px-3 py-2">
-                      <div class="font-medium text-slate-800">
-                        {{ userName }}
-                      </div>
-                      <div class="text-sm text-slate-500">
-                        {{ user?.email }}
-                      </div>
-                    </div>
-                    <DropdownMenuSeparator
-                      class="bg-gray-200"
-                    ></DropdownMenuSeparator>
-                    <DropdownMenuItem
-                      @click="handleLogout"
-                      variant="destructive"
-                      class="cursor-pointer hover:bg-red-100 focus:bg-red-100 text-red-600"
-                    >
-                      <LogOut class="w-4 h-4 mr-3" />
-                      <span>Keluar</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
-            <!-- Mobile Menu (slide down) -->
-            <transition name="fade">
-              <div
-                v-if="isMobileMenuOpen"
-                class="md:hidden absolute left-0 right-0 top-full bg-white border-t border-gray-200 shadow-lg rounded-b-2xl z-20"
-              >
-                <nav class="flex flex-col py-2">
-                  <template v-for="group in menuGroups" :key="group.label">
-                    <NuxtLink
-                      v-if="group.type === 'link'"
-                      :to="group.path"
-                      @click="closeMobileMenu"
-                      class="flex items-center gap-2 px-6 py-3 text-slate-700 hover:text-blue-600 hover:bg-blue-100/50 transition-all duration-200 relative"
-                      :class="{
-                        'font-semibold text-blue-600':
-                          route.path === group.path,
-                      }"
-                    >
-                      <component :is="group.icon" class="w-5 h-5" />
-                      <span class="font-medium">{{ group.label }}</span>
-                      <!-- indicator removed -->
-                    </NuxtLink>
-                    <div v-else-if="group.type === 'dropdown'">
-                      <div
-                        class="px-6 pt-3 pb-1 text-xs text-gray-400 font-semibold uppercase"
-                      >
-                        {{ group.label }}
-                      </div>
-                      <NuxtLink
-                        v-for="item in group.items"
-                        :key="item.path"
-                        :to="item.path"
-                        @click="closeMobileMenu"
-                        class="flex items-center gap-2 px-8 py-3 text-slate-700 hover:text-blue-600 hover:bg-blue-100/50 transition-all duration-200 relative"
-                        :class="{
-                          'font-semibold text-blue-600 bg-blue-100/50':
-                            route.path.startsWith(item.path),
-                        }"
-                      >
-                        <component :is="item.icon" class="w-5 h-5" />
-                        <span class="font-medium">{{ item.label }}</span>
-                        <!-- indicator removed -->
-                      </NuxtLink>
-                    </div>
-                  </template>
-                </nav>
-              </div>
-            </transition>
-          </div>
+
+              <DropdownMenuSeparator class="bg-slate-700"></DropdownMenuSeparator>
+
+              <!-- Menu Items -->
+              <DropdownMenuItem @click="handleLogout" variant="destructive"
+                class="cursor-pointer hover:bg-red-600/20 focus:bg-red-600/20">
+                <LogOut class="w-4 h-4 mr-3" />
+                <span>Keluar</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-      </div>
+      </nav>
 
       <!-- Public Navigation (landing style, light, rounded on scroll) -->
       <div v-else>

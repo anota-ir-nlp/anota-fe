@@ -569,7 +569,7 @@
               <Button
                 variant="outline"
                 size="lg"
-                class="w-full justify-start h-14 text-base font-medium"
+                class="w-full justify-start h-14 text-base font-medium bg-black text-white border border-gray-900 hover:bg-gray-800 hover:scale-105 hover:shadow-lg transition-all duration-200 active:scale-95"
                 @click="navigateTo('/kepala-riset/dataset')"
               >
                 <Download class="w-5 h-5" />
@@ -768,7 +768,6 @@ interface Task {
 
 const recentTasks = ref<Task[]>([]);
 
-// Review queue for reviewer
 const reviewQueue = ref<
   Array<{
     id: string;
@@ -778,7 +777,6 @@ const reviewQueue = ref<
   }>
 >([]);
 
-// Recent activities (common for all roles)
 const recentActivities = ref<
   Array<{
     id: string;
