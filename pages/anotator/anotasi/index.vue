@@ -201,7 +201,7 @@
               class="w-full justify-start bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800 font-medium transition"
             >
               <svg
-                class="w-4 h-4 mr-2"
+                class="w-4 h-4 mr-2 shadow-0"
                 fill="none"
                 stroke="currentColor"
                 stroke-width="2"
@@ -480,7 +480,7 @@
                     variant="outline"
                     size="sm"
                     @click="goToDetail(doc.id)"
-                    class="bg-blue-500 hover:bg-blue-600 text-white shadow hover:scale-105 transition-all duration-150"
+                    class="bg-blue-500 hover:bg-blue-600 text-white hover:scale-105 transition-all duration-150"
                   >
                     <UIcon name="i-heroicons-pencil-square" class="w-4 h-4" />
                     Anotasi

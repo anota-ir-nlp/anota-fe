@@ -172,29 +172,29 @@
             <Button
               variant="outline"
               size="lg"
-              class="justify-start h-14 text-base font-medium bg-black text-white border border-gray-900 hover:bg-gray-800 hover:scale-105 hover:shadow-lg transition-all duration-200 active:scale-95"
-              @click="navigateTo('/admin/kelola-pengguna')"
+              class="justify-start h-14 text-base font-medium"
+              @click="navigateTo('/admin/pengguna')"
             >
               <UserPlus class="w-5 h-5" />
-              Tambah Pengguna
+              Kelola Pengguna
             </Button>
             <Button
               variant="outline"
               size="lg"
-              class="justify-start h-14 text-base font-medium bg-black text-white border border-gray-900 hover:bg-gray-800 hover:scale-105 hover:shadow-lg transition-all duration-200 active:scale-95"
-              @click="navigateTo('/admin/kelola-dokumen')"
+              class="justify-start h-14 text-base font-medium"
+              @click="navigateTo('/admin/dokumen')"
             >
               <FilePlus class="w-5 h-5" />
-              Upload Dokumen
+              Kelola Dokumen
             </Button>
             <Button
               variant="outline"
               size="lg"
-              class="justify-start h-14 text-base font-medium bg-black text-white border border-gray-900 hover:bg-gray-800 hover:scale-105 hover:shadow-lg transition-all duration-200 active:scale-95"
-              @click="navigateTo('/admin/kelola-error')"
+              class="justify-start h-14 text-base font-medium"
+              @click="navigateTo('/admin/error')"
             >
               <AlertTriangle class="w-5 h-5" />
-              Review Error
+              Kelola Error
             </Button>
           </div>
         </Card>
@@ -286,7 +286,8 @@
               v-for="task in recentTasks"
               :key="task.id"
               variant="glassmorphism"
-              class="flex items-center justify-between p-6 hover:bg-green-50 transition-colors duration-200 border border-gray-100 bg-white/80 w-full !shadow-none"
+              class="flex items-center justify-between p-6 hover:bg-white/5 transition-colors duration-200 cursor-pointer"
+              @click="navigateTo(`/anotator/anotasi/${task.id}`)"
             >
               <div class="flex items-center gap-4">
                 <FileText class="w-6 h-6 text-gray-400" />
@@ -425,14 +426,23 @@
                 }}</Badge>
                 <Button
                   size="sm"
-                  class="hover:bg-gray-900 hover:text-white transition"
-                  @click="navigateTo(`/reviewer/review/${review.id}`)"
+                  @click="navigateTo(`/peninjau/tinjauan/${review.id}`)"
                 >
                   <Eye class="w-4 h-4" />
                   Review
                 </Button>
               </div>
             </div>
+          </div>
+          <div class="mt-8 pt-6 border-t border-slate-700/50">
+            <Button
+              variant="outline"
+              size="lg"
+              @click="navigateTo('/peninjau/tinjauan')"
+            >
+              Lihat Semua Review
+              <ArrowRight class="w-4 h-4" />
+            </Button>
           </div>
         </Card>
       </div>
@@ -559,8 +569,8 @@
               <Button
                 variant="outline"
                 size="lg"
-                class="w-full justify-start h-14 text-base font-medium bg-black text-white border border-gray-900 hover:bg-gray-800 hover:scale-105 hover:shadow-lg transition-all duration-200 active:scale-95"
-                @click="navigateTo('/kepala-riset/generate-dataset')"
+                class="w-full justify-start h-14 text-base font-medium"
+                @click="navigateTo('/kepala-riset/dataset')"
               >
                 <Download class="w-5 h-5" />
                 Generate Dataset
@@ -568,8 +578,8 @@
               <Button
                 variant="outline"
                 size="lg"
-                class="w-full justify-start h-14 text-base font-medium bg-black text-white border border-gray-900 hover:bg-gray-800 hover:scale-105 hover:shadow-lg transition-all duration-200 active:scale-95"
-                @click="navigateTo('/kepala-riset/rekap-kinerja')"
+                class="w-full justify-start h-14 text-base font-medium"
+                @click="navigateTo('/kepala-riset/kinerja')"
               >
                 <BarChart3 class="w-5 h-5" />
                 Rekap Kinerja
@@ -577,8 +587,8 @@
               <Button
                 variant="outline"
                 size="lg"
-                class="w-full justify-start h-14 text-base font-medium bg-black text-white border border-gray-900 hover:bg-gray-800 hover:scale-105 hover:shadow-lg transition-all duration-200 active:scale-95"
-                @click="navigateTo('/kepala-riset/rekap-dokumen')"
+                class="w-full justify-start h-14 text-base font-medium"
+                @click="navigateTo('/kepala-riset/dokumen')"
               >
                 <ClipboardList class="w-5 h-5" />
                 Rekap Dokumen
@@ -593,7 +603,7 @@
 
 <script setup lang="ts">
 import { navigateTo } from "#app";
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import {
   ArrowLeft,
   ArrowRight,
@@ -749,7 +759,6 @@ const researchStats = ref([
   },
 ]);
 
-// Recent tasks for annotator
 interface Task {
   id: string;
   title: string;
@@ -800,4 +809,158 @@ useHead({
   title: "Beranda - ANOTA",
   meta: [{ name: "description", content: "Halaman beranda aplikasi ANOTA." }],
 });
+
+onMounted(async () => {
+  pending.value = true;
+  try {
+    await fetchDashboardData();
+  } catch (error) {
+    console.error("Error fetching dashboard data:", error);
+  } finally {
+    pending.value = false;
+  }
+});
+
+const fetchDashboardData = async () => {
+  if (hasRole("Admin")) {
+    adminStats.value = [
+      {
+        label: "Total Pengguna",
+        value: 42,
+        icon: "users",
+        color: "text-blue-400",
+        description: "Pengguna aktif sistem",
+      },
+      {
+        label: "Dokumen Upload",
+        value: 128,
+        icon: "document-text",
+        color: "text-green-400",
+        description: "Dokumen dalam sistem",
+      },
+      {
+        label: "Tugas Aktif",
+        value: 23,
+        icon: "clipboard-document-list",
+        color: "text-orange-400",
+        description: "Tugas sedang dikerjakan",
+      },
+      {
+        label: "Error Terdeteksi",
+        value: 5,
+        icon: "exclamation-triangle",
+        color: "text-red-400",
+        description: "Error yang perlu ditangani",
+      },
+    ];
+  }
+
+  if (hasRole("Annotator")) {
+    annotatorStats.value = {
+      assignedDocuments: 15,
+      completedDocuments: 8,
+      inProgressDocuments: 7,
+    };
+    recentTasks.value = [
+      {
+        id: "1",
+        title: "Dokumen Berita 001",
+        sentences: 120,
+        status: "In Progress",
+      },
+      {
+        id: "2",
+        title: "Dokumen Berita 002",
+        sentences: 85,
+        status: "Assigned",
+      },
+      {
+        id: "3",
+        title: "Dokumen Berita 003",
+        sentences: 95,
+        status: "Completed",
+      },
+    ];
+  }
+
+  if (hasRole("Reviewer")) {
+    reviewerStats.value = {
+      pendingReviews: 12,
+      completedReviews: 45,
+      errorsFound: 8,
+    };
+    reviewQueue.value = [
+      {
+        id: "1",
+        title: "Review Anotasi Batch 001",
+        annotator: "John Doe",
+        priority: "High",
+      },
+      {
+        id: "2",
+        title: "Review Anotasi Batch 002",
+        annotator: "Jane Smith",
+        priority: "Medium",
+      },
+      {
+        id: "3",
+        title: "Review Anotasi Batch 003",
+        annotator: "Bob Wilson",
+        priority: "Low",
+      },
+    ];
+  }
+
+  if (hasRole("Kepala Riset")) {
+    researchStats.value = [
+      {
+        label: "Total Anotasi",
+        value: 750,
+        icon: "pencil",
+        color: "text-blue-400",
+        description: "Anotasi yang telah dibuat",
+      },
+      {
+        label: "Review Selesai",
+        value: 580,
+        icon: "check-circle",
+        color: "text-green-400",
+        description: "Review yang telah selesai",
+      },
+      {
+        label: "Dataset Generated",
+        value: 12,
+        icon: "arrow-down-tray",
+        color: "text-purple-400",
+        description: "Dataset yang telah dibuat",
+      },
+      {
+        label: "Active Annotators",
+        value: 8,
+        icon: "user-group",
+        color: "text-orange-400",
+        description: "Anotator yang aktif",
+      },
+    ];
+  }
+
+  recentActivities.value = [
+    {
+      id: "1",
+      title: "Login ke sistem",
+      description: "Anda berhasil masuk ke dalam sistem ANOTA",
+      time: "2 menit yang lalu",
+      icon: "check-circle",
+      color: "text-green-400",
+    },
+    {
+      id: "2",
+      title: "Tugas baru tersedia",
+      description: "Ada tugas anotasi baru yang dapat Anda kerjakan",
+      time: "1 jam yang lalu",
+      icon: "clipboard-document-list",
+      color: "text-blue-400",
+    },
+  ];
+};
 </script>

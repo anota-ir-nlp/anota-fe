@@ -2,12 +2,6 @@
   <div class="flex flex-col items-center justify-start text-center bg-slate-900 text-white p-8 min-h-screen">
     <div class="flex items-center justify-center gap-4 mb-20">
       <h1 class="text-4xl font-bold text-blue-400">Kelola Pengguna</h1>
-      <div v-if="selectedProject" class="text-sm text-slate-400 bg-slate-800 px-3 py-1 rounded-full">
-        Project: {{ selectedProject.name }}
-      </div>
-      <div v-else class="text-sm text-slate-400 bg-slate-800 px-3 py-1 rounded-full">
-        Semua Project
-      </div>
     </div>
 
     <!-- Add User Button -->
@@ -195,56 +189,20 @@
       Memuat data pengguna...
     </div>
 
-    <div v-if="users.length"
+    <div v-if="users && users.length > 0"
       class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl shadow-lg p-6 mb-6 w-full max-w-6xl">
-      <div class="rounded-md overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow class="bg-gray-800/60 hover:bg-gray-800/60">
-              <TableHead class="text-gray-300 font-medium text-left">Nama</TableHead>
-              <TableHead class="text-gray-300 font-medium text-left">Username</TableHead>
-              <TableHead class="text-gray-300 font-medium text-left">Email</TableHead>
-              <TableHead class="text-gray-300 font-medium text-left">Roles</TableHead>
-              <TableHead class="text-gray-300 font-medium text-left">Tanggal Bergabung</TableHead>
-              <TableHead class="text-gray-300 font-medium text-left"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow v-for="user in users" :key="user.id" class="border-white/10 hover:bg-white/5">
-              <TableCell class="font-semibold text-white text-left">{{ user.full_name }}</TableCell>
-              <TableCell class="text-white text-left">{{ user.username }}</TableCell>
-              <TableCell class="text-white text-left">{{ user.email }}</TableCell>
-              <TableCell class="text-left">
-                <div class="flex flex-wrap gap-1">
-                  <Badge v-for="role in user.roles" :key="role" variant="blue" class="font-semibold">
-                    {{ role }}
-                  </Badge>
-                </div>
-              </TableCell>
-              <TableCell class="text-white text-left">{{ formatDate(user.date_joined) }}</TableCell>
-              <TableCell class="flex w-full justify-end">
-                <div class="flex gap-2">
-                  <Button size="sm" variant="outline" @click="editUser(user)"
-                    class="rounded-full px-4 py-1 font-semibold">
-                    <Pencil class="w-4 h-4 mr-1" />
-                    Edit
-                  </Button>
-                  <Button size="sm" variant="destructive" @click="showDeleteDialog(user)"
-                    class="rounded-full px-4 py-1 font-semibold">
-                    <Trash2 class="w-4 h-4 mr-1" />
-                    Hapus
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </div>
+      <DataTable
+        :columns="userColumns"
+        :data="users"
+        @selection-change="handleSelectionChange"
+        @edit-user="editUser"
+        @delete-user="showDeleteDialog"
+      />
     </div>
 
-    <!-- Pagination Controls: moved outside the card -->
-    <div v-if="users.length" class="mt-4 flex justify-center w-full max-w-6xl">
-      <Pagination :page="currentPage" :total="totalPages" :items-per-page="users.length > 0 ? users.length : 1"
+    <!-- Pagination Controls -->
+    <div v-if="users && users.length > 0 && totalPages > 1" class="mt-4 flex justify-center w-full max-w-6xl">
+      <Pagination :page="currentPage" :total="totalPages" :items-per-page="Math.max(users?.length || 1, 1)"
         @update:page="fetchUsers">
         <PaginationContent>
           <PaginationPrevious :disabled="currentPage === 1" @click="fetchUsers(currentPage - 1)">
@@ -264,7 +222,7 @@
       </Pagination>
     </div>
 
-    <div v-if="!users.length && !isLoading"
+    <div v-if="(!users || users.length === 0) && !isLoading"
       class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl shadow-lg p-6 text-center w-full max-w-6xl mx-auto">
       <span class="text-gray-400">Tidak ada pengguna ditemukan.</span>
     </div>
@@ -290,14 +248,6 @@ import {
   DialogTrigger,
 } from "~/components/ui/dialog";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from "~/components/ui/table";
-import {
   Pagination,
   PaginationContent,
   PaginationItem,
@@ -311,7 +261,8 @@ import {
   Plus, Loader2, Check, Pencil, Trash2, ArrowLeft, ArrowRight, MoreHorizontal
 } from "lucide-vue-next";
 import { toast } from "vue-sonner";
-import { useAuth } from "~/data/auth";
+import DataTable from "~/components/ui/data-table/data-table.vue";
+import { createUserColumns } from "~/components/users/columns";
 
 const {
   getUsers,
@@ -326,6 +277,7 @@ const {
 const { selectedProject, selectedProjectId, isAllProjects } = useProjectContext();
 
 const users = ref<UserResponse[]>([]);
+const selectedUsers = ref<UserResponse[]>([]);
 const isLoading = ref(false);
 const isCreating = ref(false);
 const isUpdating = ref(false);
@@ -375,18 +327,26 @@ async function fetchUsers(page = 1) {
 
     if (isAllProjects.value) {
       response = await getUsers(page);
+      users.value = response?.results || [];
+      currentPage.value = page;
+      totalPages.value = Math.max(1, Math.ceil((response?.count || 0) / 20));
     } else if (selectedProjectId.value) {
-      response = await getUsersInProject(selectedProjectId.value, page);
+      // Project-specific users don't support pagination
+      response = await getUsersInProject(selectedProjectId.value);
+      users.value = response || [];
+      currentPage.value = 1;
+      totalPages.value = 1;
     } else {
       response = await getUsers(page);
+      users.value = response?.results || [];
+      currentPage.value = page;
+      totalPages.value = Math.max(1, Math.ceil((response?.count || 0) / 20));
     }
-
-    users.value = response.results;
-    currentPage.value = page;
-    totalPages.value = Math.max(1, Math.ceil(response.count / 20));
   } catch (error) {
     console.error('Error fetching users:', error);
     toast.error("Gagal memuat data pengguna");
+    users.value = [];
+    totalPages.value = 1;
   } finally {
     isLoading.value = false;
   }
@@ -394,18 +354,30 @@ async function fetchUsers(page = 1) {
 
 const paginationPages = computed(() => {
   const pages: (number | string)[] = [];
-  if (totalPages.value <= 5) {
-    for (let i = 1; i <= totalPages.value; i++) pages.push(i);
-  } else if (currentPage.value <= 3) {
-    pages.push(1, 2, 3, 4, 5, 'ellipsis', totalPages.value);
-  } else if (currentPage.value >= totalPages.value - 2) {
+  const total = totalPages.value || 1;
+  const current = currentPage.value || 1;
+
+  if (total <= 5) {
+    for (let i = 1; i <= total; i++) pages.push(i);
+  } else if (current <= 3) {
+    pages.push(1, 2, 3, 4, 5, 'ellipsis', total);
+  } else if (current >= total - 2) {
     pages.push(1, 'ellipsis');
-    for (let i = totalPages.value - 4; i <= totalPages.value; i++) pages.push(i);
+    for (let i = total - 4; i <= total; i++) pages.push(i);
   } else {
-    pages.push(1, 'ellipsis', currentPage.value - 1, currentPage.value, currentPage.value + 1, 'ellipsis', totalPages.value);
+    pages.push(1, 'ellipsis', current - 1, current, current + 1, 'ellipsis', total);
   }
   return pages;
 });
+
+const userColumns = computed(() => createUserColumns(
+  (user: UserResponse) => editUser(user),
+  (user: UserResponse) => showDeleteDialog(user)
+));
+
+function handleSelectionChange(selection: UserResponse[]) {
+  selectedUsers.value = selection || [];
+}
 
 async function createUser() {
   if (!newUser.value.username || !newUser.value.full_name) {
@@ -432,7 +404,8 @@ async function createUser() {
         success: (result: UserRegistrationResponse) => {
           resetForm();
           fetchUsers(currentPage.value);
-          return `Pengguna ${result.data.username} berhasil dibuat. Password: ${result.data.password}`;
+          console.log('Created user:', result);
+          return `Pengguna ${result.data.username} berhasil dibuat`;
         },
         error: "Gagal membuat pengguna baru",
       }
@@ -589,6 +562,7 @@ const pageTitle = computed(() => {
 
 watch(selectedProjectId, async () => {
   await fetchUsers(1);
+  currentPage.value = 1;
 }, { immediate: false });
 
 onMounted(async () => {
