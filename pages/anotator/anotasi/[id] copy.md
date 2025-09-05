@@ -75,7 +75,11 @@
                 : 'bg-gray-100 text-black hover:bg-gray-200'
             "
           >
-            <UIcon :name="mode.icon" class="mr-2 align-middle flex-shrink-0" style="vertical-align: middle;" />
+            <UIcon
+              :name="mode.icon"
+              class="mr-2 align-middle flex-shrink-0"
+              style="vertical-align: middle"
+            />
             <span class="inline-block align-middle">{{ mode.label }}</span>
           </button>
           <!-- Debug Toggle -->
@@ -88,7 +92,11 @@
                 : 'bg-gray-100 text-black hover:bg-gray-200'
             "
           >
-            <UIcon name="i-heroicons-bug-ant" class="w-4 h-4 mr-2 align-middle flex-shrink-0" style="vertical-align: middle;" />
+            <UIcon
+              name="i-heroicons-bug-ant"
+              class="w-4 h-4 mr-2 align-middle flex-shrink-0"
+              style="vertical-align: middle"
+            />
             Debug
           </button>
         </div>
@@ -927,20 +935,88 @@
             <label class="block text-sm font-medium mb-2 text-black"
               >Tipe Error:</label
             >
-            <div class="flex flex-wrap gap-2">
-              <label
-                v-for="type in grammarTypes"
-                :key="type.value"
-                class="flex items-center gap-2 bg-gray-100 px-3 py-2 rounded-lg border border-gray-200 cursor-pointer"
+            <div class="relative">
+              <div
+                class="max-h-48 overflow-y-auto border border-gray-200 rounded-lg bg-gray-50 p-2"
               >
-                <input
-                  type="checkbox"
-                  :value="type.value"
-                  v-model="selectedErrorTypes"
-                  class="accent-blue-500"
-                />
-                <span class="text-sm text-black">{{ type.label }}</span>
-              </label>
+                <div
+                  v-if="errorTypesLoading"
+                  class="text-center text-gray-400 py-4"
+                >
+                  Memuat tipe error...
+                </div>
+                <div v-else>
+                  <div
+                    v-for="type in errorTypes"
+                    :key="type.id"
+                    class="flex items-center gap-2 px-2 py-1 rounded hover:bg-blue-50 transition cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      :value="type.id"
+                      v-model="selectedErrorTypes"
+                      class="accent-blue-500"
+                      :id="'errtype-' + type.id"
+                    />
+                    <label
+                      :for="'errtype-' + type.id"
+                      class="text-sm text-black font-medium cursor-pointer"
+                    >
+                      <span class="font-mono text-xs text-blue-700">{{
+                        type.error_code
+                      }}</span>
+                      <span
+                        v-if="type.description"
+                        class="ml-1 text-gray-500"
+                        >{{ type.description }}</span
+                      >
+                      <span
+                        v-if="type.is_default"
+                        class="ml-2 text-xs text-green-600 bg-green-100 px-2 py-0.5 rounded-full"
+                        >Default</span
+                      >
+                      <span
+                        v-else
+                        class="ml-2 text-xs text-purple-600 bg-purple-100 px-2 py-0.5 rounded-full"
+                        >Project</span
+                      >
+                    </label>
+                  </div>
+                  <div
+                    v-if="!errorTypes.length && !errorTypesLoading"
+                    class="text-gray-400 text-sm py-2 text-center"
+                  >
+                    Tidak ada tipe error ditemukan.
+                  </div>
+                </div>
+              </div>
+              <!-- Pagination Controls -->
+              <div class="flex justify-between items-center mt-2">
+                <button
+                  class="px-2 py-1 rounded bg-gray-200 text-gray-700 text-xs font-medium"
+                  :disabled="errorTypesPage <= 1 || errorTypesLoading"
+                  @click="fetchErrorTypes(errorTypesPage - 1)"
+                >
+                  Prev
+                </button>
+                <span class="text-xs text-gray-500">
+                  Halaman {{ errorTypesPage }} /
+                  {{
+                    Math.max(1, Math.ceil(errorTypesCount / errorTypesPageSize))
+                  }}
+                </span>
+                <button
+                  class="px-2 py-1 rounded bg-gray-200 text-gray-700 text-xs font-medium"
+                  :disabled="
+                    errorTypesPage >=
+                      Math.ceil(errorTypesCount / errorTypesPageSize) ||
+                    errorTypesLoading
+                  "
+                  @click="fetchErrorTypes(errorTypesPage + 1)"
+                >
+                  Next
+                </button>
+              </div>
             </div>
           </div>
           <div class="flex gap-2 pt-4">
@@ -1051,7 +1127,9 @@ import { ref, computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useTextSelection } from "@vueuse/core";
 import { useDocumentsApi } from "~/data/documents";
+import { useErrorTypesApi } from "~/data/error-types";
 import type { DocumentResponse, AnnotationResponse } from "~/types/api";
+import type { ErrorTypeResponse } from "~/types/api";
 
 const route = useRoute();
 const router = useRouter();
@@ -1104,6 +1182,32 @@ const showAnnotationModal = ref(false);
 const selectedAnnotation = ref<Annotation | null>(null);
 
 const showDebug = ref(false);
+
+// Error Types API & State for Annotation Popup
+const { getErrorTypes } = useErrorTypesApi();
+const errorTypes = ref<ErrorTypeResponse[]>([]);
+const errorTypesCount = ref(0);
+const errorTypesPage = ref(1);
+const errorTypesPageSize = 10; // Adjust if backend supports
+const errorTypesLoading = ref(false);
+
+async function fetchErrorTypes(page = 1, projectId?: number) {
+  errorTypesLoading.value = true;
+  try {
+    const res = await getErrorTypes(page, projectId);
+    // API may return { count, results } or just an array, handle both
+    if (Array.isArray(res)) {
+      errorTypes.value = res;
+      errorTypesCount.value = res.length;
+    } else {
+      errorTypes.value = res.results;
+      errorTypesCount.value = res.count;
+    }
+    errorTypesPage.value = page;
+  } finally {
+    errorTypesLoading.value = false;
+  }
+}
 
 // Computed properties for view modes
 const showTeksAsli = computed(
@@ -1754,6 +1858,13 @@ async function fetchDocument() {
 
 onMounted(() => {
   fetchDocument();
+  // Set popup position to center of window (client-side only)
+  if (typeof window !== "undefined") {
+    popupPosition.value = {
+      x: window.innerWidth / 2 - 200,
+      y: window.innerHeight / 2 - 200,
+    };
+  }
 });
 
 // Watch for route changes
@@ -1766,9 +1877,10 @@ watch(
 
 // Movable popup logic for Riwayat Kalimat
 const showCombinedHistory = ref(false);
+// SSR-safe default values
 const popupPosition = ref({
-  x: window.innerWidth / 2 - 200,
-  y: window.innerHeight / 2 - 200,
+  x: 100,
+  y: 100,
 });
 const popupDragging = ref(false);
 const popupOffset = ref({ x: 0, y: 0 });

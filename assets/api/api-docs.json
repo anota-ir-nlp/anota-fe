@@ -1923,6 +1923,55 @@
       },
       "parameters": []
     },
+    "/users/me/assigned-documents/": {
+      "get": {
+        "operationId": "users_me_assigned-documents_list",
+        "summary": "Get My Assigned Documents",
+        "description": "\nMendapatkan daftar semua dokumen yang di-assign kepada user yang sedang login.\n\n**Features:**\n- Pagination dengan default 20 items per page\n- Hanya menampilkan dokumen yang di-assign ke user yang sedang login\n- Diurutkan berdasarkan created_at (terbaru di atas)\n- Dapat diakses oleh Annotator dan Reviewer\n\n**Use Case:**\n- Dashboard user untuk melihat task yang diberikan\n- Frontend untuk menampilkan work queue\n- Progress tracking untuk user\n",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "A page number within the paginated result set.",
+            "required": false,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar assigned documents berhasil ditemukan",
+            "examples": {
+              "application/json": {
+                "count": 3,
+                "next": null,
+                "previous": null,
+                "results": [
+                  {
+                    "id": 1,
+                    "title": "Dokumen Anotasi 1",
+                    "text": "Ini adalah teks dokumen untuk diannotasi...",
+                    "created_at": "2024-01-01T10:00:00Z",
+                    "updated_at": "2024-01-01T10:00:00Z",
+                    "assigned_to": ["uuid-user1", "uuid-user2"]
+                  },
+                  {
+                    "id": 2,
+                    "title": "Dokumen Review 1",
+                    "text": "Ini adalah teks dokumen untuk direview...",
+                    "created_at": "2024-01-01T09:00:00Z",
+                    "updated_at": "2024-01-01T09:00:00Z",
+                    "assigned_to": ["uuid-user1"]
+                  }
+                ]
+              }
+            }
+          },
+          "401": { "description": "Authentication required - User belum login" }
+        },
+        "tags": ["📋 User Documents"]
+      },
+      "parameters": []
+    },
     "/users/password-reset/": {
       "post": {
         "operationId": "users_password-reset_create",
@@ -2123,6 +2172,64 @@
           "type": "string",
           "format": "uuid"
         }
+      ]
+    },
+    "/users/{user_id}/assigned-documents/": {
+      "get": {
+        "operationId": "users_assigned-documents_list",
+        "summary": "Get User's Assigned Documents",
+        "description": "\nMendapatkan daftar semua dokumen yang di-assign kepada user tertentu.\n\n**Permission:**\n- Hanya Admin atau Kepala Riset yang dapat mengakses\n- Admin hanya dapat melihat user dengan role Annotator/Reviewer\n- Kepala Riset dapat melihat semua user\n\n**Features:**\n- Pagination dengan default 20 items per page\n- Diurutkan berdasarkan created_at (terbaru di atas)\n- Error handling jika user tidak ditemukan\n\n**Use Case:**\n- Monitoring assignment oleh admin\n- Dashboard management untuk melihat workload user\n- Audit trail untuk document assignment\n",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "A page number within the paginated result set.",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "user_id",
+            "in": "path",
+            "description": "UUID user yang ingin dilihat assigned documents-nya",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar assigned documents berhasil ditemukan",
+            "examples": {
+              "application/json": {
+                "count": 5,
+                "next": "http://localhost:8000/api/v1/users/uuid-123/assigned-documents/?page=2",
+                "previous": null,
+                "results": [
+                  {
+                    "id": 1,
+                    "title": "Dokumen Anotasi 1",
+                    "text": "Ini adalah teks dokumen untuk diannotasi...",
+                    "created_at": "2024-01-01T10:00:00Z",
+                    "updated_at": "2024-01-01T10:00:00Z",
+                    "assigned_to": ["uuid-user1", "uuid-user2"]
+                  }
+                ]
+              }
+            }
+          },
+          "404": {
+            "description": "User tidak ditemukan",
+            "examples": {
+              "application/json": { "error": "User tidak ditemukan" }
+            }
+          },
+          "403": {
+            "description": "Hanya Admin atau Kepala Riset yang dapat mengakses"
+          }
+        },
+        "tags": ["📋 User Documents"]
+      },
+      "parameters": [
+        { "name": "user_id", "in": "path", "required": true, "type": "string" }
       ]
     },
     "/users/{user_id}/roles/": {

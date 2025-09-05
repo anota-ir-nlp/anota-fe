@@ -135,8 +135,19 @@ export interface DocumentResponse {
   text: string;
   created_at: string;
   updated_at: string;
-  assigned_to: number[];
+  assigned_to?: string[]; // optional, not present in new API but kept for backward compatibility
   sentences?: SentenceResponse[];
+  assigned_by: {
+    id: string | null;
+    username: string;
+    full_name: string;
+    institusi: string;
+  };
+  status: string;
+  jumlah_sentence: number;
+  institusi: string;
+  assignment_details: any; // type as needed
+  multiple_assignments: boolean;
 }
 export interface CreateDocumentRequest {
   title: string;
@@ -336,3 +347,19 @@ export interface UnassignAdminResponse {
 }
 
 export type AvailableRole = "Admin" | "Annotator" | "Reviewer" | "Kepala Riset";
+
+export interface DocumentAssignedDetailResponse {
+  id: number;
+  sentences: SentenceResponse[];
+  assigned_to: string[];
+  title: string;
+  text: string;
+  created_at: string;
+  updated_at: string;
+  assigned_by: {
+    id: string | null;
+    username: string;
+    full_name: string;
+    institusi: string;
+  } | null;
+}

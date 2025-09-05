@@ -50,20 +50,3 @@ export function useErrorTypesApi() {
     deleteErrorType,
   };
 }
-
-export function useErrorTypesApi() {
-  const { fetcher } = useProtectedFetcher();
-
-  // GET /annotations/error-types/?page=1&project_id=2
-  const getAnnotationErrorTypes = (page?: number, projectId?: number) => {
-    const params = new URLSearchParams();
-    if (page) params.append("page", page.toString());
-    if (projectId) params.append("project_id", projectId.toString());
-    const url = params.toString() ? `${BASE}?${params.toString()}` : BASE;
-    return fetcher<ErrorTypesListResponse>(url);
-  };
-
-  return {
-    getAnnotationErrorTypes,
-  };
-}

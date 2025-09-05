@@ -74,28 +74,30 @@
           <Clock class="w-7 h-7 text-blue-400" />
           Aktivitas Terbaru
         </h3>
-        <div class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6">
           <Card
             v-for="activity in recentActivities"
             :key="activity.id"
             variant="glassmorphism"
-            class="flex items-start gap-4 p-6 hover:bg-green-50 transition-colors duration-200 border border-gray-100 bg-white/80 w-full !shadow-none"
+            class="flex flex-col items-start gap-4 p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 border border-gray-200 bg-white/80 w-full !shadow-none"
           >
-            <component
-              :is="getIcon(activity.icon)"
-              :class="`w-6 h-6 mt-1 ${activity.color}`"
-            />
-            <div class="flex-1">
-              <p class="text-gray-900 font-semibold text-lg">
-                {{ activity.title }}
-              </p>
-              <p class="text-sm text-gray-500 mt-1 leading-relaxed">
-                {{ activity.description }}
-              </p>
-              <p class="text-xs text-gray-400 mt-2 font-medium">
-                {{ activity.time }}
-              </p>
+            <div class="flex items-center gap-4 mb-2">
+              <component
+                :is="getIcon(activity.icon)"
+                :class="`w-8 h-8 ${activity.color}`"
+              />
+              <div>
+                <p class="font-semibold text-gray-900 text-lg">
+                  {{ activity.title }}
+                </p>
+                <p class="text-sm text-gray-500 mt-1">
+                  {{ activity.description }}
+                </p>
+              </div>
             </div>
+            <span class="text-xs text-gray-400 mt-2 font-medium">
+              {{ activity.time }}
+            </span>
           </Card>
         </div>
       </Card>
@@ -281,16 +283,16 @@
             <ClipboardList class="w-7 h-7 text-blue-500" />
             Tugas Terbaru
           </h3>
-          <div class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             <Card
               v-for="task in recentTasks"
               :key="task.id"
               variant="glassmorphism"
-              class="flex items-center justify-between p-6 hover:bg-white/5 transition-colors duration-200 cursor-pointer"
+              class="flex flex-col items-start gap-4 p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 border border-gray-200 bg-white/80 w-full !shadow-none cursor-pointer"
               @click="navigateTo(`/anotator/anotasi/${task.id}`)"
             >
-              <div class="flex items-center gap-4">
-                <FileText class="w-6 h-6 text-gray-400" />
+              <div class="flex items-center gap-4 mb-2">
+                <FileText class="w-8 h-8 text-blue-400" />
                 <div>
                   <h4 class="font-semibold text-gray-900 text-lg">
                     {{ task.title }}
@@ -300,15 +302,24 @@
                   </p>
                 </div>
               </div>
-              <Badge
-                :variant="getTaskStatusColor(task.status)"
-                class="text-sm font-medium px-3 py-1"
+              <span
+                class="text-xs font-semibold px-3 py-1 rounded border border-gray-300 text-gray-700 bg-gray-50"
+                :class="{
+                  'text-blue-700 border-blue-200 bg-blue-50':
+                    getTaskStatusColor(task.status) === 'blue',
+                  'text-yellow-700 border-yellow-200 bg-yellow-50':
+                    getTaskStatusColor(task.status) === 'yellow',
+                  'text-green-700 border-green-200 bg-green-50':
+                    getTaskStatusColor(task.status) === 'green',
+                  'text-purple-700 border-purple-200 bg-purple-50':
+                    getTaskStatusColor(task.status) === 'purple',
+                }"
               >
                 {{ task.status }}
-              </Badge>
+              </span>
             </Card>
           </div>
-          <div class="mt-8 pt-6 border-t border-gray-200">
+          <div class="mt-8 pt-6 border-t border-gray-200 text-center">
             <Button
               variant="outline"
               size="lg"
@@ -403,14 +414,16 @@
             <List class="w-7 h-7 text-purple-500" />
             Antrian Review
           </h3>
-          <div class="space-y-4">
-            <div
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <Card
               v-for="review in reviewQueue"
               :key="review.id"
-              class="flex items-center justify-between p-6 bg-gray-100 rounded-lg border border-gray-200 hover:bg-purple-600 hover:text-white transition-colors duration-200 w-full cursor-pointer"
+              variant="glassmorphism"
+              class="flex flex-col items-start gap-4 p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 border border-gray-200 bg-white/80 w-full !shadow-none cursor-pointer"
+              @click="navigateTo(`/peninjau/tinjauan/${review.id}`)"
             >
-              <div class="flex items-center gap-4">
-                <FileCheck class="w-6 h-6 text-gray-400" />
+              <div class="flex items-center gap-4 mb-2">
+                <FileCheck class="w-8 h-8 text-purple-400" />
                 <div>
                   <h4 class="font-semibold text-gray-900 text-lg">
                     {{ review.title }}
@@ -420,21 +433,32 @@
                   </p>
                 </div>
               </div>
-              <div class="flex items-center gap-3">
-                <Badge variant="yellow" class="text-sm font-medium px-3 py-1">{{
-                  review.priority
-                }}</Badge>
+              <div class="flex items-center gap-3 mt-2 w-full justify-between">
+                <span
+                  class="text-xs font-semibold px-3 py-1 rounded border border-gray-300 text-gray-700 bg-gray-50"
+                  :class="{
+                    'text-red-700 border-red-200 bg-red-50':
+                      review.priority === 'High',
+                    'text-yellow-700 border-yellow-200 bg-yellow-50':
+                      review.priority === 'Medium',
+                    'text-gray-700 border-gray-200 bg-gray-50':
+                      review.priority === 'Low',
+                  }"
+                >
+                  {{ review.priority }}
+                </span>
                 <Button
                   size="sm"
-                  @click="navigateTo(`/peninjau/tinjauan/${review.id}`)"
+                  variant="outline"
+                  class="flex items-center gap-2"
                 >
                   <Eye class="w-4 h-4" />
                   Review
                 </Button>
               </div>
-            </div>
+            </Card>
           </div>
-          <div class="mt-8 pt-6 border-t border-slate-700/50">
+          <div class="mt-8 pt-6 border-t border-gray-200 text-center">
             <Button
               variant="outline"
               size="lg"

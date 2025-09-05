@@ -407,10 +407,10 @@
                 <th class="px-4 py-3 text-left">
                   <button
                     class="flex items-center gap-1 hover:text-blue-200 transition"
-                    @click="setSort('agency_name')"
+                    @click="setSort('institusi')"
                   >
                     Lembaga Asal
-                    <UIcon :name="sortIcon('agency_name')" class="w-4 h-4" />
+                    <UIcon :name="sortIcon('institusi')" class="w-4 h-4" />
                   </button>
                 </th>
                 <th class="px-4 py-3 text-left">
@@ -446,10 +446,13 @@
                 <th class="px-4 py-3 text-left">
                   <button
                     class="flex items-center gap-1 hover:text-blue-200 transition"
-                    @click="setSort('sentences')"
+                    @click="setSort('jumlah_sentence')"
                   >
                     Sentences
-                    <UIcon :name="sortIcon('sentences')" class="w-4 h-4" />
+                    <UIcon
+                      :name="sortIcon('jumlah_sentence')"
+                      class="w-4 h-4"
+                    />
                   </button>
                 </th>
                 <th class="px-4 py-3 text-left">Aksi</th>
@@ -463,18 +466,20 @@
               >
                 <td class="px-4 py-3 font-semibold">{{ index + 1 }}</td>
                 <td class="px-4 py-3 font-semibold">{{ doc.title }}</td>
-                <td class="px-4 py-3">{{ doc.agency_name }}</td>
-                <td class="px-4 py-3">{{ doc.assigned_by_name }}</td>
+                <td class="px-4 py-3">{{ doc.institusi }}</td>
+                <td class="px-4 py-3">
+                  {{ doc.assigned_by?.full_name || "-" }}
+                </td>
                 <td class="px-4 py-3">
                   <span
-                    :class="getStatusClass(getDocumentStatus(doc))"
+                    :class="getStatusClass(doc.status)"
                     class="px-3 py-1 rounded-full text-xs font-medium"
                   >
-                    {{ getStatusText(getDocumentStatus(doc)) }}
+                    {{ getStatusText(doc.status) }}
                   </span>
                 </td>
                 <td class="px-4 py-3">{{ formatDate(doc.created_at) }}</td>
-                <td class="px-4 py-3">{{ doc.sentences?.length || 0 }}</td>
+                <td class="px-4 py-3">{{ doc.jumlah_sentence }}</td>
                 <td class="px-4 py-3">
                   <Button
                     variant="outline"
@@ -516,11 +521,11 @@
 import { ref, computed, onMounted } from "vue";
 import { navigateTo } from "#app";
 import { Button } from "~/components/ui/button";
-import { useDocumentsApi } from "~/data/documents";
+import { useUserDocumentsApi } from "~/data/user-documents";
 import { useAnnotationsApi } from "~/data/annotations";
 import type { DocumentResponse, AnnotationResponse } from "~/types/api";
 
-const { getDocuments } = useDocumentsApi();
+const { getAssignedDocuments } = useUserDocumentsApi();
 const { getAnnotations } = useAnnotationsApi();
 
 // State
@@ -530,14 +535,9 @@ const isLoading = ref(false);
 
 // Statistics computed from real data
 const stats = computed(() => ({
-  annotated: docs.value.filter((doc) =>
-    doc.sentences.some((sentence) => sentence.has_error)
-  ).length,
-  reviewed: docs.value.filter((doc) =>
-    doc.sentences.every(
-      (sentence) => sentence.has_error && sentence.corrected_text
-    )
-  ).length,
+  annotated: docs.value.filter((doc) => doc.status === "sudah_dianotasi")
+    .length,
+  reviewed: docs.value.filter((doc) => doc.status === "sudah_direview").length,
   total: docs.value.length,
 }));
 
@@ -593,17 +593,15 @@ const filteredDocs = computed(() => {
       doc.title.toLowerCase().includes(search.value.toLowerCase()) ||
       doc.text.toLowerCase().includes(search.value.toLowerCase());
 
-    // Status filter - derive status from sentences
-    const docStatus = getDocumentStatus(doc);
+    // Status filter
     const matchStatus =
-      !filter.value.status || docStatus === filter.value.status;
+      !filter.value.status || doc.status === filter.value.status;
 
     // Date filter
     const docDate = new Date(doc.created_at);
     let matchDate = true;
 
     if (dateFilterType.value && dateFilterType.value !== "custom") {
-      // Apply preset date filters
       const today = new Date();
       const todayStr = today.toISOString().split("T")[0];
 
@@ -642,23 +640,24 @@ const filteredDocs = computed(() => {
   const sorted = [...base].sort((a, b) => {
     const dir = sort.value.dir === "asc" ? 1 : -1;
     const key = sort.value.key;
-    if (
-      key === "title" ||
-      key === "agency_name" ||
-      key === "assigned_by_name"
-    ) {
+    if (key === "title" || key === "institusi") {
       const av = (a as any)[key] || "";
       const bv = (b as any)[key] || "";
       return av.localeCompare(bv) * dir;
     }
-    if (key === "status") {
-      const av = getDocumentStatus(a);
-      const bv = getDocumentStatus(b);
+    if (key === "assigned_by_name") {
+      const av = a.assigned_by?.full_name || "";
+      const bv = b.assigned_by?.full_name || "";
       return av.localeCompare(bv) * dir;
     }
-    if (key === "sentences") {
-      const av = a.sentences?.length || 0;
-      const bv = b.sentences?.length || 0;
+    if (key === "status") {
+      const av = a.status;
+      const bv = b.status;
+      return av.localeCompare(bv) * dir;
+    }
+    if (key === "jumlah_sentence") {
+      const av = a.jumlah_sentence || 0;
+      const bv = b.jumlah_sentence || 0;
       return (av - bv) * dir;
     }
     // default by created_at
@@ -716,22 +715,6 @@ function formatDate(dateString: string) {
   return new Date(dateString).toLocaleDateString("id-ID");
 }
 
-function getDocumentStatus(doc: DocumentResponse): string {
-  if (
-    doc.sentences.every(
-      (sentence) => sentence.has_error && sentence.corrected_text
-    )
-  ) {
-    return "sudah_direview";
-  } else if (doc.sentences.some((sentence) => sentence.has_error)) {
-    return "sudah_dianotasi";
-  } else if (doc.sentences.some((sentence) => sentence.has_error === false)) {
-    return "sedang_dianotasi";
-  } else {
-    return "belum_dianotasi";
-  }
-}
-
 function getStatusText(status: string) {
   const statusMap: Record<string, string> = {
     belum_dianotasi: "Belum Dianotasi",
@@ -756,8 +739,7 @@ function getStatusClass(status: string) {
 const firstInProgressDoc = computed(() =>
   filteredDocs.value.find(
     (doc) =>
-      getDocumentStatus(doc) === "sedang_dianotasi" ||
-      getDocumentStatus(doc) === "sudah_dianotasi"
+      doc.status === "sedang_dianotasi" || doc.status === "sudah_dianotasi"
   )
 );
 
@@ -766,7 +748,9 @@ const todayAnnotated = computed(() => {
   const todayStr = new Date().toISOString().split("T")[0];
   return docs.value.filter(
     (doc) =>
-      doc.sentences.some((s) => s.has_error) &&
+      (doc.status === "sedang_dianotasi" ||
+        doc.status === "sudah_dianotasi" ||
+        doc.status === "sudah_direview") &&
       doc.created_at.startsWith(todayStr)
   ).length;
 });
@@ -812,169 +796,27 @@ function getAdminName(id: number): string {
 // Fetch data on mount
 async function fetchData() {
   isLoading.value = true;
-
-  // Use dummy data immediately for testing
-  docs.value = [
-    {
-      id: 1,
-      title: "Artikel Bahasa Indonesia 1",
-      text: "Ini adalah isi dokumen artikel Bahasa Indonesia 1.\n\nSilakan lakukan anotasi pada bagian yang diperlukan.\n\nDokumen ini berisi beberapa paragraf untuk testing anotasi.\n\nSetiap paragraf dapat dianotasi secara terpisah.",
-      created_at: "2024-01-15T10:30:00Z",
-      updated_at: "2024-01-15T10:30:00Z",
-      assigned_to: [1, 2],
-      sentences: [
-        {
-          id: 1,
-          text: "Ini adalah isi dokumen artikel Bahasa Indonesia 1.",
-          m2_text: "",
-          corrected_text: "",
-          has_error: false,
-          created_at: "2024-01-15T10:30:00Z",
-          updated_at: "2024-01-15T10:30:00Z",
-          document: 1,
-        },
-        {
-          id: 2,
-          text: "Silakan lakukan anotasi pada bagian yang diperlukan.",
-          m2_text: "",
-          corrected_text: "",
-          has_error: false,
-          created_at: "2024-01-15T10:30:00Z",
-          updated_at: "2024-01-15T10:30:00Z",
-          document: 1,
-        },
-        {
-          id: 3,
-          text: "Dokumen ini berisi beberapa paragraf untuk testing anotasi.",
-          m2_text: "",
-          corrected_text: "",
-          has_error: false,
-          created_at: "2024-01-15T10:30:00Z",
-          updated_at: "2024-01-15T10:30:00Z",
-          document: 1,
-        },
-        {
-          id: 4,
-          text: "Setiap paragraf dapat dianotasi secara terpisah.",
-          m2_text: "",
-          corrected_text: "",
-          has_error: false,
-          created_at: "2024-01-15T10:30:00Z",
-          updated_at: "2024-01-15T10:30:00Z",
-          document: 1,
-        },
-      ],
-      agency_name: getInstitutionName(1),
-      assigned_by_name: getAdminName(1),
-    },
-    {
-      id: 2,
-      title: "Artikel Bahasa Indonesia 2",
-      text: "Artikel kedua untuk testing anotasi.\n\nParagraf pertama berisi beberapa kalimat.\n\nParagraf kedua juga dapat dianotasi.\n\nIni adalah paragraf terakhir.",
-      created_at: "2024-01-16T14:20:00Z",
-      updated_at: "2024-01-16T14:20:00Z",
-      assigned_to: [2, 3],
-      sentences: [
-        {
-          id: 5,
-          text: "Artikel kedua untuk testing anotasi.",
-          m2_text: "",
-          corrected_text: "",
-          has_error: true,
-          created_at: "2024-01-16T14:20:00Z",
-          updated_at: "2024-01-16T14:20:00Z",
-          document: 2,
-        },
-        {
-          id: 6,
-          text: "Paragraf pertama berisi beberapa kalimat.",
-          m2_text: "",
-          corrected_text: "",
-          has_error: false,
-          created_at: "2024-01-16T14:20:00Z",
-          updated_at: "2024-01-16T14:20:00Z",
-          document: 2,
-        },
-        {
-          id: 7,
-          text: "Paragraf kedua juga dapat dianotasi.",
-          m2_text: "",
-          corrected_text: "",
-          has_error: false,
-          created_at: "2024-01-16T14:20:00Z",
-          updated_at: "2024-01-16T14:20:00Z",
-          document: 2,
-        },
-        {
-          id: 8,
-          text: "Ini adalah paragraf terakhir.",
-          m2_text: "",
-          corrected_text: "",
-          has_error: false,
-          created_at: "2024-01-16T14:20:00Z",
-          updated_at: "2024-01-16T14:20:00Z",
-          document: 2,
-        },
-      ],
-      agency_name: getInstitutionName(2),
-      assigned_by_name: getAdminName(2),
-    },
-    {
-      id: 3,
-      title: "Artikel Bahasa Indonesia 3",
-      text: "Artikel ketiga dengan konten yang lebih panjang.\n\nParagraf ini berisi beberapa kalimat yang dapat dianotasi.\n\nKami dapat menambahkan lebih banyak paragraf jika diperlukan.\n\nSetiap kalimat dapat memiliki anotasi yang berbeda.",
-      created_at: "2024-01-17T09:15:00Z",
-      updated_at: "2024-01-17T09:15:00Z",
-      assigned_to: [1],
-      sentences: [
-        {
-          id: 9,
-          text: "Artikel ketiga dengan konten yang lebih panjang.",
-          m2_text: "",
-          corrected_text: "Artikel ketiga dengan konten yang lebih panjang.",
-          has_error: true,
-          created_at: "2024-01-17T09:15:00Z",
-          updated_at: "2024-01-17T09:15:00Z",
-          document: 3,
-        },
-        {
-          id: 10,
-          text: "Paragraf ini berisi beberapa kalimat yang dapat dianotasi.",
-          m2_text: "",
-          corrected_text:
-            "Paragraf ini berisi beberapa kalimat yang dapat dianotasi.",
-          has_error: true,
-          created_at: "2024-01-17T09:15:00Z",
-          updated_at: "2024-01-17T09:15:00Z",
-          document: 3,
-        },
-        {
-          id: 11,
-          text: "Kami dapat menambahkan lebih banyak paragraf jika diperlukan.",
-          m2_text: "",
-          corrected_text:
-            "Kami dapat menambahkan lebih banyak paragraf jika diperlukan.",
-          has_error: true,
-          created_at: "2024-01-17T09:15:00Z",
-          updated_at: "2024-01-17T09:15:00Z",
-          document: 3,
-        },
-        {
-          id: 12,
-          text: "Setiap kalimat dapat memiliki anotasi yang berbeda.",
-          m2_text: "",
-          corrected_text: "Setiap kalimat dapat memiliki anotasi yang berbeda.",
-          has_error: true,
-          created_at: "2024-01-17T09:15:00Z",
-          updated_at: "2024-01-17T09:15:00Z",
-          document: 3,
-        },
-      ],
-      agency_name: getInstitutionName(1),
-      assigned_by_name: getAdminName(1),
-    },
-  ];
-
+  try {
+    const response = await getAssignedDocuments();
+    docs.value =
+      response?.results
+        ?.sort((a: any, b: any) => a.id - b.id) // Sort by id ascending
+        .map((doc: any) => ({
+          ...doc,
+          // fallback for missing fields if needed
+          assigned_by: doc.assigned_by || {
+            id: null,
+            username: "Unknown",
+            full_name: "Unknown",
+            institusi: "Unknown",
+          },
+          institusi: doc.institusi || "-",
+          jumlah_sentence:
+            doc.jumlah_sentence ?? (doc.sentences ? doc.sentences.length : 0),
+        })) || [];
+  } catch (e) {
+    docs.value = [];
+  }
   isLoading.value = false;
 }
 

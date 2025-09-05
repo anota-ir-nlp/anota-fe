@@ -112,32 +112,29 @@ type MenuGroup =
 
 function canAccessRoute(route: string): boolean {
   if (!isAuthenticated.value) return false;
-  
+
   const roleBasedRoutes = {
-    'Admin': [
-      '/admin/kelola-dokumen',
-      '/admin/kelola-error',
-      '/kepala-riset-admin/kelola-pengguna'
+    Admin: [
+      "/admin/kelola-dokumen",
+      "/admin/kelola-error",
+      "/kepala-riset-admin/kelola-pengguna",
     ],
-    'Annotator': [
-      '/anotator/anotasi'
+    Annotator: ["/anotator/anotasi"],
+    Reviewer: ["/peninjau/tinjauan"],
+    "Kepala Riset": [
+      "/kepala-riset/kelola-project",
+      "/kepala-riset-admin/kelola-pengguna",
+      "/admin/kelola-dokumen",
+      "/admin/kelola-error",
     ],
-    'Reviewer': [
-      '/peninjau/tinjauan'
-    ],
-    'Kepala Riset': [
-      '/kepala-riset/kelola-project',
-      '/kepala-riset-admin/kelola-pengguna',
-      '/admin/kelola-dokumen',
-      '/admin/kelola-error'
-    ]
   };
 
   const userRoleList = userRoles.value || [];
-  
+
   for (const role of userRoleList) {
-    const allowedRoutes = roleBasedRoutes[role as keyof typeof roleBasedRoutes] || [];
-    if (allowedRoutes.some(allowedRoute => route.startsWith(allowedRoute))) {
+    const allowedRoutes =
+      roleBasedRoutes[role as keyof typeof roleBasedRoutes] || [];
+    if (allowedRoutes.some((allowedRoute) => route.startsWith(allowedRoute))) {
       return true;
     }
   }
@@ -260,23 +257,31 @@ const handleScroll = () => {
 };
 
 // Watch for authentication state changes
-watch(isAuthenticated, async (newValue) => {
-  if (newValue) {
-    // User just logged in, fetch projects
-    await fetchUserProjects();
-  } else {
-    // User logged out, clear projects and selected project
-    userProjects.value = [];
-    clearSelectedProject();
-  }
-}, { immediate: false });
+watch(
+  isAuthenticated,
+  async (newValue) => {
+    if (newValue) {
+      // User just logged in, fetch projects
+      await fetchUserProjects();
+    } else {
+      // User logged out, clear projects and selected project
+      userProjects.value = [];
+      clearSelectedProject();
+    }
+  },
+  { immediate: false }
+);
 
 // Watch for user roles changes (in case roles are updated after login)
-watch(userRoles, async () => {
-  if (isAuthenticated.value) {
-    await fetchUserProjects();
-  }
-}, { immediate: false });
+watch(
+  userRoles,
+  async () => {
+    if (isAuthenticated.value) {
+      await fetchUserProjects();
+    }
+  },
+  { immediate: false }
+);
 
 onMounted(async () => {
   await initializeAuth();
@@ -471,19 +476,87 @@ const handleLogout = async () => {
                   </template>
                 </Menubar>
               </div>
-
-              <DropdownMenuSeparator class="bg-slate-700"></DropdownMenuSeparator>
-
-              <!-- Menu Items -->
-              <DropdownMenuItem @click="handleLogout" variant="destructive"
-                class="cursor-pointer hover:bg-red-600/20 focus:bg-red-600/20">
-                <LogOut class="w-4 h-4 mr-3" />
-                <span>Keluar</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              <!-- Right: Project Selector + Profile Dropdown -->
+              <div class="flex items-center gap-2">
+                <div
+                  v-if="
+                    (hasRole('Admin') || hasRole('Kepala Riset')) &&
+                    userProjects.length > 0
+                  "
+                  class="flex items-center"
+                >
+                  <Select
+                    :model-value="selectedProject?.id?.toString() || 'all'"
+                    @update:model-value="handleProjectChange"
+                  >
+                    <SelectTrigger
+                      class="w-[200px] bg-white border-gray-200 text-gray-900"
+                    >
+                      <SelectValue placeholder="Pilih Project" />
+                    </SelectTrigger>
+                    <SelectContent class="bg-white border-gray-200">
+                      <SelectItem
+                        value="all"
+                        class="flex items-center space-x-2 px-3 py-3 text-slate-700 hover:text-blue-600 hover:bg-blue-100/50 transition-all duration-200 relative font-medium"
+                      >
+                        <div class="flex items-center gap-2">Semua Project</div>
+                      </SelectItem>
+                      <SelectItem
+                        v-for="project in userProjects"
+                        :key="project.id"
+                        :value="project.id.toString()"
+                        class="flex items-center space-x-2 px-3 py-3 text-slate-700 hover:text-blue-600 hover:bg-blue-100/50 transition-all duration-200 relative font-medium"
+                      >
+                        {{ project.name }}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger as-child>
+                    <Button
+                      variant="ghost"
+                      class="flex items-center space-x-3 px-3 py-3 text-gray-900 hover:bg-gray-100 rounded-lg h-auto"
+                    >
+                      <Avatar class="ring-2 ring-gray-200">
+                        <AvatarImage :src="userAvatar" :alt="userName" />
+                        <AvatarFallback>{{
+                          userName.charAt(0).toUpperCase()
+                        }}</AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    class="w-56 bg-white border border-gray-200 shadow-lg"
+                    align="end"
+                  >
+                    <!-- Profile Info -->
+                    <div class="px-3 py-2">
+                      <div class="font-medium text-gray-900">
+                        {{ userName }}
+                      </div>
+                      <div class="text-sm text-gray-500">{{ user?.email }}</div>
+                    </div>
+                    <DropdownMenuSeparator
+                      class="bg-gray-200"
+                    ></DropdownMenuSeparator>
+                    <!-- Menu Items -->
+                    <DropdownMenuItem
+                      @click="handleLogout"
+                      variant="destructive"
+                      as="div"
+                      class="flex items-center space-x-2 px-3 py-3 text-red-700 hover:text-red-600 hover:bg-red-100/50 transition-all duration-200 relative font-medium cursor-pointer"
+                    >
+                      <LogOut class="w-4 h-4" />
+                      <span>Keluar</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+          </div>
         </div>
-      </nav>
+      </div>
 
       <!-- Public Navigation (landing style, light, rounded on scroll) -->
       <div v-else>
@@ -591,26 +664,53 @@ const handleLogout = async () => {
 }
 
 :deep(.dropdown-menu-content) {
-  background-color: #1f2937 !important;
-  border-color: #374151 !important;
+  background-color: #fff !important;
+  border-color: #e5e7eb !important;
+  color: #222 !important;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
     0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
 }
 
-:deep(.menubar-item) {
-  color: #e5e7eb !important;
-}
-
-:deep(.menubar-item:hover) {
-  background-color: #374151 !important;
-}
-
 :deep(.dropdown-menu-item) {
-  color: #e5e7eb !important;
+  color: #222 !important;
+  background-color: transparent !important;
+  transition: background 0.15s, color 0.15s;
 }
 
-:deep(.dropdown-menu-item:hover) {
-  background-color: #374151 !important;
+:deep(.dropdown-menu-item:hover),
+:deep(.dropdown-menu-item:focus) {
+  background-color: #f3f4f6 !important;
+  color: #2563eb !important; /* blue-600 for contrast on white */
+}
+
+:deep(.logout-dropdown-item) {
+  color: #dc2626 !important; /* red-600 */
+  background-color: transparent !important;
+  font-weight: 500 !important;
+}
+
+:deep(.logout-dropdown-item:hover),
+:deep(.logout-dropdown-item:focus) {
+  background-color: #fee2e2 !important; /* red-100 */
+  color: #dc2626 !important; /* stay red on hover */
+}
+
+/* Project select dropdown items */
+:deep(.select-content) {
+  background-color: #fff !important;
+  border-color: #e5e7eb !important;
+  color: #222 !important;
+}
+:deep(.select-item) {
+  color: #222 !important;
+  background-color: transparent !important;
+  transition: background 0.15s, color 0.15s;
+}
+:deep(.select-item[aria-selected="true"]),
+:deep(.select-item:hover),
+:deep(.select-item:focus) {
+  background-color: #e0e7ff !important; /* blue-100 */
+  color: #2563eb !important; /* blue-600 */
 }
 
 /* Glassmorphism background for public navbar (matching akreditasi) */
