@@ -721,6 +721,7 @@ function getStatusText(status: string) {
     sedang_dianotasi: "Sedang Dianotasi",
     sudah_dianotasi: "Sudah Dianotasi",
     sudah_direview: "Sudah Direview",
+    belum_direview: "Belum Direview",
   };
   return statusMap[status] || status;
 }
@@ -731,6 +732,7 @@ function getStatusClass(status: string) {
     sedang_dianotasi: "bg-yellow-100 text-yellow-700",
     sudah_dianotasi: "bg-blue-100 text-blue-700",
     sudah_direview: "bg-green-100 text-green-700",
+    belum_direview: "bg-purple-100 text-purple-700",
   };
   return classMap[status] || "bg-gray-200 text-gray-700";
 }

@@ -1039,16 +1039,18 @@ async function submitAllAnnotations() {
 // Keyboard shortcuts for annotation actions
 function globalKeyHandler(e: KeyboardEvent) {
   // Check if we are in a state where we can use shortcuts
-  if (showAnnotationUI.value || !selectedSentence.value) {
-    return;
-  }
 
   // Shift+S: Submit
-  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s" && e.shiftKey) {
+  if (e.shiftKey && e.key.toLowerCase() === "s") {
     e.preventDefault();
     submitAllAnnotations();
   }
   // Enter (without Shift): Open annotation UI
+
+  if (showAnnotationUI.value || !selectedSentence.value) {
+    return;
+  }
+
   if (e.key === "Enter" && !e.shiftKey) {
     e.preventDefault();
     if (canAnnotate.value) {

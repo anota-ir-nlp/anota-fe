@@ -1,36 +1,33 @@
 import { useAuth } from "~/data/auth";
 
 const roleBasedRoutes = {
-  'Admin': [
-    '/admin/kelola-dokumen',
-    '/admin/kelola-error',
-    '/kepala-riset-admin/kelola-pengguna'
+  Admin: [
+    "/admin/kelola-dokumen",
+    "/admin/kelola-error",
+    "/kepala-riset-admin/kelola-pengguna",
   ],
-  'Annotator': [
-    '/anotator/anotasi'
+  Annotator: ["/anotator/anotasi"],
+  Reviewer: ["/reviewer/review"],
+  "Kepala Riset": [
+    "/kepala-riset/kelola-project",
+    "/kepala-riset-admin/kelola-pengguna",
+    "/admin/kelola-dokumen",
+    "/admin/kelola-error",
   ],
-  'Reviewer': [
-    '/peninjau/tinjauan'
-  ],
-  'Kepala Riset': [
-    '/kepala-riset/kelola-project',
-    '/kepala-riset-admin/kelola-pengguna',
-    '/admin/kelola-dokumen',
-    '/admin/kelola-error'
-  ]
 };
 
-const publicRoutes = ['/', '/login'];
-const commonAuthenticatedRoutes = ['/beranda'];
+const publicRoutes = ["/", "/login"];
+const commonAuthenticatedRoutes = ["/beranda"];
 
 function hasRoleAccess(userRoles: string[], routePath: string): boolean {
-  if (commonAuthenticatedRoutes.some(route => routePath.startsWith(route))) {
+  if (commonAuthenticatedRoutes.some((route) => routePath.startsWith(route))) {
     return true;
   }
 
   for (const role of userRoles) {
-    const allowedRoutes = roleBasedRoutes[role as keyof typeof roleBasedRoutes] || [];
-    if (allowedRoutes.some(route => routePath.startsWith(route))) {
+    const allowedRoutes =
+      roleBasedRoutes[role as keyof typeof roleBasedRoutes] || [];
+    if (allowedRoutes.some((route) => routePath.startsWith(route))) {
       return true;
     }
   }
@@ -47,22 +44,22 @@ export default defineNuxtRouteMiddleware(async (to) => {
   await initializeAuth();
 
   if (!isAuthenticated.value && !isPublicRoute) {
-    return navigateTo('/login');
+    return navigateTo("/login");
   }
 
-  if (isAuthenticated.value && routePath === '/login') {
-    return navigateTo('/beranda');
+  if (isAuthenticated.value && routePath === "/login") {
+    return navigateTo("/beranda");
   }
 
   if (isAuthenticated.value && !isPublicRoute) {
     const userRoleList = userRoles.value || [];
 
-    if (routePath === '/beranda') {
+    if (routePath === "/beranda") {
       return;
     }
 
     if (!hasRoleAccess(userRoleList, routePath)) {
-      return navigateTo('/beranda');
+      return navigateTo("/beranda");
     }
   }
 });

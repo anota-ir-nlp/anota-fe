@@ -120,7 +120,7 @@ function canAccessRoute(route: string): boolean {
       "/kepala-riset-admin/kelola-pengguna",
     ],
     Annotator: ["/anotator/anotasi"],
-    Reviewer: ["/peninjau/tinjauan"],
+    Reviewer: ["/reviewer/review"],
     "Kepala Riset": [
       "/kepala-riset/kelola-project",
       "/kepala-riset-admin/kelola-pengguna",
@@ -222,7 +222,7 @@ const menuGroups = computed<MenuGroup[]>(() => {
       items: [
         {
           label: "Daftar Dokumen",
-          path: "/peninjau/tinjauan",
+          path: "/reviewer/review",
           icon: FileCheck,
           description: "Documents to review",
         },

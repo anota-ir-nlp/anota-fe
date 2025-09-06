@@ -420,7 +420,7 @@
               :key="review.id"
               variant="glassmorphism"
               class="flex flex-col items-start gap-4 p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 border border-gray-200 bg-white/80 w-full !shadow-none cursor-pointer"
-              @click="navigateTo(`/peninjau/tinjauan/${review.id}`)"
+              @click="navigateTo(`/reviewer/review/${review.id}`)"
             >
               <div class="flex items-center gap-4 mb-2">
                 <FileCheck class="w-8 h-8 text-purple-400" />
@@ -462,7 +462,7 @@
             <Button
               variant="outline"
               size="lg"
-              @click="navigateTo('/peninjau/tinjauan')"
+              @click="navigateTo('/reviewer/review')"
             >
               Lihat Semua Review
               <ArrowRight class="w-4 h-4" />
