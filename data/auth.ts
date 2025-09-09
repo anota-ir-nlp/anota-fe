@@ -133,6 +133,32 @@ export function useAuth() {
     }
   }
 
+  async function requestPasswordReset(email: string) {
+    try {
+      const res = await $fetch(`${runtimeConfig.public.apiBaseUrl}/users/password-reset/request/`, {
+        method: "POST",
+        body: { email },
+        credentials: 'include',
+      });
+      return res;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async function verifyPasswordReset(email: string, otp_code: string, new_password: string) {
+    try {
+      const res = await $fetch(`${runtimeConfig.public.apiBaseUrl}/users/password-reset/verify/`, {
+        method: "POST",
+        body: { email, otp_code, new_password },
+        credentials: 'include',
+      });
+      return res;
+    } catch (err) {
+      throw err;
+    }
+  }
+
   const isAuthenticated = computed(() => {
     const token = getAccessToken();
     return !!token && !!user.value;
@@ -152,6 +178,8 @@ export function useAuth() {
     getAccessToken,
     getRefreshToken,
     initializeAuth,
+    requestPasswordReset,
+    verifyPasswordReset,
   };
 }
 

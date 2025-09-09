@@ -42,6 +42,7 @@ import {
   Building2,
   Menu as MenuIcon,
   X as CloseIcon,
+  Key,
 } from "lucide-vue-next";
 import { toast } from "vue-sonner";
 import type { AvailableRole, ProjectResponse } from "~/types/api";
@@ -537,6 +538,18 @@ const handleLogout = async () => {
                       </div>
                       <div class="text-sm text-gray-500">{{ user?.email }}</div>
                     </div>
+                    <DropdownMenuSeparator
+                      class="bg-gray-200"
+                    ></DropdownMenuSeparator>
+                    <!-- Menu Items -->
+                    <DropdownMenuItem
+                      @click="navigateTo('/change-password')"
+                      as="div"
+                      class="flex items-center space-x-2 px-3 py-3 text-blue-700 hover:text-blue-600 hover:bg-blue-100/50 transition-all duration-200 relative font-medium cursor-pointer"
+                    >
+                      <Key class="w-4 h-4" />
+                      <span>Ganti Password</span>
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator
                       class="bg-gray-200"
                     ></DropdownMenuSeparator>

@@ -484,11 +484,32 @@
                   <Button
                     variant="outline"
                     size="sm"
+                    :disabled="
+                      !(
+                        doc.status === 'belum_dianotasi' ||
+                        doc.status === 'sedang_dianotasi'
+                      )
+                    "
                     @click="goToDetail(doc.id)"
                     class="bg-blue-500 hover:bg-blue-600 text-white hover:scale-105 transition-all duration-150"
                   >
                     <UIcon name="i-heroicons-pencil-square" class="w-4 h-4" />
                     Anotasi
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    :disabled="
+                      !(
+                        doc.status === 'sudah_dianotasi' ||
+                        doc.status === 'belum_direview'
+                      )
+                    "
+                    @click="handleReopen(doc)"
+                    class="ml-2 bg-purple-500 hover:bg-purple-600 text-white hover:scale-105 transition-all duration-150"
+                  >
+                    <UIcon name="i-heroicons-arrow-path" class="w-4 h-4" />
+                    Reopen
                   </Button>
                 </td>
               </tr>
@@ -513,6 +534,55 @@
           </table>
         </div>
       </Card>
+
+      <!-- Reopen Document Modal -->
+      <div
+        v-if="showReopenModal"
+        class="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+      >
+        <div
+          class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md mx-4"
+          @click.stop
+        >
+          <h3
+            class="text-lg font-semibold mb-4 text-black flex items-center gap-2"
+          >
+            <UIcon
+              name="i-heroicons-arrow-path"
+              class="w-5 h-5 text-purple-500"
+            />
+            Reopen Dokumen
+          </h3>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Alasan Reopen (opsional)</label
+            >
+            <textarea
+              v-model="reopenReason"
+              rows="3"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none"
+              placeholder="Tulis alasan mengapa dokumen perlu dibuka kembali..."
+            ></textarea>
+          </div>
+          <div class="flex justify-end gap-2 mt-6">
+            <Button
+              variant="outline"
+              @click="closeReopenModal"
+              class="bg-gray-100 text-gray-700"
+              >Batal</Button
+            >
+            <Button
+              :loading="reopenLoading"
+              @click="submitReopen"
+              class="bg-purple-500 text-white hover:bg-purple-600"
+              >Kirim</Button
+            >
+          </div>
+          <div v-if="reopenError" class="mt-3 text-red-500 text-sm">
+            {{ reopenError }}
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -526,7 +596,7 @@ import { useAnnotationsApi } from "~/data/annotations";
 import type { DocumentResponse, AnnotationResponse } from "~/types/api";
 
 const { getAssignedDocuments } = useUserDocumentsApi();
-const { getAnnotations } = useAnnotationsApi();
+const { reopenAnnotation } = useAnnotationsApi();
 
 // State
 const docs = ref<DocumentResponse[]>([]);
@@ -823,6 +893,43 @@ async function fetchData() {
 }
 
 onMounted(fetchData);
+
+// Reopen document modal state
+const showReopenModal = ref(false);
+const reopenReason = ref("");
+const reopenDocId = ref<number | null>(null);
+const reopenLoading = ref(false);
+const reopenError = ref("");
+
+function handleReopen(doc: any) {
+  reopenDocId.value = doc.id;
+  reopenReason.value = "";
+  reopenError.value = "";
+  showReopenModal.value = true;
+}
+function closeReopenModal() {
+  showReopenModal.value = false;
+  reopenDocId.value = null;
+  reopenReason.value = "";
+  reopenError.value = "";
+}
+async function submitReopen() {
+  if (!reopenDocId.value) return;
+  reopenLoading.value = true;
+  reopenError.value = "";
+  try {
+    await reopenAnnotation({
+      document: reopenDocId.value,
+      reason: reopenReason.value,
+    });
+    closeReopenModal();
+    fetchData();
+  } catch (e: any) {
+    reopenError.value = e?.message || "Gagal melakukan reopen dokumen.";
+  } finally {
+    reopenLoading.value = false;
+  }
+}
 </script>
 
 <style scoped>

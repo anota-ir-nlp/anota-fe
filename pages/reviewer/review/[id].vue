@@ -735,7 +735,7 @@ import { useDocumentsApi } from "~/data/documents";
 import { useErrorTypesApi } from "~/data/error-types";
 import { useUserDocumentsApi } from "~/data/user-documents";
 import { useReviewsApi } from "~/data/reviews";
-import type { DocumentResponse, AnnotationResponse } from "~/types/api";
+import type { DocumentResponse, ReviewResponse } from "~/types/api";
 import type { ErrorTypeResponse } from "~/types/api";
 import type { DocumentAssignedDetailResponse } from "~/types/api";
 
@@ -752,6 +752,7 @@ const {
   updateReview,
   partialUpdateReview,
   deleteReview,
+  submitReview,
 } = useReviewsApi();
 
 // Document data
@@ -782,11 +783,11 @@ const showAnnotationModal = ref(false);
 const selectedAnnotation = ref<Annotation | null>(null);
 
 // State for API annotations
-const apiAnnotations = ref<AnnotationResponse[]>([]);
+const apiAnnotations = ref<ReviewResponse[]>([]);
 const apiAnnotationsLoading = ref(false);
 
 // State for editing annotation
-const editingAnnotation = ref<AnnotationResponse | null>(null);
+const editingAnnotation = ref<ReviewResponse | null>(null);
 const showEditAnnotationModal = ref(false);
 const editCorrectionInput = ref("");
 const editSelectedErrorTypes = ref<number[]>([]);
@@ -825,11 +826,11 @@ async function fetchApiAnnotations() {
   try {
     const all = await getReviews();
     const docId = Number(route.params.id);
-    let annotationsArr: AnnotationResponse[] = [];
+    let annotationsArr: ReviewResponse[] = [];
     if (Array.isArray(all)) {
-      annotationsArr = all as AnnotationResponse[];
+      annotationsArr = all as ReviewResponse[];
     } else if (all && Array.isArray(all.results)) {
-      annotationsArr = all.results as AnnotationResponse[];
+      annotationsArr = all.results as ReviewResponse[];
     }
     apiAnnotations.value = annotationsArr.filter((a) => a.document === docId);
   } finally {
@@ -891,7 +892,7 @@ async function savePartialEditAnnotation() {
 }
 
 // Delete annotation (API)
-async function handledeleteReview(annotation: AnnotationResponse) {
+async function handledeleteReview(annotation: ReviewResponse) {
   await deleteReview(annotation.id);
   showEditAnnotationModal.value = false;
   await fetchApiAnnotations();
@@ -1017,23 +1018,13 @@ function navigateDocument(direction: number) {
 // Submit all annotations for this document (PATCH each with is_submitted: true)
 async function submitAllAnnotations() {
   const docId = Number(route.params.id);
-  const anns = apiAnnotations.value.filter((a) => a.document === docId);
-  if (!anns.length) return;
-
-  // Correction is required for submission
-  for (const ann of anns) {
-    if (!ann.correction || ann.correction.trim().length === 0) {
-      // Optionally show error or skip
-      continue;
-    }
-    await partialUpdateReview(ann.id, {
-      correction: ann.correction,
-      is_required: ann.is_required,
-      comments: ann.comments,
-      is_submitted: true,
-    });
+  if (!docId) return;
+  try {
+    await submitReview({ document: docId });
+    await fetchApiAnnotations();
+  } catch (e) {
+    // Optionally show error message
   }
-  await fetchApiAnnotations();
 }
 
 // Keyboard shortcuts for annotation actions
@@ -1258,7 +1249,7 @@ const saveAnnotation = async () => {
 const isEditingAnnotation = ref(false);
 
 // Edit annotation: fill UI fields and show popup
-function editAnnotation(annotation: AnnotationResponse) {
+function editAnnotation(annotation: ReviewResponse) {
   showAnnotationUI.value = true;
   isEditingAnnotation.value = true;
   editingAnnotation.value = annotation;
@@ -1287,7 +1278,7 @@ function getApiAnnotationsForSentence(sentenceId: number) {
 // Helper to build segments for annotation preview (full sentence, chip for correction)
 function buildSegmentsForAnnotation(
   sentenceId: number,
-  annotation: AnnotationResponse
+  annotation: ReviewResponse
 ) {
   const sentenceText = getOriginalSentenceText(sentenceId);
   const start = annotation.start_index;

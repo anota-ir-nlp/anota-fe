@@ -17,7 +17,7 @@ const roleBasedRoutes = {
 };
 
 const publicRoutes = ["/", "/login"];
-const commonAuthenticatedRoutes = ["/beranda"];
+const commonAuthenticatedRoutes = ["/beranda", "/change-password"];
 
 function hasRoleAccess(userRoles: string[], routePath: string): boolean {
   if (commonAuthenticatedRoutes.some((route) => routePath.startsWith(route))) {

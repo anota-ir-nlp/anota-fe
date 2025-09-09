@@ -752,6 +752,7 @@ const {
   updateAnnotation,
   partialUpdateAnnotation,
   deleteAnnotation,
+  submitAnnotation,
 } = useAnnotationsApi();
 
 // Document data
@@ -1017,23 +1018,13 @@ function navigateDocument(direction: number) {
 // Submit all annotations for this document (PATCH each with is_submitted: true)
 async function submitAllAnnotations() {
   const docId = Number(route.params.id);
-  const anns = apiAnnotations.value.filter((a) => a.document === docId);
-  if (!anns.length) return;
-
-  // Correction is required for submission
-  for (const ann of anns) {
-    if (!ann.correction || ann.correction.trim().length === 0) {
-      // Optionally show error or skip
-      continue;
-    }
-    await partialUpdateAnnotation(ann.id, {
-      correction: ann.correction,
-      is_required: ann.is_required,
-      comments: ann.comments,
-      is_submitted: true,
-    });
+  if (!docId) return;
+  try {
+    await submitAnnotation({ document: docId });
+    await fetchApiAnnotations();
+  } catch (e) {
+    // Optionally show error message
   }
-  await fetchApiAnnotations();
 }
 
 // Keyboard shortcuts for annotation actions

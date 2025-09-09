@@ -6,9 +6,9 @@
         class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8"
       >
         <div>
-          <h1 class="text-2xl font-bold text-black mb-1">Anotator</h1>
+          <h1 class="text-2xl font-bold text-black mb-1">Reviewer</h1>
           <p class="text-gray-700">
-            Kelola dan lakukan anotasi pada dataset yang ditugaskan
+            Kelola dan review anotasi pada dataset yang ditugaskan
           </p>
         </div>
         <div v-if="firstInProgressDoc">
@@ -25,7 +25,7 @@
             >
               <path d="M5 3v18l15-9L5 3z"></path>
             </svg>
-            Lanjutkan Anotasi
+            Lanjutkan Review
           </Button>
         </div>
       </div>
@@ -37,7 +37,7 @@
         >
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm text-gray-500 mb-1">Total Anotasi</p>
+              <p class="text-sm text-gray-500 mb-1">Total Review</p>
               <p class="text-2xl font-bold text-black">
                 {{ stats.annotated }}
               </p>
@@ -161,7 +161,7 @@
                 <rect x="15" y="6" width="4" height="15" rx="1" />
               </svg>
             </span>
-            Statistik Anotasi Mingguan
+            Statistik Review Mingguan
           </h3>
           <div class="flex items-end gap-4 h-40">
             <div
@@ -485,10 +485,26 @@
                     variant="outline"
                     size="sm"
                     @click="goToDetail(doc.id)"
+                    :disabled="
+                      !(
+                        doc.status === 'belum_direview' ||
+                        doc.status === 'sedang_direview'
+                      )
+                    "
                     class="bg-blue-500 hover:bg-blue-600 text-white hover:scale-105 transition-all duration-150"
                   >
                     <UIcon name="i-heroicons-pencil-square" class="w-4 h-4" />
-                    Anotasi
+                    Review
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    :disabled="!(doc.status === 'sudah_direview')"
+                    @click="handleReopen(doc)"
+                    class="ml-2 bg-purple-500 hover:bg-purple-600 text-white hover:scale-105 transition-all duration-150"
+                  >
+                    <UIcon name="i-heroicons-arrow-path" class="w-4 h-4" />
+                    Reopen
                   </Button>
                 </td>
               </tr>
@@ -513,6 +529,54 @@
           </table>
         </div>
       </Card>
+      <!-- Reopen Document Modal -->
+      <div
+        v-if="showReopenModal"
+        class="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+      >
+        <div
+          class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md mx-4"
+          @click.stop
+        >
+          <h3
+            class="text-lg font-semibold mb-4 text-black flex items-center gap-2"
+          >
+            <UIcon
+              name="i-heroicons-arrow-path"
+              class="w-5 h-5 text-purple-500"
+            />
+            Reopen Dokumen
+          </h3>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Alasan Reopen (opsional)</label
+            >
+            <textarea
+              v-model="reopenReason"
+              rows="3"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none"
+              placeholder="Tulis alasan mengapa dokumen perlu dibuka kembali..."
+            ></textarea>
+          </div>
+          <div class="flex justify-end gap-2 mt-6">
+            <Button
+              variant="outline"
+              @click="closeReopenModal"
+              class="bg-gray-100 text-gray-700"
+              >Batal</Button
+            >
+            <Button
+              :loading="reopenLoading"
+              @click="submitReopen"
+              class="bg-purple-500 text-white hover:bg-purple-600"
+              >Kirim</Button
+            >
+          </div>
+          <div v-if="reopenError" class="mt-3 text-red-500 text-sm">
+            {{ reopenError }}
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -522,11 +586,11 @@ import { ref, computed, onMounted } from "vue";
 import { navigateTo } from "#app";
 import { Button } from "~/components/ui/button";
 import { useUserDocumentsApi } from "~/data/user-documents";
-import { useAnnotationsApi } from "~/data/annotations";
+import { useReviewsApi } from "~/data/reviews";
 import type { DocumentResponse, AnnotationResponse } from "~/types/api";
 
 const { getAssignedDocuments } = useUserDocumentsApi();
-const { getAnnotations } = useAnnotationsApi();
+const { reopenReviews } = useReviewsApi();
 
 // State
 const docs = ref<DocumentResponse[]>([]);
@@ -766,35 +830,6 @@ const accuracy = computed(() => {
     : "0.0";
 });
 
-// Helper functions for generating realistic data
-function getInstitutionName(id: number): string {
-  const institutions = [
-    "Universitas Indonesia",
-    "Institut Teknologi Bandung",
-    "Universitas Gadjah Mada",
-    "Universitas Padjadjaran",
-    "Universitas Diponegoro",
-    "Universitas Airlangga",
-    "Universitas Brawijaya",
-    "Universitas Hasanuddin",
-  ];
-  return institutions[id % institutions.length];
-}
-
-function getAdminName(id: number): string {
-  const admins = [
-    "Dr. Ahmad Supriyadi",
-    "Prof. Siti Nurhaliza",
-    "Dr. Bambang Sutejo",
-    "Prof. Rina Marlina",
-    "Dr. Hendra Gunawan",
-    "Prof. Dewi Sartika",
-    "Dr. Agus Setiawan",
-    "Prof. Maya Indah",
-  ];
-  return admins[id % admins.length];
-}
-
 // Fetch data on mount
 async function fetchData() {
   isLoading.value = true;
@@ -823,6 +858,43 @@ async function fetchData() {
 }
 
 onMounted(fetchData);
+
+// Reopen document modal state
+const showReopenModal = ref(false);
+const reopenReason = ref("");
+const reopenDocId = ref<number | null>(null);
+const reopenLoading = ref(false);
+const reopenError = ref("");
+
+function handleReopen(doc: any) {
+  reopenDocId.value = doc.id;
+  reopenReason.value = "";
+  reopenError.value = "";
+  showReopenModal.value = true;
+}
+function closeReopenModal() {
+  showReopenModal.value = false;
+  reopenDocId.value = null;
+  reopenReason.value = "";
+  reopenError.value = "";
+}
+async function submitReopen() {
+  if (!reopenDocId.value) return;
+  reopenLoading.value = true;
+  reopenError.value = "";
+  try {
+    await reopenReviews({
+      document: reopenDocId.value,
+      reason: reopenReason.value,
+    });
+    closeReopenModal();
+    fetchData();
+  } catch (e: any) {
+    reopenError.value = e?.message || "Gagal melakukan reopen dokumen.";
+  } finally {
+    reopenLoading.value = false;
+  }
+}
 </script>
 
 <style scoped>
