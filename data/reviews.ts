@@ -1,10 +1,7 @@
 import { useProtectedFetcher } from "~/composables/protected-fetcher";
-import type {
-  ReviewRequest,
-  ReviewResponse,
-} from "~/types/api";
+import type { ReviewRequest, ReviewResponse } from "~/types/api";
 
-const BASE = "/annotation/reviews";
+const BASE = "/annotations/reviews";
 
 export function useReviewsApi() {
   const { fetcher } = useProtectedFetcher();
@@ -19,6 +16,19 @@ export function useReviewsApi() {
     fetcher<ReviewResponse>(`${BASE}/${id}`, { method: "PATCH", body: data });
   const deleteReview = (id: number) =>
     fetcher(`${BASE}/${id}`, { method: "DELETE" });
+  const reopenReview = (data: { document: number; reason?: string }) =>
+    fetcher("/annotations/reviews/reopen/", { method: "POST", body: data });
+  const submitReview = (data: { document: number }) =>
+    fetcher("/annotations/reviews/submit/", { method: "POST", body: data });
+  const adminReopenReview = (data: {
+    document: number;
+    user_id: string;
+    reason?: string;
+  }) =>
+    fetcher("/annotations/admin/reopen-review/", {
+      method: "POST",
+      body: data,
+    });
 
   return {
     getReviews,
@@ -27,5 +37,8 @@ export function useReviewsApi() {
     updateReview,
     partialUpdateReview,
     deleteReview,
+    reopenReview,
+    submitReview,
+    adminReopenReview,
   };
 }

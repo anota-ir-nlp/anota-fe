@@ -125,8 +125,8 @@ export interface AssignmentResponse {
   created_at: string;
 }
 export interface AssignDocumentRequest {
-  assignee_id: string;
-  document_id: string;
+  document_id: number;
+  user_id: string;
 }
 
 export interface DocumentResponse {
@@ -135,8 +135,19 @@ export interface DocumentResponse {
   text: string;
   created_at: string;
   updated_at: string;
-  assigned_to: number[];
-  sentences: SentenceResponse[];
+  assigned_to?: string[]; // optional, not present in new API but kept for backward compatibility
+  sentences?: SentenceResponse[];
+  assigned_by: {
+    id: string | null;
+    username: string;
+    full_name: string;
+    institusi: string;
+  };
+  status: string;
+  jumlah_sentence: number;
+  institusi: string;
+  assignment_details: any; // type as needed
+  multiple_assignments: boolean;
 }
 export interface CreateDocumentRequest {
   title: string;
@@ -208,11 +219,15 @@ export interface ErrorTypeResponse {
   id: number;
   error_code: string;
   description: string;
+  project?: number | null;
+  project_name?: string | null;
+  is_default: boolean;
+  created_by?: string | null;
+  created_by_username?: string | null;
   created_at: string;
   updated_at: string;
 }
 
-// Paginated response for error types (matches API docs)
 export interface ErrorTypesListResponse {
   count: number;
   next: string | null;
@@ -279,7 +294,7 @@ export interface UserPasswordResetRequest {
 export interface UserRoleManagementRequest {
   user_id: string;
   role: string;
-  action: 'add' | 'remove';
+  action: "add" | "remove";
 }
 
 export interface UserUpdateRequest {
@@ -292,5 +307,59 @@ export interface AvailableRolesResponse {
   roles: string[];
 }
 
-// Add a type for the available roles based on API docs
-export type AvailableRole = 'Admin' | 'Annotator' | 'Reviewer' | 'Kepala Riset';
+export interface ProjectRequest {
+  name: string;
+  description?: string;
+  documents?: number[];
+}
+
+export interface ProjectResponse {
+  id: number;
+  name: string;
+  description: string;
+  created_at: string;
+  updated_at: string;
+  documents: number[];
+  assigned_admins: string[];
+}
+
+export interface ProjectsListResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: ProjectResponse[];
+}
+
+export interface AssignAdminRequest {
+  user_id: string;
+}
+
+export interface AssignAdminResponse {
+  message: string;
+}
+
+export interface UnassignAdminRequest {
+  user_id: string;
+}
+
+export interface UnassignAdminResponse {
+  message: string;
+}
+
+export type AvailableRole = "Admin" | "Annotator" | "Reviewer" | "Kepala Riset";
+
+export interface DocumentAssignedDetailResponse {
+  id: number;
+  sentences: SentenceResponse[];
+  assigned_to: string[];
+  title: string;
+  text: string;
+  created_at: string;
+  updated_at: string;
+  assigned_by: {
+    id: string | null;
+    username: string;
+    full_name: string;
+    institusi: string;
+  } | null;
+}

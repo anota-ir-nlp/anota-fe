@@ -18,7 +18,6 @@ const BASE = "/users";
 export function useUsersApi() {
   const { fetcher } = useProtectedFetcher();
 
-  // Use UsersListResponse for paginated user list endpoints
   const getUsers = (page?: number) =>
     fetcher<UsersListResponse>(
       page ? `${BASE}/?page=${page}` : `${BASE}/`
@@ -47,8 +46,13 @@ export function useUsersApi() {
   const generateBackupKey = (userId: string) =>
     fetcher(`${BASE}/generate-backup-key`, { method: "POST", body: { user_id: userId } });
 
+
+  const getUsersInProject = (projectId: number) =>
+    fetcher<UserResponse[]>(`/projects/${projectId}/assigned-users/`);
+
   return {
     getUsers,
+    getUsersInProject,
     getDeletedUsers,
     getCurrentUser,
     createUser,
@@ -62,4 +66,3 @@ export function useUsersApi() {
     generateBackupKey,
   };
 }
-

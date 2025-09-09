@@ -6,9 +6,9 @@
         class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8"
       >
         <div>
-          <h1 class="text-2xl font-bold text-black mb-1">Anotator</h1>
+          <h1 class="text-2xl font-bold text-black mb-1">Reviewer</h1>
           <p class="text-gray-700">
-            Kelola dan lakukan anotasi pada dataset yang ditugaskan
+            Kelola dan review anotasi pada dataset yang ditugaskan
           </p>
         </div>
         <div v-if="firstInProgressDoc">
@@ -25,7 +25,7 @@
             >
               <path d="M5 3v18l15-9L5 3z"></path>
             </svg>
-            Lanjutkan Anotasi
+            Lanjutkan Review
           </Button>
         </div>
       </div>
@@ -37,7 +37,7 @@
         >
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm text-gray-500 mb-1">Total Anotasi</p>
+              <p class="text-sm text-gray-500 mb-1">Total Review</p>
               <p class="text-2xl font-bold text-black">
                 {{ stats.annotated }}
               </p>
@@ -161,7 +161,7 @@
                 <rect x="15" y="6" width="4" height="15" rx="1" />
               </svg>
             </span>
-            Statistik Anotasi Mingguan
+            Statistik Review Mingguan
           </h3>
           <div class="flex items-end gap-4 h-40">
             <div
@@ -484,27 +484,22 @@
                   <Button
                     variant="outline"
                     size="sm"
+                    @click="goToDetail(doc.id)"
                     :disabled="
                       !(
-                        doc.status === 'belum_dianotasi' ||
-                        doc.status === 'sedang_dianotasi'
+                        doc.status === 'belum_direview' ||
+                        doc.status === 'sedang_direview'
                       )
                     "
-                    @click="goToDetail(doc.id)"
                     class="bg-blue-500 hover:bg-blue-600 text-white hover:scale-105 transition-all duration-150"
                   >
                     <UIcon name="i-heroicons-pencil-square" class="w-4 h-4" />
-                    Anotasi
+                    Review
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    :disabled="
-                      !(
-                        doc.status === 'sudah_dianotasi' ||
-                        doc.status === 'belum_direview'
-                      )
-                    "
+                    :disabled="!(doc.status === 'sudah_direview')"
                     @click="handleReopen(doc)"
                     class="ml-2 bg-purple-500 hover:bg-purple-600 text-white hover:scale-105 transition-all duration-150"
                   >
@@ -534,7 +529,6 @@
           </table>
         </div>
       </Card>
-
       <!-- Reopen Document Modal -->
       <div
         v-if="showReopenModal"
@@ -592,11 +586,11 @@ import { ref, computed, onMounted } from "vue";
 import { navigateTo } from "#app";
 import { Button } from "~/components/ui/button";
 import { useUserDocumentsApi } from "~/data/user-documents";
-import { useAnnotationsApi } from "~/data/annotations";
+import { useReviewsApi } from "~/data/reviews";
 import type { DocumentResponse, AnnotationResponse } from "~/types/api";
 
 const { getAssignedDocuments } = useUserDocumentsApi();
-const { reopenAnnotation } = useAnnotationsApi();
+const { reopenReviews } = useReviewsApi();
 
 // State
 const docs = ref<DocumentResponse[]>([]);
@@ -778,7 +772,7 @@ function sortIcon(key: string) {
 // removed quick status chips
 
 function goToDetail(id: number) {
-  navigateTo(`/anotator/anotasi/${id}`);
+  navigateTo(`/reviewer/review/${id}`);
 }
 
 function formatDate(dateString: string) {
@@ -836,35 +830,6 @@ const accuracy = computed(() => {
     : "0.0";
 });
 
-// Helper functions for generating realistic data
-function getInstitutionName(id: number): string {
-  const institutions = [
-    "Universitas Indonesia",
-    "Institut Teknologi Bandung",
-    "Universitas Gadjah Mada",
-    "Universitas Padjadjaran",
-    "Universitas Diponegoro",
-    "Universitas Airlangga",
-    "Universitas Brawijaya",
-    "Universitas Hasanuddin",
-  ];
-  return institutions[id % institutions.length];
-}
-
-function getAdminName(id: number): string {
-  const admins = [
-    "Dr. Ahmad Supriyadi",
-    "Prof. Siti Nurhaliza",
-    "Dr. Bambang Sutejo",
-    "Prof. Rina Marlina",
-    "Dr. Hendra Gunawan",
-    "Prof. Dewi Sartika",
-    "Dr. Agus Setiawan",
-    "Prof. Maya Indah",
-  ];
-  return admins[id % admins.length];
-}
-
 // Fetch data on mount
 async function fetchData() {
   isLoading.value = true;
@@ -918,7 +883,7 @@ async function submitReopen() {
   reopenLoading.value = true;
   reopenError.value = "";
   try {
-    await reopenAnnotation({
+    await reopenReviews({
       document: reopenDocId.value,
       reason: reopenReason.value,
     });

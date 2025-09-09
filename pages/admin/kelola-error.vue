@@ -1,6 +1,8 @@
 <template>
   <div class="flex flex-col items-center justify-start text-center bg-slate-900 text-white p-8 min-h-screen">
-    <h1 class="text-4xl font-bold mb-20 text-blue-400">Kelola Error Types</h1>
+    <div class="flex items-center justify-center gap-4 mb-20">
+      <h1 class="text-4xl font-bold text-blue-400">Kelola Error Types</h1>
+    </div>
 
     <!-- Add Error Type Button -->
     <div class="mb-6 w-full">
@@ -18,6 +20,7 @@
             <DialogTitle>Tambah Error Type Baru</DialogTitle>
             <DialogDescription>
               Masukkan kode error dan deskripsi error type.
+              {{ selectedProject ? `Error type akan dibuat untuk project "${selectedProject.name}".` : 'Error type akan dibuat sebagai default (tersedia untuk semua project).' }}
             </DialogDescription>
           </DialogHeader>
           <div class="grid gap-4 py-4">
@@ -80,51 +83,23 @@
       Memuat data error types...
     </div>
 
-    <div v-if="errorTypes.length"
+    <div v-if="errorTypes && errorTypes.length > 0"
       class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl shadow-lg p-6 mb-6 w-full max-w-6xl">
-      <div class="rounded-md overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow class="bg-gray-800/60 hover:bg-gray-800/60">
-              <TableHead class="text-gray-300 font-medium text-left w-64 truncate">Error Code</TableHead>
-              <TableHead class="text-gray-300 font-medium text-left">Deskripsi</TableHead>
-              <TableHead class="text-gray-300 font-medium text-left">Tanggal Dibuat</TableHead>
-              <TableHead class="text-gray-300 font-medium text-right"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow v-for="err in errorTypes" :key="err.id" class="border-white/10 hover:bg-white/5">
-              <TableCell class="font-semibold text-white text-left w-64 truncate">
-                <span class="block truncate">{{ err.error_code }}</span>
-              </TableCell>
-              <TableCell class="text-left text-gray-200">{{ err.description }}</TableCell>
-              <TableCell class="text-white text-left">{{ formatDate(err.created_at) }}</TableCell>
-              <TableCell class="text-right">
-                <div class="flex gap-2 w-full justify-end">
-                  <Button size="sm" variant="outline" @click="editErrorType(err)"
-                    class="rounded-full px-4 py-1 font-semibold">
-                    <Pencil class="w-4 h-4 mr-1" />
-                    Edit
-                  </Button>
-                  <Button size="sm" variant="destructive" @click="deleteErrorType(err.id)"
-                    class="rounded-full px-4 py-1 font-semibold">
-                    <Trash2 class="w-4 h-4 mr-1" />
-                    Hapus
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </div>
+      <DataTable
+        :columns="errorTypeColumns"
+        :data="errorTypes"
+        @selection-change="handleSelectionChange"
+        @edit-error-type="editErrorType"
+        @delete-error-type="deleteErrorType"
+      />
     </div>
 
     <!-- Pagination Controls -->
-    <div v-if="errorTypes.length" class="mt-4 flex justify-center w-full max-w-6xl">
+    <div v-if="errorTypes && errorTypes.length > 0 && totalPages > 1" class="mt-4 flex justify-center w-full max-w-6xl">
       <Pagination
         :page="currentPage"
         :total="totalPages"
-        :items-per-page="errorTypes.length > 0 ? errorTypes.length : 1"
+        :items-per-page="Math.max(errorTypes?.length || 1, 1)"
         @update:page="fetchErrorTypes"
       >
         <PaginationContent>
@@ -149,7 +124,7 @@
       </Pagination>
     </div>
 
-    <div v-if="!errorTypes.length && !isLoading"
+    <div v-if="(!errorTypes || errorTypes.length === 0) && !isLoading"
       class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl shadow-lg p-6 text-center w-full max-w-6xl mx-auto">
       <span class="text-gray-400">Tidak ada error type ditemukan.</span>
     </div>
@@ -157,8 +132,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { useErrorTypesApi } from "~/data/error-types";
+import { useProjectContext } from "~/composables/project-context";
 import type { ErrorTypeRequest, ErrorTypeResponse } from "~/types/api";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
@@ -172,14 +148,6 @@ import {
   DialogTrigger,
 } from "~/components/ui/dialog";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from "~/components/ui/table";
-import {
   Pagination,
   PaginationContent,
   PaginationItem,
@@ -187,10 +155,12 @@ import {
   PaginationNext,
   PaginationEllipsis
 } from "~/components/ui/pagination";
-import { 
-  Plus, Loader2, Check, Pencil, Trash2, ArrowLeft, ArrowRight, MoreHorizontal 
+import {
+  Plus, Loader2, Check, Pencil, Trash2, ArrowLeft, ArrowRight, MoreHorizontal
 } from "lucide-vue-next";
 import { toast } from "vue-sonner";
+import DataTable from "~/components/ui/data-table/data-table.vue";
+import { createErrorTypeColumns } from "~/components/error-types/columns";
 
 const {
   getErrorTypes,
@@ -199,7 +169,10 @@ const {
   deleteErrorType: apiDeleteErrorType,
 } = useErrorTypesApi();
 
+const { selectedProject, selectedProjectId, isAllProjects } = useProjectContext();
+
 const errorTypes = ref<ErrorTypeResponse[]>([]);
+const selectedErrorTypes = ref<ErrorTypeResponse[]>([]);
 const isLoading = ref(false);
 const isCreating = ref(false);
 const isUpdating = ref(false);
@@ -222,21 +195,23 @@ const totalPages = ref(1);
 async function fetchErrorTypes(page = 1) {
   isLoading.value = true;
   try {
-    // getErrorTypes should support pagination if backend supports it, otherwise fetch all
-    const response = await getErrorTypes(page);
-    // If paginated, response.results; else, response is array
+    const projectId = isAllProjects.value ? undefined : selectedProjectId.value;
+    const response = await getErrorTypes(page, projectId || undefined);
+
     if (Array.isArray(response)) {
-      errorTypes.value = response;
+      errorTypes.value = response || [];
       totalPages.value = 1;
       currentPage.value = 1;
     } else {
-      errorTypes.value = response.results;
+      errorTypes.value = response?.results || [];
       currentPage.value = page;
-      totalPages.value = Math.max(1, Math.ceil(response.count / 20));
+      totalPages.value = Math.max(1, Math.ceil((response?.count || 0) / 20));
     }
   } catch (error) {
     console.error('Error fetching error types:', error);
     toast.error("Gagal memuat data error types");
+    errorTypes.value = [];
+    totalPages.value = 1;
   } finally {
     isLoading.value = false;
   }
@@ -252,7 +227,12 @@ async function createErrorType() {
 
   isCreating.value = true;
   try {
-    await apiCreateErrorType(newErrorType.value);
+    const createData = {
+      ...newErrorType.value,
+      project_id: isAllProjects.value ? undefined : selectedProjectId.value,
+    };
+
+    await apiCreateErrorType(createData);
     toast.success(`Error type "${newErrorType.value.error_code}" berhasil dibuat`);
     resetForm();
     isCreateDialogOpen.value = false;
@@ -337,28 +317,49 @@ function formatDate(dateString: string) {
 
 const paginationPages = computed(() => {
   const pages: (number | string)[] = [];
-  if (totalPages.value <= 5) {
-    for (let i = 1; i <= totalPages.value; i++) pages.push(i);
-  } else if (currentPage.value <= 3) {
-    pages.push(1, 2, 3, 4, 5, 'ellipsis', totalPages.value);
-  } else if (currentPage.value >= totalPages.value - 2) {
+  const total = totalPages.value || 1;
+  const current = currentPage.value || 1;
+  
+  if (total <= 5) {
+    for (let i = 1; i <= total; i++) pages.push(i);
+  } else if (current <= 3) {
+    pages.push(1, 2, 3, 4, 5, 'ellipsis', total);
+  } else if (current >= total - 2) {
     pages.push(1, 'ellipsis');
-    for (let i = totalPages.value - 4; i <= totalPages.value; i++) pages.push(i);
+    for (let i = total - 4; i <= total; i++) pages.push(i);
   } else {
-    pages.push(1, 'ellipsis', currentPage.value - 1, currentPage.value, currentPage.value + 1, 'ellipsis', totalPages.value);
+    pages.push(1, 'ellipsis', current - 1, current, current + 1, 'ellipsis', total);
   }
   return pages;
 });
 
+const errorTypeColumns = computed(() => createErrorTypeColumns(
+  (errorType: ErrorTypeResponse) => editErrorType(errorType),
+  (id: number) => deleteErrorType(id)
+));
+
+function handleSelectionChange(selection: ErrorTypeResponse[]) {
+  selectedErrorTypes.value = selection || [];
+}
+
+watch(selectedProjectId, async () => {
+  await fetchErrorTypes(1);
+}, { immediate: false });
+
 onMounted(() => fetchErrorTypes(currentPage.value));
 
+const pageTitle = computed(() => {
+  if (selectedProject.value) {
+    return `Kelola Error Types - ${selectedProject.value.name}`;
+  }
+  return "Kelola Error Types - Semua Project";
+});
+
 useHead({
-  title: "Kelola Error Types - ANOTA",
+  title: pageTitle.value + " - ANOTA",
   meta: [
     { name: "description", content: "Halaman kelola error types aplikasi ANOTA." },
   ],
 });
 </script>
-    { name: "description", content: "Halaman kelola error types aplikasi ANOTA." },
-  ],
-});
+

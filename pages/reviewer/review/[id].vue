@@ -358,7 +358,7 @@
                     label="Hapus"
                     size="sm"
                     color="error"
-                    @click="handleDeleteAnnotation(annotation)"
+                    @click="handledeleteReview(annotation)"
                   />
                 </div>
               </div>
@@ -430,7 +430,7 @@
               <UButton
                 label="Hapus"
                 color="error"
-                @click="handleDeleteAnnotation(editingAnnotation)"
+                @click="handledeleteReview(editingAnnotation)"
               />
               <UButton
                 label="Batal"
@@ -734,8 +734,8 @@ import { useTextSelection } from "@vueuse/core";
 import { useDocumentsApi } from "~/data/documents";
 import { useErrorTypesApi } from "~/data/error-types";
 import { useUserDocumentsApi } from "~/data/user-documents";
-import { useAnnotationsApi } from "~/data/annotations";
-import type { DocumentResponse, AnnotationResponse } from "~/types/api";
+import { useReviewsApi } from "~/data/reviews";
+import type { DocumentResponse, ReviewResponse } from "~/types/api";
 import type { ErrorTypeResponse } from "~/types/api";
 import type { DocumentAssignedDetailResponse } from "~/types/api";
 
@@ -746,14 +746,14 @@ const router = useRouter();
 const { getDocument } = useDocumentsApi();
 const { getAssignedDocument, getAssignedDocuments } = useUserDocumentsApi();
 const {
-  getAnnotations,
-  getAnnotation,
-  createAnnotation,
-  updateAnnotation,
-  partialUpdateAnnotation,
-  deleteAnnotation,
-  submitAnnotation,
-} = useAnnotationsApi();
+  getReviews,
+  getReview,
+  createReview,
+  updateReview,
+  partialUpdateReview,
+  deleteReview,
+  submitReview,
+} = useReviewsApi();
 
 // Document data
 const document = ref<DocumentAssignedDetailResponse | null>(null);
@@ -783,11 +783,11 @@ const showAnnotationModal = ref(false);
 const selectedAnnotation = ref<Annotation | null>(null);
 
 // State for API annotations
-const apiAnnotations = ref<AnnotationResponse[]>([]);
+const apiAnnotations = ref<ReviewResponse[]>([]);
 const apiAnnotationsLoading = ref(false);
 
 // State for editing annotation
-const editingAnnotation = ref<AnnotationResponse | null>(null);
+const editingAnnotation = ref<ReviewResponse | null>(null);
 const showEditAnnotationModal = ref(false);
 const editCorrectionInput = ref("");
 const editSelectedErrorTypes = ref<number[]>([]);
@@ -824,13 +824,13 @@ async function fetchErrorTypes(page = 1, projectId?: number) {
 async function fetchApiAnnotations() {
   apiAnnotationsLoading.value = true;
   try {
-    const all = await getAnnotations();
+    const all = await getReviews();
     const docId = Number(route.params.id);
-    let annotationsArr: AnnotationResponse[] = [];
+    let annotationsArr: ReviewResponse[] = [];
     if (Array.isArray(all)) {
-      annotationsArr = all as AnnotationResponse[];
+      annotationsArr = all as ReviewResponse[];
     } else if (all && Array.isArray(all.results)) {
-      annotationsArr = all.results as AnnotationResponse[];
+      annotationsArr = all.results as ReviewResponse[];
     }
     apiAnnotations.value = annotationsArr.filter((a) => a.document === docId);
   } finally {
@@ -840,7 +840,7 @@ async function fetchApiAnnotations() {
 
 // Fetch a single annotation by id (API)
 async function fetchApiAnnotation(id: number) {
-  return await getAnnotation(id);
+  return await getReview(id);
 }
 
 // Create a new annotation via API
@@ -854,7 +854,7 @@ async function createApiAnnotation() {
   )
     return;
 
-  await createAnnotation({
+  await createReview({
     document: Number(route.params.id),
     sentence: selectedSentence.value.id,
     start_index: selectedRange.value.start,
@@ -873,7 +873,7 @@ async function createApiAnnotation() {
 // Update annotation (full)
 async function saveEditAnnotation() {
   if (!editingAnnotation.value) return;
-  await updateAnnotation(editingAnnotation.value.id, {
+  await updateReview(editingAnnotation.value.id, {
     correction: editCorrectionInput.value,
     error_type: editSelectedErrorTypes.value[0],
   });
@@ -884,7 +884,7 @@ async function saveEditAnnotation() {
 // Partial update annotation (PATCH)
 async function savePartialEditAnnotation() {
   if (!editingAnnotation.value) return;
-  await partialUpdateAnnotation(editingAnnotation.value.id, {
+  await partialUpdateReview(editingAnnotation.value.id, {
     correction: editCorrectionInput.value,
   });
   showEditAnnotationModal.value = false;
@@ -892,8 +892,8 @@ async function savePartialEditAnnotation() {
 }
 
 // Delete annotation (API)
-async function handleDeleteAnnotation(annotation: AnnotationResponse) {
-  await deleteAnnotation(annotation.id);
+async function handledeleteReview(annotation: ReviewResponse) {
+  await deleteReview(annotation.id);
   showEditAnnotationModal.value = false;
   await fetchApiAnnotations();
 }
@@ -1011,7 +1011,7 @@ function navigateDocument(direction: number) {
   if (newIdx < 0 || newIdx >= ids.length) return; // Out of bounds
   const nextId = ids[newIdx];
   if (nextId !== undefined) {
-    router.push(`/anotator/anotasi/${nextId}`);
+    router.push(`/reviewer/review/${nextId}`);
   }
 }
 
@@ -1020,7 +1020,7 @@ async function submitAllAnnotations() {
   const docId = Number(route.params.id);
   if (!docId) return;
   try {
-    await submitAnnotation({ document: docId });
+    await submitReview({ document: docId });
     await fetchApiAnnotations();
   } catch (e) {
     // Optionally show error message
@@ -1036,12 +1036,11 @@ function globalKeyHandler(e: KeyboardEvent) {
     e.preventDefault();
     submitAllAnnotations();
   }
-  // Enter (without Shift): Open annotation UI
 
   if (showAnnotationUI.value || !selectedSentence.value) {
     return;
   }
-
+  // Enter (without Shift): Open annotation UI
   if (e.key === "Enter" && !e.shiftKey) {
     e.preventDefault();
     if (canAnnotate.value) {
@@ -1204,7 +1203,7 @@ const saveAnnotation = async () => {
   try {
     if (isEditingAnnotation.value && editingAnnotation.value) {
       // Update annotation
-      await updateAnnotation(editingAnnotation.value.id, {
+      await updateReview(editingAnnotation.value.id, {
         document: Number(route.params.id),
         sentence: selectedSentence.value.id,
         start_index: selectedRange.value.start,
@@ -1216,7 +1215,7 @@ const saveAnnotation = async () => {
       });
     } else {
       // Create annotation
-      await createAnnotation({
+      await createReview({
         document: Number(route.params.id),
         sentence: selectedSentence.value.id,
         start_index: selectedRange.value.start,
@@ -1250,7 +1249,7 @@ const saveAnnotation = async () => {
 const isEditingAnnotation = ref(false);
 
 // Edit annotation: fill UI fields and show popup
-function editAnnotation(annotation: AnnotationResponse) {
+function editAnnotation(annotation: ReviewResponse) {
   showAnnotationUI.value = true;
   isEditingAnnotation.value = true;
   editingAnnotation.value = annotation;
@@ -1279,7 +1278,7 @@ function getApiAnnotationsForSentence(sentenceId: number) {
 // Helper to build segments for annotation preview (full sentence, chip for correction)
 function buildSegmentsForAnnotation(
   sentenceId: number,
-  annotation: AnnotationResponse
+  annotation: ReviewResponse
 ) {
   const sentenceText = getOriginalSentenceText(sentenceId);
   const start = annotation.start_index;
