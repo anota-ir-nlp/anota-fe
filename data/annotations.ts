@@ -27,6 +27,15 @@ export function useAnnotationsApi() {
     fetcher("/annotations/reopen/", { method: "POST", body: data });
   const submitAnnotation = (data: { document: number }) =>
     fetcher("/annotations/submit/", { method: "POST", body: data });
+  const adminReopenAnnotator = (data: {
+    document: number;
+    user_id: string;
+    reason?: string;
+  }) =>
+    fetcher("/annotations/admin/reopen-annotator/", {
+      method: "POST",
+      body: data,
+    });
 
   return {
     getAnnotations,
@@ -37,5 +46,6 @@ export function useAnnotationsApi() {
     deleteAnnotation,
     reopenAnnotation,
     submitAnnotation,
+    adminReopenAnnotator,
   };
 }

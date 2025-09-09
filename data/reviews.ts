@@ -20,6 +20,15 @@ export function useReviewsApi() {
     fetcher("/annotations/reviews/reopen/", { method: "POST", body: data });
   const submitReview = (data: { document: number }) =>
     fetcher("/annotations/reviews/submit/", { method: "POST", body: data });
+  const adminReopenReview = (data: {
+    document: number;
+    user_id: string;
+    reason?: string;
+  }) =>
+    fetcher("/annotations/admin/reopen-review/", {
+      method: "POST",
+      body: data,
+    });
 
   return {
     getReviews,
@@ -30,5 +39,6 @@ export function useReviewsApi() {
     deleteReview,
     reopenReview,
     submitReview,
+    adminReopenReview,
   };
 }

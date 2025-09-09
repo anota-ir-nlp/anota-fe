@@ -211,6 +211,12 @@ const menuGroups = computed<MenuGroup[]>(() => {
           icon: AlertTriangle,
           description: "Manage system errors",
         },
+        {
+          label: "Reopen Dokumen",
+          path: "/admin/reopen",
+          icon: AlertTriangle,
+          description: "Admin buka kembali anotasi/review dokumen",
+        },
       ],
     });
   }
@@ -252,10 +258,16 @@ const menuGroups = computed<MenuGroup[]>(() => {
 
 const isScrolled = ref(false);
 const isMobileMenuOpen = ref(false);
+const MOBILE_BREAKPOINT = 1000;
+const isMobile = ref(false);
 
 const handleScroll = () => {
   isScrolled.value = window.scrollY > 12;
 };
+
+function updateIsMobile() {
+  isMobile.value = window.innerWidth <= MOBILE_BREAKPOINT;
+}
 
 // Watch for authentication state changes
 watch(
@@ -291,11 +303,14 @@ onMounted(async () => {
     await fetchUserProjects();
   }
   window.addEventListener("scroll", handleScroll, { passive: true });
+  window.addEventListener("resize", updateIsMobile);
   handleScroll();
+  updateIsMobile();
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("scroll", handleScroll as EventListener);
+  window.removeEventListener("resize", updateIsMobile);
 });
 
 const toggleMobileMenu = () => {
