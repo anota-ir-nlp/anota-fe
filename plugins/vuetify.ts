@@ -6,8 +6,12 @@ import { aliases, mdi } from "vuetify/iconsets/mdi";
 
 export default defineNuxtPlugin((nuxtApp) => {
   const vuetify = createVuetify({
+    ssr: true,
     components,
     directives,
+    theme: {
+      defaultTheme: "light",
+    },
     icons: {
       defaultSet: "mdi",
       aliases,
