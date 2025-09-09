@@ -1,0 +1,10 @@
+@'
+node_modules
+dist
+.nuxt
+.output
+.DS_Store
+.git
+.env
+npm-debug.log
+yarn-error.log

@@ -1,287 +1,625 @@
 <template>
-  <div
-    class="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-blue-950 text-white font-inter"
-  >
-    <!-- Header / Welcome Card -->
+  <div>
+    <!-- Welcome Section -->
     <section
-      class="w-full px-4 pt-8 pb-4 md:pt-12 md:pb-8 flex flex-col md:flex-row items-center md:items-start gap-6 max-w-7xl mx-auto"
+      class="w-full max-w-[95vw] mx-auto px-2 sm:px-4 pb-16 pt-10 flex flex-col gap-8"
     >
-      <div
-        class="glassmorphism-card flex-1 flex flex-col md:flex-row items-center gap-6 p-6 md:p-8 shadow-xl"
+      <Card
+        variant="glassmorphism"
+        class="p-0 border border-gray-200 bg-gradient-to-r from-green-500 to-green-600 text-white w-full !shadow-none"
       >
-        <UAvatar
-          :src="userData.avatar"
-          :alt="userData.name"
-          size="2xl"
-          class="border-4 border-blue-500/50 shadow-lg"
-        />
-        <div class="flex-1 text-center md:text-left">
-          <div
-            class="flex items-center gap-2 justify-center md:justify-start mb-2"
-          >
-            <span class="text-lg text-gray-400">Hi,</span>
-            <span class="text-2xl md:text-3xl font-bold text-white">
-              {{ userData.name }}
-            </span>
-            <span
-              class="ml-2 px-2 py-0.5 rounded bg-blue-700/30 text-blue-300 text-xs font-semibold uppercase tracking-wide"
+        <div class="flex flex-col md:flex-row items-center gap-8 p-8 w-full">
+          <Avatar class="w-24 h-24 ring-4 ring-green-400/30">
+            <AvatarImage :src="userData.avatar" :alt="userData.name" />
+            <AvatarFallback class="text-xl font-semibold">{{
+              userData.name.charAt(0)
+            }}</AvatarFallback>
+          </Avatar>
+          <div class="flex-1 text-center md:text-left">
+            <div
+              class="flex items-center gap-3 justify-center md:justify-start mb-3 text-3xl"
             >
-              {{ userData.role }}
-            </span>
+              <span
+                class="font-medium text-white bg-white/10 px-4 py-2 rounded-lg"
+              >
+                Hi,
+              </span>
+              <span class="font-bold text-white">{{ userData.name }}</span>
+            </div>
+            <div class="flex gap-2 mt-2 mb-8">
+              <Badge
+                v-for="role in userData.roles"
+                :key="role"
+                variant="green"
+                class="text-xs uppercase tracking-wider font-semibold px-3 py-1 bg-white/20 text-white border border-white/30"
+              >
+                {{ role }}
+              </Badge>
+            </div>
+            <div
+              class="flex flex-wrap gap-4 justify-center md:justify-start text-sm"
+            >
+              <span class="flex items-center gap-2 text-white/80 font-medium">
+                <Mail class="w-4 h-4" />
+                {{ userData.email }}
+              </span>
+              <span class="flex items-center gap-2 text-white/80 font-medium">
+                <Calendar class="w-4 h-4" />
+                Bergabung {{ userData.memberSince }}
+              </span>
+            </div>
           </div>
-          <div class="text-gray-400 text-base md:text-lg mb-2">
-            <span class="hidden md:inline">Selamat datang kembali.</span>
-            <span class="inline md:hidden">Selamat datang.</span>
+          <div class="hidden md:block">
+            <Button
+              variant="outline"
+              size="lg"
+              class="bg-transparent text-white border border-gray-300 hover:bg-gray-100/10 hover:text-gray-900"
+              @click="navigateTo('/')"
+            >
+              <ArrowLeft class="w-4 h-4" />
+              Ke Halaman Utama
+            </Button>
           </div>
-          <div
-            class="flex flex-wrap gap-3 justify-center md:justify-start text-sm mt-2"
+        </div>
+      </Card>
+
+      <!-- Activity Timeline -->
+      <Card
+        variant="glassmorphism"
+        class="p-8 bg-white/90 border border-gray-200 w-full !shadow-none"
+      >
+        <h3
+          class="text-2xl font-bold mb-6 flex items-center gap-3 text-gray-900"
+        >
+          <Clock class="w-7 h-7 text-blue-400" />
+          Aktivitas Terbaru
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6">
+          <Card
+            v-for="activity in recentActivities"
+            :key="activity.id"
+            variant="glassmorphism"
+            class="flex flex-col items-start gap-4 p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 border border-gray-200 bg-white/80 w-full !shadow-none"
           >
-            <span class="flex items-center gap-1">
-              <UIcon
-                name="i-heroicons-envelope"
-                class="w-4 h-4 text-gray-400"
+            <div class="flex items-center gap-4 mb-2">
+              <component
+                :is="getIcon(activity.icon)"
+                :class="`w-8 h-8 ${activity.color}`"
               />
-              {{ userData.email }}
+              <div>
+                <p class="font-semibold text-gray-900 text-lg">
+                  {{ activity.title }}
+                </p>
+                <p class="text-sm text-gray-500 mt-1">
+                  {{ activity.description }}
+                </p>
+              </div>
+            </div>
+            <span class="text-xs text-gray-400 mt-2 font-medium">
+              {{ activity.time }}
             </span>
-            <span class="flex items-center gap-1">
-              <UIcon
-                name="i-heroicons-calendar"
-                class="w-4 h-4 text-gray-400"
-              />
-              Bergabung {{ userData.memberSince }}
-            </span>
-          </div>
+          </Card>
         </div>
-        <div class="hidden md:flex flex-col gap-2 items-end">
-          <UButton
-            icon="i-heroicons-arrow-left"
-            label="Ke Halaman Utama"
-            color="neutral"
-            variant="ghost"
-            :ui="{
-              base: 'rounded-full px-6 py-2 font-semibold border border-white/10 hover:bg-white/10',
-            }"
-            @click="navigateTo('/')"
-          />
-        </div>
-      </div>
+      </Card>
     </section>
 
-    <!-- Statistics Grid -->
-    <section class="w-full max-w-7xl mx-auto px-4 pb-8 flex-1">
-      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mt-6">
-        <div
-          class="glassmorphism-card p-6 flex flex-col items-center shadow group hover:scale-[1.03] transition"
-        >
-          <UIcon
-            name="i-lucide-file-text"
-            class="w-10 h-10 text-green-400 mb-2"
-          />
-          <span class="text-3xl font-bold text-white">
-            {{ statsData.documentsAnnotated }}
-          </span>
-          <span class="text-gray-400 mt-1 text-sm">Dokumen Dianotasi</span>
+    <!-- Role-specific Content -->
+    <section
+      class="w-full max-w-[95vw] mx-auto px-2 sm:px-4 pb-12 flex-col space-y-20"
+    >
+      <!-- Admin Dashboard -->
+      <div v-if="hasRole('Admin')" class="space-y-8">
+        <!-- Admin Role Header -->
+        <div class="flex items-center gap-4 mb-8">
+          <div class="p-3 rounded-lg bg-blue-500/10 border border-blue-200">
+            <Users class="w-8 h-8 text-blue-500" />
+          </div>
+          <div>
+            <h2 class="text-3xl font-bold text-gray-900">Dashboard Admin</h2>
+            <p class="text-gray-500 text-lg">Kelola sistem dan pengguna</p>
+          </div>
         </div>
-        <div
-          class="glassmorphism-card p-6 flex flex-col items-center shadow group hover:scale-[1.03] transition"
-        >
-          <UIcon
-            name="i-lucide-check-circle"
-            class="w-10 h-10 text-blue-400 mb-2"
-          />
-          <span class="text-3xl font-bold text-white">
-            {{ userData.totalReviews }}
-          </span>
-          <span class="text-gray-400 mt-1 text-sm">Total Tinjauan</span>
-        </div>
-        <div
-          class="glassmorphism-card p-6 flex flex-col items-center shadow group hover:scale-[1.03] transition"
-        >
-          <UIcon
-            name="i-lucide-alert-triangle"
-            class="w-10 h-10 text-red-400 mb-2"
-          />
-          <span class="text-3xl font-bold text-white">
-            {{ statsData.annotationErrorsReviewed }}
-          </span>
-          <span class="text-gray-400 mt-1 text-sm">Kesalahan Direview</span>
-        </div>
-        <div
-          class="glassmorphism-card p-6 flex flex-col items-center shadow group hover:scale-[1.03] transition"
-        >
-          <UIcon
-            name="i-lucide-bar-chart-2"
-            class="w-10 h-10 text-purple-400 mb-2"
-          />
-          <span class="text-3xl font-bold text-white">
-            {{ userData.totalAnnotations }}
-          </span>
-          <span class="text-gray-400 mt-1 text-sm">Total Anotasi</span>
-        </div>
-      </div>
 
-      <!-- Charts Section -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
-        <!-- Bar Chart -->
-        <div class="glassmorphism-card p-6 shadow">
-          <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
-            <UIcon
-              name="i-lucide-folder-open"
-              class="w-6 h-6 text-yellow-400"
-            />
-            Dokumen per Kategori
-          </h3>
-          <div class="chart-container">
-            <div
-              v-for="(category, i) in categoryData"
-              :key="i"
-              class="bar-chart-item"
-            >
-              <span class="bar-label">{{ category.name }}</span>
-              <div class="bar-wrapper">
-                <div
-                  class="bar"
-                  :style="{
-                    width: (category.count / maxCategoryCount) * 100 + '%',
-                  }"
-                ></div>
-                <span class="bar-value">{{ category.count }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- Line Chart -->
-        <div class="glassmorphism-card p-6 shadow">
-          <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
-            <UIcon name="i-lucide-trending-up" class="w-6 h-6 text-green-400" />
-            Trend Anotasi Bulanan
-          </h3>
-          <div class="line-chart-container">
-            <svg
-              class="line-chart"
-              viewBox="0 0 400 150"
-              preserveAspectRatio="none"
-            >
-              <polyline
-                fill="none"
-                stroke="#818cf8"
-                stroke-width="2"
-                :points="monthlyDataPoints"
-                class="chart-line"
-              />
-              <polyline
-                fill="rgba(129, 140, 248, 0.2)"
-                stroke="none"
-                :points="monthlyDataAreaPoints"
-                class="chart-area"
-              />
-              <g class="chart-labels">
-                <text
-                  v-for="(point, i) in monthlyDataPointsArray"
-                  :key="i"
-                  :x="point.x"
-                  :y="point.y - 5"
-                  text-anchor="middle"
-                  font-size="10"
-                  fill="#cbd5e1"
-                >
-                  {{ point.value }}
-                </text>
-                <text
-                  v-for="(month, i) in monthlyData"
-                  :key="i"
-                  :x="(i / (monthlyData.length - 1)) * 380 + 10"
-                  y="145"
-                  text-anchor="middle"
-                  font-size="10"
-                  fill="#94a3b8"
-                >
-                  {{ month.month.substring(0, 3) }}
-                </text>
-              </g>
-            </svg>
-          </div>
-        </div>
-      </div>
-
-      <!-- Contribution Graph -->
-      <div class="glassmorphism-card mt-10 p-6 shadow">
-        <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
-          <UIcon name="i-lucide-calendar-days" class="w-6 h-6 text-blue-400" />
-          Performa Anotasi Harian
-        </h3>
-        <div class="flex flex-col items-center">
-          <div class="flex items-center justify-between w-full mb-2">
-            <span class="text-xs text-gray-400 font-mono">
-              {{ graphStartDate }}
-            </span>
-            <span class="text-xs text-gray-400 font-mono">
-              {{ graphEndDate }}
-            </span>
-          </div>
-          <div class="overflow-x-auto w-full">
-            <div class="flex">
-              <!-- Day of week labels -->
-              <div class="flex flex-col justify-between mr-2 h-[112px] pt-[18px]">
-                <span class="text-xs text-gray-500 block h-[16px]">Sen</span>
-                <span class="text-xs text-gray-500 block h-[16px]">Rab</span>
-                <span class="text-xs text-gray-500 block h-[16px]">Jum</span>
-                <span class="text-xs text-gray-500 block h-[16px]">Min</span>
-              </div>
-              <div>
-                <!-- Month labels -->
-                <div class="flex mb-1 ml-[18px]">
-                  <span
-                    v-for="(label, i) in monthLabels"
-                    :key="i"
-                    class="text-xs text-gray-400 w-[15px] text-center font-semibold"
-                  >
-                    {{ label }}
-                  </span>
-                </div>
-                <!-- Contribution grid -->
-                <div class="flex">
-                  <div
-                    class="flex flex-col"
-                    v-for="(week, wIdx) in contributionWeeks"
-                    :key="wIdx"
-                  >
-                    <div
-                      v-for="(day, dIdx) in week"
-                      :key="dIdx"
-                      class="relative group"
-                    >
-                      <div
-                        :class="['grid-cell', `level-${day.level}`]"
-                        style="width: 15px; height: 15px; margin-bottom: 3px; border-radius: 4px;"
-                      ></div>
-                      <!-- Tooltip -->
-                      <div
-                        v-if="day.count > 0"
-                        class="absolute z-20 left-1/2 -translate-x-1/2 -top-8 bg-gray-900/90 text-white text-xs rounded px-2 py-1 shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-nowrap"
-                      >
-                        <span class="font-bold">{{ day.count }}</span> anotasi<br />
-                        <span class="font-mono">{{ day.date }}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div
-            class="flex justify-between text-xs text-gray-400 mt-3 w-full px-2"
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+          <Card
+            v-if="pending"
+            v-for="i in 4"
+            :key="i"
+            variant="glassmorphism"
+            class="p-6 animate-pulse bg-white/80 border border-gray-200 w-full !shadow-none"
           >
-            <span>Kurang</span>
-            <span class="flex items-center gap-1">
-              <span class="w-3 h-3 rounded-sm bg-level-1"></span>
-              <span class="w-3 h-3 rounded-sm bg-level-2"></span>
-              <span class="w-3 h-3 rounded-sm bg-level-3"></span>
-              <span class="w-3 h-3 rounded-sm bg-level-4"></span>
-              <span>Banyak</span>
-            </span>
+            <div class="w-12 h-12 bg-gray-200 rounded-lg mb-4"></div>
+            <div class="w-16 h-8 bg-gray-200 rounded mb-3"></div>
+            <div class="w-28 h-4 bg-gray-200 rounded"></div>
+          </Card>
+
+          <Card
+            v-else
+            v-for="stat in adminStats"
+            :key="stat.label"
+            variant="glassmorphism"
+            class="p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 group cursor-pointer bg-white/80 border border-gray-200 w-full !shadow-none"
+          >
+            <div class="flex items-center justify-between mb-6">
+              <component
+                :is="getIcon(stat.icon)"
+                :class="`w-12 h-12 ${stat.color} group-hover:scale-110 transition-transform duration-300`"
+              />
+              <span class="text-3xl font-bold text-gray-900">{{
+                stat.value
+              }}</span>
+            </div>
+            <h3 class="text-gray-800 font-semibold text-lg mb-2">
+              {{ stat.label }}
+            </h3>
+            <p class="text-sm text-gray-500 leading-relaxed">
+              {{ stat.description }}
+            </p>
+          </Card>
+        </div>
+
+        <!-- Quick Actions -->
+        <Card
+          variant="glassmorphism"
+          class="p-8 bg-white/90 border border-gray-200 w-full !shadow-none"
+        >
+          <h3
+            class="text-2xl font-bold mb-6 flex items-center gap-3 text-gray-900"
+          >
+            <Zap class="w-7 h-7 text-yellow-500" />
+            Aksi Cepat
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Button
+              variant="outline"
+              size="lg"
+              class="justify-start h-14 text-base font-medium"
+              @click="navigateTo('/admin/pengguna')"
+            >
+              <UserPlus class="w-5 h-5" />
+              Kelola Pengguna
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              class="justify-start h-14 text-base font-medium"
+              @click="navigateTo('/admin/dokumen')"
+            >
+              <FilePlus class="w-5 h-5" />
+              Kelola Dokumen
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              class="justify-start h-14 text-base font-medium"
+              @click="navigateTo('/admin/error')"
+            >
+              <AlertTriangle class="w-5 h-5" />
+              Kelola Error
+            </Button>
+          </div>
+        </Card>
+      </div>
+
+      <!-- Annotator Dashboard -->
+      <div v-if="hasRole('Annotator')" class="space-y-8">
+        <!-- Annotator Role Header -->
+        <div class="flex items-center gap-4 mb-8">
+          <div class="p-3 rounded-lg bg-green-500/10 border border-green-200">
+            <Pencil class="w-8 h-8 text-green-500" />
+          </div>
+          <div>
+            <h2 class="text-3xl font-bold text-gray-900">Dashboard Anotator</h2>
+            <p class="text-gray-500 text-lg">Kelola tugas anotasi Anda</p>
           </div>
         </div>
+
+        <!-- Progress Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card
+            variant="glassmorphism"
+            class="p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 bg-white/80 border border-gray-200 w-full !shadow-none cursor-pointer"
+          >
+            <div class="flex items-center justify-between mb-6">
+              <FileText class="w-12 h-12 text-blue-500" />
+              <span class="text-3xl font-bold text-gray-900">{{
+                annotatorStats.assignedDocuments || 0
+              }}</span>
+            </div>
+            <h3 class="text-gray-800 font-semibold text-lg mb-2">
+              Dokumen Ditugaskan
+            </h3>
+            <p class="text-sm text-gray-500 leading-relaxed">
+              Dokumen yang harus dianotasi
+            </p>
+          </Card>
+
+          <Card
+            variant="glassmorphism"
+            class="p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 bg-white/80 border border-gray-200 w-full !shadow-none cursor-pointer"
+          >
+            <div class="flex items-center justify-between mb-6">
+              <CheckCircle class="w-12 h-12 text-green-500" />
+              <span class="text-3xl font-bold text-gray-900">{{
+                annotatorStats.completedDocuments || 0
+              }}</span>
+            </div>
+            <h3 class="text-gray-800 font-semibold text-lg mb-2">
+              Dokumen Selesai
+            </h3>
+            <p class="text-sm text-gray-500 leading-relaxed">
+              Dokumen yang telah dianotasi
+            </p>
+          </Card>
+
+          <Card
+            variant="glassmorphism"
+            class="p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 bg-white/80 border border-gray-200 w-full !shadow-none cursor-pointer"
+          >
+            <div class="flex items-center justify-between mb-6">
+              <Clock class="w-12 h-12 text-yellow-500" />
+              <span class="text-3xl font-bold text-gray-900">{{
+                annotatorStats.inProgressDocuments || 0
+              }}</span>
+            </div>
+            <h3 class="text-gray-800 font-semibold text-lg mb-2">
+              Sedang Dikerjakan
+            </h3>
+            <p class="text-sm text-gray-500 leading-relaxed">
+              Dokumen dalam proses
+            </p>
+          </Card>
+        </div>
+
+        <!-- Recent Assignments -->
+        <Card
+          variant="glassmorphism"
+          class="p-8 bg-white/90 border border-gray-200 w-full !shadow-none"
+        >
+          <h3
+            class="text-2xl font-bold mb-6 flex items-center gap-3 text-gray-900"
+          >
+            <ClipboardList class="w-7 h-7 text-blue-500" />
+            Tugas Terbaru
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <Card
+              v-for="task in recentTasks"
+              :key="task.id"
+              variant="glassmorphism"
+              class="flex flex-col items-start gap-4 p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 border border-gray-200 bg-white/80 w-full !shadow-none cursor-pointer"
+              @click="navigateTo(`/anotator/anotasi/${task.id}`)"
+            >
+              <div class="flex items-center gap-4 mb-2">
+                <FileText class="w-8 h-8 text-blue-400" />
+                <div>
+                  <h4 class="font-semibold text-gray-900 text-lg">
+                    {{ task.title }}
+                  </h4>
+                  <p class="text-sm text-gray-500 mt-1">
+                    {{ task.sentences }} kalimat
+                  </p>
+                </div>
+              </div>
+              <span
+                class="text-xs font-semibold px-3 py-1 rounded border border-gray-300 text-gray-700 bg-gray-50"
+                :class="{
+                  'text-blue-700 border-blue-200 bg-blue-50':
+                    getTaskStatusColor(task.status) === 'blue',
+                  'text-yellow-700 border-yellow-200 bg-yellow-50':
+                    getTaskStatusColor(task.status) === 'yellow',
+                  'text-green-700 border-green-200 bg-green-50':
+                    getTaskStatusColor(task.status) === 'green',
+                  'text-purple-700 border-purple-200 bg-purple-50':
+                    getTaskStatusColor(task.status) === 'purple',
+                }"
+              >
+                {{ task.status }}
+              </span>
+            </Card>
+          </div>
+          <div class="mt-8 pt-6 border-t border-gray-200 text-center">
+            <Button
+              variant="outline"
+              size="lg"
+              class="hover:bg-gray-900 hover:text-white transition"
+              @click="navigateTo('/anotator/anotasi')"
+            >
+              Lihat Semua Tugas
+              <ArrowRight class="w-4 h-4" />
+            </Button>
+          </div>
+        </Card>
+      </div>
+
+      <!-- Reviewer Dashboard -->
+      <div v-if="hasRole('Reviewer')" class="space-y-8">
+        <!-- Reviewer Role Header -->
+        <div class="flex items-center gap-4 mb-8">
+          <div class="p-3 rounded-lg bg-purple-500/10 border border-purple-200">
+            <Eye class="w-8 h-8 text-purple-500" />
+          </div>
+          <div>
+            <h2 class="text-3xl font-bold text-gray-900">Dashboard Reviewer</h2>
+            <p class="text-gray-500 text-lg">Tinjau dan validasi anotasi</p>
+          </div>
+        </div>
+
+        <!-- Review Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card
+            variant="glassmorphism"
+            class="p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 bg-white/80 border border-gray-200 w-full !shadow-none cursor-pointer"
+          >
+            <div class="flex items-center justify-between mb-6">
+              <Eye class="w-12 h-12 text-purple-500" />
+              <span class="text-3xl font-bold text-gray-900">{{
+                reviewerStats.pendingReviews || 0
+              }}</span>
+            </div>
+            <h3 class="text-gray-800 font-semibold text-lg mb-2">
+              Menunggu Review
+            </h3>
+            <p class="text-sm text-gray-500 leading-relaxed">
+              Dokumen yang perlu ditinjau
+            </p>
+          </Card>
+
+          <Card
+            variant="glassmorphism"
+            class="p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 bg-white/80 border border-gray-200 w-full !shadow-none cursor-pointer"
+          >
+            <div class="flex items-center justify-between mb-6">
+              <CheckCircle2 class="w-12 h-12 text-green-500" />
+              <span class="text-3xl font-bold text-gray-900">{{
+                reviewerStats.completedReviews || 0
+              }}</span>
+            </div>
+            <h3 class="text-gray-800 font-semibold text-lg mb-2">
+              Review Selesai
+            </h3>
+            <p class="text-sm text-gray-500 leading-relaxed">
+              Dokumen yang telah direview
+            </p>
+          </Card>
+
+          <Card
+            variant="glassmorphism"
+            class="p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 bg-white/80 border border-gray-200 w-full !shadow-none cursor-pointer"
+          >
+            <div class="flex items-center justify-between mb-6">
+              <AlertTriangle class="w-12 h-12 text-yellow-500" />
+              <span class="text-3xl font-bold text-gray-900">{{
+                reviewerStats.errorsFound || 0
+              }}</span>
+            </div>
+            <h3 class="text-gray-800 font-semibold text-lg mb-2">
+              Error Ditemukan
+            </h3>
+            <p class="text-sm text-gray-500 leading-relaxed">
+              Total error yang ditemukan
+            </p>
+          </Card>
+        </div>
+
+        <!-- Review Queue -->
+        <Card
+          variant="glassmorphism"
+          class="p-8 bg-white/90 border border-gray-200 w-full !shadow-none"
+        >
+          <h3
+            class="text-2xl font-bold mb-6 flex items-center gap-3 text-gray-900"
+          >
+            <List class="w-7 h-7 text-purple-500" />
+            Antrian Review
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <Card
+              v-for="review in reviewQueue"
+              :key="review.id"
+              variant="glassmorphism"
+              class="flex flex-col items-start gap-4 p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 border border-gray-200 bg-white/80 w-full !shadow-none cursor-pointer"
+              @click="navigateTo(`/reviewer/review/${review.id}`)"
+            >
+              <div class="flex items-center gap-4 mb-2">
+                <FileCheck class="w-8 h-8 text-purple-400" />
+                <div>
+                  <h4 class="font-semibold text-gray-900 text-lg">
+                    {{ review.title }}
+                  </h4>
+                  <p class="text-sm text-gray-500 mt-1">
+                    Oleh {{ review.annotator }}
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 mt-2 w-full justify-between">
+                <span
+                  class="text-xs font-semibold px-3 py-1 rounded border border-gray-300 text-gray-700 bg-gray-50"
+                  :class="{
+                    'text-red-700 border-red-200 bg-red-50':
+                      review.priority === 'High',
+                    'text-yellow-700 border-yellow-200 bg-yellow-50':
+                      review.priority === 'Medium',
+                    'text-gray-700 border-gray-200 bg-gray-50':
+                      review.priority === 'Low',
+                  }"
+                >
+                  {{ review.priority }}
+                </span>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  class="flex items-center gap-2"
+                >
+                  <Eye class="w-4 h-4" />
+                  Review
+                </Button>
+              </div>
+            </Card>
+          </div>
+          <div class="mt-8 pt-6 border-t border-gray-200 text-center">
+            <Button
+              variant="outline"
+              size="lg"
+              @click="navigateTo('/reviewer/review')"
+            >
+              Lihat Semua Review
+              <ArrowRight class="w-4 h-4" />
+            </Button>
+          </div>
+        </Card>
+      </div>
+
+      <!-- Kepala Riset Dashboard -->
+      <div v-if="hasRole('Kepala Riset')" class="space-y-8">
+        <!-- Research Head Role Header -->
+        <div class="flex items-center gap-4 mb-8">
+          <div class="p-3 rounded-lg bg-yellow-500/10 border border-yellow-200">
+            <BarChart3 class="w-8 h-8 text-yellow-500" />
+          </div>
+          <div>
+            <h2 class="text-3xl font-bold text-gray-900">
+              Dashboard Kepala Riset
+            </h2>
+            <p class="text-gray-500 text-lg">
+              Pantau progress dan generate dataset
+            </p>
+          </div>
+        </div>
+
+        <!-- Overview Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+          <Card
+            v-for="stat in researchStats"
+            :key="stat.label"
+            variant="glassmorphism"
+            class="p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 cursor-pointer bg-white/80 border border-gray-200 w-full !shadow-none"
+          >
+            <div class="flex items-center justify-between mb-6">
+              <component
+                :is="getIcon(stat.icon)"
+                :class="`w-12 h-12 ${stat.color}`"
+              />
+              <span class="text-3xl font-bold text-gray-900">{{
+                stat.value
+              }}</span>
+            </div>
+            <h3 class="text-gray-800 font-semibold text-lg mb-2">
+              {{ stat.label }}
+            </h3>
+            <p class="text-sm text-gray-500 leading-relaxed">
+              {{ stat.description }}
+            </p>
+          </Card>
+        </div>
+
+        <!-- Progress Chart -->
+        <Card
+          variant="glassmorphism"
+          class="p-8 bg-white/90 border border-gray-200 w-full !shadow-none"
+        >
+          <h3
+            class="text-2xl font-bold mb-8 flex items-center gap-3 text-gray-900"
+          >
+            <BarChart3 class="w-7 h-7 text-green-500" />
+            Progress Proyek
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Progress Bars -->
+            <div class="space-y-6">
+              <div>
+                <div class="flex justify-between text-sm mb-2">
+                  <span class="text-gray-500">Anotasi</span>
+                  <span class="text-gray-400"
+                    >{{
+                      Math.round(
+                        ((researchStats.find(
+                          (stat: any) => stat.label === "Total Anotasi"
+                        )?.value || 0) /
+                          1000) *
+                          100
+                      )
+                    }}%</span
+                  >
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    class="bg-blue-500 h-2 rounded-full transition-all duration-1000"
+                    :style="`width: ${Math.round(((researchStats.find((stat: any) => stat.label === 'Total Anotasi')?.value || 0) / 1000) * 100)}%`"
+                  ></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-sm mb-2">
+                  <span class="text-gray-500">Review</span>
+                  <span class="text-gray-400"
+                    >{{
+                      Math.round(
+                        ((researchStats.find(
+                          (stat: any) => stat.label === "Review Selesai"
+                        )?.value || 0) /
+                          800) *
+                          100
+                      )
+                    }}%</span
+                  >
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    class="bg-green-500 h-2 rounded-full transition-all duration-1000"
+                    :style="`width: ${Math.round(((researchStats.find((stat: any) => stat.label === 'Review Selesai')?.value || 0) / 800) * 100)}%`"
+                  ></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-sm mb-2">
+                  <span class="text-gray-500">Dataset Generation</span>
+                  <span class="text-gray-400">75%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    class="bg-purple-500 h-2 rounded-full transition-all duration-1000"
+                    style="width: 75%"
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="space-y-4">
+              <Button
+                variant="outline"
+                size="lg"
+                class="w-full justify-start h-14 text-base font-medium bg-black text-white border border-gray-900 hover:bg-gray-800 hover:scale-105 hover:shadow-lg transition-all duration-200 active:scale-95"
+                @click="navigateTo('/kepala-riset/dataset')"
+              >
+                <Download class="w-5 h-5" />
+                Generate Dataset
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                class="w-full justify-start h-14 text-base font-medium"
+                @click="navigateTo('/kepala-riset/kinerja')"
+              >
+                <BarChart3 class="w-5 h-5" />
+                Rekap Kinerja
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                class="w-full justify-start h-14 text-base font-medium"
+                @click="navigateTo('/kepala-riset/dokumen')"
+              >
+                <ClipboardList class="w-5 h-5" />
+                Rekap Dokumen
+              </Button>
+            </div>
+          </div>
+        </Card>
       </div>
     </section>
   </div>
@@ -289,518 +627,362 @@
 
 <script setup lang="ts">
 import { navigateTo } from "#app";
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Mail,
+  Calendar,
+  Zap,
+  UserPlus,
+  FilePlus,
+  AlertTriangle,
+  FileText,
+  CheckCircle,
+  Clock,
+  ClipboardList,
+  Eye,
+  CheckCircle2,
+  List,
+  FileCheck,
+  BarChart3,
+  Download,
+  Users,
+  Pencil,
+} from "lucide-vue-next";
+import { Card } from "~/components/ui/card";
+import { Button } from "~/components/ui/button";
+import { Badge } from "~/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "~/components/ui/avatar";
+import { useAuth } from "~/data/auth";
 
-const toast = useToast(); // Initialize useToast
+const { user } = useAuth();
 
-const userRole = useState<string>("userRole", () => "Pengguna"); // Default to 'Pengguna' if not set
-const userName = useState<string>("userName", () => "Pengguna Anonim"); // Default to 'Pengguna Anonim' if not set
+// Loading state
+const pending = ref(false);
 
-// Dummy User Data
-const userData = ref({
-  name: userName.value,
-  email: "pengguna@anota.com",
-  role: userRole.value,
-  memberSince: "1 Januari 2024",
-  totalAnnotations: 1250,
-  totalReviews: 875,
-  avatar: "https://avatars.githubusercontent.com/u/739984?v=4", // Example avatar
-});
-
-// Dummy Statistics Data
-const statsData = ref({
-  documentsAnnotated: 150,
-  documentsReviewed: 120,
-  documentsPendingAnnotation: 30, // Not directly used in new overview cards, but kept for context
-  annotationErrorsReviewed: 45,
-});
-
-// Dummy Data for Bar Chart (Jumlah Dokumen per Kategori)
-const categoryData = ref([
-  { name: "Teks", count: 80 },
-  { name: "Gambar", count: 40 },
-  { name: "Video", count: 20 },
-  { name: "Audio", count: 10 },
-]);
-const maxCategoryCount = computed(() =>
-  Math.max(...categoryData.value.map((c) => c.count))
-);
-
-// Dummy Data for Line Chart (Trend Anotasi Bulanan)
-const monthlyData = ref([
-  { month: "Jan", count: 20 },
-  { month: "Feb", count: 35 },
-  { month: "Mar", count: 50 },
-  { month: "Apr", count: 45 },
-  { month: "Mei", count: 60 },
-  { month: "Jun", count: 75 },
-  { month: "Jul", count: 80 },
-]);
-
-// Computed properties for Line Chart SVG points
-const monthlyDataPoints = computed(() => {
-  if (monthlyData.value.length === 0) return "";
-  const maxCount = Math.max(...monthlyData.value.map((d) => d.count));
-  const minCount = Math.min(...monthlyData.value.map((d) => d.count));
-  const range = maxCount - minCount === 0 ? 1 : maxCount - minCount; // Avoid division by zero
-
-  return monthlyData.value
-    .map((d, i) => {
-      const x = (i / (monthlyData.value.length - 1)) * 380 + 10; // Scale x to 10-390 (400 width - 2*10 padding)
-      const y = 130 - ((d.count - minCount) / range) * 100; // Scale y to 30-130 (150 height - 20 top/bottom padding)
-      return `${x},${y}`;
-    })
-    .join(" ");
-});
-
-const monthlyDataPointsArray = computed(() => {
-  if (monthlyData.value.length === 0) return [];
-  const maxCount = Math.max(...monthlyData.value.map((d) => d.count));
-  const minCount = Math.min(...monthlyData.value.map((d) => d.count));
-  const range = maxCount - minCount === 0 ? 1 : maxCount - minCount;
-
-  return monthlyData.value.map((d, i) => {
-    const x = (i / (monthlyData.value.length - 1)) * 380 + 10;
-    const y = 130 - ((d.count - minCount) / range) * 100;
-    return { x, y, value: d.count };
-  });
-});
-
-const monthlyDataAreaPoints = computed(() => {
-  if (monthlyData.value.length === 0) return "";
-  const points = monthlyDataPoints.value;
-  const lastX =
-    monthlyDataPointsArray.value[monthlyDataPointsArray.value.length - 1]?.x ||
-    0;
-  const firstX = monthlyDataPointsArray.value[0]?.x || 0;
-  return `${points} ${lastX},130 ${firstX},130`; // Close the area to the bottom
-});
-
-// Dummy Daily Performance Data (GitHub-like contribution graph)
-const generateDailyPerformance = (days: number) => {
-  const data = [];
-  const today = new Date();
-  for (let i = 0; i < days; i++) {
-    const date = new Date(today);
-    date.setDate(today.getDate() - (days - 1 - i)); // Go back in time
-    const count = Math.floor(Math.random() * 11); // 0 to 10 annotations per day
-    let level = 0;
-    if (count > 0 && count <= 2) level = 1;
-    else if (count > 2 && count <= 5) level = 2;
-    else if (count > 5 && count <= 8) level = 3;
-    else if (count > 8) level = 4;
-
-    data.push({
-      date: date.toLocaleDateString("id-ID", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      }),
-      count,
-      level,
-    });
-  }
-  return data;
+// Helper function to get icon component
+const getIcon = (iconName: string) => {
+  const iconMap: Record<string, any> = {
+    users: Users,
+    "document-text": FileText,
+    "clipboard-document-list": ClipboardList,
+    "exclamation-triangle": AlertTriangle,
+    pencil: Pencil,
+    "check-circle": CheckCircle,
+    "arrow-down-tray": Download,
+    "user-group": Users,
+    "chart-bar": BarChart3,
+    clock: Clock,
+    envelope: Mail,
+    calendar: Calendar,
+    bolt: Zap,
+    "user-plus": UserPlus,
+    "document-plus": FilePlus,
+    eye: Eye,
+    "check-badge": CheckCircle2,
+    "queue-list": List,
+    "document-check": FileCheck,
+  };
+  return iconMap[iconName] || FileText;
 };
 
-const dailyPerformance = ref(generateDailyPerformance(90)); // Last 90 days
+// User data computed from auth
+const userData = computed(() => ({
+  name: user.value?.full_name || "Pengguna",
+  email: user.value?.email || "pengguna@anota.com",
+  roles: user.value?.roles || ["Pengguna"],
+  memberSince: user.value?.date_joined
+    ? new Date(user.value.date_joined).toLocaleDateString("id-ID")
+    : "1 Januari 2024",
+  avatar:
+    user.value?.avatarUrl ||
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(
+      user.value?.full_name || "User"
+    )}&background=0ea5e9&color=fff`,
+}));
 
-// Tabs for statistics section
-const tabItems = [
+// Role checks
+const hasRole = (role: string) => user.value?.roles?.includes(role) || false;
+
+// Admin stats
+const adminStats = ref([
   {
-    label: "Ringkasan Statistik",
-    icon: "i-heroicons-chart-pie",
-    slot: "ringkasan",
+    label: "Total Pengguna",
+    value: 0,
+    icon: "users",
+    color: "text-blue-400",
+    description: "Pengguna aktif sistem",
   },
   {
-    label: "Performa Harian",
-    icon: "i-heroicons-calendar-days",
-    slot: "performa",
+    label: "Dokumen Upload",
+    value: 0,
+    icon: "document-text",
+    color: "text-green-400",
+    description: "Dokumen dalam sistem",
   },
-];
-const selectedTab = ref(tabItems[0].slot); // Default to the first tab
+  {
+    label: "Tugas Aktif",
+    value: 0,
+    icon: "clipboard-document-list",
+    color: "text-orange-400",
+    description: "Tugas sedang dikerjakan",
+  },
+  {
+    label: "Error Terdeteksi",
+    value: 0,
+    icon: "exclamation-triangle",
+    color: "text-red-400",
+    description: "Error yang perlu ditangani",
+  },
+]);
 
-// Helper: get the start of the week (Monday) for a given date
-function getMonday(d: Date) {
-  const date = new Date(d);
-  const day = date.getDay();
-  const diff = (day === 0 ? -6 : 1) - day;
-  date.setDate(date.getDate() + diff);
-  date.setHours(0, 0, 0, 0);
-  return date;
+// Annotator stats
+const annotatorStats = ref({
+  assignedDocuments: 0,
+  completedDocuments: 0,
+  inProgressDocuments: 0,
+});
+
+// Reviewer stats
+const reviewerStats = ref({
+  pendingReviews: 0,
+  completedReviews: 0,
+  errorsFound: 0,
+});
+
+// Research stats
+const researchStats = ref([
+  {
+    label: "Total Anotasi",
+    value: 0,
+    icon: "pencil",
+    color: "text-blue-400",
+    description: "Anotasi yang telah dibuat",
+  },
+  {
+    label: "Review Selesai",
+    value: 0,
+    icon: "check-circle",
+    color: "text-green-400",
+    description: "Review yang telah selesai",
+  },
+  {
+    label: "Dataset Generated",
+    value: 0,
+    icon: "arrow-down-tray",
+    color: "text-purple-400",
+    description: "Dataset yang telah dibuat",
+  },
+  {
+    label: "Active Annotators",
+    value: 0,
+    icon: "user-group",
+    color: "text-orange-400",
+    description: "Anotator yang aktif",
+  },
+]);
+
+interface Task {
+  id: string;
+  title: string;
+  sentences: number;
+  status: string;
 }
 
-// Prepare 90 days of data, fill into 13 weeks (columns) × 7 days (rows)
-const contributionWeeks = computed(() => {
-  const days = 91;
-  const today = new Date();
-  const startDate = getMonday(
-    new Date(today.getTime() - (days - 1) * 24 * 60 * 60 * 1000)
-  );
-  const grid: any[][] = [];
-  let dayCursor = new Date(startDate);
+const recentTasks = ref<Task[]>([]);
 
-  for (let w = 0; w < 13; w++) {
-    const week: any[] = [];
-    for (let d = 0; d < 7; d++) {
-      const perf = dailyPerformance.value.find(
-        (p) =>
-          new Date(p.date).toLocaleDateString("id-ID") ===
-          dayCursor.toLocaleDateString("id-ID")
-      );
-      week.push(
-        perf
-          ? perf
-          : {
-              date: dayCursor.toLocaleDateString("id-ID", {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-              }),
-              count: 0,
-              level: 0,
-            }
-      );
-      dayCursor.setDate(dayCursor.getDate() + 1);
-    }
-    grid.push(week);
-  }
-  return grid;
-});
+const reviewQueue = ref<
+  Array<{
+    id: string;
+    title: string;
+    annotator: string;
+    priority: string;
+  }>
+>([]);
 
-// Month labels above the grid
-const monthLabels = computed(() => {
-  const labels: string[] = [];
-  let lastMonth = "";
-  for (let w = 0; w < 13; w++) {
-    const week = contributionWeeks.value[w];
-    if (!week) {
-      labels.push("");
-      continue;
-    }
-    const firstDay = week[0];
-    const date = new Date(firstDay.date);
-    const month = date.toLocaleString("id-ID", { month: "short" });
-    if (month !== lastMonth) {
-      labels.push(month);
-      lastMonth = month;
-    } else {
-      labels.push("");
-    }
-  }
-  return labels;
-});
+const recentActivities = ref<
+  Array<{
+    id: string;
+    title: string;
+    description: string;
+    time: string;
+    icon: string;
+    color: string;
+  }>
+>([]);
 
-// Date range for the graph
-const graphStartDate = computed(() => {
-  const first = contributionWeeks.value[0]?.[0];
-  if (!first) return "";
-  const date = new Date(first.date);
-  return date.toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-});
-const graphEndDate = computed(() => {
-  const lastWeek = contributionWeeks.value[contributionWeeks.value.length - 1];
-  const last = lastWeek?.[lastWeek.length - 1];
-  if (!last) return "";
-  const date = new Date(last.date);
-  return date.toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-});
+// Helper functions
+const getTaskStatusColor = (status: string) => {
+  const colorMap: Record<
+    string,
+    "blue" | "yellow" | "green" | "purple" | "gray"
+  > = {
+    Assigned: "blue",
+    "In Progress": "yellow",
+    Completed: "green",
+    "Under Review": "purple",
+  };
+  return colorMap[status] || "gray";
+};
 
+// Page meta
 useHead({
   title: "Beranda - ANOTA",
   meta: [{ name: "description", content: "Halaman beranda aplikasi ANOTA." }],
 });
+
+onMounted(async () => {
+  pending.value = true;
+  try {
+    await fetchDashboardData();
+  } catch (error) {
+    console.error("Error fetching dashboard data:", error);
+  } finally {
+    pending.value = false;
+  }
+});
+
+const fetchDashboardData = async () => {
+  if (hasRole("Admin")) {
+    adminStats.value = [
+      {
+        label: "Total Pengguna",
+        value: 42,
+        icon: "users",
+        color: "text-blue-400",
+        description: "Pengguna aktif sistem",
+      },
+      {
+        label: "Dokumen Upload",
+        value: 128,
+        icon: "document-text",
+        color: "text-green-400",
+        description: "Dokumen dalam sistem",
+      },
+      {
+        label: "Tugas Aktif",
+        value: 23,
+        icon: "clipboard-document-list",
+        color: "text-orange-400",
+        description: "Tugas sedang dikerjakan",
+      },
+      {
+        label: "Error Terdeteksi",
+        value: 5,
+        icon: "exclamation-triangle",
+        color: "text-red-400",
+        description: "Error yang perlu ditangani",
+      },
+    ];
+  }
+
+  if (hasRole("Annotator")) {
+    annotatorStats.value = {
+      assignedDocuments: 15,
+      completedDocuments: 8,
+      inProgressDocuments: 7,
+    };
+    recentTasks.value = [
+      {
+        id: "1",
+        title: "Dokumen Berita 001",
+        sentences: 120,
+        status: "In Progress",
+      },
+      {
+        id: "2",
+        title: "Dokumen Berita 002",
+        sentences: 85,
+        status: "Assigned",
+      },
+      {
+        id: "3",
+        title: "Dokumen Berita 003",
+        sentences: 95,
+        status: "Completed",
+      },
+    ];
+  }
+
+  if (hasRole("Reviewer")) {
+    reviewerStats.value = {
+      pendingReviews: 12,
+      completedReviews: 45,
+      errorsFound: 8,
+    };
+    reviewQueue.value = [
+      {
+        id: "1",
+        title: "Review Anotasi Batch 001",
+        annotator: "John Doe",
+        priority: "High",
+      },
+      {
+        id: "2",
+        title: "Review Anotasi Batch 002",
+        annotator: "Jane Smith",
+        priority: "Medium",
+      },
+      {
+        id: "3",
+        title: "Review Anotasi Batch 003",
+        annotator: "Bob Wilson",
+        priority: "Low",
+      },
+    ];
+  }
+
+  if (hasRole("Kepala Riset")) {
+    researchStats.value = [
+      {
+        label: "Total Anotasi",
+        value: 750,
+        icon: "pencil",
+        color: "text-blue-400",
+        description: "Anotasi yang telah dibuat",
+      },
+      {
+        label: "Review Selesai",
+        value: 580,
+        icon: "check-circle",
+        color: "text-green-400",
+        description: "Review yang telah selesai",
+      },
+      {
+        label: "Dataset Generated",
+        value: 12,
+        icon: "arrow-down-tray",
+        color: "text-purple-400",
+        description: "Dataset yang telah dibuat",
+      },
+      {
+        label: "Active Annotators",
+        value: 8,
+        icon: "user-group",
+        color: "text-orange-400",
+        description: "Anotator yang aktif",
+      },
+    ];
+  }
+
+  recentActivities.value = [
+    {
+      id: "1",
+      title: "Login ke sistem",
+      description: "Anda berhasil masuk ke dalam sistem ANOTA",
+      time: "2 menit yang lalu",
+      icon: "check-circle",
+      color: "text-green-400",
+    },
+    {
+      id: "2",
+      title: "Tugas baru tersedia",
+      description: "Ada tugas anotasi baru yang dapat Anda kerjakan",
+      time: "1 jam yang lalu",
+      icon: "clipboard-document-list",
+      color: "text-blue-400",
+    },
+  ];
+};
 </script>
-
-<style scoped>
-/* Main container background */
-.min-h-screen {
-  background-color: #0f172a;
-}
-
-/* Glassmorphism card effect */
-.glassmorphism-card {
-  background-color: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1.5px solid rgba(255, 255, 255, 0.18);
-  border-radius: 1.5rem;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18), 0 1.5px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.glassmorphism-card:hover {
-  background-color: rgba(255, 255, 255, 0.16);
-  border-color: rgba(255, 255, 255, 0.28);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22), 0 2px 12px rgba(0, 0, 0, 0.13);
-}
-.glassmorphism-card-inner {
-  background-color: rgba(31, 41, 55, 0.7);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  border-radius: 1rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
-}
-
-/* Animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in {
-  animation: fadeIn 1s ease-out forwards;
-}
-
-.animate-fade-in-up {
-  animation: fadeIn 1s ease-out forwards;
-  animation-delay: 0.3s;
-  opacity: 0;
-}
-
-/* Statistics Minimal Cards */
-.stat-minimal-card {
-  background-color: rgba(31, 41, 55, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  border-radius: 0.75rem;
-  padding: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
-}
-.stat-minimal-card:hover {
-  transform: translateY(-3px) scale(1.03);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
-  border-color: rgba(255, 255, 255, 0.22);
-}
-.stat-minimal-icon {
-  width: 2.5rem;
-  height: 2.5rem;
-  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.18));
-}
-.stat-minimal-label {
-  font-size: 0.9rem;
-  color: #a0aec0;
-}
-.stat-minimal-value {
-  font-size: 1.75rem;
-  font-weight: bold;
-  color: white;
-  text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
-}
-
-/* Bar Chart Styles */
-.chart-container {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 1rem;
-}
-.bar-chart-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-.bar-label {
-  flex-shrink: 0;
-  width: 60px;
-  font-size: 0.9rem;
-  color: #a0aec0;
-}
-.bar-wrapper {
-  flex-grow: 1;
-  background-color: rgba(255, 255, 255, 0.07);
-  border-radius: 0.25rem;
-  height: 20px;
-  position: relative;
-  overflow: hidden;
-}
-.bar {
-  height: 100%;
-  background: linear-gradient(to right, #60a5fa, #9333ea);
-  border-radius: 0.25rem;
-  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  animation: barFill 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-.bar-value {
-  position: absolute;
-  right: 0.5rem;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 0.8rem;
-  font-weight: bold;
-  color: white;
-  text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-}
-@keyframes barFill {
-  from {
-    width: 0%;
-  }
-  to {
-    width: var(--bar-width);
-  }
-}
-
-/* Line Chart Styles */
-.line-chart-container {
-  width: 100%;
-  height: 180px;
-  padding: 10px;
-  box-sizing: border-box;
-}
-.line-chart {
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-.chart-line {
-  stroke-dasharray: 1000;
-  stroke-dashoffset: 1000;
-  animation: drawLine 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-.chart-area {
-  animation: fadeInArea 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  opacity: 0;
-}
-@keyframes drawLine {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-@keyframes fadeInArea {
-  to {
-    opacity: 1;
-  }
-}
-.chart-labels text {
-  font-family: "Inter", sans-serif;
-  transition: fill 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* GitHub-like Contribution Graph */
-.grid-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(15px, 1fr));
-  gap: 3px;
-  padding: 10px;
-  background-color: rgba(31, 41, 55, 0.7);
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  overflow-x: auto;
-  min-height: 100px;
-}
-.grid-cell {
-  width: 15px;
-  height: 15px;
-  background-color: #161b22;
-  border-radius: 2px;
-  transition: background 0.2s, box-shadow 0.2s;
-  cursor: pointer;
-  border-radius: 4px;
-  position: relative;
-}
-.grid-cell.level-0 {
-  background-color: #161b22;
-}
-.grid-cell.level-1 {
-  background-color: #0e4429;
-}
-.grid-cell.level-2 {
-  background-color: #006d32;
-}
-.grid-cell.level-3 {
-  background-color: #26a641;
-}
-.grid-cell.level-4 {
-  background-color: #39d353;
-}
-.grid-cell:hover,
-.grid-cell:focus {
-  box-shadow: 0 0 0 2px #60a5fa, 0 2px 8px rgba(0, 0, 0, 0.18);
-  z-index: 10;
-}
-.bg-level-1 {
-  background-color: #0e4429;
-}
-.bg-level-2 {
-  background-color: #006d32;
-}
-.bg-level-3 {
-  background-color: #26a641;
-}
-.bg-level-4 {
-  background-color: #39d353;
-}
-
-/* Override Nuxt UI Tabs styling for dark theme */
-:deep(.u-tabs) {
-  .u-tabs-list {
-    background-color: rgba(31, 41, 55, 0.8);
-    border-color: rgba(255, 255, 255, 0.1);
-    border-radius: 0.75rem;
-  }
-  .u-tabs-item {
-    color: #e2e8f0;
-    &.u-tabs-item-active {
-      color: white;
-      background-color: rgba(255, 255, 255, 0.1);
-    }
-  }
-}
-/* Darkest green/blue */
-.grid-cell.level-2 {
-  background-color: #006d32;
-} /* Darker green/blue */
-.grid-cell.level-3 {
-  background-color: #26a641;
-} /* Medium green/blue */
-.grid-cell.level-4 {
-  background-color: #39d353;
-} /* Lightest green/blue */
-
-/* Tailwind colors for the legend */
-.bg-level-1 {
-  background-color: #0e4429;
-}
-.bg-level-2 {
-  background-color: #006d32;
-}
-.bg-level-3 {
-  background-color: #26a641;
-}
-.bg-level-4 {
-  background-color: #39d353;
-}
-
-/* Override Nuxt UI Tabs styling for dark theme */
-:deep(.u-tabs) {
-  .u-tabs-list {
-    background-color: rgba(31, 41, 55, 0.8); /* Darker tab background */
-    border-color: rgba(255, 255, 255, 0.1);
-    border-radius: 0.75rem;
-  }
-  .u-tabs-item {
-    color: #e2e8f0; /* Light gray text */
-    &.u-tabs-item-active {
-      color: white; /* White text for active tab */
-      background-color: rgba(255, 255, 255, 0.1); /* Subtle active background */
-    }
-  }
-}
-</style>

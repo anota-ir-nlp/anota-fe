@@ -3,16 +3,13 @@ import type {
   UserResponse,
   UsersListResponse,
   UserDetailResponse,
-  CreateUserRequest,
-  CreateUserResponse,
-  UpdateUserRequest,
-  AddRoleRequest,
-  RemoveRoleRequest,
-  AddRoleResponse,
-  RemoveRoleResponse,
+  UserRegistrationRequest,
+  UserRegistrationResponse,
+  UserUpdateRequest,
+  UserPasswordResetRequest,
+  UserRoleManagementRequest,
+  AvailableRolesResponse,
   UserRolesResponse,
-  SwitchRoleRequest,
-  SwitchRoleResponse,
   ErrorResponse,
 } from "~/types/api";
 
@@ -21,52 +18,51 @@ const BASE = "/users";
 export function useUsersApi() {
   const { fetcher } = useProtectedFetcher();
 
-  const getUsers = () => fetcher<UsersListResponse[]>(BASE);
-  const getUser = (id: string) => fetcher<UserDetailResponse>(`${BASE}/${id}`);
-  const createUser = (data: CreateUserRequest) =>
-    fetcher<CreateUserResponse>(BASE, { method: "POST", body: data });
-  const updateUser = (id: string, data: UpdateUserRequest) =>
-    fetcher(BASE + "/" + id, { method: "PATCH", body: data });
+  const getUsers = (page?: number) =>
+    fetcher<UsersListResponse>(
+      page ? `${BASE}/?page=${page}` : `${BASE}/`
+    );
+  const getDeletedUsers = (page?: number) =>
+    fetcher<UsersListResponse>(
+      page ? `${BASE}/deleted/?page=${page}` : `${BASE}/deleted/`
+    );
+  const getCurrentUser = () => fetcher<UserResponse>(`${BASE}/me`);
+  const createUser = (data: UserRegistrationRequest) =>
+    fetcher<UserRegistrationResponse>(`${BASE}/create`, { method: "POST", body: data });
+  const updateUser = (id: string, data: UserUpdateRequest) =>
+    fetcher(`${BASE}/${id}/update`, { method: "PUT", body: data });
+  const partialUpdateUser = (id: string, data: Partial<UserUpdateRequest>) =>
+    fetcher(`${BASE}/${id}/update`, { method: "PATCH", body: data });
   const deleteUser = (id: string) =>
-    fetcher(BASE + "/" + id, { method: "DELETE" });
-  const getUserRoles = (id: string) =>
-    fetcher<UserRolesResponse>(`${BASE}/${id}/roles`);
-  const switchActiveRole = (id: string, data: SwitchRoleRequest) =>
-    fetcher<SwitchRoleResponse>(`${BASE}/${id}/active-role`, {
-      method: "PATCH",
-      body: data,
-    });
-  const addRole = (id: string, data: AddRoleRequest) =>
-    fetcher<AddRoleResponse>(`${BASE}/${id}/add-role`, {
-      method: "POST",
-      body: data,
-    });
-  const removeRole = (id: string, data: RemoveRoleRequest) =>
-    fetcher<RemoveRoleResponse>(`${BASE}/${id}/remove-role`, {
-      method: "POST",
-      body: data,
-    });
+    fetcher(`${BASE}/${id}/delete`, { method: "DELETE" });
+  const getUserRoles = (userId: string) =>
+    fetcher<UserRolesResponse>(`${BASE}/${userId}/roles`);
+  const getAvailableRoles = () =>
+    fetcher<AvailableRolesResponse>(`${BASE}/available-roles`);
+  const manageUserRole = (data: UserRoleManagementRequest) =>
+    fetcher(`${BASE}/role-management`, { method: "POST", body: data });
+  const resetPassword = (data: UserPasswordResetRequest) =>
+    fetcher(`${BASE}/password-reset`, { method: "POST", body: data });
+  const generateBackupKey = (userId: string) =>
+    fetcher(`${BASE}/generate-backup-key`, { method: "POST", body: { user_id: userId } });
 
-  // Bulk CSV upload
-  const bulkCreateUsers = (file: File) => {
-    const formData = new FormData();
-    formData.append("file", file);
-    return fetcher<any>(`${BASE}/csv`, {
-      method: "POST",
-      body: formData,
-    });
-  };
+
+  const getUsersInProject = (projectId: number) =>
+    fetcher<UserResponse[]>(`/projects/${projectId}/assigned-users/`);
 
   return {
     getUsers,
-    getUser,
+    getUsersInProject,
+    getDeletedUsers,
+    getCurrentUser,
     createUser,
     updateUser,
+    partialUpdateUser,
     deleteUser,
     getUserRoles,
-    switchActiveRole,
-    addRole,
-    removeRole,
-    bulkCreateUsers,
+    getAvailableRoles,
+    manageUserRole,
+    resetPassword,
+    generateBackupKey,
   };
 }

@@ -1,267 +1,208 @@
 <script setup lang="ts">
 import * as z from "zod";
-import { useAuth } from "~/composables/useAuth";
+import { Eye, EyeOff, ArrowLeft, User, Lock } from "lucide-vue-next";
+import { Card, CardHeader } from "~/components/ui/card";
+import { Button } from "~/components/ui/button";
+import { useAuth } from "~/data/auth";
 import { navigateTo } from "#app";
+import { toast } from "vue-sonner";
+import type { LoginRequest } from "~/types/api";
 
-const toast = useToast();
 const { login } = useAuth();
 
-const email = ref("");
+const username = ref("");
 const password = ref("");
-const remember = ref(false);
-
-const emailError = ref("");
+const usernameError = ref("");
 const passwordError = ref("");
+const showPassword = ref(false);
 
 const schema = z.object({
-  email: z.string().email("Email tidak valid."),
+  username: z.string().min(1, "Username harus diisi."),
   password: z.string().min(6, "Kata sandi minimal 6 karakter."),
-  remember: z.boolean().optional(),
 });
 
 async function onSubmit() {
-  emailError.value = "";
+  usernameError.value = "";
   passwordError.value = "";
 
-  const validationResult = schema.safeParse({
-    email: email.value,
+  const loginData: LoginRequest = {
+    username: username.value,
     password: password.value,
-    remember: remember.value,
-  });
+  };
+
+  const validationResult = schema.safeParse(loginData);
 
   if (!validationResult.success) {
     validationResult.error.errors.forEach((err) => {
-      if (err.path[0] === "email") emailError.value = err.message;
+      if (err.path[0] === "username") usernameError.value = err.message;
       if (err.path[0] === "password") passwordError.value = err.message;
     });
-    toast.add({
-      title: "Validasi Gagal",
+    toast.message("Validasi Gagal", {
       description: "Periksa kembali input Anda.",
-      color: "error",
     });
     return;
   }
 
-  toast.add({
-    title: "Login",
-    description: "Mencoba masuk...",
-    color: "warning",
+  await toast.promise(login(loginData.username, loginData.password), {
+    loading: "Mencoba masuk...",
+    success: () => {
+      navigateTo("/beranda");
+      return "Berhasil Masuk. Selamat datang!";
+    },
+    error: () => "Gagal Masuk. Username atau kata sandi salah.",
   });
-
-  try {
-    await login(email.value, password.value);
-    toast.add({
-      title: "Berhasil Masuk",
-      description: `Selamat datang!`,
-      color: "success",
-    });
-    navigateTo("/beranda");
-  } catch (error) {
-    toast.add({
-      title: "Gagal Masuk",
-      description: "Email atau kata sandi salah.",
-      color: "error",
-    });
-  }
 }
 
 const goBack = () => {
   navigateTo("/");
 };
-
-// Social login providers
-const providers = [
-  {
-    label: "Google",
-    icon: "i-logos-google-icon",
-    onClick: () => {
-      toast.add({
-        title: "Google Login",
-        description: "Fitur login dengan Google belum tersedia.",
-        color: "info",
-      });
-    },
-  },
-  {
-    label: "Facebook",
-    icon: "i-logos-facebook",
-    onClick: () => {
-      toast.add({
-        title: "Facebook Login",
-        description: "Fitur login dengan Facebook belum tersedia.",
-        color: "info",
-      });
-    },
-  },
-];
 </script>
 
 <template>
   <div
-    class="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-blue-950 p-4 sm:p-8 font-inter text-white"
+    class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-center justify-center relative overflow-hidden"
   >
-    <div
-      class="w-full max-w-sm mx-auto glassmorphism-card border border-white/10 rounded-2xl shadow-2xl p-6 sm:p-8 relative"
-    >
-      <!-- Back Button -->
-      <div class="absolute top-4 left-4">
-        <UButton
-          icon="i-heroicons-arrow-left"
+    <!-- Background Decorations -->
+    <div class="absolute inset-0 pointer-events-none select-none">
+      <!-- Pen as background decoration (optional, remove if not available) -->
+      <!-- <div class="absolute top-1/4 right-1/4 opacity-30 transform rotate-12 scale-150">
+        <Frame1047 />
+      </div> -->
+      <!-- Floating elements -->
+      <div
+        class="absolute top-1/4 left-1/4 w-3 h-3 bg-green-400 rounded-full opacity-40 animate-pulse"
+      ></div>
+      <div
+        class="absolute bottom-1/4 right-1/3 w-4 h-4 bg-pink-400 rounded-full opacity-30 animate-pulse delay-1000"
+      ></div>
+      <div
+        class="absolute top-1/2 left-1/6 w-2 h-2 bg-blue-400 rounded-full opacity-35 animate-pulse delay-500"
+      ></div>
+      <!-- Gradient overlay -->
+      <div
+        class="absolute inset-0 bg-gradient-to-r from-green-100/20 to-pink-100/20"
+      ></div>
+    </div>
+
+    <div class="relative z-10 w-full max-w-md px-6">
+      <!-- Header -->
+      <div class="text-center mb-8">
+        <h1 class="text-5xl mb-4 tracking-tight">
+          <span
+            class="bg-gradient-to-r from-gray-900 via-gray-700 to-gray-900 bg-clip-text text-transparent"
+          >
+            Anota
+          </span>
+        </h1>
+        <div
+          class="w-16 h-1 bg-gradient-to-r from-green-500 to-pink-500 mx-auto rounded-full mb-4"
+        ></div>
+        <p class="text-gray-600">Anotasi Cerdas. Dataset Sempurna.</p>
+      </div>
+
+      <!-- Login Card -->
+      <Card
+        class="p-8 backdrop-blur-md bg-white/80 border-white/50 shadow-2xl relative"
+      >
+        <Button
           variant="ghost"
-          color="neutral"
-          size="lg"
-          :ui="{
-            base: 'p-2 rounded-full text-gray-400 hover:bg-white/10 hover:text-white transition-colors duration-200',
-          }"
+          size="icon"
+          class="absolute top-4 left-4 rounded-full text-gray-400 hover:bg-white/5 hover:text-gray-700"
           @click="goBack"
           aria-label="Kembali"
-        />
-      </div>
-
-      <!-- Header Section -->
-      <div class="text-center mb-6 mt-8">
-        <UIcon
-          name="i-heroicons-user"
-          class="w-12 h-12 text-blue-400 mb-2 mx-auto"
-        />
-        <h2 class="text-3xl font-bold text-white mb-2">Masuk</h2>
-        <p class="text-gray-400 text-sm">
-          Masukkan kredensial Anda untuk mengakses akun.
-        </p>
-      </div>
-
-      <!-- Social Providers -->
-      <div class="flex justify-center gap-4 mb-6">
-        <UButton
-          v-for="provider in providers"
-          :key="provider.label"
-          :label="provider.label"
-          :icon="provider.icon"
-          variant="outline"
-          color="neutral"
-          :ui="{
-            base: 'flex-1 max-w-[10rem] py-3 px-4 font-semibold bg-gray-700/50 border border-gray-600 rounded-lg text-white hover:bg-gray-700 hover:border-blue-500 transition-all duration-200 justify-center gap-2',
-          }"
-          @click="provider.onClick"
-        />
-      </div>
-
-      <!-- Divider -->
-      <div class="flex items-center my-6">
-        <hr class="flex-grow border-t border-gray-700" />
-        <span class="px-3 text-gray-500 text-sm bg-gray-800/60">atau</span>
-        <hr class="flex-grow border-t border-gray-700" />
-      </div>
-
-      <!-- Login Form -->
-      <form @submit.prevent="onSubmit" class="flex flex-col gap-4">
-        <div>
-          <label
-            for="email"
-            class="block text-sm font-medium text-gray-300 mb-1"
-            >Email</label
-          >
-          <UInput
-            id="email"
-            v-model="email"
-            type="text"
-            placeholder="Enter your email"
-            size="lg"
-            :ui="{ base: 'w-full' }"
-            :class="{ 'border-red-500 ring-red-500': emailError }"
-          />
-          <p v-if="emailError" class="text-red-400 text-xs mt-1">
-            {{ emailError }}
-          </p>
-        </div>
-
-        <div>
-          <label
-            for="password"
-            class="block text-sm font-medium text-gray-300 mb-1"
-            >Kata Sandi</label
-          >
-          <UInput
-            id="password"
-            v-model="password"
-            type="password"
-            placeholder="Enter your password"
-            size="lg"
-            :ui="{ base: 'w-full' }"
-            :class="{ 'border-red-500 ring-red-500': passwordError }"
-          />
-          <p v-if="passwordError" class="text-red-400 text-xs mt-1">
-            {{ passwordError }}
-          </p>
-        </div>
-
-        <UCheckbox
-          id="remember"
-          v-model="remember"
-          name="remember"
-          label="Ingat saya"
-          class="mt-2 mb-4"
-          :ui="{
-            base: 'h-5 w-5 text-blue-500 rounded-md border-gray-700 bg-gray-900/60 focus:ring-blue-500',
-            label: 'text-sm text-gray-300 select-none',
-          }"
-        />
-
-        <UButton
-          type="submit"
-          label="Lanjutkan"
-          color="primary"
-          variant="solid"
-          size="xl"
-          :ui="{
-            base: 'w-full py-4 px-8 font-bold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-102 mt-2',
-          }"
-        />
-      </form>
-
-      <p class="text-center text-sm text-gray-400 mt-6">
-        Belum punya akun?
-        <NuxtLink
-          to="/register"
-          class="text-blue-500 hover:underline font-medium transition-colors duration-200"
-          >Daftar di sini</NuxtLink
         >
-      </p>
+          <ArrowLeft class="w-6 h-6" />
+        </Button>
+
+        <CardHeader class="text-center mb-4 px-0">
+          <User class="w-12 h-12 text-gray-700 mb-2 mx-auto" />
+          <h2 class="text-3xl font-bold text-gray-900 mb-2">Masuk</h2>
+          <p class="text-base text-gray-500">
+            Masukkan kredensial Anda untuk mengakses akun.
+          </p>
+        </CardHeader>
+
+        <form @submit.prevent="onSubmit" class="flex flex-col gap-6">
+          <div>
+            <label for="username" class="block text-gray-700 text-sm mb-1"
+              >Username</label
+            >
+            <div
+              :class="[
+                'flex items-center border rounded-md bg-white/70 transition-all duration-200',
+                usernameError
+                  ? 'border-red-400'
+                  : 'border-gray-200/50 focus-within:border-blue-500 focus-within:shadow',
+              ]"
+              style="height: 40px"
+            >
+              <div class="flex items-center justify-center w-9 h-full">
+                <User class="text-gray-400 w-5 h-5" />
+              </div>
+              <input
+                id="username"
+                v-model="username"
+                type="text"
+                placeholder="Masukkan username"
+                autocomplete="username"
+                class="flex-1 bg-transparent border-none outline-none shadow-none px-0 py-0 text-base text-gray-900 placeholder:text-gray-400 placeholder:opacity-70 focus:outline-none h-full"
+                @focus="$event.target.style.boxShadow = 'none'"
+                @blur="$event.target.style.boxShadow = 'none'"
+              />
+            </div>
+            <p v-if="usernameError" class="text-red-400 text-xs mt-1">
+              {{ usernameError }}
+            </p>
+          </div>
+
+          <div>
+            <label for="password" class="block text-gray-700 text-sm mb-1"
+              >Kata Sandi</label
+            >
+            <div
+              :class="[
+                'flex items-center border rounded-md bg-white/70 transition-all duration-200',
+                passwordError
+                  ? 'border-red-400'
+                  : 'border-gray-200/50 focus-within:border-blue-500 focus-within:shadow',
+              ]"
+              style="height: 40px"
+            >
+              <div class="flex items-center justify-center w-9 h-full">
+                <Lock class="text-gray-400 w-5 h-5" />
+              </div>
+              <input
+                id="password"
+                v-model="password"
+                :type="showPassword ? 'text' : 'password'"
+                placeholder="••••••••"
+                autocomplete="current-password"
+                class="flex-1 bg-transparent border-none outline-none shadow-none px-0 py-0 text-base text-gray-900 placeholder:text-gray-400 placeholder:opacity-70 focus:outline-none h-full"
+                @focus="$event.target.style.boxShadow = 'none'"
+                @blur="$event.target.style.boxShadow = 'none'"
+              />
+              <button
+                type="button"
+                @click="showPassword = !showPassword"
+                class="flex items-center justify-center w-9 h-full text-gray-400 hover:text-gray-700 transition-colors"
+                tabindex="-1"
+              >
+                <component :is="showPassword ? EyeOff : Eye" class="w-5 h-5" />
+              </button>
+            </div>
+            <p v-if="passwordError" class="text-red-400 text-xs mt-1">
+              {{ passwordError }}
+            </p>
+          </div>
+
+          <Button
+            type="submit"
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white border-0 py-3 shadow-lg hover:shadow-xl transition-all duration-300 text-lg font-semibold rounded-md"
+          >
+            Masuk
+          </Button>
+        </form>
+      </Card>
     </div>
   </div>
 </template>
-
-<style scoped>
-.glassmorphism-card {
-  background-color: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1.5px solid rgba(255, 255, 255, 0.18);
-  border-radius: 1.5rem;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18), 0 1.5px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.glassmorphism-card:hover {
-  background-color: rgba(255, 255, 255, 0.16);
-  border-color: rgba(255, 255, 255, 0.28);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22), 0 2px 12px rgba(0, 0, 0, 0.13);
-}
-</style>
-<style scoped>
-.glassmorphism-card {
-  background-color: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1.5px solid rgba(255, 255, 255, 0.18);
-  border-radius: 1.5rem;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18), 0 1.5px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.glassmorphism-card:hover {
-  background-color: rgba(255, 255, 255, 0.16);
-  border-color: rgba(255, 255, 255, 0.28);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22), 0 2px 12px rgba(0, 0, 0, 0.13);
-}
-</style>

@@ -1,9 +1,7 @@
 import { useProtectedFetcher } from "~/composables/protected-fetcher";
 import type {
   DocumentResponse,
-  CreateDocumentRequest,
-  SentenceResponse,
-  UpdateSentenceRequest,
+  DocumentRequest,
 } from "~/types/api";
 
 const BASE = "/documents";
@@ -11,26 +9,50 @@ const BASE = "/documents";
 export function useDocumentsApi() {
   const { fetcher } = useProtectedFetcher();
 
-  const getDocuments = () => fetcher<DocumentResponse[]>(BASE);
-  const getDocument = (id: string) =>
+  const getDocuments = (page?: number) =>
+    fetcher<{ count: number; next: string | null; previous: string | null; results: DocumentResponse[] }>(
+      page ? `${BASE}/?page=${page}` : `${BASE}/`
+    );
+
+  const getDocument = (id: number) =>
     fetcher<DocumentResponse>(`${BASE}/${id}`);
-  const createDocument = (data: CreateDocumentRequest) =>
+
+  const createDocument = (data: DocumentRequest) =>
     fetcher<DocumentResponse>(BASE, { method: "POST", body: data });
 
-  const updateSentence = (
-    documentId: string,
-    sentenceId: string,
-    data: UpdateSentenceRequest
-  ) =>
-    fetcher<SentenceResponse>(`${BASE}/${documentId}/sentences/${sentenceId}`, {
-      method: "PUT",
+  const updateDocument = (id: number, data: Partial<DocumentRequest>) =>
+    fetcher<DocumentResponse>(`${BASE}/${id}`, {
+      method: "PATCH",
       body: data,
+    });
+
+  const deleteDocument = (id: number) =>
+    fetcher(`${BASE}/${id}`, { method: "DELETE" });
+
+  const getDocumentsInProject = (projectId: number) =>
+    fetcher<DocumentResponse[]>(`/projects/${projectId}/documents/`);
+
+  const assignDocumentsToProject = (projectId: number, documentIds: number[]) =>
+    fetcher(`/projects/${projectId}/`, {
+      method: "PATCH",
+      body: { documents: documentIds },
+    });
+
+  const removeDocumentsFromProject = (projectId: number, documentIds: number[]) =>
+    fetcher(`/projects/${projectId}/`, {
+      method: "PATCH", 
+      body: { documents: documentIds },
     });
 
   return {
     getDocuments,
     getDocument,
     createDocument,
-    updateSentence,
+    updateDocument,
+    deleteDocument,
+    getDocumentsInProject,
+    assignDocumentsToProject,
+    removeDocumentsFromProject,
   };
 }
+

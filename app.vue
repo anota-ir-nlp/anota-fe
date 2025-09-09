@@ -16,15 +16,16 @@ useHead({
     },
   ],
 });
+import { Toaster } from '@/components/ui/sonner';
+import 'vue-sonner/style.css';
 </script>
 <template>
+  <Toaster :toastOptions="{
+    class: 'py-2',
+  }" />
   <div>
-    <UApp>
-      <NuxtLayout>
-        <!-- This tells Nuxt to use your layout system -->
-        <NuxtPage />
-        <!-- This renders the current page content inside the layout -->
-      </NuxtLayout>
-    </UApp>
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
   </div>
 </template>

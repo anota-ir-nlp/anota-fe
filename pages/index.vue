@@ -1,292 +1,446 @@
 <template>
-  <div
-    class="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-blue-950 text-white font-inter relative overflow-hidden"
-  >
-    <!-- Subtle background circles for modern feel -->
-    <div
-      class="absolute top-0 left-0 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-2xl opacity-20 animate-blob"
-    ></div>
-    <div
-      class="absolute top-0 right-0 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-2xl opacity-20 animate-blob animation-delay-2000"
-    ></div>
-    <div
-      class="absolute bottom-0 left-1/4 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-2xl opacity-20 animate-blob animation-delay-4000"
-    ></div>
-
-    <!-- Main content container -->
-    <div class="mx-auto p-4 py-8 lg:p-12 relative z-10 max-w-7xl">
-      <!-- Login Section -->
-      <section
-        class="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] text-center relative overflow-hidden animate-fade-in"
-      >
-        <!-- Giant background text for techy vibe -->
+  <div class="min-h-screen bg-white overflow-x-hidden text-gray-900 font-inter">
+    <!-- Hero Section -->
+    <section
+      class="relative h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 via-white to-gray-100 overflow-hidden"
+    >
+      <!-- Subtle Background Elements -->
+      <div class="absolute inset-0">
         <div
-          class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[15rem] md:text-[8rem] font-black text-white/3 opacity-5 pointer-events-none select-none whitespace-nowrap animate-moveText z-0"
+          class="absolute top-1/4 right-1/4 opacity-5 transform rotate-12 scale-150"
         >
-          ANOTA
+          <Lightbulb class="w-[400px] h-[400px] text-blue-200" />
         </div>
-
+        <div class="absolute inset-0 flex items-center justify-center">
+          <div
+            class="w-full max-w-4xl h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent opacity-30"
+          ></div>
+        </div>
         <div
-          class="p-8 md:p-12 max-w-4xl w-full relative z-10 glassmorphism-card shadow-2xl"
-        >
+          class="absolute top-1/3 left-1/4 w-2 h-2 bg-green-400 rounded-full opacity-60 animate-pulse"
+        ></div>
+        <div
+          class="absolute bottom-1/3 right-1/3 w-3 h-3 bg-pink-400 rounded-full opacity-40 animate-pulse delay-1000"
+        ></div>
+        <div
+          class="absolute top-1/2 left-1/6 w-1 h-1 bg-blue-400 rounded-full opacity-50 animate-pulse delay-500"
+        ></div>
+      </div>
+      <!-- Hero Content -->
+      <div
+        class="relative z-10 text-center max-w-5xl mx-auto px-6 flex flex-col items-center"
+      >
+        <div class="mb-12">
           <h1
-            class="text-4xl md:text-6xl font-extrabold mb-4 text-white leading-tight drop-shadow-lg flex items-center justify-center gap-4"
+            class="text-8xl md:text-8xl mb-6 tracking-tight text-gray-900 font-light"
           >
-            <UIcon
-              name="i-heroicons-light-bulb"
-              class="w-12 h-12 text-blue-400"
-            />
-            ANOTA
+            Anota
           </h1>
-          <p
-            class="text-2xl md:text-3xl font-semibold mb-8 text-purple-400 drop-shadow-sm"
-          >
+          <div
+            class="w-24 h-1 animated-gradient-pinkgreen mx-auto rounded-full mb-8"
+          ></div>
+          <p class="text-xl text-gray-600 mb-2 tracking-wide font-light">
             Anotasi Cerdas. Dataset Sempurna.
           </p>
           <p
-            class="text-lg md:text-2xl mb-10 text-gray-200 font-light max-w-2xl mx-auto leading-relaxed"
+            class="text-base text-gray-500 max-w-2xl mx-auto leading-relaxed font-light"
           >
             Platform inovatif untuk anotasi Grammatical Error Correction (GEC)
             Bahasa Indonesia. Mempermudah annotator, reviewer, dan kepala riset
             dalam menciptakan dataset berkualitas tinggi.
           </p>
-          <UButton
-            color="primary"
-            variant="solid"
-            size="xl"
-            icon="i-heroicons-arrow-right-on-rectangle"
-            label="Masuk ke ANOTA"
-            class="text-lg md:text-xl font-bold px-10 py-5 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-r from-blue-600 to-purple-600 border border-white/20 relative overflow-hidden z-10 hover:scale-105 hover:from-blue-700 hover:to-purple-700"
+        </div>
+        <div class="flex gap-4 justify-center flex-wrap mb-8">
+          <Button
+            size="lg"
+            class="btn-rect btn-rect-primary text-base animated-gradient-btn-greenblue"
             @click="handleLogin"
-          />
-        </div>
-      </section>
-
-      <!-- Informasi Utama -->
-      <section class="py-16 animate-fade-in-up">
-        <h2
-          class="text-3xl md:text-5xl font-bold text-center mb-12 text-white drop-shadow-md leading-none"
-        >
-          Informasi Penting
-        </h2>
-
-        <!-- GEC Examples Card (Zig-zag 1) -->
-        <div class="flex flex-col lg:flex-row items-center gap-16 mb-24">
-          <div
-            class="glassmorphism-card p-6 md:p-8 w-full shadow-xl transition-all duration-300 hover:shadow-2xl"
           >
-            <h3 class="text-2xl md:text-4xl font-semibold mb-8 text-white">
-              Contoh Tipe Kesalahan GEC
-            </h3>
-            <div class="mb-6">
-              <USelectMenu
-                v-model="selectedGecType"
-                :options="gecErrorTypes"
-                placeholder="Pilih Tipe Kesalahan"
-                class="w-full z-50"
-                value-attribute="value"
-                option-attribute="label"
-                color="neutral"
-                variant="outline"
-                size="lg"
-                :ui="{
-                  base: 'w-full',
-                }"
-              />
-            </div>
-
-            <transition name="fade">
-              <div
-                v-if="currentGecExample"
-                class="bg-gray-800/60 rounded-lg p-6 mb-6 border border-white/15 shadow-inner transition-all duration-300"
-              >
-                <p class="text-base text-gray-300 mb-3">
-                  Tipe:
-                  <span class="font-bold text-white">{{
-                    currentGecExample.type
-                  }}</span>
-                </p>
-                <p class="text-red-300 mb-3 text-xl font-mono leading-relaxed">
-                  Salah:
-                  <span class="font-mono text-red-100">{{
-                    currentGecExample.wrong
-                  }}</span>
-                </p>
-                <p class="text-green-300 text-xl font-mono leading-relaxed">
-                  Benar:
-                  <span class="font-mono text-green-100">{{
-                    currentGecExample.correct
-                  }}</span>
-                </p>
-              </div>
-              <div v-else class="text-center text-gray-400 p-8 text-lg">
-                <p>Pilih tipe kesalahan untuk melihat contoh.</p>
-              </div>
-            </transition>
-
-            <div class="flex justify-center gap-6 mt-8">
-              <UButton
-                icon="i-heroicons-arrow-left"
-                variant="outline"
-                color="neutral"
-                label="Sebelumnya"
-                :disabled="currentGecExampleIndex === 0"
-                @click="prevGecExample"
-                :ui="{
-                  base: 'px-8 py-4 rounded-full font-semibold transition-colors duration-200 bg-transparent border border-white/15 text-white hover:bg-white/10',
-                }"
-              />
-              <UButton
-                icon="i-heroicons-arrow-right"
-                variant="outline"
-                color="neutral"
-                label="Berikutnya"
-                :disabled="
-                  currentGecExampleIndex >=
-                  (gecExamples[selectedGecType.value.value as keyof typeof gecExamples]?.length || 0) - 1
-                "
-                @click="nextGecExample"
-                :ui="{
-                  base: 'px-8 py-4 rounded-full font-semibold transition-colors duration-200 bg-transparent border border-white/15 text-white hover:bg-white/10',
-                }"
-              />
-            </div>
-          </div>
-          <div class="lg:w-1/2 w-full flex justify-center items-center">
-            <UIcon
-              name="i-heroicons-document-text"
-              class="w-48 h-48 text-blue-400 opacity-70 drop-shadow-2xl"
-            />
-          </div>
-        </div>
-
-        <!-- Alur Penggunaan Card (Zig-zag 2) -->
-        <div
-          class="flex flex-col lg:flex-row-reverse items-center gap-16 mb-24"
-        >
-          <div
-            class="glassmorphism-card p-6 md:p-8 w-full shadow-xl transition-all duration-300 hover:shadow-2xl"
-          >
-            <h3 class="text-2xl md:text-4xl font-semibold mb-8 text-white">
-              Alur Penggunaan Aplikasi
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-center">
-              <div
-                class="flex flex-col items-center p-6 bg-gray-800/60 rounded-xl border border-white/10 shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-              >
-                <UIcon
-                  name="i-heroicons-user-group"
-                  class="w-16 h-16 text-blue-400 mb-4"
-                />
-                <p class="font-bold text-white text-xl mb-1">Admin</p>
-                <p class="text-gray-200 text-base leading-relaxed">
-                  Mengelola pengguna, menetapkan dokumen untuk anotasi dan
-                  review.
-                </p>
-              </div>
-              <div
-                class="flex flex-col items-center p-6 bg-gray-800/60 rounded-xl border border-white/10 shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-              >
-                <UIcon
-                  name="i-heroicons-pencil-square"
-                  class="w-16 h-16 text-green-400 mb-4"
-                />
-                <p class="font-bold text-white text-xl mb-1">Annotator</p>
-                <p class="text-gray-200 text-base leading-relaxed">
-                  Menganotasi dokumen teks untuk mengidentifikasi dan mengoreksi
-                  kesalahan GEC.
-                </p>
-              </div>
-              <div
-                class="flex flex-col items-center p-6 bg-gray-800/60 rounded-xl border border-white/10 shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-              >
-                <UIcon
-                  name="i-heroicons-document-check"
-                  class="w-16 h-16 text-purple-400 mb-4"
-                />
-                <p class="font-bold text-white text-xl mb-1">Reviewer</p>
-                <p class="text-gray-200 text-base leading-relaxed">
-                  Meninjau anotasi yang telah dibuat, memastikan kualitas dan
-                  konsistensi.
-                </p>
-              </div>
-              <div
-                class="flex flex-col items-center p-6 bg-gray-800/60 rounded-xl border border-white/10 shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-              >
-                <UIcon
-                  name="i-heroicons-chart-bar"
-                  class="w-16 h-16 text-pink-400 mb-4"
-                />
-                <p class="font-bold text-white text-xl mb-1">Kepala Riset</p>
-                <p class="text-gray-200 text-base leading-relaxed">
-                  Memantau progres, melihat rekap kinerja, dan menghasilkan
-                  dataset GEC dalam format paralel atau M2.
-                </p>
-              </div>
-            </div>
-          </div>
-          <div class="lg:w-1/2 w-full flex justify-center items-center">
-            <UIcon
-              name="i-heroicons-arrows-right-left"
-              class="w-48 h-48 text-purple-400 opacity-70 drop-shadow-2xl"
-            />
-          </div>
-        </div>
-      </section>
-
-      <!-- FAQ Section (Centered Accordion) -->
-      <section class="py-16 animate-fade-in-up">
-        <h2
-          class="text-3xl md:text-5xl font-bold text-center mb-12 text-white drop-shadow-md leading-none"
-        >
-          Pertanyaan Umum (FAQ)
-        </h2>
-        <div class="max-w-4xl mx-auto glassmorphism-card p-6 md:p-8 shadow-xl">
-          <UAccordion
-            :items="faqItems"
-            color="white"
+            Masuk ke Anota
+            <ArrowRightFromLine class="ml-3 w-5 h-5" />
+          </Button>
+          <Button
             variant="outline"
             size="lg"
-            class="text-white"
-            :ui="{
-              base: 'w-full',
-            }"
+            class="btn-rect btn-rect-outline text-base"
           >
-            <template #default="{ item, index, open }">
-              <UButton
-                color="neutral"
-                variant="ghost"
-                :ui="{
-                  base: 'border-b border-white/20 hover:bg-white/10 transition-colors duration-200 py-4 px-6 text-white w-full text-left flex justify-between items-center',
-                }"
-              >
-                <span class="truncate text-white font-semibold">{{
-                  item.label
-                }}</span>
-                <template #trailing>
-                  <UIcon
-                    name="i-heroicons-chevron-down-20-solid"
-                    class="w-6 h-6 ms-auto transform transition-transform duration-200"
-                    :class="[open && 'rotate-180']"
-                  />
-                </template>
-              </UButton>
-            </template>
-          </UAccordion>
+            Learn More
+          </Button>
         </div>
-      </section>
-    </div>
+        <div class="scroll-indicator" style="bottom: -8rem; margin-top: 0rem">
+          <div
+            class="w-6 h-10 border-2 border-gray-300 rounded-full flex justify-center"
+          >
+            <div
+              class="w-1 h-3 bg-gray-400 rounded-full mt-2 animate-pulse"
+            ></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Mengapa Memilih Anota Section -->
+    <section class="py-16 bg-gradient-to-b from-white to-gray-50">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-12">
+          <h2 class="text-3xl mb-2 text-gray-900 font-light">
+            Mengapa Memilih Anota?
+          </h2>
+          <div
+            class="w-16 h-1 animated-gradient-pinkgreen mx-auto rounded-full mb-4"
+          ></div>
+          <p class="text-base text-gray-600 max-w-3xl mx-auto font-light">
+            Platform kami menggabungkan teknologi canggih dan desain intuitif
+            untuk membuat anotasi dataset lebih cepat, akurat, dan menyenangkan.
+          </p>
+        </div>
+        <div class="grid md:grid-cols-3 gap-8">
+          <div
+            class="card-outline p-6 text-center hover:shadow-xl hover:scale-[1.03] transition-all duration-200 border-gray-200/50 backdrop-blur-sm group cursor-pointer"
+            title="Proses lebih cepat dengan Anota"
+          >
+            <div
+              class="w-14 h-14 bg-gradient-to-br from-green-400 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform"
+            >
+              <Zap class="w-7 h-7 text-white" />
+            </div>
+            <h3 class="text-base mb-2 text-gray-900 font-light">
+              Proses Cepat
+            </h3>
+            <p class="text-base text-gray-600 leading-relaxed font-light">
+              Anota membantu mempercepat proses anotasi dengan fitur-fitur yang
+              memudahkan pengguna dalam menandai kesalahan tata bahasa.
+            </p>
+          </div>
+          <div
+            class="card-outline p-6 text-center hover:shadow-xl hover:scale-[1.03] transition-all duration-200 border-gray-200/50 backdrop-blur-sm group cursor-pointer"
+            title="Akurasi tinggi untuk hasil terbaik"
+          >
+            <div
+              class="w-14 h-14 bg-gradient-to-br from-pink-400 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform"
+            >
+              <Target class="w-7 h-7 text-white" />
+            </div>
+            <h3 class="text-base mb-2 text-gray-900 font-light">
+              Akurasi Tinggi
+            </h3>
+            <p class="text-base text-gray-600 leading-relaxed font-light">
+              Skema anotasi yang tervalidasi memastikan kualitas data yang
+              konsisten dan siap digunakan untuk penelitian.
+            </p>
+          </div>
+          <div
+            class="card-outline p-6 text-center hover:shadow-xl hover:scale-[1.03] transition-all duration-200 border-gray-200/50 backdrop-blur-sm group cursor-pointer"
+            title="Kolaborasi mudah dengan tim"
+          >
+            <div
+              class="w-14 h-14 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform"
+            >
+              <Users class="w-7 h-7 text-white" />
+            </div>
+            <h3 class="text-base mb-2 text-gray-900 font-light">
+              Kolaborasi Mudah
+            </h3>
+            <p class="text-base text-gray-600 leading-relaxed font-light">
+              Bekerja bersama tim secara real-time dengan fitur review dan
+              monitoring progres yang terintegrasi.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cara Kerja Anota Section -->
+    <section class="py-16 bg-white relative overflow-hidden">
+      <div class="w-full p-6 md:p-10">
+        <div
+          class="rounded-2xl border border-gray-200 bg-white/80 w-full p-4 md:p-8"
+        >
+          <div class="text-center mb-12">
+            <h2 class="text-3xl mb-2 text-gray-900 font-light">
+              Cara Kerja Anota
+            </h2>
+            <div
+              class="w-16 h-1 animated-gradient-pinkgreen mx-auto rounded-full mb-4"
+            ></div>
+            <p class="text-base text-gray-600 font-light">
+              Mulai dengan proses tiga langkah mudah berikut
+            </p>
+          </div>
+          <div class="grid md:grid-cols-3 gap-8">
+            <div
+              class="text-center group cursor-pointer hover:bg-green-50 hover:shadow-lg rounded-xl p-6 transition-all duration-200"
+              title="Unggah data teks Anda"
+            >
+              <div
+                class="w-14 h-14 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform"
+              >
+                <span class="text-base text-white font-bold">1</span>
+              </div>
+              <h3 class="text-base mb-2 text-gray-900 font-light">
+                Unggah Teks Anda
+              </h3>
+              <p class="text-base text-gray-600 leading-relaxed font-light">
+                Impor data teks mentah Anda dalam berbagai format. Anota
+                mendukung banyak tipe file dan unggahan massal untuk dataset
+                besar.
+              </p>
+            </div>
+            <div
+              class="text-center group cursor-pointer hover:bg-pink-50 hover:shadow-lg rounded-xl p-6 transition-all duration-200"
+              title="Anotasi cerdas dan mudah"
+            >
+              <div
+                class="w-14 h-14 bg-gradient-to-br from-pink-400 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform"
+              >
+                <span class="text-base text-white font-bold">2</span>
+              </div>
+              <h3 class="text-base mb-2 text-gray-900 font-light">
+                Anotasi Cerdas
+              </h3>
+              <p class="text-base text-gray-600 leading-relaxed font-light">
+                Gunakan alat anotasi interaktif untuk menandai kesalahan tata
+                bahasa, koreksi, dan kategori. Fitur-fitur Anota mempercepat
+                proses anotasi Anda.
+              </p>
+            </div>
+            <div
+              class="text-center group cursor-pointer hover:bg-blue-50 hover:shadow-lg rounded-xl p-6 transition-all duration-200"
+              title="Ekspor dataset siap pakai"
+            >
+              <div
+                class="w-14 h-14 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform"
+              >
+                <span class="text-base text-white font-bold">3</span>
+              </div>
+              <h3 class="text-base mb-2 text-gray-900 font-light">
+                Ekspor & Gunakan
+              </h3>
+              <p class="text-base text-gray-600 leading-relaxed font-light">
+                Unduh dataset yang telah dianotasi dengan sempurna, siap
+                digunakan untuk pelatihan model GEC atau penelitian linguistik.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Keunggulan Anota Section (Benefits) -->
+    <section class="py-16 bg-gradient-to-b from-gray-50 to-white">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <h2 class="text-3xl mb-2 text-gray-900 font-light">
+              Keunggulan <span class="block text-green-600">Anota</span>
+            </h2>
+            <div
+              class="w-16 h-1 animated-gradient-pinkgreen mb-4 rounded-full"
+            ></div>
+            <p class="text-base text-gray-600 mb-6 font-light">
+              Bergabunglah bersama ribuan peneliti dan pengembang yang
+              mempercayai Anota untuk proyek koreksi kesalahan tata bahasa
+              mereka.
+            </p>
+            <div class="space-y-4">
+              <div
+                class="flex items-start gap-3 group cursor-pointer hover:bg-green-50 rounded-lg p-2 transition-all duration-200"
+                title="Lebih cepat dengan Anota"
+              >
+                <CheckCircle
+                  class="w-6 h-6 text-green-500 mt-1 flex-shrink-0 group-hover:scale-110 transition-transform"
+                />
+                <div>
+                  <h4 class="text-base text-gray-900 mb-1 font-light">
+                    10x Lebih Cepat
+                  </h4>
+                  <p class="text-base text-gray-600 font-light">
+                    Fitur Anota mempercepat proses anotasi hingga 10 kali lipat
+                    dibandingkan cara manual.
+                  </p>
+                </div>
+              </div>
+              <div
+                class="flex items-start gap-3 group cursor-pointer hover:bg-pink-50 rounded-lg p-2 transition-all duration-200"
+                title="Akurasi penelitian"
+              >
+                <CheckCircle
+                  class="w-6 h-6 text-green-500 mt-1 flex-shrink-0 group-hover:scale-110 transition-transform"
+                />
+                <div>
+                  <h4 class="text-base text-gray-900 mb-1 font-light">
+                    Akurasi Penelitian
+                  </h4>
+                  <p class="text-base text-gray-600 font-light">
+                    Skema anotasi yang tervalidasi memastikan kualitas data yang
+                    konsisten dan siap untuk penelitian.
+                  </p>
+                </div>
+              </div>
+              <div
+                class="flex items-start gap-3 group cursor-pointer hover:bg-blue-50 rounded-lg p-2 transition-all duration-200"
+                title="Kolaborasi tim"
+              >
+                <CheckCircle
+                  class="w-6 h-6 text-green-500 mt-1 flex-shrink-0 group-hover:scale-110 transition-transform"
+                />
+                <div>
+                  <h4 class="text-base text-gray-900 mb-1 font-light">
+                    Kolaborasi Tim
+                  </h4>
+                  <p class="text-base text-gray-600 font-light">
+                    Bekerja bersama tim secara real-time dengan fitur review dan
+                    monitoring progres yang terintegrasi.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="relative">
+            <!-- Decorative background -->
+            <div
+              class="absolute inset-0 bg-gradient-to-br from-green-100 to-pink-100 rounded-3xl transform rotate-6"
+            ></div>
+            <div class="relative bg-white p-8 rounded-3xl shadow-xl">
+              <div class="grid grid-cols-2 gap-6">
+                <div
+                  class="text-center p-4 group cursor-pointer hover:bg-green-50 rounded-xl transition-all duration-200"
+                  title="Proses lebih cepat"
+                >
+                  <div class="text-3xl mb-2">⚡</div>
+                  <div class="text-2xl text-green-600 mb-1">10x</div>
+                  <div class="text-base text-gray-600">Proses Lebih Cepat</div>
+                </div>
+                <div
+                  class="text-center p-4 group cursor-pointer hover:bg-pink-50 rounded-xl transition-all duration-200"
+                  title="Akurasi tinggi"
+                >
+                  <div class="text-3xl mb-2">🎯</div>
+                  <div class="text-2xl text-pink-600 mb-1">99%</div>
+                  <div class="text-base text-gray-600">Tingkat Akurasi</div>
+                </div>
+                <div
+                  class="text-center p-4 group cursor-pointer hover:bg-blue-50 rounded-xl transition-all duration-200"
+                  title="Pengguna puas"
+                >
+                  <div class="text-3xl mb-2">👥</div>
+                  <div class="text-2xl text-blue-600 mb-1">1000+</div>
+                  <div class="text-base text-gray-600">Pengguna Puas</div>
+                </div>
+                <div
+                  class="text-center p-4 group cursor-pointer hover:bg-purple-50 rounded-xl transition-all duration-200"
+                  title="Jumlah anotasi"
+                >
+                  <div class="text-3xl mb-2">📚</div>
+                  <div class="text-2xl text-purple-600 mb-1">50Jt+</div>
+                  <div class="text-base text-gray-600">Anotasi</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pertanyaan Umum Section -->
+    <section class="py-16 bg-gradient-to-b from-white to-gray-50">
+      <div class="max-w-7xl mx-auto px-6 relative">
+        <div class="text-center mb-10 flex flex-col items-center">
+          <div class="flex items-center justify-center gap-2 mb-2">
+            <HelpCircle class="w-7 h-7 text-green-500" />
+            <h2 class="text-3xl text-gray-900 font-light">Pertanyaan Umum</h2>
+          </div>
+          <div
+            class="w-16 h-1 animated-gradient-pinkgreen mx-auto rounded-full mb-4"
+          ></div>
+        </div>
+        <div class="card-outline max-w-4xl mx-auto p-8">
+          <Accordion type="single" collapsible class="w-full">
+            <AccordionItem
+              v-for="(item, index) in faqItems"
+              :key="index"
+              :value="`item-${index}`"
+            >
+              <AccordionTrigger
+                class="text-gray-900 hover:text-blue-600 font-light transition-colors text-base"
+              >
+                {{ item.label }}
+              </AccordionTrigger>
+              <AccordionContent class="text-base text-gray-600 font-light">
+                {{ item.content }}
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-16 bg-black text-white relative overflow-hidden">
+      <div class="max-w-4xl mx-auto px-6 text-center relative">
+        <h2 class="text-3xl mb-2 font-light">
+          Siap Meningkatkan
+          <span class="animated-gradient-text-pinkgreen font-light"
+            >Proses Anotasi</span
+          >
+          Anda?
+        </h2>
+        <div
+          class="w-16 h-1 animated-gradient-pinkgreen mx-auto rounded-full mb-4"
+        ></div>
+        <p class="text-base text-gray-300 mb-6 max-w-2xl mx-auto font-light">
+          Mulai gunakan Anota secara gratis dan rasakan kemudahan dalam membuat
+          dataset berkualitas tinggi untuk penelitian atau pengembangan Anda.
+        </p>
+        <div class="flex gap-4 justify-center flex-wrap mb-4">
+          <Button
+            size="lg"
+            class="btn-rect btn-rect-primary group hover:scale-105 transition-transform duration-200 text-base animated-gradient-btn-greenblue"
+          >
+            <Zap class="mr-2 w-5 h-5" />
+            Mulai Gratis
+          </Button>
+          <Button
+            variant="outline"
+            size="lg"
+            class="btn-rect btn-rect-outline group hover:scale-105 transition-transform duration-200 text-base"
+          >
+            <Users class="mr-2 w-5 h-5" />
+            Pelajari Lebih Lanjut
+          </Button>
+        </div>
+        <p class="text-base text-gray-400 mt-4 font-light">
+          Tidak perlu kartu kredit • Gratis dicoba • Bisa berhenti kapan saja
+        </p>
+      </div>
+    </section>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
-import { navigateTo } from "#app"; // Import navigateTo for programmatic navigation
+import { navigateTo } from "#app";
+import {
+  Lightbulb,
+  ArrowRightFromLine,
+  ArrowLeft,
+  ArrowRight,
+  FileText,
+  PenTool,
+  FileCheck,
+  Zap,
+  Target,
+  Users,
+  Book,
+  CheckCircle,
+  HelpCircle,
+} from "lucide-vue-next";
 
 const handleLogin = () => {
   navigateTo("/login");
 };
-// Define GEC Error Types based on your PDF
+
+// GEC Example logic (from original index.vue)
 const gecErrorTypes = [
   { label: "Adjective", value: "Adjective" },
   { label: "Noun Number", value: "Noun Number" },
@@ -315,8 +469,6 @@ const gecErrorTypes = [
   { label: "Word Order", value: "Word Order" },
 ];
 
-// Mock GEC Examples (in Bahasa Indonesia)
-// In a real app, this data would likely come from an API
 const gecExamples = {
   Adjective: [
     {
@@ -455,7 +607,7 @@ const gecExamples = {
     { type: "Noun Possessive", wrong: "Rumah dia.", correct: "Rumahnya." },
   ],
   Orthography: [
-    { type: "Orthography", wrong: "di mana", correct: "di mana" }, // Example where wrong might be contextually okay, but showing common errors
+    { type: "Orthography", wrong: "di mana", correct: "di mana" },
     { type: "Orthography", wrong: "ke luar", correct: "keluar" },
   ],
   Other: [
@@ -596,171 +748,126 @@ const gecExamples = {
   ],
 };
 
-const selectedGecType = ref(gecErrorTypes[0]); // Default to the first type
+const selectedGecTypeValue = ref(gecErrorTypes[0].value);
 const currentGecExampleIndex = ref(0);
-
 const currentGecExample = computed(() => {
-  const examples = gecExamples[selectedGecType.value.value];
+  const typeKey = selectedGecTypeValue.value;
+  const examples = gecExamples[typeKey as keyof typeof gecExamples];
   if (examples && examples.length > 0) {
     return examples[currentGecExampleIndex.value];
   }
   return null;
 });
-
-// Watch for changes in selectedGecType to reset the example index
-watch(selectedGecType, () => {
+watch(selectedGecTypeValue, () => {
   currentGecExampleIndex.value = 0;
 });
-
 const prevGecExample = () => {
   if (currentGecExampleIndex.value > 0) {
     currentGecExampleIndex.value--;
   }
 };
-
 const nextGecExample = () => {
-  const examples = gecExamples[selectedGecType.value.value];
+  const examples =
+    gecExamples[selectedGecTypeValue as keyof typeof gecExamples];
   if (examples && currentGecExampleIndex.value < examples.length - 1) {
     currentGecExampleIndex.value++;
   }
 };
 
-// FAQ Items
+// FAQ (from original index.vue)
 const faqItems = [
   {
-    label: "Apa itu ANOTA?",
+    label: "Apa itu Anota?",
     content:
-      "ANOTA adalah aplikasi anotasi dataset Grammatical Error Correction (GEC) yang dirancang khusus untuk Bahasa Indonesia. Tujuannya adalah membantu annotator menandai 25 tipe kesalahan, serta menghasilkan dataset dalam format paralel dan M2 secara otomatis.",
+      "Anota adalah aplikasi anotasi dataset Grammatical Error Correction (GEC) yang dirancang khusus untuk Bahasa Indonesia. Tujuannya adalah membantu annotator menandai 25 tipe kesalahan, serta menghasilkan dataset dalam format paralel dan M2 secara otomatis.",
   },
   {
-    label: "Siapa saja pengguna ANOTA?",
+    label: "Siapa saja yang dapat menggunakan ANOTA?",
     content:
-      "Pengguna ANOTA meliputi Admin (mengelola user dan dokumen), Annotator (menganotasi dokumen), Reviewer (meninjau anotasi), dan Kepala Riset (memantau progres dan menghasilkan dataset).",
+      "Pengguna ANOTA meliputi Admin (mengelola user dan dokumen dalam project tertentu), Annotator (menganotasi dokumen yang ditugaskan), Reviewer (meninjau anotasi yang dibuat), dan Kepala Riset (mengelola semua project dan menghasilkan dataset). Setiap peran memiliki akses terbatas sesuai dengan tanggung jawab mereka.",
   },
   {
-    label: "Bagaimana cara kerja anotasi GEC di ANOTA?",
+    label: "Bagaimana cara kerja anotasi GEC di Anota?",
     content:
       "Anotator akan melihat dokumen teks dan menandai kesalahan tata bahasa sesuai dengan 25 tipe kesalahan GEC yang telah ditentukan. Setelah anotasi selesai, reviewer akan meninjau untuk memastikan kualitas, dan data dapat diekspor dalam format paralel atau M2.",
   },
   {
-    label: "Apakah ANOTA mendukung berbagai jenis dokumen?",
+    label: "Apakah Anota mendukung berbagai jenis dokumen?",
     content:
-      "Ya, ANOTA dirancang untuk menerima input berupa dokumen teks digital yang terdiri dari N kalimat. Setiap kalimat akan menjadi satuan data yang dapat diolah.",
+      "Ya, Anota dirancang untuk menerima input berupa dokumen teks digital yang terdiri dari N kalimat. Setiap kalimat akan menjadi satuan data yang dapat diolah.",
   },
   {
     label:
-      "Apakah saya perlu memiliki latar belakang linguistik untuk menggunakan ANOTA?",
+      "Apakah saya perlu memiliki latar belakang linguistik untuk menggunakan Anota?",
     content:
-      "Untuk peran Annotator dan Reviewer, pemahaman yang baik tentang tata bahasa Bahasa Indonesia sangat dianjurkan. ANOTA dirancang untuk mempermudah proses anotasi, namun keahlian linguistik akan sangat membantu dalam menghasilkan anotasi yang akurat.",
+      "Untuk peran Annotator dan Reviewer, pemahaman yang baik tentang tata bahasa Bahasa Indonesia sangat dianjurkan. ANOTA dirancang untuk mempermudah proses anotasi dengan kontrol akses yang ketat, namun keahlian linguistik akan sangat membantu dalam menghasilkan anotasi yang akurat.",
   },
 ];
-
-// Set meta tags for the page
-useHead({
-  title: "ANOTA - Aplikasi Anotasi GEC Bahasa Indonesia",
-  meta: [
-    {
-      name: "description",
-      content:
-        "Platform inovatif untuk anotasi Grammatical Error Correction (GEC) Bahasa Indonesia.",
-    },
-  ],
-  link: [
-    {
-      rel: "stylesheet",
-      href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap",
-    },
-  ],
-});
 </script>
 
 <style scoped>
-/* Glassmorphism card effect */
-.glassmorphism-card {
-  background-color: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1.5px solid rgba(255, 255, 255, 0.18);
-  border-radius: 1.5rem;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18), 0 1.5px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.glassmorphism-card:hover {
-  background-color: rgba(255, 255, 255, 0.16);
-  border-color: rgba(255, 255, 255, 0.28);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22), 0 2px 12px rgba(0, 0, 0, 0.13);
+.scroll-indicator {
+  /* existing styles */
+  animation: scrollIdle 3s ease-in-out infinite;
 }
 
-/* Background blob animations */
-@keyframes blob {
+@keyframes scrollIdle {
+  0%,
+  100% {
+    bottom: -8rem;
+  }
+  50% {
+    bottom: -7rem; /* Moves up by 1rem at the midpoint */
+  }
+}
+
+/* Animated gradient for pink-green elements (lines, text) */
+.animated-gradient-pinkgreen {
+  background: linear-gradient(270deg, #22c55e, #ec4899, #f472b6, #22c55e);
+  background-size: 400% 400%;
+  animation: gradientMovePinkGreen 6s ease-in-out infinite;
+}
+.animated-gradient-text-pinkgreen {
+  background: linear-gradient(270deg, #22c55e, #ec4899, #f472b6, #22c55e);
+  background-size: 400% 400%;
+  animation: gradientMovePinkGreen 6s ease-in-out infinite;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+@keyframes gradientMovePinkGreen {
   0% {
-    transform: translate(0px, 0px) scale(1);
+    background-position: 0% 50%;
   }
-  33% {
-    transform: translate(30px, -50px) scale(1.1);
-  }
-  66% {
-    transform: translate(-20px, 20px) scale(0.9);
+  50% {
+    background-position: 100% 50%;
   }
   100% {
-    transform: translate(0px, 0px) scale(1);
+    background-position: 0% 50%;
   }
 }
 
-.animate-blob {
-  animation: blob 7s infinite cubic-bezier(0.68, -0.55, 0.27, 1.55);
+/* Animated gradient for green-blue buttons */
+.animated-gradient-btn-greenblue {
+  background: linear-gradient(270deg, #22c55e, #38bdf8, #2563eb, #22c55e);
+  background-size: 400% 400%;
+  animation: gradientMoveGreenBlue 6s ease-in-out infinite;
+  color: #fff !important;
+  border: none;
+  transition: background 0.2s;
 }
-
-.animation-delay-2000 {
-  animation-delay: 2s;
+.animated-gradient-btn-greenblue:hover {
+  filter: brightness(1.1);
 }
-.animation-delay-4000 {
-  animation-delay: 4s;
-}
-
-/* Fade-in animations for sections */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in {
-  animation: fadeIn 1s ease-out forwards;
-}
-
-.animate-fade-in-up {
-  animation: fadeIn 1s ease-out forwards;
-  animation-delay: 0.5s;
-  opacity: 0;
-}
-
-/* Specific animation for the giant ANOTA text */
-@keyframes moveText {
+@keyframes gradientMoveGreenBlue {
   0% {
-    transform: translate(-55%, -50%);
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
   }
   100% {
-    transform: translate(-45%, -50%);
+    background-position: 0% 50%;
   }
-}
-
-.animate-moveText {
-  animation: moveText 20s linear infinite alternate;
-}
-
-/* Fade transition for GEC example */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
 }
 </style>
