@@ -20,6 +20,17 @@ export function useReviewsApi() {
     fetcher("/annotations/reviews/reopen/", { method: "POST", body: data });
   const submitReview = (data: { document: number }) =>
     fetcher("/annotations/reviews/submit/", { method: "POST", body: data });
+  const getReviewQueue = (
+    documentId: number | string,
+    includeUnannotated?: boolean
+  ) => {
+    let url = `/documents/my-assigned/${documentId}/review-queue/`;
+    if (includeUnannotated !== undefined) {
+      url += `?include_unannotated=${includeUnannotated}`;
+    }
+    return fetcher(url);
+  };
+
   const adminReopenReview = (data: {
     document: number;
     user_id: string;
@@ -40,5 +51,6 @@ export function useReviewsApi() {
     reopenReview,
     submitReview,
     adminReopenReview,
+    getReviewQueue,
   };
 }

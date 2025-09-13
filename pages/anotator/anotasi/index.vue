@@ -89,7 +89,7 @@
         >
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm text-gray-500 mb-1">Akurasi</p>
+              <p class="text-sm text-gray-500 mb-1">Persentase Selesai</p>
               <p class="text-2xl font-bold text-black">{{ accuracy }}%</p>
             </div>
             <div
@@ -163,7 +163,7 @@
             </span>
             Statistik Anotasi Mingguan
           </h3>
-          <div class="flex items-end gap-4 h-40">
+          <div class="flex items-end gap-4 h-52">
             <div
               v-for="(val, i) in weeklyStats"
               :key="i"
@@ -172,7 +172,7 @@
               <div class="relative w-full group">
                 <div
                   class="bg-black rounded-t transition-all duration-300 group-hover:bg-gray-800"
-                  :style="{ height: `${Math.max(val.count * 8, 20)}px` }"
+                  :style="{ height: `${getBarHeight(val.count)}px` }"
                 ></div>
                 <div
                   class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
@@ -199,6 +199,14 @@
           <div class="space-y-3 flex-1">
             <Button
               class="w-full justify-start bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800 font-medium transition"
+              @click="
+                () =>
+                  toast.info(
+                    'Laporan harian: Anda telah mengerjakan ' +
+                      todayAnnotated +
+                      ' dokumen hari ini.'
+                  )
+              "
             >
               <svg
                 class="w-4 h-4 mr-2 shadow-0"
@@ -215,6 +223,14 @@
             </Button>
             <Button
               class="w-full justify-start bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800 font-medium transition"
+              @click="
+                () =>
+                  toast.success(
+                    'Target Mingguan: Total dokumen minggu ini ' +
+                      weeklyTotal +
+                      '.'
+                  )
+              "
             >
               <svg
                 class="w-4 h-4 mr-2"
@@ -229,6 +245,12 @@
             </Button>
             <Button
               class="w-full justify-start bg-purple-50 text-purple-700 hover:bg-purple-100 hover:text-purple-800 font-medium transition"
+              @click="
+                () =>
+                  toast.info(
+                    'Skor Kualitas: Persentase selesai ' + accuracy + '%'
+                  )
+              "
             >
               <svg
                 class="w-4 h-4 mr-2"
@@ -245,6 +267,9 @@
             </Button>
             <Button
               class="w-full justify-start bg-yellow-50 text-yellow-700 hover:bg-yellow-100 hover:text-yellow-800 font-medium transition"
+              @click="
+                () => toast.info('Riwayat Kerja: Total dokumen ' + stats.total)
+              "
             >
               <svg
                 class="w-4 h-4 mr-2"
@@ -594,6 +619,7 @@ import { Button } from "~/components/ui/button";
 import { useUserDocumentsApi } from "~/data/user-documents";
 import { useAnnotationsApi } from "~/data/annotations";
 import type { DocumentResponse, AnnotationResponse } from "~/types/api";
+import { toast } from "vue-sonner";
 
 const { getAssignedDocuments } = useUserDocumentsApi();
 const { reopenAnnotation } = useAnnotationsApi();
@@ -607,39 +633,45 @@ const isLoading = ref(false);
 const stats = computed(() => ({
   annotated: docs.value.filter((doc) => doc.status === "sudah_dianotasi")
     .length,
-  reviewed: docs.value.filter((doc) => doc.status === "sudah_direview").length,
   total: docs.value.length,
 }));
 
-// Improved weekly stats with real data
+const todayAnnotated = computed(() => {
+  const todayStr = new Date().toISOString().split("T")[0];
+  return docs.value.filter((doc) => doc.created_at.startsWith(todayStr)).length;
+});
+
+const accuracy = computed(() => {
+  if (!docs.value.length) return 0;
+  return stats.value.annotated
+    ? ((stats.value.annotated / docs.value.length) * 100).toFixed(1)
+    : "0.0";
+});
+
+// Weekly stats: count of docs created per day for last 7 days
 const weeklyStats = computed(() => {
   const today = new Date();
   const days = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
-  const stats = [];
-
+  const statsArr = [];
   for (let i = 6; i >= 0; i--) {
     const date = new Date(today);
     date.setDate(today.getDate() - i);
     const dateStr = date.toISOString().split("T")[0];
-
-    const count = docs.value.filter((doc) => {
-      const docDate = doc.created_at.split("T")[0];
-      return docDate === dateStr;
-    }).length;
-
-    stats.push({
+    const count = docs.value.filter((doc) =>
+      doc.created_at.startsWith(dateStr)
+    ).length;
+    statsArr.push({
       label: days[date.getDay()],
-      count: count,
+      count,
       date: dateStr,
     });
   }
-
-  return stats;
+  return statsArr;
 });
 
-const weeklyTotal = computed(() => {
-  return weeklyStats.value.reduce((sum, day) => sum + day.count, 0);
-});
+const weeklyTotal = computed(() =>
+  weeklyStats.value.reduce((sum, day) => sum + day.count, 0)
+);
 
 // Filter/search state
 const search = ref("");
@@ -791,6 +823,7 @@ function getStatusText(status: string) {
     sedang_dianotasi: "Sedang Dianotasi",
     sudah_dianotasi: "Sudah Dianotasi",
     sudah_direview: "Sudah Direview",
+    sedang_direview: "Sedang Direview",
     belum_direview: "Belum Direview",
   };
   return statusMap[status] || status;
@@ -802,6 +835,7 @@ function getStatusClass(status: string) {
     sedang_dianotasi: "bg-yellow-100 text-yellow-700",
     sudah_dianotasi: "bg-blue-100 text-blue-700",
     sudah_direview: "bg-green-100 text-green-700",
+    sedang_direview: "bg-yellow-100 text-yellow-700",
     belum_direview: "bg-purple-100 text-purple-700",
   };
   return classMap[status] || "bg-gray-200 text-gray-700";
@@ -816,25 +850,6 @@ const firstInProgressDoc = computed(() =>
 );
 
 // Today annotated count
-const todayAnnotated = computed(() => {
-  const todayStr = new Date().toISOString().split("T")[0];
-  return docs.value.filter(
-    (doc) =>
-      (doc.status === "sedang_dianotasi" ||
-        doc.status === "sudah_dianotasi" ||
-        doc.status === "sudah_direview") &&
-      doc.created_at.startsWith(todayStr)
-  ).length;
-});
-
-// Dummy accuracy calculation
-const accuracy = computed(() => {
-  if (!docs.value.length) return 0;
-  // Example: ratio of reviewed to annotated
-  return stats.value.annotated
-    ? ((stats.value.reviewed / stats.value.annotated) * 100).toFixed(1)
-    : "0.0";
-});
 
 // Helper functions for generating realistic data
 function getInstitutionName(id: number): string {
@@ -872,7 +887,7 @@ async function fetchData() {
     const response = await getAssignedDocuments();
     docs.value =
       response?.results
-        ?.sort((a: any, b: any) => a.id - b.id) // Sort by id ascending
+        ?.sort((a: any, b: any) => b.id - a.id) // Sort by id ascending
         .map((doc: any) => ({
           ...doc,
           // fallback for missing fields if needed
@@ -929,6 +944,13 @@ async function submitReopen() {
   } finally {
     reopenLoading.value = false;
   }
+}
+
+// Bar chart height calculation
+function getBarHeight(count: number) {
+  const max = Math.max(...weeklyStats.value.map((d) => d.count), 1);
+  // Scale so the tallest bar is 120px, others proportional
+  return max ? Math.max((count / max) * 120, 20) : 20;
 }
 </script>
 

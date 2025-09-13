@@ -21,6 +21,88 @@
         <p class="text-gray-700 mb-4">
           Buka kembali pekerjaan anotator atau reviewer pada dokumen tertentu.
         </p>
+        <div class="mb-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+          <!-- User List -->
+          <div class="bg-white border border-gray-200 rounded-xl p-6">
+            <h2 class="text-lg font-semibold text-blue-700 mb-4">
+              Daftar Pengguna
+            </h2>
+            <input
+              v-model="userSearch"
+              type="text"
+              placeholder="Cari nama, email, UUID..."
+              class="w-full px-3 py-2 mb-3 border border-gray-300 rounded-lg"
+            />
+            <div class="overflow-x-auto max-h-64">
+              <table class="min-w-full text-sm">
+                <thead>
+                  <tr class="bg-gray-100">
+                    <th class="px-2 py-1 text-left">ID</th>
+                    <th class="px-2 py-1 text-left">UUID</th>
+                    <th class="px-2 py-1 text-left">Nama</th>
+                    <th class="px-2 py-1 text-left">Email</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="user in filteredUsers"
+                    :key="user.id"
+                    class="hover:bg-yellow-50 cursor-pointer"
+                  >
+                    <td class="px-2 py-1">{{ user.id }}</td>
+                    <td class="px-2 py-1 font-mono">{{ user.uuid }}</td>
+                    <td class="px-2 py-1">{{ user.full_name }}</td>
+                    <td class="px-2 py-1">{{ user.email }}</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div
+                v-if="filteredUsers.length === 0"
+                class="text-gray-400 text-center py-2"
+              >
+                Tidak ada pengguna ditemukan.
+              </div>
+            </div>
+          </div>
+          <!-- Document List -->
+          <div class="bg-white border border-gray-200 rounded-xl p-6">
+            <h2 class="text-lg font-semibold text-blue-700 mb-4">
+              Daftar Dokumen
+            </h2>
+            <input
+              v-model="docSearch"
+              type="text"
+              placeholder="Cari judul, ID..."
+              class="w-full px-3 py-2 mb-3 border border-gray-300 rounded-lg"
+            />
+            <div class="overflow-x-auto max-h-64">
+              <table class="min-w-full text-sm">
+                <thead>
+                  <tr class="bg-gray-100">
+                    <th class="px-2 py-1 text-left">ID</th>
+                    <th class="px-2 py-1 text-left">Judul</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="doc in filteredDocs"
+                    :key="doc.id"
+                    class="hover:bg-yellow-50 cursor-pointer"
+                  >
+                    <td class="px-2 py-1">{{ doc.id }}</td>
+                    <td class="px-2 py-1">{{ doc.title }}</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div
+                v-if="filteredDocs.length === 0"
+                class="text-gray-400 text-center py-2"
+              >
+                Tidak ada dokumen ditemukan.
+              </div>
+            </div>
+          </div>
+        </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
           <!-- Reopen Anotator -->
           <div class="bg-white border border-gray-200 rounded-xl p-6">
@@ -139,13 +221,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { Button } from "~/components/ui/button";
 import { useAnnotationsApi } from "~/data/annotations";
 import { useReviewsApi } from "~/data/reviews";
+import { useUsersApi } from "~/data/users";
+import { useDocumentsApi } from "~/data/documents";
 
 const { adminReopenAnnotator } = useAnnotationsApi();
 const { adminReopenReview } = useReviewsApi();
+const { getUsers } = useUsersApi();
+const { getDocuments } = useDocumentsApi();
 
 const annotatorDocId = ref<number | null>(null);
 const annotatorUserId = ref("");
@@ -160,6 +246,40 @@ const reviewerReason = ref("");
 const reviewerLoading = ref(false);
 const reviewerSuccess = ref("");
 const reviewerError = ref("");
+
+const users = ref<any[]>([]);
+const documents = ref<any[]>([]);
+const userSearch = ref("");
+const docSearch = ref("");
+
+onMounted(async () => {
+  try {
+    const userRes = await getUsers();
+    users.value = userRes?.results || [];
+    const docRes = await getDocuments();
+    documents.value = docRes?.results || [];
+  } catch (e) {
+    // handle error
+  }
+});
+
+const filteredUsers = computed(() => {
+  const term = userSearch.value.toLowerCase();
+  return users.value.filter(
+    (u) =>
+      u.full_name?.toLowerCase().includes(term) ||
+      u.email?.toLowerCase().includes(term) ||
+      (u.uuid && u.uuid.toLowerCase().includes(term)) ||
+      String(u.id).includes(term)
+  );
+});
+
+const filteredDocs = computed(() => {
+  const term = docSearch.value.toLowerCase();
+  return documents.value.filter(
+    (d) => d.title?.toLowerCase().includes(term) || String(d.id).includes(term)
+  );
+});
 
 async function submitReopenAnnotator() {
   annotatorError.value = "";

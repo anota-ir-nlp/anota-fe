@@ -776,4 +776,18 @@ const handleLogout = async () => {
 .fade-leave-to {
   opacity: 0;
 }
+
+/* Toast light theme override */
+:deep([data-sonner-toaster][data-theme="light"]),
+:deep([data-sonner-toast][data-theme="light"]) {
+  --normal-bg: #fff !important;
+  --normal-text: #222 !important;
+  --normal-border: #e5e7eb !important;
+  background: #fff !important;
+  color: #222 !important;
+}
+:deep([data-sonner-toast][data-theme="light"] .sonner-title),
+:deep([data-sonner-toast][data-theme="light"] .sonner-description) {
+  color: #222 !important;
+}
 </style>
