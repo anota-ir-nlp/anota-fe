@@ -7,8 +7,6 @@ import type {
   ReopenResponse,
   SubmitReviewRequest,
   SubmitResponse,
-  AdminReopenReviewerRequest,
-  AdminReopenResponse
 } from "~/types/api";
 
 const BASE = "/annotations/reviews";
@@ -35,17 +33,31 @@ export function useReviewsApi() {
   const partialUpdateReview = (id: number, data: Partial<ReviewRequest>) =>
     fetcher<ReviewResponse>(`${BASE}/${id}/`, { method: "PATCH", body: data });
   
-  const deleteReview = (id: number) =>
-    fetcher(`${BASE}/${id}/`, { method: "DELETE" });
-  
   const reopenReview = (data: ReopenReviewRequest) =>
     fetcher<ReopenResponse>("/annotations/reviews/reopen/", { method: "POST", body: data });
   
   const submitReview = (data: SubmitReviewRequest) =>
     fetcher<SubmitResponse>("/annotations/reviews/submit/", { method: "POST", body: data });
-  
-  const adminReopenReview = (data: AdminReopenReviewerRequest) =>
-    fetcher<AdminReopenResponse>("/annotations/admin/reopen-review/", {
+  const deleteReview = (id: number) =>
+    fetcher(`${BASE}/${id}`, { method: "DELETE" });
+
+  const getReviewQueue = (
+    documentId: number | string,
+    includeUnannotated?: boolean
+  ) => {
+    let url = `/documents/my-assigned/${documentId}/review-queue/`;
+    if (includeUnannotated !== undefined) {
+      url += `?include_unannotated=${includeUnannotated}`;
+    }
+    return fetcher(url);
+  };
+
+  const adminReopenReview = (data: {
+    document: number;
+    user_id: string;
+    reason?: string;
+  }) =>
+    fetcher("/annotations/admin/reopen-review/", {
       method: "POST",
       body: data,
     });
@@ -60,5 +72,6 @@ export function useReviewsApi() {
     reopenReview,
     submitReview,
     adminReopenReview,
+    getReviewQueue,
   };
 }

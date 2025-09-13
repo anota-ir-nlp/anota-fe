@@ -255,7 +255,7 @@ export interface ErrorTypesListResponse {
 
 export interface ReviewRequest {
   document: number;
-  annotation: number;
+  annotation: number | null;
   sentence: number;
   start_index: number;
   end_index: number;
@@ -270,7 +270,7 @@ export interface ReviewResponse {
   id: number;
   reviewer: string;
   document: number;
-  annotation: number;
+  annotation: number | null;
   sentence: number;
   start_index: number;
   end_index: number;
@@ -389,6 +389,37 @@ export interface DocumentAssignedDetailResponse {
     full_name: string;
     institusi: string;
   } | null;
+}
+
+export interface ReviewQueueAnnotation {
+  id: number;
+  start_index: number;
+  end_index: number;
+  error_type: number;
+  error_type_code: string;
+  correction: string;
+  is_required: boolean;
+  comments: string | null;
+  annotator: string;
+}
+
+export interface ReviewQueueSentence {
+  sentence_id: number;
+  text: string;
+  has_submitted_annotations: boolean;
+  my_review_exists: boolean;
+  annotation_ids: number[];
+  annotations: ReviewQueueAnnotation[];
+}
+
+export interface ReviewQueueResponse {
+  document_id: number;
+  total_sentences: number;
+  submitted_sentences: number;
+  reviewed_sentences: number;
+  pending_sentences: number;
+  next_sentence_id: number;
+  sentences: ReviewQueueSentence[];
 }
 
 // Admin reopen functionality

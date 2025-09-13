@@ -8,8 +8,8 @@
           <UButton
             label="Kembali"
             icon="i-heroicons-arrow-left"
-            class="rounded-full px-4 py-2 font-semibold bg-black text-white border border-gray-200 hover:bg-gray-900 focus:ring-2 focus:ring-black shadow-none"
-            @click="router.back()"
+            class="rounded-2xl bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200 flex items-center px-4 py-2 font-semibold shadow-none"
+            @click="router.push('/reviewer/review')"
             title="Kembali"
           />
 
@@ -34,7 +34,7 @@
                   <line x1="8" y1="16" x2="12" y2="16" />
                 </svg>
               </span>
-              Anotasi Dokumen
+              Review Dokumen
             </h1>
             <div class="text-gray-500 text-sm mt-1" v-if="document">
               Dokumen
@@ -47,13 +47,13 @@
           <div class="flex items-center gap-2 flex-wrap">
             <UButton
               icon="i-heroicons-chevron-left"
-              class="rounded-full px-3 py-2 bg-black text-white border border-gray-200 hover:bg-gray-900 focus:ring-2 focus:ring-black shadow-none"
+              class="rounded-2xl bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 flex items-center px-3 py-2 shadow-none"
               title="Dokumen Sebelumnya"
               @click="navigateDocument(-1)"
             />
             <UButton
               icon="i-heroicons-chevron-right"
-              class="rounded-full px-3 py-2 bg-black text-white border border-gray-200 hover:bg-gray-900 focus:ring-2 focus:ring-black shadow-none"
+              class="rounded-2xl bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 flex items-center px-3 py-2 shadow-none"
               title="Dokumen Selanjutnya"
               @click="navigateDocument(1)"
             />
@@ -163,7 +163,7 @@
                     variant="ghost"
                   >
                     <span class="flex items-center">
-                      Riwayat Kalimat
+                      Riwayat Anotasi
                       <UKbd as="span" size="sm" class="ml-2">Shift+Enter</UKbd>
                     </span>
                   </UButton>
@@ -450,13 +450,14 @@
           class="bg-black border border-gray-900 rounded-2xl px-4 py-3 flex items-center justify-between"
         >
           <div class="text-xs text-white">
-            Submit untuk kirim final seluruh anotasi pada dokumen ini.
+            Submit untuk kirim final seluruh review pada dokumen ini. Semua
+            review yang dibuat otomatis tersimpan.
           </div>
           <div class="flex gap-2">
             <!-- Removed Simpan button -->
             <UButton
               icon="i-heroicons-paper-airplane"
-              class="rounded-full px-4 py-2 bg-black text-white border border-gray-900 hover:bg-gray-900 focus:ring-2 focus:ring-black shadow-none"
+              class="rounded-2xl bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 flex items-center px-4 py-2 shadow-none"
               @click="submitAllAnnotations"
             >
               <span class="flex items-center">
@@ -738,6 +739,8 @@ import { useReviewsApi } from "~/data/reviews";
 import type { DocumentResponse, ReviewResponse } from "~/types/api";
 import type { ErrorTypeResponse } from "~/types/api";
 import type { DocumentAssignedDetailResponse } from "~/types/api";
+import type { ReviewQueueResponse } from "~/types/api";
+import { toast } from "vue-sonner";
 
 const route = useRoute();
 const router = useRouter();
@@ -753,6 +756,7 @@ const {
   partialUpdateReview,
   deleteReview,
   submitReview,
+  getReviewQueue,
 } = useReviewsApi();
 
 // Document data
@@ -781,6 +785,7 @@ const annotations = ref<Annotation[]>([]);
 const hoveredAnnotation = ref<Annotation | null>(null);
 const showAnnotationModal = ref(false);
 const selectedAnnotation = ref<Annotation | null>(null);
+const selectedAnnotationId = ref<number | null>(null);
 
 // State for API annotations
 const apiAnnotations = ref<ReviewResponse[]>([]);
@@ -801,12 +806,18 @@ const errorTypesCount = ref(0);
 const errorTypesPage = ref(1);
 const errorTypesPageSize = 10; // Adjust if backend supports
 const errorTypesLoading = ref(false);
+const errorTypesNext = ref<string | null>(null);
+const errorTypesPrevious = ref<string | null>(null);
 
-async function fetchErrorTypes(page = 1, projectId?: number) {
+async function fetchErrorTypes(page = 1) {
   errorTypesLoading.value = true;
   try {
+    // Get projectId from document response
+    const projectId = document.value?.project;
     const res = await getErrorTypes(page, projectId);
-    // API may return { count, results } or just an array, handle both
+    // Store next for pagination control
+    errorTypesNext.value = Array.isArray(res) ? null : res.next;
+    errorTypesPrevious.value = Array.isArray(res) ? null : res.previous;
     if (Array.isArray(res)) {
       errorTypes.value = res;
       errorTypesCount.value = res.length;
@@ -844,36 +855,42 @@ async function fetchApiAnnotation(id: number) {
 }
 
 // Create a new annotation via API
-async function createApiAnnotation() {
-  if (
-    !selectedSentence.value ||
-    !selectedText.value ||
-    !correctionInput.value ||
-    !selectedErrorTypes.value.length ||
-    !selectedRange.value
-  )
-    return;
+// async function createApiAnnotation() {
+//   if (
+//     !selectedSentence.value ||
+//     !selectedText.value ||
+//     !correctionInput.value ||
+//     !selectedErrorTypes.value.length ||
+//     !selectedRange.value
+//   )
+//     return;
 
-  await createReview({
-    document: Number(route.params.id),
-    sentence: selectedSentence.value.id,
-    start_index: selectedRange.value.start,
-    end_index: selectedRange.value.end,
-    error_type: Number(selectedErrorTypes.value[0]),
-    correction: correctionInput.value,
-  });
-  showAnnotationUI.value = false;
-  selectedText.value = "";
-  correctionInput.value = "";
-  selectedErrorTypes.value = [];
-  selectedRange.value = null;
-  await fetchApiAnnotations();
-}
+//   await createReview({
+//     document: Number(route.params.id),
+//     annotation: selectedAnnotationId.value,
+//     sentence: selectedSentence.value.id,
+//     start_index: selectedRange.value.start,
+//     end_index: selectedRange.value.end,
+//     error_type: Number(selectedErrorTypes.value[0]),
+//     correction: correctionInput.value,
+//   });
+//   showAnnotationUI.value = false;
+//   selectedText.value = "";
+//   correctionInput.value = "";
+//   selectedErrorTypes.value = [];
+//   selectedRange.value = null;
+//   await fetchApiAnnotations();
+// }
 
 // Update annotation (full)
 async function saveEditAnnotation() {
   if (!editingAnnotation.value) return;
   await updateReview(editingAnnotation.value.id, {
+    document: Number(route.params.id),
+    annotation: editingAnnotation.value.annotation,
+    sentence: editingAnnotation.value.sentence,
+    start_index: editingAnnotation.value.start_index,
+    end_index: editingAnnotation.value.end_index,
     correction: editCorrectionInput.value,
     error_type: editSelectedErrorTypes.value[0],
   });
@@ -939,7 +956,8 @@ onMounted(async () => {
   await fetchDocument();
   await fetchErrorTypes();
   await fetchApiAnnotations();
-  await fetchAssignedDocumentIds(); // <-- fetch all assigned document IDs
+  await fetchAssignedDocumentIds();
+  await syncReviewQueue(); // <-- run sync on page load
   // Set popup position to center of window (client-side only)
   if (typeof window !== "undefined") {
     popupPosition.value = {
@@ -1022,6 +1040,7 @@ async function submitAllAnnotations() {
   try {
     await submitReview({ document: docId });
     await fetchApiAnnotations();
+    toast.success("Berhasil submit review dokumen!");
   } catch (e) {
     // Optionally show error message
   }
@@ -1059,7 +1078,6 @@ function globalKeyHandler(e: KeyboardEvent) {
   }
 }
 
-// Global keyboard shortcuts for save/submit
 onMounted(() => {
   window.addEventListener("keydown", globalKeyHandler);
 });
@@ -1068,7 +1086,6 @@ onUnmounted(() => {
   window.removeEventListener("keydown", globalKeyHandler);
 });
 
-// Date formatting function
 const formatDate = (date: string | Date) => {
   return new Date(date).toLocaleDateString("id-ID", {
     year: "numeric",
@@ -1077,9 +1094,6 @@ const formatDate = (date: string | Date) => {
   });
 };
 
-// Replace:
-
-// With:
 const selectSentence = (sentenceId: number) => {
   const sentence = document.value?.sentences.find((s) => s.id === sentenceId);
   if (sentence) {
@@ -1096,7 +1110,6 @@ const clearSelection = () => {
 };
 
 const handleTextSelection = (event?: MouseEvent) => {
-  // Use the correct ref depending on the current view mode
   let area: HTMLElement | undefined | null;
   if (currentViewMode.value === "combined") {
     area = combinedEditableArea.value;
@@ -1138,12 +1151,6 @@ const handleTextSelection = (event?: MouseEvent) => {
   // Find the selected text in the original sentence text
   const startIndex = originalSentenceText.indexOf(selectedText.value);
 
-  // Debug log selection and indices
-  console.log("DEBUG handleTextSelection:");
-  console.log("selectedText:", selectedText.value);
-  console.log("originalSentenceText:", originalSentenceText);
-  console.log("startIndex:", startIndex);
-
   if (
     !selectedText.value ||
     startIndex === -1 ||
@@ -1159,9 +1166,6 @@ const handleTextSelection = (event?: MouseEvent) => {
     start: startIndex,
     end: endIndex,
   };
-
-  // Debug log selectedRange
-  console.log("selectedRange set:", selectedRange.value);
 };
 
 function getOriginalSentenceText(sentenceId: number): string {
@@ -1177,14 +1181,6 @@ const annotationCreating = ref(false);
 const annotationError = ref("");
 
 const saveAnnotation = async () => {
-  // Debug log all relevant fields
-  console.log("DEBUG saveAnnotation fields:");
-  console.log("selectedSentence", selectedSentence.value);
-  console.log("selectedText", selectedText.value);
-  console.log("correctionInput", correctionInput.value);
-  console.log("selectedErrorTypes", selectedErrorTypes.value);
-  console.log("selectedRange", selectedRange.value);
-
   if (
     !selectedSentence.value ||
     !selectedText.value ||
@@ -1205,6 +1201,7 @@ const saveAnnotation = async () => {
       // Update annotation
       await updateReview(editingAnnotation.value.id, {
         document: Number(route.params.id),
+        annotation: editingAnnotation.value.annotation,
         sentence: selectedSentence.value.id,
         start_index: selectedRange.value.start,
         end_index: selectedRange.value.end,
@@ -1235,6 +1232,7 @@ const saveAnnotation = async () => {
     commentsInput.value = "";
     isEditingAnnotation.value = false;
     editingAnnotation.value = null;
+    selectedAnnotationId.value = null;
     await fetchApiAnnotations();
   } catch (err) {
     annotationError.value =
@@ -1269,6 +1267,49 @@ function editAnnotation(annotation: ReviewResponse) {
   selectedErrorTypes.value = [String(annotation.error_type)];
   isRequiredInput.value = annotation.is_required;
   commentsInput.value = annotation.comments || "";
+  selectedAnnotationId.value = annotation.annotation;
+}
+
+async function syncReviewQueue() {
+  const docId = Number(route.params.id);
+  if (!docId) return;
+  try {
+    const queue: ReviewQueueResponse = await getReviewQueue(docId);
+    const existingReviews = await getReviews();
+    console.log(existingReviews);
+    const reviewedAnnotationIds = new Set(
+      Array.isArray(existingReviews.results)
+        ? existingReviews.results
+            .filter((r) => r.document === docId)
+            .map((r) => r.annotation)
+        : []
+    );
+    console.log(
+      "Queue annotation ids:",
+      queue.sentences.flatMap((s) => s.annotations.map((a) => a.id))
+    );
+    console.log("Reviewed annotation ids:", Array.from(reviewedAnnotationIds));
+    for (const sentence of queue.sentences) {
+      for (const annotation of sentence.annotations) {
+        if (!reviewedAnnotationIds.has(annotation.id)) {
+          await createReview({
+            document: queue.document_id,
+            annotation: annotation.id,
+            sentence: sentence.sentence_id,
+            start_index: annotation.start_index,
+            end_index: annotation.end_index,
+            error_type: annotation.error_type,
+            correction: annotation.correction,
+            is_required: annotation.is_required,
+            comments: annotation.comments || undefined,
+          });
+        }
+      }
+    }
+    await fetchApiAnnotations();
+  } catch (e) {
+    console.error("Failed to sync review queue", e);
+  }
 }
 
 function getApiAnnotationsForSentence(sentenceId: number) {
