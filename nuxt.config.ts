@@ -46,9 +46,6 @@ export default defineNuxtConfig({
 
   vite: {
     plugins: [tailwindcss()],
-    server: {
-      allowedHosts: ["914bef266dd4.ngrok-free.app"]
-    }
   },
 
   build: {
