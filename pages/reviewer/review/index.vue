@@ -39,7 +39,7 @@
             <div>
               <p class="text-sm text-gray-500 mb-1">Total Review</p>
               <p class="text-2xl font-bold text-black">
-                {{ stats.annotated }}
+                {{ stats.reviewed }}
               </p>
             </div>
             <div
@@ -270,7 +270,7 @@
               @click="
                 () =>
                   toast.info(
-                    'Riwayat Kerja: Total dokumen ' + stats.value.total
+                    'Riwayat Kerja: Total dokumen ' + stats.total
                   )
               "
             >
@@ -820,8 +820,6 @@ function getStatusText(status: DocumentStatus) {
     belum_dianotasi: "Belum Dianotasi",
     sedang_dianotasi: "Sedang Dianotasi",
     sudah_dianotasi: "Sudah Dianotasi",
-    sudah_direview: "Sudah Direview",
-    sedang_direview: "Sedang Direview",
     belum_direview: "Belum Direview",
     sedang_direview: "Sedang Direview",
     sudah_direview: "Sudah Direview",
@@ -834,8 +832,6 @@ function getStatusClass(status: DocumentStatus) {
     belum_dianotasi: "bg-gray-200 text-gray-700",
     sedang_dianotasi: "bg-yellow-100 text-yellow-700",
     sudah_dianotasi: "bg-blue-100 text-blue-700",
-    sudah_direview: "bg-green-100 text-green-700",
-    sedang_direview: "bg-yellow-100 text-yellow-700",
     belum_direview: "bg-purple-100 text-purple-700",
     sedang_direview: "bg-orange-100 text-orange-700",
     sudah_direview: "bg-green-100 text-green-700",

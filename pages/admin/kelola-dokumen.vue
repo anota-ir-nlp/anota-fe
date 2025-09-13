@@ -417,7 +417,6 @@ const { adminReopenAnnotator } = useAnnotationsApi();
 const { adminReopenReview } = useReviewsApi();
 const { selectedProject, selectedProjectId } = useProjectContext();
 
-// Core state
 const documents = ref<DocumentResponse[]>([]);
 const users = ref<UserResponse[]>([]);
 const selectedDocuments = ref<DocumentResponse[]>([]);
@@ -425,7 +424,6 @@ const isLoading = ref(false);
 const currentPage = ref(1);
 const totalPages = ref(1);
 
-// File upload state
 const isCreateDialogOpen = ref(false);
 const isBulkDialogOpen = ref(false);
 const isUploading = ref(false);
@@ -443,7 +441,6 @@ const bulkFilesPreview = ref<BulkFilePreview[]>([]);
 const currentBulkFileIndex = ref(0);
 const processedBulkFiles = ref<BulkFilePreview[]>([]);
 
-// Assignment state - consolidated
 const isAssignmentDialogOpen = ref(false);
 const isManaging = ref(false);
 const assignmentMode = ref<'single' | 'bulk'>('single');
@@ -453,7 +450,6 @@ const originalAssignedUsers = ref<string[]>([]);
 const openUsers = ref(false);
 const searchTerm = ref('');
 
-// Reopen state
 const isReopenDialogOpen = ref(false);
 const isReopening = ref(false);
 const reopenMode = ref<'annotator' | 'reviewer'>('annotator');
