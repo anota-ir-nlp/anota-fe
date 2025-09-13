@@ -12,7 +12,7 @@ services:
     environment:
       - NODE_ENV=production
       - HOST=0.0.0.0
-      - PORT=3000
+      - PORT=3030
       - AUTH_ORIGIN=${AUTH_ORIGIN:-http://localhost:3030}
       - AUTH_SECRET=${AUTH_SECRET:-your-secret-key-here}
       - NUXT_PUBLIC_API_BASE_URL=${NUXT_PUBLIC_API_BASE_URL:-/api/proxy}
