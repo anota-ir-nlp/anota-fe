@@ -1,21 +1,26 @@
 <template>
-  <div class="flex flex-col items-center justify-start text-center bg-slate-900 text-white p-8 min-h-screen">
-    <div class="flex items-center justify-center gap-4 mb-20">
-      <h1 class="text-4xl font-bold text-blue-400">Kelola Dokumen</h1>
-    </div>
-
-    <!-- Project Selection Required Notice -->
-    <div v-if="!selectedProject" class="mb-6 w-full max-w-6xl">
-      <div class="bg-yellow-600/20 border border-yellow-600/50 rounded-xl p-6 text-center">
-        <h3 class="text-yellow-300 font-semibold mb-2">Project Belum Dipilih</h3>
-        <p class="text-yellow-200">Silakan pilih project terlebih dahulu dari dropdown di header untuk mengelola
-          dokumen.</p>
+  <div class="min-h-screen px-2 sm:px-4 py-10 font-inter bg-gray-50">
+    <div class="w-full max-w-[95vw] mx-auto px-2 sm:px-4 pb-16">
+      <!-- Header -->
+      <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Kelola Dokumen</h1>
+        <p class="text-gray-600">
+          Upload dan kelola dokumen untuk proses anotasi dan review
+        </p>
       </div>
-    </div>
 
-    <template v-if="selectedProject">
-      <!-- Upload Controls -->
-      <div class="mb-6 w-full flex gap-3 max-w-6xl mx-auto">
+      <!-- Project Selection Required Notice -->
+      <div v-if="!selectedProject" class="mb-6">
+        <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-6 text-center">
+          <h3 class="text-yellow-800 font-semibold mb-2">Project Belum Dipilih</h3>
+          <p class="text-yellow-700">Silakan pilih project terlebih dahulu dari dropdown di header untuk mengelola
+            dokumen.</p>
+        </div>
+      </div>
+
+      <template v-if="selectedProject">
+        <!-- Upload Controls -->
+        <div class="mb-6 flex gap-3">
         <!-- Single Upload Dialog -->
         <Dialog v-model:open="isCreateDialogOpen">
           <DialogTrigger as-child>
@@ -34,14 +39,14 @@
             <div class="flex-1 flex flex-col gap-4 py-4 overflow-hidden">
               <Input type="file" accept=".txt,.docx" @change="handleSingleFile" class="mb-2" />
               <div v-if="singleFilePreview"
-                class="flex-1 bg-slate-800 rounded p-4 text-sm flex flex-col overflow-hidden">
-                <div class="font-semibold text-blue-300 mb-3">Preview:</div>
+                class="flex-1 bg-gray-50 border border-gray-200 rounded p-4 text-sm flex flex-col overflow-hidden">
+                <div class="font-semibold text-blue-600 mb-3">Preview:</div>
                 <div class="flex-1 text-left space-y-3 flex flex-col overflow-hidden">
-                  <div class="font-medium text-lg">{{ singleFilePreview.title }}</div>
-                  <div class="flex-1 text-gray-300 p-4 bg-slate-700 rounded overflow-y-auto whitespace-pre-wrap">
+                  <div class="font-medium text-lg text-gray-900">{{ singleFilePreview.title }}</div>
+                  <div class="flex-1 text-gray-700 p-4 bg-white border border-gray-200 rounded overflow-y-auto whitespace-pre-wrap">
                     {{ singleFilePreview.text }}
                   </div>
-                  <div class="flex gap-2 mt-4 pt-4 border-t border-slate-600">
+                  <div class="flex gap-2 mt-4 pt-4 border-t border-gray-200">
                     <Button @click="confirmFile('single')" variant="default" size="sm" class="flex items-center gap-2">
                       <Plus class="w-4 h-4" />
                       Konfirmasi File
@@ -54,7 +59,7 @@
                   </div>
                 </div>
               </div>
-              <div v-if="fileError" class="text-red-400 text-sm">{{ fileError }}</div>
+              <div v-if="fileError" class="text-red-600 text-sm">{{ fileError }}</div>
             </div>
             <DialogFooter>
               <Button variant="outline" @click="resetForm('single')">Reset</Button>
@@ -100,19 +105,19 @@
                   </div>
                   <div v-if="currentBulkFile" class="flex items-center space-x-2">
                     <input type="checkbox" id="applyToAll" v-model="applyToAllFiles" class="rounded border-gray-300" />
-                    <label for="applyToAll" class="text-sm text-gray-300">Terapkan ke semua file berikutnya</label>
+                    <label for="applyToAll" class="text-sm text-gray-600">Terapkan ke semua file berikutnya</label>
                   </div>
                 </div>
 
                 <!-- Current File Preview -->
-                <div v-if="currentBulkFile" class="flex-1 bg-slate-800 rounded p-6 flex flex-col overflow-hidden">
+                <div v-if="currentBulkFile" class="flex-1 bg-gray-50 border border-gray-200 rounded p-6 flex flex-col overflow-hidden">
                   <div class="space-y-4 flex-1 flex flex-col overflow-hidden">
-                    <div class="font-medium text-blue-300 text-lg">{{ currentBulkFile.title }}</div>
+                    <div class="font-medium text-blue-600 text-lg">{{ currentBulkFile.title }}</div>
                     <div
-                      class="flex-1 text-gray-300 p-4 bg-slate-700 rounded overflow-y-auto whitespace-pre-wrap text-sm">
+                      class="flex-1 text-gray-700 p-4 bg-white border border-gray-200 rounded overflow-y-auto whitespace-pre-wrap text-sm">
                       {{ currentBulkFile.text }}
                     </div>
-                    <div class="flex gap-2 pt-4 border-t border-slate-600">
+                    <div class="flex gap-2 pt-4 border-t border-gray-200">
                       <Button @click="confirmFile('bulk')" variant="default" size="sm" class="flex items-center gap-2">
                         <Plus class="w-4 h-4" />
                         Konfirmasi File
@@ -153,12 +158,33 @@
           </DialogContent>
         </Dialog>
 
-        <!-- Bulk Assignment Button -->
-        <Button v-if="selectedDocuments.length > 0" variant="outline" class="flex items-center gap-2 ml-auto"
-          @click="openAssignmentDialog('bulk')">
-          <UserPlus class="w-4 h-4" />
-          Kelola Assignment ({{ selectedDocuments.length }})
-        </Button>
+        <!-- Bulk Actions -->
+        <div v-if="selectedDocuments.length > 0" class="flex gap-2 ml-auto">
+          <!-- Bulk Export Button -->
+          <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+              <Button variant="outline" class="flex items-center gap-2">
+                <Download class="w-4 h-4" />
+                Bulk Export ({{ selectedDocuments.length }})
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem @click="handleBulkExport('parallel')">
+                Export All Parallel TSV
+              </DropdownMenuItem>
+              <DropdownMenuItem @click="handleBulkExport('m2')">
+                Export All M2 Format
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <!-- Bulk Assignment Button -->
+          <Button variant="outline" class="flex items-center gap-2"
+            @click="openAssignmentDialog('bulk')">
+            <UserPlus class="w-4 h-4" />
+            Kelola Assignment ({{ selectedDocuments.length }})
+          </Button>
+        </div>
       </div>
 
       <!-- Assignment Dialog -->
@@ -233,16 +259,83 @@
         </DialogContent>
       </Dialog>
 
-      <div v-if="isLoading" class="text-gray-300 mb-4">Memuat data dokumen...</div>
+      <!-- Reopen Dialog -->
+      <Dialog v-model:open="isReopenDialogOpen">
+        <DialogContent class="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Reopen Dokumen</DialogTitle>
+            <DialogDescription>
+              Buka kembali pekerjaan {{ reopenMode === 'annotator' ? 'anotator' : 'reviewer' }} pada dokumen 
+              "{{ documentToReopen?.title }}".
+            </DialogDescription>
+          </DialogHeader>
+          <div class="grid gap-4 py-4">
+            <div class="grid gap-2">
+              <label class="text-sm font-medium text-left">Tipe Reopen</label>
+              <div class="flex gap-2">
+                <Button 
+                  :variant="reopenMode === 'annotator' ? 'default' : 'outline'"
+                  @click="reopenMode = 'annotator'"
+                  size="sm"
+                  class="flex-1"
+                >
+                  Anotator
+                </Button>
+                <Button 
+                  :variant="reopenMode === 'reviewer' ? 'default' : 'outline'"
+                  @click="reopenMode = 'reviewer'"
+                  size="sm"
+                  class="flex-1"
+                >
+                  Reviewer
+                </Button>
+              </div>
+            </div>
+            <div class="grid gap-2">
+              <label class="text-sm font-medium text-left">User ID</label>
+              <Input
+                v-model="reopenUserId"
+                type="text"
+                placeholder="Masukkan UUID user"
+                required
+              />
+            </div>
+            <div class="grid gap-2">
+              <label class="text-sm font-medium text-left">Alasan (opsional)</label>
+              <Textarea
+                v-model="reopenReason"
+                rows="3"
+                placeholder="Alasan reopening (opsional)"
+              />
+            </div>
+            <div class="bg-slate-800 rounded p-3 text-sm">
+              <div class="font-semibold text-blue-300 mb-2">Dokumen:</div>
+              <div class="text-left">
+                <div class="font-medium text-white">{{ documentToReopen?.title }}</div>
+                <div class="text-gray-400 mt-1">ID: {{ documentToReopen?.id }}</div>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" @click="closeReopenDialog">Batal</Button>
+            <Button @click="submitReopen" :disabled="isReopening || !reopenUserId" class="flex items-center gap-2">
+              <Loader2 v-if="isReopening" class="w-4 h-4 animate-spin" />
+              {{ isReopening ? 'Memproses...' : 'Kirim Reopen' }}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-      <div v-if="documents.length"
-        class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl shadow-lg p-6 mb-6 w-full max-w-6xl">
-        <DataTable :columns="documentColumns" :data="documents" @selection-change="handleSelectionChange"
-          @delete-document="handleDeleteDocument" />
-      </div>
+        <div v-if="isLoading" class="text-gray-600 mb-4">Memuat data dokumen...</div>
 
-      <!-- Pagination Controls -->
-      <div v-if="documents.length && totalPages > 1" class="mt-4 flex justify-center w-full max-w-6xl">
+        <div v-if="documents.length"
+          class="bg-white border border-gray-200 rounded-xl shadow-sm p-6 mb-6">
+          <DataTable :columns="documentColumns" :data="documents" @selection-change="handleSelectionChange"
+            @delete-document="handleDeleteDocument" />
+        </div>
+
+        <!-- Pagination Controls -->
+        <div v-if="documents.length && totalPages > 1" class="mt-4 flex justify-center">
         <Pagination :page="currentPage" :total="totalPages"
           :items-per-page="documents.length > 0 ? documents.length : 1" @update:page="fetchDocuments">
           <PaginationContent>
@@ -263,11 +356,12 @@
         </Pagination>
       </div>
 
-      <div v-if="!documents.length && !isLoading"
-        class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl shadow-lg p-6 w-full max-w-6xl text-center">
-        <span class="text-gray-400">Tidak ada dokumen ditemukan.</span>
-      </div>
+        <div v-if="!documents.length && !isLoading"
+          class="bg-white border border-gray-200 rounded-xl p-6 text-center">
+          <span class="text-gray-500">Tidak ada dokumen ditemukan.</span>
+        </div>
     </template>
+    </div>
   </div>
 </template>
 
@@ -277,9 +371,12 @@ import { useDocumentsApi } from "~/data/documents";
 import { useUsersApi } from "~/data/users";
 import { useAssignmentsApi } from "~/data/document-assignments";
 import { useProjectsApi } from "~/data/projects";
+import { useAnnotationsApi } from "~/data/annotations";
+import { useReviewsApi } from "~/data/reviews";
 import { useProjectContext } from "~/composables/project-context";
 import type { DocumentResponse, DocumentRequest, UserResponse } from "~/types/api";
 import { Input } from "~/components/ui/input";
+import { Textarea } from "~/components/ui/textarea";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -291,6 +388,12 @@ import {
   DialogTrigger,
 } from "~/components/ui/dialog";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import {
   Pagination,
   PaginationContent,
   PaginationItem,
@@ -298,7 +401,7 @@ import {
   PaginationNext,
   PaginationEllipsis
 } from "~/components/ui/pagination";
-import { Plus, Upload, Loader2, ArrowLeft, ArrowRight, MoreHorizontal, UserPlus, Trash } from "lucide-vue-next";
+import { Plus, Upload, Loader2, ArrowLeft, ArrowRight, MoreHorizontal, UserPlus, Trash, Download } from "lucide-vue-next";
 import { toast } from "vue-sonner";
 import { Progress } from "~/components/ui/progress";
 import { TagsInput, TagsInputItem, TagsInputInput, TagsInputItemDelete, TagsInputItemText } from "~/components/ui/tags-input";
@@ -307,9 +410,11 @@ import DataTable from "~/components/ui/data-table/data-table.vue";
 import { createColumns } from "~/components/documents/columns";
 import { parseFile, isValidFileType } from "~/utils/file-parser";
 
-const { getDocumentsInProject, createDocument: apiCreateDocument, deleteDocument: apiDeleteDocument, assignDocumentsToProject } = useDocumentsApi();
-const { getUsers } = useUsersApi();
+const { getDocumentsInProject, createDocument: apiCreateDocument, deleteDocument: apiDeleteDocument, assignDocumentsToProject, exportDocument: exportDocumentApi } = useDocumentsApi();
+const { getAllUsers } = useUsersApi();
 const { assignDocument: apiAssignDocument, unassignDocument: apiUnassignDocument, bulkAssignDocument: apiBulkAssignDocument } = useAssignmentsApi();
+const { adminReopenAnnotator } = useAnnotationsApi();
+const { adminReopenReview } = useReviewsApi();
 const { selectedProject, selectedProjectId } = useProjectContext();
 
 // Core state
@@ -348,6 +453,14 @@ const originalAssignedUsers = ref<string[]>([]);
 const openUsers = ref(false);
 const searchTerm = ref('');
 
+// Reopen state
+const isReopenDialogOpen = ref(false);
+const isReopening = ref(false);
+const reopenMode = ref<'annotator' | 'reviewer'>('annotator');
+const documentToReopen = ref<DocumentResponse | null>(null);
+const reopenUserId = ref('');
+const reopenReason = ref('');
+
 
 const confirmedBulkFiles = computed(() => processedBulkFiles.value.filter(file => file.status === 'confirmed'));
 const deletedBulkFiles = computed(() => processedBulkFiles.value.filter(file => file.status === 'deleted'));
@@ -374,7 +487,7 @@ const paginationPages = computed(() => {
   return pages;
 });
 
-const documentColumns = computed(() => createColumns(getUserName, handleDeleteDocument));
+const documentColumns = computed(() => createColumns(getUserName, handleDeleteDocument, handleExportDocument, handleReopenDocument));
 
 // Consolidated file handling functions
 async function handleSingleFile(e: Event) {
@@ -587,7 +700,7 @@ function openAssignmentDialog(mode: 'single' | 'bulk', document?: DocumentRespon
 
   if (mode === 'single' && document) {
     documentToManage.value = document;
-    originalAssignedUsers.value = document.assigned_to.map(id => id.toString());
+    originalAssignedUsers.value = document.assigned_to?.map(id => id.toString()) || [];
     assignedUserIds.value = [...originalAssignedUsers.value];
   }
 
@@ -698,7 +811,7 @@ async function saveBulkAssignmentChanges() {
       let failCount = 0;
 
       for (const doc of selectedDocuments.value) {
-        const usersToAssign = assignedUserIds.value.filter(userId => !doc.assigned_to.includes(parseInt(userId)));
+        const usersToAssign = assignedUserIds.value.filter(userId => !doc.assigned_to?.includes(userId));
         if (usersToAssign.length > 0) {
           try {
             await apiBulkAssignDocument(doc.id, usersToAssign);
@@ -750,6 +863,138 @@ function handleDeleteDocument(documentId: string) {
     });
 }
 
+async function handleExportDocument(document: DocumentResponse, format: 'parallel' | 'm2') {
+  try {
+    toast.promise(
+      (async () => {
+        const blob = await exportDocumentApi(document.id, format);
+
+        // Create download link
+        const url = window.URL.createObjectURL(blob);
+        const link = window.document.createElement('a');
+        link.href = url;
+        link.download = `${document.title}_${format}.${format === 'parallel' ? 'tsv' : 'm2'}`;
+        window.document.body.appendChild(link);
+        link.click();
+        window.document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+
+        return document;
+      })(),
+      {
+        loading: `Mengexport ${format.toUpperCase()}...`,
+        success: `Export ${format.toUpperCase()} berhasil untuk "${document.title}"`,
+        error: `Gagal export ${format.toUpperCase()}`
+      }
+    );
+  } catch (error: any) {
+    console.error('Export error:', error);
+    toast.error(`Gagal export ${format.toUpperCase()}: ${error.message}`);
+  }
+}
+
+async function handleBulkExport(format: 'parallel' | 'm2') {
+  if (selectedDocuments.value.length === 0) {
+    toast.error("Tidak ada dokumen yang dipilih");
+    return;
+  }
+
+  const totalDocuments = selectedDocuments.value.length;
+  let successCount = 0;
+  let failCount = 0;
+
+  toast.promise(
+    (async () => {
+      for (const document of selectedDocuments.value) {
+        try {
+          const blob = await exportDocumentApi(document.id, format);
+
+          // Create download link
+          const url = window.URL.createObjectURL(blob);
+          const link = window.document.createElement('a');
+          link.href = url;
+          link.download = `${document.title}_${format}.${format === 'parallel' ? 'tsv' : 'm2'}`;
+          window.document.body.appendChild(link);
+          link.click();
+          window.document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+
+          successCount++;
+        } catch (error) {
+          console.error(`Export failed for document ${document.id}:`, error);
+          failCount++;
+        }
+      }
+
+      return { successCount, failCount, totalDocuments };
+    })(),
+    {
+      loading: `Mengexport ${totalDocuments} dokumen (${format.toUpperCase()})...`,
+      success: (result: { successCount: number; failCount: number; totalDocuments: number }) => {
+        if (result.failCount === 0) {
+          return `Berhasil export semua ${result.totalDocuments} dokumen (${format.toUpperCase()})`;
+        } else {
+          return `Export selesai: ${result.successCount} berhasil, ${result.failCount} gagal`;
+        }
+      },
+      error: `Gagal bulk export ${format.toUpperCase()}`
+    }
+  );
+
+  // Clear selection after export
+  selectedDocuments.value = [];
+}
+
+// Reopen functionality
+function handleReopenDocument(document: DocumentResponse) {
+  documentToReopen.value = document;
+  reopenUserId.value = '';
+  reopenReason.value = '';
+  reopenMode.value = 'annotator';
+  isReopenDialogOpen.value = true;
+}
+
+function closeReopenDialog() {
+  documentToReopen.value = null;
+  reopenUserId.value = '';
+  reopenReason.value = '';
+  isReopenDialogOpen.value = false;
+}
+
+async function submitReopen() {
+  if (!documentToReopen.value || !reopenUserId.value) {
+    toast.error("Dokumen dan User ID harus diisi");
+    return;
+  }
+
+  isReopening.value = true;
+  
+  try {
+    const requestData = {
+      document: documentToReopen.value.id,
+      user_id: reopenUserId.value,
+      reason: reopenReason.value || undefined,
+    };
+
+    if (reopenMode.value === 'annotator') {
+      await adminReopenAnnotator(requestData);
+      toast.success("Berhasil membuka kembali pekerjaan anotator");
+    } else {
+      await adminReopenReview(requestData);
+      toast.success("Berhasil membuka kembali pekerjaan reviewer");
+    }
+
+    closeReopenDialog();
+    await fetchDocuments(currentPage.value);
+  } catch (error: any) {
+    console.error('Reopen error:', error);
+    const errorMessage = error?.data?.detail || `Gagal melakukan reopen ${reopenMode.value}`;
+    toast.error(errorMessage);
+  } finally {
+    isReopening.value = false;
+  }
+}
+
 function getUserName(userId: string) {
   const user = users.value.find(u => u.id === userId);
   return user ? user.full_name : 'Unknown User';
@@ -779,14 +1024,9 @@ async function fetchDocuments(page = 1) {
 }
 
 async function fetchUsers() {
-  if (!selectedProjectId.value) {
-    users.value = [];
-    return;
-  }
-
   try {
-    const response = await getUsers(selectedProjectId.value);
-    users.value = response?.results || [];
+    const response = await getAllUsers();
+    users.value = response || [];
   } catch (error) {
     console.error('Error fetching users:', error);
     toast.error("Gagal memuat daftar user");
@@ -794,20 +1034,18 @@ async function fetchUsers() {
 }
 
 onMounted(async () => {
+  await fetchUsers();
   if (selectedProjectId.value) {
-    await fetchUsers();
     await fetchDocuments(currentPage.value);
   }
 });
 
 watch(selectedProjectId, async () => {
   if (selectedProjectId.value) {
-    await fetchUsers();
     await fetchDocuments(1);
     currentPage.value = 1;
   } else {
     documents.value = [];
-    users.value = [];
     totalPages.value = 1;
     currentPage.value = 1;
   }

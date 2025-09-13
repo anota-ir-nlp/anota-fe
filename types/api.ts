@@ -2,6 +2,15 @@ export interface ErrorResponse {
   error: string;
 }
 
+// Document status type
+export type DocumentStatus = 
+  | "belum_dianotasi" 
+  | "sedang_dianotasi" 
+  | "sudah_dianotasi" 
+  | "belum_direview" 
+  | "sedang_direview" 
+  | "sudah_direview";
+
 export interface LoginRequest {
   username: string;
   password: string;
@@ -143,7 +152,7 @@ export interface DocumentResponse {
     full_name: string;
     institusi: string;
   };
-  status: string;
+  status: DocumentStatus;
   jumlah_sentence: number;
   institusi: string;
   assignment_details: any; // type as needed
@@ -208,6 +217,15 @@ export interface AnnotationResponse {
   is_required: boolean;
   comments?: string;
   is_submitted: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AnnotationsListResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: AnnotationResponse[];
 }
 
 export interface ErrorTypeRequest {
@@ -261,6 +279,15 @@ export interface ReviewResponse {
   is_required: boolean;
   comments?: string;
   is_submitted: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ReviewsListResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: ReviewResponse[];
 }
 
 export interface DocumentRequest {
@@ -362,4 +389,86 @@ export interface DocumentAssignedDetailResponse {
     full_name: string;
     institusi: string;
   } | null;
+}
+
+// Admin reopen functionality
+export interface AdminReopenAnnotatorRequest {
+  document: number;
+  user_id: string;
+  reason?: string;
+}
+
+export interface AdminReopenReviewerRequest {
+  document: number;
+  user_id: string;
+  reason?: string;
+}
+
+export interface AdminReopenResponse {
+  message: string;
+  status: string;
+}
+
+// Submit requests
+export interface SubmitAnnotationRequest {
+  document: number;
+}
+
+export interface SubmitReviewRequest {
+  document: number;
+}
+
+export interface SubmitResponse {
+  message: string;
+  status: string;
+}
+
+// Reopen requests (for annotators/reviewers themselves)
+export interface ReopenAnnotationRequest {
+  document: number;
+  reason?: string;
+}
+
+export interface ReopenReviewRequest {
+  document: number;
+  reason?: string;
+}
+
+export interface ReopenResponse {
+  message: string;
+  status: string;
+}
+
+// Document assignment types
+export interface AssignDocumentToUserRequest {
+  document_id: number;
+  user_id: string;
+  notes?: string;
+}
+
+export interface UnassignDocumentFromUserRequest {
+  document_id: number;
+  user_id: string;
+}
+
+export interface DocumentAssignmentResponse {
+  message: string;
+  assignment_record: {
+    id: number;
+    assigned_user: string;
+    assigned_by: string;
+    assigned_at: string;
+    notes?: string;
+    is_active: boolean;
+  };
+}
+
+export interface DocumentPreviewRequest {
+  text: string;
+}
+
+export interface DocumentPreviewResponse {
+  text: string;
+  sentence_count: number;
+  sentences: string[];
 }

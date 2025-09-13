@@ -13,10 +13,10 @@ const props = defineProps<{
     data-slot="card"
     :class="
       cn(
-        'flex flex-col gap-6 rounded-xl py-6 shadow-sm',
+        'flex flex-col gap-6 rounded-xl py-6',
         {
-          'bg-card text-card-foreground border': props.variant === 'default' || !props.variant,
-          'bg-white/8 backdrop-blur-md border border-white/15 shadow-2xl text-white': props.variant === 'glassmorphism'
+          'bg-white/90 text-gray-900 border border-gray-200/60 shadow-lg backdrop-filter backdrop-blur-sm hover:shadow-xl transition-all duration-200': props.variant === 'default' || !props.variant,
+          'bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl text-white': props.variant === 'glassmorphism'
         },
         props.class,
       )

@@ -16,13 +16,11 @@ export function createErrorTypeColumns(
         'modelValue': table.getIsAllPageRowsSelected(),
         'onUpdate:modelValue': (value: boolean | "indeterminate") => table.toggleAllPageRowsSelected(!!value),
         'ariaLabel': 'Select all',
-        'class': 'w-5 h-5 bg-white/10 backdrop-blur-sm border-2 border-white/60 hover:border-white transition-colors data-[state=checked]:bg-white/80 data-[state=checked]:border-white data-[state=checked]:backdrop-blur-sm shadow-lg'
       }),
       cell: ({ row }) => h(Checkbox, {
         'modelValue': row.getIsSelected(),
         'onUpdate:modelValue': (value: boolean | "indeterminate") => row.toggleSelected(!!value),
         'ariaLabel': 'Select row',
-        'class': 'w-5 h-5 bg-white/10 backdrop-blur-sm border-2 border-white/60 hover:border-white transition-colors data-[state=checked]:bg-white/80 data-[state=checked]:border-white data-[state=checked]:backdrop-blur-sm shadow-lg'
       }),
       enableSorting: false,
       enableHiding: false,
@@ -33,7 +31,7 @@ export function createErrorTypeColumns(
       cell: ({ row }) => {
         const errorCode = row.getValue('error_code') as string
         return h('span', {
-          class: 'font-semibold text-white text-left w-64 truncate block',
+          class: 'font-semibold text-gray-900 text-left w-64 truncate block',
           title: errorCode
         }, errorCode || 'N/A')
       },
@@ -45,7 +43,7 @@ export function createErrorTypeColumns(
       cell: ({ row }) => {
         const description = row.getValue('description') as string
         return h('span', { 
-          class: 'text-gray-200 text-left'
+          class: 'text-gray-700 text-left'
         }, description || 'N/A')
       },
       enableSorting: false,
@@ -55,7 +53,7 @@ export function createErrorTypeColumns(
       header: 'Tanggal Dibuat',
       cell: ({ row }) => {
         const date = new Date(row.getValue('created_at') as string)
-        return h('span', { class: 'text-white text-left' }, date.toLocaleDateString('id-ID'))
+        return h('span', { class: 'text-gray-700 text-left' }, date.toLocaleDateString('id-ID'))
       },
       enableSorting: false,
     },

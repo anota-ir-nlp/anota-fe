@@ -374,46 +374,6 @@
         </div>
       </div>
     </section>
-
-    <!-- CTA Section -->
-    <section class="py-16 bg-black text-white relative overflow-hidden">
-      <div class="max-w-4xl mx-auto px-6 text-center relative">
-        <h2 class="text-3xl mb-2 font-light">
-          Siap Meningkatkan
-          <span class="animated-gradient-text-pinkgreen font-light"
-            >Proses Anotasi</span
-          >
-          Anda?
-        </h2>
-        <div
-          class="w-16 h-1 animated-gradient-pinkgreen mx-auto rounded-full mb-4"
-        ></div>
-        <p class="text-base text-gray-300 mb-6 max-w-2xl mx-auto font-light">
-          Mulai gunakan Anota secara gratis dan rasakan kemudahan dalam membuat
-          dataset berkualitas tinggi untuk penelitian atau pengembangan Anda.
-        </p>
-        <div class="flex gap-4 justify-center flex-wrap mb-4">
-          <Button
-            size="lg"
-            class="btn-rect btn-rect-primary group hover:scale-105 transition-transform duration-200 text-base animated-gradient-btn-greenblue"
-          >
-            <Zap class="mr-2 w-5 h-5" />
-            Mulai Gratis
-          </Button>
-          <Button
-            variant="outline"
-            size="lg"
-            class="btn-rect btn-rect-outline group hover:scale-105 transition-transform duration-200 text-base"
-          >
-            <Users class="mr-2 w-5 h-5" />
-            Pelajari Lebih Lanjut
-          </Button>
-        </div>
-        <p class="text-base text-gray-400 mt-4 font-light">
-          Tidak perlu kartu kredit • Gratis dicoba • Bisa berhenti kapan saja
-        </p>
-      </div>
-    </section>
   </div>
 </template>
 
@@ -423,11 +383,6 @@ import { navigateTo } from "#app";
 import {
   Lightbulb,
   ArrowRightFromLine,
-  ArrowLeft,
-  ArrowRight,
-  FileText,
-  PenTool,
-  FileCheck,
   Zap,
   Target,
   Users,
@@ -440,7 +395,6 @@ const handleLogin = () => {
   navigateTo("/login");
 };
 
-// GEC Example logic (from original index.vue)
 const gecErrorTypes = [
   { label: "Adjective", value: "Adjective" },
   { label: "Noun Number", value: "Noun Number" },
@@ -761,20 +715,7 @@ const currentGecExample = computed(() => {
 watch(selectedGecTypeValue, () => {
   currentGecExampleIndex.value = 0;
 });
-const prevGecExample = () => {
-  if (currentGecExampleIndex.value > 0) {
-    currentGecExampleIndex.value--;
-  }
-};
-const nextGecExample = () => {
-  const examples =
-    gecExamples[selectedGecTypeValue as keyof typeof gecExamples];
-  if (examples && currentGecExampleIndex.value < examples.length - 1) {
-    currentGecExampleIndex.value++;
-  }
-};
 
-// FAQ (from original index.vue)
 const faqItems = [
   {
     label: "Apa itu Anota?",

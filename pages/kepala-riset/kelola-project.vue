@@ -1,11 +1,18 @@
 <template>
-  <div class="flex flex-col items-center justify-start text-center bg-slate-900 text-white p-8 min-h-screen">
-    <h1 class="text-4xl font-bold mb-20 text-blue-400">Kelola Project</h1>
+  <div class="min-h-screen px-2 sm:px-4 py-10 font-inter bg-gray-50">
+    <div class="w-full max-w-[95vw] mx-auto px-2 sm:px-4 pb-16">
+      <!-- Header -->
+      <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Kelola Project</h1>
+        <p class="text-gray-600">
+          Buat dan kelola project penelitian untuk proses anotasi
+        </p>
+      </div>
 
-    <!-- Add Project Button -->
-    <div class="mb-6 w-full">
-      <Dialog v-model:open="isCreateDialogOpen">
-        <div class="flex gap-3 items-start w-full max-w-6xl mx-auto">
+      <!-- Add Project Button -->
+      <div class="mb-6">
+        <Dialog v-model:open="isCreateDialogOpen">
+          <div class="flex gap-3 items-start">
           <DialogTrigger as-child>
             <Button class="flex items-center gap-2">
               <Plus class="w-4 h-4" />
@@ -193,36 +200,36 @@
       </DialogContent>
     </Dialog>
 
-    <div v-if="isLoading" class="text-gray-300 mb-4">
-      Memuat data project...
-    </div>
+      <div v-if="isLoading" class="text-gray-600 mb-4">
+        Memuat data project...
+      </div>
 
-    <div v-if="projects.length"
-      class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl shadow-lg p-6 mb-6 w-full max-w-6xl">
-      <div class="rounded-md overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow class="bg-gray-800/60 hover:bg-gray-800/60">
-              <TableHead class="text-gray-300 font-medium text-left">Nama Project</TableHead>
-              <TableHead class="text-gray-300 font-medium text-left">Deskripsi</TableHead>
-              <TableHead class="text-gray-300 font-medium text-left">Admin yang Ditugaskan</TableHead>
-              <TableHead class="text-gray-300 font-medium text-left">Tanggal Dibuat</TableHead>
-              <TableHead class="text-gray-300 font-medium text-left"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow v-for="project in projects" :key="project.id" class="border-white/10 hover:bg-white/5">
-              <TableCell class="font-semibold text-white text-left">{{ project.name }}</TableCell>
-              <TableCell class="text-white text-left max-w-xs truncate">{{ project.description || '-' }}</TableCell>
-              <TableCell class="text-left">
-                <div class="flex flex-wrap gap-1">
-                  <Badge v-for="adminId in project.assigned_admins" :key="adminId" variant="blue" class="font-semibold">
-                    {{ getAdminName(adminId) }}
-                  </Badge>
-                  <span v-if="project.assigned_admins.length === 0" class="text-gray-400 text-sm">Belum ada admin</span>
-                </div>
-              </TableCell>
-              <TableCell class="text-white text-left">{{ formatDate(project.created_at) }}</TableCell>
+      <div v-if="projects.length"
+        class="bg-white border border-gray-200 rounded-xl shadow-sm p-6 mb-6">
+        <div class="rounded-md overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow class="bg-gray-50 hover:bg-gray-50">
+                <TableHead class="text-gray-700 font-medium text-left">Nama Project</TableHead>
+                <TableHead class="text-gray-700 font-medium text-left">Deskripsi</TableHead>
+                <TableHead class="text-gray-700 font-medium text-left">Admin yang Ditugaskan</TableHead>
+                <TableHead class="text-gray-700 font-medium text-left">Tanggal Dibuat</TableHead>
+                <TableHead class="text-gray-700 font-medium text-left"></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow v-for="project in projects" :key="project.id" class="border-gray-200 hover:bg-gray-50">
+                <TableCell class="font-semibold text-gray-900 text-left">{{ project.name }}</TableCell>
+                <TableCell class="text-gray-700 text-left max-w-xs truncate">{{ project.description || '-' }}</TableCell>
+                <TableCell class="text-left">
+                  <div class="flex flex-wrap gap-1">
+                    <Badge v-for="adminId in project.assigned_admins" :key="adminId" variant="blue" class="font-semibold">
+                      {{ getAdminName(adminId) }}
+                    </Badge>
+                    <span v-if="project.assigned_admins.length === 0" class="text-gray-500 text-sm">Belum ada admin</span>
+                  </div>
+                </TableCell>
+                <TableCell class="text-gray-700 text-left">{{ formatDate(project.created_at) }}</TableCell>
               <TableCell class="flex w-full justify-end">
                 <div class="flex gap-2">
                   <Button size="sm" variant="outline" @click="editProject(project)"
@@ -243,8 +250,8 @@
       </div>
     </div>
 
-    <!-- Pagination Controls -->
-    <div v-if="projects.length" class="mt-4 flex justify-center w-full max-w-6xl">
+      <!-- Pagination Controls -->
+      <div v-if="projects.length" class="mt-4 flex justify-center">
       <Pagination :page="currentPage" :total="totalPages" :items-per-page="projects.length > 0 ? projects.length : 1"
         @update:page="fetchProjects">
         <PaginationContent>
@@ -265,11 +272,12 @@
       </Pagination>
     </div>
 
-    <div v-if="!projects.length && !isLoading"
-      class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl shadow-lg p-6 text-center w-full max-w-6xl mx-auto">
-      <span class="text-gray-400">Tidak ada project ditemukan.</span>
-    </div>
+      <div v-if="!projects.length && !isLoading"
+        class="bg-white border border-gray-200 rounded-xl p-6 text-center">
+        <span class="text-gray-500">Tidak ada project ditemukan.</span>
+      </div>
 
+    </div>
   </div>
 </template>
 
@@ -323,7 +331,7 @@ const {
   unassignAdmin: apiUnassignAdmin,
 } = useProjectsApi();
 
-const { getUsers } = useUsersApi();
+const { getAllUsers } = useUsersApi();
 
 const projects = ref<ProjectResponse[]>([]);
 const adminUsers = ref<UserResponse[]>([]);
@@ -422,8 +430,8 @@ function removeAdminFromEditingProject(adminId: string) {
 
 async function fetchAdminUsers() {
   try {
-    const response = await getUsers();
-    adminUsers.value = response.results;
+    const response = await getAllUsers();
+    adminUsers.value = response;
   } catch (error) {
     console.error('Error fetching admin users:', error);
     toast.error("Gagal memuat daftar admin");

@@ -129,15 +129,15 @@ const goBack = () => {
             >
             <div
               :class="[
-                'flex items-center border rounded-md bg-white/70 transition-all duration-200',
+                'flex items-center border-2 rounded-md bg-white/90 backdrop-filter backdrop-blur-sm transition-all duration-200',
                 usernameError
-                  ? 'border-red-400'
-                  : 'border-gray-200/50 focus-within:border-blue-500 focus-within:shadow',
+                  ? 'border-red-400 ring-2 ring-red-400/20'
+                  : 'border-gray-200 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20',
               ]"
-              style="height: 40px"
+              style="height: 48px"
             >
-              <div class="flex items-center justify-center w-9 h-full">
-                <User class="text-gray-400 w-5 h-5" />
+              <div class="flex items-center justify-center w-10 h-full">
+                <User class="text-gray-500 w-5 h-5" />
               </div>
               <input
                 id="username"
@@ -145,9 +145,7 @@ const goBack = () => {
                 type="text"
                 placeholder="Masukkan username"
                 autocomplete="username"
-                class="flex-1 bg-transparent border-none outline-none shadow-none px-0 py-0 text-base text-gray-900 placeholder:text-gray-400 placeholder:opacity-70 focus:outline-none h-full"
-                @focus="$event.target.style.boxShadow = 'none'"
-                @blur="$event.target.style.boxShadow = 'none'"
+                class="flex-1 bg-transparent border-none outline-none shadow-none px-2 py-0 text-base text-gray-900 placeholder:text-gray-500 placeholder:opacity-80 focus:outline-none h-full font-medium"
               />
             </div>
             <p v-if="usernameError" class="text-red-400 text-xs mt-1">
@@ -161,15 +159,15 @@ const goBack = () => {
             >
             <div
               :class="[
-                'flex items-center border rounded-md bg-white/70 transition-all duration-200',
+                'flex items-center border-2 rounded-md bg-white/90 backdrop-filter backdrop-blur-sm transition-all duration-200',
                 passwordError
-                  ? 'border-red-400'
-                  : 'border-gray-200/50 focus-within:border-blue-500 focus-within:shadow',
+                  ? 'border-red-400 ring-2 ring-red-400/20'
+                  : 'border-gray-200 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20',
               ]"
-              style="height: 40px"
+              style="height: 48px"
             >
-              <div class="flex items-center justify-center w-9 h-full">
-                <Lock class="text-gray-400 w-5 h-5" />
+              <div class="flex items-center justify-center w-10 h-full">
+                <Lock class="text-gray-500 w-5 h-5" />
               </div>
               <input
                 id="password"
@@ -177,14 +175,12 @@ const goBack = () => {
                 :type="showPassword ? 'text' : 'password'"
                 placeholder="••••••••"
                 autocomplete="current-password"
-                class="flex-1 bg-transparent border-none outline-none shadow-none px-0 py-0 text-base text-gray-900 placeholder:text-gray-400 placeholder:opacity-70 focus:outline-none h-full"
-                @focus="$event.target.style.boxShadow = 'none'"
-                @blur="$event.target.style.boxShadow = 'none'"
+                class="flex-1 bg-transparent border-none outline-none shadow-none px-2 py-0 text-base text-gray-900 placeholder:text-gray-500 placeholder:opacity-80 focus:outline-none h-full font-medium"
               />
               <button
                 type="button"
                 @click="showPassword = !showPassword"
-                class="flex items-center justify-center w-9 h-full text-gray-400 hover:text-gray-700 transition-colors"
+                class="flex items-center justify-center w-10 h-full text-gray-500 hover:text-gray-700 transition-colors rounded-r-md"
                 tabindex="-1"
               >
                 <component :is="showPassword ? EyeOff : Eye" class="w-5 h-5" />
@@ -197,11 +193,22 @@ const goBack = () => {
 
           <Button
             type="submit"
-            class="w-full bg-blue-600 hover:bg-blue-700 text-white border-0 py-3 shadow-lg hover:shadow-xl transition-all duration-300 text-lg font-semibold rounded-md"
+            size="lg"
+            class="w-full animated-gradient-btn-greenblue text-white border-0 py-3 text-lg font-semibold"
           >
             Masuk
           </Button>
         </form>
+
+        <!-- Password Reset Link -->
+        <div class="mt-4 text-center">
+          <NuxtLink
+            to="/reset-password"
+            class="text-sm text-blue-600 hover:text-blue-800 underline"
+          >
+            Lupa kata sandi?
+          </NuxtLink>
+        </div>
       </Card>
     </div>
   </div>

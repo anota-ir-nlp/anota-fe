@@ -587,7 +587,7 @@ import { navigateTo } from "#app";
 import { Button } from "~/components/ui/button";
 import { useUserDocumentsApi } from "~/data/user-documents";
 import { useReviewsApi } from "~/data/reviews";
-import type { DocumentResponse, AnnotationResponse } from "~/types/api";
+import type { DocumentResponse, AnnotationResponse, DocumentStatus } from "~/types/api";
 
 const { getAssignedDocuments } = useUserDocumentsApi();
 const { reopenReviews } = useReviewsApi();
@@ -779,24 +779,26 @@ function formatDate(dateString: string) {
   return new Date(dateString).toLocaleDateString("id-ID");
 }
 
-function getStatusText(status: string) {
-  const statusMap: Record<string, string> = {
+function getStatusText(status: DocumentStatus) {
+  const statusMap: Record<DocumentStatus, string> = {
     belum_dianotasi: "Belum Dianotasi",
     sedang_dianotasi: "Sedang Dianotasi",
     sudah_dianotasi: "Sudah Dianotasi",
-    sudah_direview: "Sudah Direview",
     belum_direview: "Belum Direview",
+    sedang_direview: "Sedang Direview",
+    sudah_direview: "Sudah Direview",
   };
   return statusMap[status] || status;
 }
 
-function getStatusClass(status: string) {
-  const classMap: Record<string, string> = {
+function getStatusClass(status: DocumentStatus) {
+  const classMap: Record<DocumentStatus, string> = {
     belum_dianotasi: "bg-gray-200 text-gray-700",
     sedang_dianotasi: "bg-yellow-100 text-yellow-700",
     sudah_dianotasi: "bg-blue-100 text-blue-700",
-    sudah_direview: "bg-green-100 text-green-700",
     belum_direview: "bg-purple-100 text-purple-700",
+    sedang_direview: "bg-orange-100 text-orange-700",
+    sudah_direview: "bg-green-100 text-green-700",
   };
   return classMap[status] || "bg-gray-200 text-gray-700";
 }

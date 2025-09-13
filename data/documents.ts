@@ -2,6 +2,7 @@ import { useProtectedFetcher } from "~/composables/protected-fetcher";
 import type {
   DocumentResponse,
   DocumentRequest,
+  DocumentAssignedDetailResponse,
 } from "~/types/api";
 
 const BASE = "/documents";
@@ -40,8 +41,47 @@ export function useDocumentsApi() {
 
   const removeDocumentsFromProject = (projectId: number, documentIds: number[]) =>
     fetcher(`/projects/${projectId}/`, {
-      method: "PATCH", 
+      method: "PATCH",
       body: { documents: documentIds },
+    });
+
+  // New endpoints from API docs
+  const assignDocumentToUser = (data: {
+    document_id: number;
+    user_id: string;
+    notes?: string;
+  }) =>
+    fetcher(`${BASE}/assignment/`, {
+      method: "POST",
+      body: data,
+    });
+
+  const unassignDocumentFromUser = (data: {
+    document_id: number;
+    user_id: string;
+  }) =>
+    fetcher(`${BASE}/assignment/`, {
+      method: "DELETE",
+      body: data,
+    });
+
+  const getMyAssignedDocument = (id: number) =>
+    fetcher<DocumentAssignedDetailResponse>(`${BASE}/my-assigned/${id}/`);
+
+  const previewDocumentSentences = (data: { text: string }) =>
+    fetcher<{
+      text: string;
+      sentence_count: number;
+      sentences: string[];
+    }>(`${BASE}/preview/`, {
+      method: "POST",
+      body: data,
+    });
+
+  const exportDocument = (id: number, format: "parallel" | "m2") =>
+    fetcher<Blob>(`${BASE}/${id}/export/${format}/`, {
+      method: "GET",
+      responseType: "blob",
     });
 
   return {
@@ -53,6 +93,11 @@ export function useDocumentsApi() {
     getDocumentsInProject,
     assignDocumentsToProject,
     removeDocumentsFromProject,
+    assignDocumentToUser,
+    unassignDocumentFromUser,
+    getMyAssignedDocument,
+    previewDocumentSentences,
+    exportDocument,
   };
 }
 

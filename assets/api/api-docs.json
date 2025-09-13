@@ -5,10 +5,16 @@
     "version": "v1"
   },
   "host": "localhost:8000",
-  "schemes": ["http"],
+  "schemes": [
+    "http"
+  ],
   "basePath": "/api/v1",
-  "consumes": ["application/json"],
-  "produces": ["application/json"],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "securityDefinitions": {
     "Bearer": {
       "type": "apiKey",
@@ -17,7 +23,11 @@
       "description": "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\""
     }
   },
-  "security": [{ "Bearer": [] }],
+  "security": [
+    {
+      "Bearer": []
+    }
+  ],
   "paths": {
     "/annotations/": {
       "get": {
@@ -61,10 +71,16 @@
               }
             }
           },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Hanya annotator yang dapat mengakses" }
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Hanya annotator yang dapat mengakses"
+          }
         },
-        "tags": ["📝 Annotations"]
+        "tags": [
+          "📝 Annotations"
+        ]
       },
       "post": {
         "operationId": "annotations_create",
@@ -165,10 +181,312 @@
               }
             }
           },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Hanya annotator yang dapat mengakses" }
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Hanya annotator yang dapat mengakses"
+          }
         },
-        "tags": ["📝 Annotations"]
+        "tags": [
+          "📝 Annotations"
+        ]
+      },
+      "parameters": []
+    },
+    "/annotations/admin/reopen-annotator/": {
+      "post": {
+        "operationId": "annotations_admin_reopen-annotator_create",
+        "summary": "Admin Reopen Anotasi Dokumen",
+        "description": "Admin/Kepala Riset membuka kembali pekerjaan anotator pada dokumen tertentu.",
+        "parameters": [
+          {
+            "name": "data",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "required": [
+                "document",
+                "user_id"
+              ],
+              "type": "object",
+              "properties": {
+                "document": {
+                  "description": "ID dokumen",
+                  "type": "integer"
+                },
+                "user_id": {
+                  "description": "UUID user annotator",
+                  "type": "string"
+                },
+                "reason": {
+                  "description": "Alasan reopen (opsional)",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reopen berhasil"
+          },
+          "404": {
+            "description": "Dokumen, user, atau assignment tidak ditemukan"
+          }
+        },
+        "tags": [
+          "🛠 Admin Tools"
+        ]
+      },
+      "parameters": []
+    },
+    "/annotations/admin/reopen-review/": {
+      "get": {
+        "operationId": "annotations_admin_reopen-review_list",
+        "summary": "Get Review Detail",
+        "description": "\nMendapatkan detail lengkap dari review berdasarkan ID.\n\n**Access Control:**\n- Hanya reviewer yang membuat review ini yang dapat mengakses\n- Memastikan data privacy antar reviewer\n",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "A page number within the paginated result set.",
+            "required": false,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detail review berhasil ditemukan",
+            "examples": {
+              "application/json": {
+                "id": 1,
+                "start_index": 0,
+                "end_index": 4,
+                "correction": "Teks",
+                "is_required": true,
+                "comments": "Setuju dengan koreksi annotator",
+                "is_submitted": true,
+                "created_at": "2024-01-01T11:00:00Z",
+                "updated_at": "2024-01-01T11:00:00Z",
+                "reviewer": "uuid-reviewer",
+                "document": 1,
+                "sentence": 5,
+                "annotation": 1,
+                "error_type": 1
+              }
+            }
+          },
+          "404": {
+            "description": "Review tidak ditemukan"
+          },
+          "403": {
+            "description": "Hanya owner review yang dapat mengakses"
+          },
+          "401": {
+            "description": "Authentication required"
+          }
+        },
+        "tags": [
+          "📋 Reviews"
+        ]
+      },
+      "post": {
+        "operationId": "annotations_admin_reopen-review_create",
+        "summary": "Admin Reopen Review Dokumen",
+        "description": "Admin/Kepala Riset membuka kembali pekerjaan reviewer pada dokumen tertentu.",
+        "parameters": [
+          {
+            "name": "data",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "required": [
+                "document",
+                "user_id"
+              ],
+              "type": "object",
+              "properties": {
+                "document": {
+                  "description": "ID dokumen",
+                  "type": "integer"
+                },
+                "user_id": {
+                  "description": "UUID user reviewer",
+                  "type": "string"
+                },
+                "reason": {
+                  "description": "Alasan reopen (opsional)",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reopen berhasil"
+          },
+          "404": {
+            "description": "Dokumen, user, atau assignment tidak ditemukan"
+          }
+        },
+        "tags": [
+          "🛠 Admin Tools"
+        ]
+      },
+      "put": {
+        "operationId": "annotations_admin_reopen-review_update",
+        "summary": "Update Review",
+        "description": "\nUpdate review yang sudah ada.\n\n**Business Rules:**\n- Hanya reviewer yang membuat review ini yang dapat mengupdate\n- Semua validation rules untuk create juga berlaku untuk update\n- Annotation reference harus konsisten dengan document/sentence\n",
+        "parameters": [
+          {
+            "name": "data",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "annotation": {
+                  "description": "ID annotation",
+                  "type": "integer"
+                },
+                "document": {
+                  "description": "ID dokumen",
+                  "type": "integer"
+                },
+                "sentence": {
+                  "description": "ID sentence",
+                  "type": "integer"
+                },
+                "start_index": {
+                  "description": "Posisi awal error",
+                  "type": "integer"
+                },
+                "end_index": {
+                  "description": "Posisi akhir error",
+                  "type": "integer"
+                },
+                "error_type": {
+                  "description": "ID tipe error",
+                  "type": "integer"
+                },
+                "correction": {
+                  "description": "Teks koreksi review",
+                  "type": "string"
+                },
+                "is_required": {
+                  "description": "Wajib atau opsional",
+                  "type": "boolean"
+                },
+                "comments": {
+                  "description": "Komentar reviewer",
+                  "type": "string"
+                },
+                "is_submitted": {
+                  "description": "Status submission",
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Review berhasil diupdate"
+          },
+          "400": {
+            "description": "Data input tidak valid atau business rule violation"
+          },
+          "404": {
+            "description": "Review tidak ditemukan"
+          },
+          "403": {
+            "description": "Hanya owner review yang dapat mengupdate"
+          },
+          "401": {
+            "description": "Authentication required"
+          }
+        },
+        "tags": [
+          "📋 Reviews"
+        ]
+      },
+      "patch": {
+        "operationId": "annotations_admin_reopen-review_partial_update",
+        "summary": "Partial Update Review",
+        "description": "Update sebagian field dari review",
+        "parameters": [
+          {
+            "name": "data",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "correction": {
+                  "description": "Teks koreksi",
+                  "type": "string"
+                },
+                "comments": {
+                  "description": "Komentar reviewer",
+                  "type": "string"
+                },
+                "is_required": {
+                  "description": "Status requirement",
+                  "type": "boolean"
+                },
+                "is_submitted": {
+                  "description": "Status submission",
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Review berhasil diupdate"
+          },
+          "400": {
+            "description": "Data input tidak valid"
+          },
+          "404": {
+            "description": "Review tidak ditemukan"
+          },
+          "403": {
+            "description": "Hanya owner review yang dapat mengupdate"
+          },
+          "401": {
+            "description": "Authentication required"
+          }
+        },
+        "tags": [
+          "📋 Reviews"
+        ]
+      },
+      "delete": {
+        "operationId": "annotations_admin_reopen-review_delete",
+        "summary": "Delete Review",
+        "description": "\nMenghapus review dari sistem.\n\n**Access Control:**\n- Hanya reviewer yang membuat review ini yang dapat menghapus\n\n**⚠️ PERINGATAN:**\n- Action ini tidak dapat di-undo\n- Menghapus review dapat mempengaruhi inter-annotator agreement calculations\n",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "Review berhasil dihapus"
+          },
+          "404": {
+            "description": "Review tidak ditemukan"
+          },
+          "403": {
+            "description": "Hanya owner review yang dapat menghapus"
+          },
+          "401": {
+            "description": "Authentication required"
+          }
+        },
+        "tags": [
+          "📋 Reviews"
+        ]
       },
       "parameters": []
     },
@@ -224,9 +542,13 @@
               ]
             }
           },
-          "401": { "description": "Authentication required" }
+          "401": {
+            "description": "Authentication required"
+          }
         },
-        "tags": ["🔍 Error Types"]
+        "tags": [
+          "🔍 Error Types"
+        ]
       },
       "post": {
         "operationId": "annotations_error-types_create",
@@ -238,7 +560,10 @@
             "in": "body",
             "required": true,
             "schema": {
-              "required": ["error_code", "description"],
+              "required": [
+                "error_code",
+                "description"
+              ],
               "type": "object",
               "properties": {
                 "error_code": {
@@ -291,9 +616,13 @@
               }
             }
           },
-          "401": { "description": "Authentication required" }
+          "401": {
+            "description": "Authentication required"
+          }
         },
-        "tags": ["🔍 Error Types"]
+        "tags": [
+          "🔍 Error Types"
+        ]
       },
       "parameters": []
     },
@@ -316,10 +645,16 @@
               }
             }
           },
-          "404": { "description": "Error type tidak ditemukan" },
-          "401": { "description": "Authentication required" }
+          "404": {
+            "description": "Error type tidak ditemukan"
+          },
+          "401": {
+            "description": "Authentication required"
+          }
         },
-        "tags": ["🔍 Error Types"]
+        "tags": [
+          "🔍 Error Types"
+        ]
       },
       "put": {
         "operationId": "annotations_error-types_update",
@@ -360,11 +695,19 @@
               }
             }
           },
-          "400": { "description": "Data input tidak valid" },
-          "404": { "description": "Error type tidak ditemukan" },
-          "401": { "description": "Authentication required" }
+          "400": {
+            "description": "Data input tidak valid"
+          },
+          "404": {
+            "description": "Error type tidak ditemukan"
+          },
+          "401": {
+            "description": "Authentication required"
+          }
         },
-        "tags": ["🔍 Error Types"]
+        "tags": [
+          "🔍 Error Types"
+        ]
       },
       "patch": {
         "operationId": "annotations_error-types_partial_update",
@@ -378,7 +721,10 @@
             "schema": {
               "type": "object",
               "properties": {
-                "error_code": { "description": "Kode error", "type": "string" },
+                "error_code": {
+                  "description": "Kode error",
+                  "type": "string"
+                },
                 "description": {
                   "description": "Deskripsi error",
                   "type": "string"
@@ -388,12 +734,22 @@
           }
         ],
         "responses": {
-          "200": { "description": "Error type berhasil diupdate" },
-          "400": { "description": "Data input tidak valid" },
-          "404": { "description": "Error type tidak ditemukan" },
-          "401": { "description": "Authentication required" }
+          "200": {
+            "description": "Error type berhasil diupdate"
+          },
+          "400": {
+            "description": "Data input tidak valid"
+          },
+          "404": {
+            "description": "Error type tidak ditemukan"
+          },
+          "401": {
+            "description": "Authentication required"
+          }
         },
-        "tags": ["🔍 Error Types"]
+        "tags": [
+          "🔍 Error Types"
+        ]
       },
       "delete": {
         "operationId": "annotations_error-types_delete",
@@ -401,9 +757,15 @@
         "description": "\nMenghapus error type dari sistem.\n\n**⚠️ PERINGATAN:**\n- Menghapus error type akan mempengaruhi semua annotations yang menggunakan error type ini\n- Pastikan tidak ada annotations aktif yang menggunakan error type ini\n- Action ini tidak dapat di-undo\n",
         "parameters": [],
         "responses": {
-          "204": { "description": "Error type berhasil dihapus" },
-          "404": { "description": "Error type tidak ditemukan" },
-          "401": { "description": "Authentication required" },
+          "204": {
+            "description": "Error type berhasil dihapus"
+          },
+          "404": {
+            "description": "Error type tidak ditemukan"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
           "400": {
             "description": "Error type masih digunakan oleh annotations",
             "examples": {
@@ -413,7 +775,9 @@
             }
           }
         },
-        "tags": ["🔍 Error Types"]
+        "tags": [
+          "🔍 Error Types"
+        ]
       },
       "parameters": [
         {
@@ -424,6 +788,54 @@
           "type": "integer"
         }
       ]
+    },
+    "/annotations/reopen/": {
+      "post": {
+        "operationId": "annotations_reopen_create",
+        "summary": "Reopen Anotasi Dokumen (Annotator)",
+        "description": "Membuka kembali dokumen yang sudah disubmit (jika belum ada review).",
+        "parameters": [
+          {
+            "name": "data",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "required": [
+                "document"
+              ],
+              "type": "object",
+              "properties": {
+                "document": {
+                  "description": "ID dokumen",
+                  "type": "integer"
+                },
+                "reason": {
+                  "description": "Alasan reopen (opsional)",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reopen berhasil"
+          },
+          "400": {
+            "description": "Validasi gagal"
+          },
+          "403": {
+            "description": "Tidak diizinkan (sudah ada review)"
+          },
+          "404": {
+            "description": "Dokumen atau assignment tidak ditemukan"
+          }
+        },
+        "tags": [
+          "📝 Annotations"
+        ]
+      },
+      "parameters": []
     },
     "/annotations/reviews/": {
       "get": {
@@ -468,10 +880,16 @@
               }
             }
           },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Hanya reviewer yang dapat mengakses" }
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Hanya reviewer yang dapat mengakses"
+          }
         },
-        "tags": ["📋 Reviews"]
+        "tags": [
+          "📋 Reviews"
+        ]
       },
       "post": {
         "operationId": "annotations_reviews_create",
@@ -573,165 +991,190 @@
                 "non_field_errors": [
                   "Anotasi tidak sesuai dengan dokumen yang dipilih."
                 ],
-                "annotation": ["This field is required."]
+                "annotation": [
+                  "This field is required."
+                ]
               }
             }
           },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Hanya reviewer yang dapat mengakses" }
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Hanya reviewer yang dapat mengakses"
+          }
         },
-        "tags": ["📋 Reviews"]
+        "tags": [
+          "📋 Reviews"
+        ]
+      },
+      "parameters": []
+    },
+    "/annotations/reviews/reopen/": {
+      "post": {
+        "operationId": "annotations_reviews_reopen_create",
+        "summary": "Reopen Review Dokumen (Reviewer)",
+        "description": "Membuka kembali review dokumen yang sudah disubmit.",
+        "parameters": [
+          {
+            "name": "data",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "required": [
+                "document"
+              ],
+              "type": "object",
+              "properties": {
+                "document": {
+                  "description": "ID dokumen",
+                  "type": "integer"
+                },
+                "reason": {
+                  "description": "Alasan reopen (opsional)",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reopen berhasil"
+          },
+          "400": {
+            "description": "Validasi gagal"
+          },
+          "404": {
+            "description": "Dokumen atau assignment tidak ditemukan"
+          }
+        },
+        "tags": [
+          "📋 Reviews"
+        ]
+      },
+      "parameters": []
+    },
+    "/annotations/reviews/submit/": {
+      "post": {
+        "operationId": "annotations_reviews_submit_create",
+        "summary": "Submit Review Dokumen (Reviewer)",
+        "description": "Menandai pekerjaan review pada sebuah dokumen sebagai selesai dan mengunci perubahan.",
+        "parameters": [
+          {
+            "name": "data",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "required": [
+                "document"
+              ],
+              "type": "object",
+              "properties": {
+                "document": {
+                  "description": "ID dokumen yang disubmit",
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Submit berhasil"
+          },
+          "400": {
+            "description": "Validasi gagal"
+          },
+          "404": {
+            "description": "Dokumen atau assignment tidak ditemukan"
+          }
+        },
+        "tags": [
+          "📋 Reviews"
+        ]
       },
       "parameters": []
     },
     "/annotations/reviews/{id}/": {
       "get": {
         "operationId": "annotations_reviews_read",
-        "summary": "Get Review Detail",
-        "description": "\nMendapatkan detail lengkap dari review berdasarkan ID.\n\n**Access Control:**\n- Hanya reviewer yang membuat review ini yang dapat mengakses\n- Memastikan data privacy antar reviewer\n",
+        "description": "",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Detail review berhasil ditemukan",
-            "examples": {
-              "application/json": {
-                "id": 1,
-                "start_index": 0,
-                "end_index": 4,
-                "correction": "Teks",
-                "is_required": true,
-                "comments": "Setuju dengan koreksi annotator",
-                "is_submitted": true,
-                "created_at": "2024-01-01T11:00:00Z",
-                "updated_at": "2024-01-01T11:00:00Z",
-                "reviewer": "uuid-reviewer",
-                "document": 1,
-                "sentence": 5,
-                "annotation": 1,
-                "error_type": 1
-              }
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/Review"
             }
-          },
-          "404": { "description": "Review tidak ditemukan" },
-          "403": { "description": "Hanya owner review yang dapat mengakses" },
-          "401": { "description": "Authentication required" }
+          }
         },
-        "tags": ["📋 Reviews"]
+        "tags": [
+          "annotations"
+        ]
       },
       "put": {
         "operationId": "annotations_reviews_update",
-        "summary": "Update Review",
-        "description": "\nUpdate review yang sudah ada.\n\n**Business Rules:**\n- Hanya reviewer yang membuat review ini yang dapat mengupdate\n- Semua validation rules untuk create juga berlaku untuk update\n- Annotation reference harus konsisten dengan document/sentence\n",
+        "description": "",
         "parameters": [
           {
             "name": "data",
             "in": "body",
             "required": true,
             "schema": {
-              "type": "object",
-              "properties": {
-                "annotation": {
-                  "description": "ID annotation",
-                  "type": "integer"
-                },
-                "document": { "description": "ID dokumen", "type": "integer" },
-                "sentence": { "description": "ID sentence", "type": "integer" },
-                "start_index": {
-                  "description": "Posisi awal error",
-                  "type": "integer"
-                },
-                "end_index": {
-                  "description": "Posisi akhir error",
-                  "type": "integer"
-                },
-                "error_type": {
-                  "description": "ID tipe error",
-                  "type": "integer"
-                },
-                "correction": {
-                  "description": "Teks koreksi review",
-                  "type": "string"
-                },
-                "is_required": {
-                  "description": "Wajib atau opsional",
-                  "type": "boolean"
-                },
-                "comments": {
-                  "description": "Komentar reviewer",
-                  "type": "string"
-                },
-                "is_submitted": {
-                  "description": "Status submission",
-                  "type": "boolean"
-                }
-              }
+              "$ref": "#/definitions/Review"
             }
           }
         ],
         "responses": {
-          "200": { "description": "Review berhasil diupdate" },
-          "400": {
-            "description": "Data input tidak valid atau business rule violation"
-          },
-          "404": { "description": "Review tidak ditemukan" },
-          "403": { "description": "Hanya owner review yang dapat mengupdate" },
-          "401": { "description": "Authentication required" }
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/Review"
+            }
+          }
         },
-        "tags": ["📋 Reviews"]
+        "tags": [
+          "annotations"
+        ]
       },
       "patch": {
         "operationId": "annotations_reviews_partial_update",
-        "summary": "Partial Update Review",
-        "description": "Update sebagian field dari review",
+        "description": "",
         "parameters": [
           {
             "name": "data",
             "in": "body",
             "required": true,
             "schema": {
-              "type": "object",
-              "properties": {
-                "correction": {
-                  "description": "Teks koreksi",
-                  "type": "string"
-                },
-                "comments": {
-                  "description": "Komentar reviewer",
-                  "type": "string"
-                },
-                "is_required": {
-                  "description": "Status requirement",
-                  "type": "boolean"
-                },
-                "is_submitted": {
-                  "description": "Status submission",
-                  "type": "boolean"
-                }
-              }
+              "$ref": "#/definitions/Review"
             }
           }
         ],
         "responses": {
-          "200": { "description": "Review berhasil diupdate" },
-          "400": { "description": "Data input tidak valid" },
-          "404": { "description": "Review tidak ditemukan" },
-          "403": { "description": "Hanya owner review yang dapat mengupdate" },
-          "401": { "description": "Authentication required" }
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/Review"
+            }
+          }
         },
-        "tags": ["📋 Reviews"]
+        "tags": [
+          "annotations"
+        ]
       },
       "delete": {
         "operationId": "annotations_reviews_delete",
-        "summary": "Delete Review",
-        "description": "\nMenghapus review dari sistem.\n\n**Access Control:**\n- Hanya reviewer yang membuat review ini yang dapat menghapus\n\n**⚠️ PERINGATAN:**\n- Action ini tidak dapat di-undo\n- Menghapus review dapat mempengaruhi inter-annotator agreement calculations\n",
+        "description": "",
         "parameters": [],
         "responses": {
-          "204": { "description": "Review berhasil dihapus" },
-          "404": { "description": "Review tidak ditemukan" },
-          "403": { "description": "Hanya owner review yang dapat menghapus" },
-          "401": { "description": "Authentication required" }
+          "204": {
+            "description": ""
+          }
         },
-        "tags": ["📋 Reviews"]
+        "tags": [
+          "annotations"
+        ]
       },
       "parameters": [
         {
@@ -742,6 +1185,47 @@
           "type": "integer"
         }
       ]
+    },
+    "/annotations/submit/": {
+      "post": {
+        "operationId": "annotations_submit_create",
+        "summary": "Submit Anotasi Dokumen (Annotator)",
+        "description": "Menandai pekerjaan anotasi pada sebuah dokumen sebagai selesai dan mengunci perubahan.",
+        "parameters": [
+          {
+            "name": "data",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "required": [
+                "document"
+              ],
+              "type": "object",
+              "properties": {
+                "document": {
+                  "description": "ID dokumen yang disubmit",
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Submit berhasil"
+          },
+          "400": {
+            "description": "Validasi gagal"
+          },
+          "404": {
+            "description": "Dokumen atau assignment tidak ditemukan"
+          }
+        },
+        "tags": [
+          "📝 Annotations"
+        ]
+      },
+      "parameters": []
     },
     "/annotations/{id}/": {
       "get": {
@@ -770,13 +1254,19 @@
               }
             }
           },
-          "404": { "description": "Annotation tidak ditemukan" },
+          "404": {
+            "description": "Annotation tidak ditemukan"
+          },
           "403": {
             "description": "Hanya owner annotation yang dapat mengakses"
           },
-          "401": { "description": "Authentication required" }
+          "401": {
+            "description": "Authentication required"
+          }
         },
-        "tags": ["📝 Annotations"]
+        "tags": [
+          "📝 Annotations"
+        ]
       },
       "put": {
         "operationId": "annotations_update",
@@ -790,8 +1280,14 @@
             "schema": {
               "type": "object",
               "properties": {
-                "document": { "description": "ID dokumen", "type": "integer" },
-                "sentence": { "description": "ID sentence", "type": "integer" },
+                "document": {
+                  "description": "ID dokumen",
+                  "type": "integer"
+                },
+                "sentence": {
+                  "description": "ID sentence",
+                  "type": "integer"
+                },
                 "start_index": {
                   "description": "Posisi awal error",
                   "type": "integer"
@@ -825,17 +1321,25 @@
           }
         ],
         "responses": {
-          "200": { "description": "Annotation berhasil diupdate" },
+          "200": {
+            "description": "Annotation berhasil diupdate"
+          },
           "400": {
             "description": "Data input tidak valid atau business rule violation"
           },
-          "404": { "description": "Annotation tidak ditemukan" },
+          "404": {
+            "description": "Annotation tidak ditemukan"
+          },
           "403": {
             "description": "Hanya owner annotation yang dapat mengupdate"
           },
-          "401": { "description": "Authentication required" }
+          "401": {
+            "description": "Authentication required"
+          }
         },
-        "tags": ["📝 Annotations"]
+        "tags": [
+          "📝 Annotations"
+        ]
       },
       "patch": {
         "operationId": "annotations_partial_update",
@@ -853,7 +1357,10 @@
                   "description": "Teks koreksi",
                   "type": "string"
                 },
-                "comments": { "description": "Komentar", "type": "string" },
+                "comments": {
+                  "description": "Komentar",
+                  "type": "string"
+                },
                 "is_required": {
                   "description": "Status requirement",
                   "type": "boolean"
@@ -867,15 +1374,25 @@
           }
         ],
         "responses": {
-          "200": { "description": "Annotation berhasil diupdate" },
-          "400": { "description": "Data input tidak valid" },
-          "404": { "description": "Annotation tidak ditemukan" },
+          "200": {
+            "description": "Annotation berhasil diupdate"
+          },
+          "400": {
+            "description": "Data input tidak valid"
+          },
+          "404": {
+            "description": "Annotation tidak ditemukan"
+          },
           "403": {
             "description": "Hanya owner annotation yang dapat mengupdate"
           },
-          "401": { "description": "Authentication required" }
+          "401": {
+            "description": "Authentication required"
+          }
         },
-        "tags": ["📝 Annotations"]
+        "tags": [
+          "📝 Annotations"
+        ]
       },
       "delete": {
         "operationId": "annotations_delete",
@@ -883,14 +1400,22 @@
         "description": "\nMenghapus annotation dari sistem.\n\n**Access Control:**\n- Hanya annotator yang membuat annotation ini yang dapat menghapus\n\n**⚠️ PERINGATAN:**\n- Action ini tidak dapat di-undo\n- Review yang terkait dengan annotation ini juga akan terpengaruh\n",
         "parameters": [],
         "responses": {
-          "204": { "description": "Annotation berhasil dihapus" },
-          "404": { "description": "Annotation tidak ditemukan" },
+          "204": {
+            "description": "Annotation berhasil dihapus"
+          },
+          "404": {
+            "description": "Annotation tidak ditemukan"
+          },
           "403": {
             "description": "Hanya owner annotation yang dapat menghapus"
           },
-          "401": { "description": "Authentication required" }
+          "401": {
+            "description": "Authentication required"
+          }
         },
-        "tags": ["📝 Annotations"]
+        "tags": [
+          "📝 Annotations"
+        ]
       },
       "parameters": [
         {
@@ -913,7 +1438,10 @@
             "in": "body",
             "required": true,
             "schema": {
-              "required": ["document_id", "user_id"],
+              "required": [
+                "document_id",
+                "user_id"
+              ],
               "type": "object",
               "properties": {
                 "document_id": {
@@ -924,6 +1452,10 @@
                   "description": "ID user yang akan menerima assignment",
                   "type": "string",
                   "format": "uuid"
+                },
+                "notes": {
+                  "description": "Optional notes untuk assignment ini",
+                  "type": "string"
                 }
               }
             }
@@ -931,15 +1463,31 @@
         ],
         "responses": {
           "200": {
-            "description": "Assignment berhasil",
+            "description": "Assignment berhasil dengan tracking lengkap",
             "examples": {
-              "application/json": { "message": "Dokumen berhasil ditugaskan" }
+              "application/json": {
+                "message": "Dokumen berhasil ditugaskan",
+                "assignment_record": {
+                  "id": 1,
+                  "assigned_user": "annotator1",
+                  "assigned_by": "admin1",
+                  "assigned_at": "2024-01-01T10:00:00Z",
+                  "notes": "Initial assignment for annotation task",
+                  "is_active": true
+                }
+              }
             }
           },
-          "400": { "description": "User tidak memiliki role yang sesuai" },
-          "404": { "description": "Dokumen atau user tidak ditemukan" }
+          "400": {
+            "description": "User tidak memiliki role yang sesuai"
+          },
+          "404": {
+            "description": "Dokumen atau user tidak ditemukan"
+          }
         },
-        "tags": ["📋 Document Assignment"]
+        "tags": [
+          "📋 Document Assignment"
+        ]
       },
       "delete": {
         "operationId": "assignments_delete",
@@ -951,7 +1499,10 @@
             "in": "body",
             "required": true,
             "schema": {
-              "required": ["document_id", "user_id"],
+              "required": [
+                "document_id",
+                "user_id"
+              ],
               "type": "object",
               "properties": {
                 "document_id": {
@@ -976,9 +1527,13 @@
               }
             }
           },
-          "404": { "description": "Dokumen atau user tidak ditemukan" }
+          "404": {
+            "description": "Dokumen atau user tidak ditemukan"
+          }
         },
-        "tags": ["📋 Document Assignment"]
+        "tags": [
+          "📋 Document Assignment"
+        ]
       },
       "parameters": []
     },
@@ -1001,8 +1556,14 @@
             "type": "integer"
           }
         ],
-        "responses": { "200": { "description": "" } },
-        "tags": ["📊 Dashboard"]
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "📊 Dashboard"
+        ]
       },
       "parameters": []
     },
@@ -1032,11 +1593,22 @@
             "type": "integer"
           }
         ],
-        "responses": { "200": { "description": "" } },
-        "tags": ["📊 Dashboard"]
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "📊 Dashboard"
+        ]
       },
       "parameters": [
-        { "name": "user_id", "in": "path", "required": true, "type": "string" }
+        {
+          "name": "user_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
       ]
     },
     "/dashboard/iaa/": {
@@ -1072,8 +1644,14 @@
             "type": "integer"
           }
         ],
-        "responses": { "200": { "description": "" } },
-        "tags": ["📊 Dashboard"]
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "📊 Dashboard"
+        ]
       },
       "parameters": []
     },
@@ -1103,11 +1681,22 @@
             "type": "integer"
           }
         ],
-        "responses": { "200": { "description": "" } },
-        "tags": ["📊 Dashboard"]
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "📊 Dashboard"
+        ]
       },
       "parameters": [
-        { "name": "user_id", "in": "path", "required": true, "type": "string" }
+        {
+          "name": "user_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
       ]
     },
     "/documents/": {
@@ -1139,27 +1728,38 @@
                     "text": "Ini adalah teks dokumen...",
                     "created_at": "2024-01-01T00:00:00Z",
                     "updated_at": "2024-01-01T00:00:00Z",
-                    "assigned_to": [1, 2, 3]
+                    "assigned_to": [
+                      1,
+                      2,
+                      3
+                    ]
                   }
                 ]
               }
             }
           },
-          "403": { "description": "Hanya admin yang dapat mengakses" }
+          "403": {
+            "description": "Hanya admin yang dapat mengakses"
+          }
         },
-        "tags": ["📄 Document Management"]
+        "tags": [
+          "📄 Document Management"
+        ]
       },
       "post": {
         "operationId": "documents_create",
         "summary": "Create New Document",
-        "description": "\nMembuat dokumen baru dan secara otomatis split text menjadi sentences.\n\n**Auto-Processing:**\n- Text akan dipecah menjadi sentences menggunakan NLTK\n- Setiap sentence akan disimpan sebagai object terpisah\n- Mendukung fallback parsing jika NLTK tidak tersedia\n",
+        "description": "\nMembuat dokumen baru dan secara otomatis split text menjadi sentences.\n\n**Auto-Processing:**\n- Text akan dipecah menjadi sentences menggunakan NLTK\n- Setiap sentence akan disimpan sebagai object terpisah\n- Mendukung fallback parsing jika NLTK tidak tersedia\n- assigned_by otomatis di-set ke user yang membuat dokumen\n",
         "parameters": [
           {
             "name": "data",
             "in": "body",
             "required": true,
             "schema": {
-              "required": ["title", "text"],
+              "required": [
+                "title",
+                "text"
+              ],
               "type": "object",
               "properties": {
                 "title": {
@@ -1184,6 +1784,7 @@
                 "text": "Ini adalah teks dokumen. Ini adalah kalimat kedua.",
                 "created_at": "2024-01-01T00:00:00Z",
                 "updated_at": "2024-01-01T00:00:00Z",
+                "assigned_by": "8ae9adeb-6e03-47c5-b25f-b36ec97e44ca",
                 "assigned_to": [],
                 "sentences": [
                   {
@@ -1200,11 +1801,208 @@
               }
             }
           },
-          "400": { "description": "Invalid input data" }
+          "400": {
+            "description": "Invalid input data"
+          }
         },
-        "tags": ["📄 Document Management"]
+        "tags": [
+          "📄 Document Management"
+        ]
       },
       "parameters": []
+    },
+    "/documents/assignment/": {
+      "post": {
+        "operationId": "documents_assignment_create",
+        "summary": "Assign Document to User",
+        "description": "\nAssign dokumen kepada user tertentu untuk proses anotasi atau review.\n\n**Constraints:**\n- Hanya user dengan role Annotators atau Reviewers yang dapat di-assign\n- Satu dokumen dapat di-assign ke multiple users\n- Hanya admin yang dapat melakukan assignment\n",
+        "parameters": [
+          {
+            "name": "data",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "required": [
+                "document_id",
+                "user_id"
+              ],
+              "type": "object",
+              "properties": {
+                "document_id": {
+                  "description": "ID dokumen yang akan di-assign",
+                  "type": "integer"
+                },
+                "user_id": {
+                  "description": "ID user yang akan menerima assignment",
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "notes": {
+                  "description": "Optional notes untuk assignment ini",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Assignment berhasil dengan tracking lengkap",
+            "examples": {
+              "application/json": {
+                "message": "Dokumen berhasil ditugaskan",
+                "assignment_record": {
+                  "id": 1,
+                  "assigned_user": "annotator1",
+                  "assigned_by": "admin1",
+                  "assigned_at": "2024-01-01T10:00:00Z",
+                  "notes": "Initial assignment for annotation task",
+                  "is_active": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "User tidak memiliki role yang sesuai"
+          },
+          "404": {
+            "description": "Dokumen atau user tidak ditemukan"
+          }
+        },
+        "tags": [
+          "📋 Document Assignment"
+        ]
+      },
+      "delete": {
+        "operationId": "documents_assignment_delete",
+        "summary": "Unassign Document from User",
+        "description": "\nMenghapus assignment dokumen dari user tertentu.\n\n**Note:**\n- Tidak menghapus annotations yang sudah dibuat\n- User tidak akan bisa mengakses dokumen untuk anotasi baru\n- Hanya admin yang dapat melakukan unassignment\n",
+        "parameters": [
+          {
+            "name": "data",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "required": [
+                "document_id",
+                "user_id"
+              ],
+              "type": "object",
+              "properties": {
+                "document_id": {
+                  "description": "ID dokumen yang akan di-unassign",
+                  "type": "integer"
+                },
+                "user_id": {
+                  "description": "ID user yang akan di-unassign",
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Unassignment berhasil",
+            "examples": {
+              "application/json": {
+                "message": "Tugas dokumen berhasil dihapus"
+              }
+            }
+          },
+          "404": {
+            "description": "Dokumen atau user tidak ditemukan"
+          }
+        },
+        "tags": [
+          "📋 Document Assignment"
+        ]
+      },
+      "parameters": []
+    },
+    "/documents/my-assigned/{id}/": {
+      "get": {
+        "operationId": "documents_my-assigned_read",
+        "summary": "Get My Assigned Document Detail",
+        "description": "\nMendapatkan detail lengkap dokumen yang di-assign kepada user yang sedang login.\n\n**Security Features:**\n- Automatic filtering: hanya dokumen yang di-assign yang bisa diakses\n- Built-in authorization: tidak perlu manual permission check\n- 404 response jika dokumen tidak di-assign atau tidak exist\n\n**Response includes:**\n- Informasi dasar dokumen (id, title, text, timestamps)\n- Daftar lengkap sentences dengan sentence_id\n- Assignment information\n\n**Use Cases:**\n- Annotator mengakses dokumen untuk proses anotasi\n- Reviewer mengakses dokumen untuk proses review\n- Frontend mendapatkan sentence_id untuk annotation workflow\n",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Detail dokumen berhasil ditemukan",
+            "examples": {
+              "application/json": {
+                "id": 1,
+                "title": "Dokumen untuk Anotasi",
+                "text": "Ini adalah teks dokumen yang akan diannotasi. Kalimat kedua untuk testing.",
+                "created_at": "2024-01-01T10:00:00Z",
+                "updated_at": "2024-01-01T10:00:00Z",
+                "assigned_to": [
+                  "uuid-user1",
+                  "uuid-user2"
+                ],
+                "sentences": [
+                  {
+                    "id": 123,
+                    "text": "Ini adalah teks dokumen yang akan diannotasi.",
+                    "m2_text": "",
+                    "corrected_text": "",
+                    "has_error": false,
+                    "created_at": "2024-01-01T10:00:00Z",
+                    "updated_at": "2024-01-01T10:00:00Z",
+                    "document": 1
+                  },
+                  {
+                    "id": 124,
+                    "text": "Kalimat kedua untuk testing.",
+                    "m2_text": "",
+                    "corrected_text": "",
+                    "has_error": false,
+                    "created_at": "2024-01-01T10:00:00Z",
+                    "updated_at": "2024-01-01T10:00:00Z",
+                    "document": 1
+                  }
+                ]
+              }
+            }
+          },
+          "404": {
+            "description": "Dokumen tidak ditemukan atau tidak di-assign kepada user",
+            "examples": {
+              "application/json": {
+                "detail": "Tidak ditemukan."
+              }
+            }
+          },
+          "401": {
+            "description": "User belum login",
+            "examples": {
+              "application/json": {
+                "detail": "Authentication credentials were not provided."
+              }
+            }
+          },
+          "403": {
+            "description": "User tidak memiliki role yang sesuai",
+            "examples": {
+              "application/json": {
+                "error": "Anda tidak memiliki izin untuk melakukan tindakan ini."
+              }
+            }
+          }
+        },
+        "tags": [
+          "📋 User Documents"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ]
     },
     "/documents/preview/": {
       "post": {
@@ -1217,7 +2015,9 @@
             "in": "body",
             "required": true,
             "schema": {
-              "required": ["text"],
+              "required": [
+                "text"
+              ],
               "type": "object",
               "properties": {
                 "text": {
@@ -1247,14 +2047,18 @@
           "400": {
             "description": "Input tidak valid",
             "examples": {
-              "application/json": { "error": "Teks tidak boleh kosong" }
+              "application/json": {
+                "error": "Teks tidak boleh kosong"
+              }
             }
           },
           "403": {
             "description": "Hanya admin yang dapat mengakses endpoint ini"
           }
         },
-        "tags": ["📄 Document Management"]
+        "tags": [
+          "📄 Document Management"
+        ]
       },
       "parameters": []
     },
@@ -1274,7 +2078,10 @@
                 "text": "Ini adalah teks dokumen. Ini adalah kalimat kedua.",
                 "created_at": "2024-01-01T00:00:00Z",
                 "updated_at": "2024-01-01T00:00:00Z",
-                "assigned_to": [1, 2],
+                "assigned_to": [
+                  1,
+                  2
+                ],
                 "sentences": [
                   {
                     "id": 1,
@@ -1290,9 +2097,13 @@
               }
             }
           },
-          "404": { "description": "Dokumen tidak ditemukan" }
+          "404": {
+            "description": "Dokumen tidak ditemukan"
+          }
         },
-        "tags": ["📄 Document Management"]
+        "tags": [
+          "📄 Document Management"
+        ]
       },
       "delete": {
         "operationId": "documents_delete",
@@ -1300,10 +2111,16 @@
         "description": "\nMenghapus dokumen dari sistem.\n\n**Warning:**\n- Menghapus dokumen akan menghapus semua sentences\n- Semua annotations yang terkait akan ikut terhapus\n- Action ini tidak dapat di-undo\n",
         "parameters": [],
         "responses": {
-          "204": { "description": "Dokumen berhasil dihapus" },
-          "404": { "description": "Dokumen tidak ditemukan" }
+          "204": {
+            "description": "Dokumen berhasil dihapus"
+          },
+          "404": {
+            "description": "Dokumen tidak ditemukan"
+          }
         },
-        "tags": ["📄 Document Management"]
+        "tags": [
+          "📄 Document Management"
+        ]
       },
       "parameters": [
         {
@@ -1340,14 +2157,30 @@
           "200": {
             "description": "File export dikembalikan sebagai attachment"
           },
-          "400": { "description": "Format tidak didukung" },
-          "404": { "description": "Dokumen tidak ditemukan" }
+          "400": {
+            "description": "Format tidak didukung"
+          },
+          "404": {
+            "description": "Dokumen tidak ditemukan"
+          }
         },
-        "tags": ["📄 Document Management"]
+        "tags": [
+          "📄 Document Management"
+        ]
       },
       "parameters": [
-        { "name": "id", "in": "path", "required": true, "type": "string" },
-        { "name": "fmt", "in": "path", "required": true, "type": "string" }
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        },
+        {
+          "name": "fmt",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
       ]
     },
     "/login/": {
@@ -1361,14 +2194,20 @@
             "in": "body",
             "required": true,
             "schema": {
-              "required": ["username", "password"],
+              "required": [
+                "username",
+                "password"
+              ],
               "type": "object",
               "properties": {
                 "username": {
-                  "description": "Username user",
+                  "description": "Username atau email",
                   "type": "string"
                 },
-                "password": { "description": "Password user", "type": "string" }
+                "password": {
+                  "description": "Password user",
+                  "type": "string"
+                }
               }
             }
           }
@@ -1383,9 +2222,18 @@
               }
             }
           },
-          "401": { "description": "Kredensial tidak valid" }
+          "401": {
+            "description": "Login gagal",
+            "examples": {
+              "application/json": {
+                "detail": "Kredensial tidak valid"
+              }
+            }
+          }
         },
-        "tags": ["🔐 Authentication"]
+        "tags": [
+          "🔐 Authentication"
+        ]
       },
       "parameters": []
     },
@@ -1407,10 +2255,15 @@
           "200": {
             "description": "",
             "schema": {
-              "required": ["count", "results"],
+              "required": [
+                "count",
+                "results"
+              ],
               "type": "object",
               "properties": {
-                "count": { "type": "integer" },
+                "count": {
+                  "type": "integer"
+                },
                 "next": {
                   "type": "string",
                   "format": "uri",
@@ -1423,13 +2276,17 @@
                 },
                 "results": {
                   "type": "array",
-                  "items": { "$ref": "#/definitions/Project" }
+                  "items": {
+                    "$ref": "#/definitions/Project"
+                  }
                 }
               }
             }
           }
         },
-        "tags": ["📁 Project Management"]
+        "tags": [
+          "📁 Project Management"
+        ]
       },
       "post": {
         "operationId": "projects_create",
@@ -1440,16 +2297,22 @@
             "name": "data",
             "in": "body",
             "required": true,
-            "schema": { "$ref": "#/definitions/Project" }
+            "schema": {
+              "$ref": "#/definitions/Project"
+            }
           }
         ],
         "responses": {
           "201": {
             "description": "",
-            "schema": { "$ref": "#/definitions/Project" }
+            "schema": {
+              "$ref": "#/definitions/Project"
+            }
           }
         },
-        "tags": ["📁 Project Management"]
+        "tags": [
+          "📁 Project Management"
+        ]
       },
       "parameters": []
     },
@@ -1462,10 +2325,14 @@
         "responses": {
           "200": {
             "description": "",
-            "schema": { "$ref": "#/definitions/Project" }
+            "schema": {
+              "$ref": "#/definitions/Project"
+            }
           }
         },
-        "tags": ["📁 Project Management"]
+        "tags": [
+          "📁 Project Management"
+        ]
       },
       "put": {
         "operationId": "projects_update",
@@ -1476,16 +2343,22 @@
             "name": "data",
             "in": "body",
             "required": true,
-            "schema": { "$ref": "#/definitions/Project" }
+            "schema": {
+              "$ref": "#/definitions/Project"
+            }
           }
         ],
         "responses": {
           "200": {
             "description": "",
-            "schema": { "$ref": "#/definitions/Project" }
+            "schema": {
+              "$ref": "#/definitions/Project"
+            }
           }
         },
-        "tags": ["📁 Project Management"]
+        "tags": [
+          "📁 Project Management"
+        ]
       },
       "patch": {
         "operationId": "projects_partial_update",
@@ -1496,27 +2369,44 @@
             "name": "data",
             "in": "body",
             "required": true,
-            "schema": { "$ref": "#/definitions/Project" }
+            "schema": {
+              "$ref": "#/definitions/Project"
+            }
           }
         ],
         "responses": {
           "200": {
             "description": "",
-            "schema": { "$ref": "#/definitions/Project" }
+            "schema": {
+              "$ref": "#/definitions/Project"
+            }
           }
         },
-        "tags": ["📁 Project Management"]
+        "tags": [
+          "📁 Project Management"
+        ]
       },
       "delete": {
         "operationId": "projects_delete",
         "summary": "Delete Project",
         "description": "",
         "parameters": [],
-        "responses": { "204": { "description": "" } },
-        "tags": ["📁 Project Management"]
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "📁 Project Management"
+        ]
       },
       "parameters": [
-        { "name": "id", "in": "path", "required": true, "type": "string" }
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
       ]
     },
     "/projects/{id}/assign_admin/": {
@@ -1530,7 +2420,9 @@
             "in": "body",
             "required": true,
             "schema": {
-              "required": ["user_id"],
+              "required": [
+                "user_id"
+              ],
               "type": "object",
               "properties": {
                 "user_id": {
@@ -1550,16 +2442,27 @@
               }
             }
           },
-          "400": { "description": "User tidak memiliki role Admin" },
+          "400": {
+            "description": "User tidak memiliki role Admin"
+          },
           "403": {
             "description": "Hanya Kepala Riset yang dapat assign admin"
           },
-          "404": { "description": "User tidak ditemukan" }
+          "404": {
+            "description": "User tidak ditemukan"
+          }
         },
-        "tags": ["📁 Project Management"]
+        "tags": [
+          "📁 Project Management"
+        ]
       },
       "parameters": [
-        { "name": "id", "in": "path", "required": true, "type": "string" }
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
       ]
     },
     "/projects/{id}/assigned-users/": {
@@ -1569,13 +2472,24 @@
         "description": "Mengembalikan daftar user yang di-assign pada dokumen dalam project tertentu.\nUser yang ditampilkan merupakan gabungan unik dari semua assignment dokumen di project.",
         "parameters": [],
         "responses": {
-          "200": { "description": "Daftar user yang di-assign pada project" },
-          "404": { "description": "Project tidak ditemukan" }
+          "200": {
+            "description": "Daftar user yang di-assign pada project"
+          },
+          "404": {
+            "description": "Project tidak ditemukan"
+          }
         },
-        "tags": ["📁 Project Management"]
+        "tags": [
+          "📁 Project Management"
+        ]
       },
       "parameters": [
-        { "name": "id", "in": "path", "required": true, "type": "string" }
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
       ]
     },
     "/projects/{id}/documents/": {
@@ -1585,13 +2499,24 @@
         "description": "Menampilkan semua dokumen di dalam project tertentu. Admin hanya dapat mengakses project yang di-assign kepadanya, sementara Kepala Riset dapat mengakses semua project.",
         "parameters": [],
         "responses": {
-          "200": { "description": "Daftar dokumen dalam project" },
-          "404": { "description": "Project tidak ditemukan" }
+          "200": {
+            "description": "Daftar dokumen dalam project"
+          },
+          "404": {
+            "description": "Project tidak ditemukan"
+          }
         },
-        "tags": ["📁 Project Management"]
+        "tags": [
+          "📁 Project Management"
+        ]
       },
       "parameters": [
-        { "name": "id", "in": "path", "required": true, "type": "string" }
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
       ]
     },
     "/projects/{id}/unassign_admin/": {
@@ -1605,7 +2530,9 @@
             "in": "body",
             "required": true,
             "schema": {
-              "required": ["user_id"],
+              "required": [
+                "user_id"
+              ],
               "type": "object",
               "properties": {
                 "user_id": {
@@ -1628,12 +2555,21 @@
           "403": {
             "description": "Hanya Kepala Riset yang dapat unassign admin"
           },
-          "404": { "description": "User tidak ditemukan" }
+          "404": {
+            "description": "User tidak ditemukan"
+          }
         },
-        "tags": ["📁 Project Management"]
+        "tags": [
+          "📁 Project Management"
+        ]
       },
       "parameters": [
-        { "name": "id", "in": "path", "required": true, "type": "string" }
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
       ]
     },
     "/token/refresh/": {
@@ -1647,7 +2583,9 @@
             "in": "body",
             "required": true,
             "schema": {
-              "required": ["refresh"],
+              "required": [
+                "refresh"
+              ],
               "type": "object",
               "properties": {
                 "refresh": {
@@ -1667,9 +2605,13 @@
               }
             }
           },
-          "401": { "description": "Token refresh tidak valid" }
+          "401": {
+            "description": "Token refresh tidak valid"
+          }
         },
-        "tags": ["🔐 Authentication"]
+        "tags": [
+          "🔐 Authentication"
+        ]
       },
       "parameters": []
     },
@@ -1701,7 +2643,9 @@
                     "username": "admin1",
                     "email": "admin1@example.com",
                     "full_name": "Admin Pertama",
-                    "roles": ["Admin"],
+                    "roles": [
+                      "Admin"
+                    ],
                     "date_joined": "2024-01-01T00:00:00Z"
                   }
                 ]
@@ -1709,7 +2653,75 @@
             }
           }
         },
-        "tags": ["👥 User Management"]
+        "tags": [
+          "👥 User Management"
+        ]
+      },
+      "parameters": []
+    },
+    "/users/admin-password-reset/": {
+      "post": {
+        "operationId": "users_admin-password-reset_create",
+        "summary": "Admin Reset User Password",
+        "description": "\nAdmin dapat reset password user lain dan mengirim email notifikasi dengan password baru.\n\n**Use Case:**\n- User lupa password dan membutuhkan bantuan admin (disarankan gunakan alur OTP terlebih dahulu)\n- Admin maintenance untuk reset password user\n- Recovery akses untuk user yang bermasalah\n\n**Features:**\n- Generate password baru secara otomatis (12 karakter aman)\n- Kirim email notifikasi dengan password baru\n- Hanya admin atau kepala riset yang dapat menggunakan\n\nCatatan: Sistem kini menggunakan OTP untuk reset password mandiri oleh user. Endpoint ini untuk tindakan administratif.\n",
+        "parameters": [
+          {
+            "name": "data",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "required": [
+                "user_id"
+              ],
+              "type": "object",
+              "properties": {
+                "user_id": {
+                  "description": "ID user yang akan direset passwordnya",
+                  "type": "string"
+                },
+                "send_email": {
+                  "description": "Kirim email password baru ke pengguna (default: true)",
+                  "type": "boolean",
+                  "default": true
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Password berhasil direset",
+            "examples": {
+              "application/json": {
+                "message": "Password berhasil direset untuk pengguna testuser_bodhi",
+                "user_id": "1e80d41d-0002-4d52-bf6c-72e32b80bf76",
+                "username": "testuser_bodhi",
+                "new_password": "aB3dF7kL9m2q",
+                "email_status": "sent",
+                "email_message": "Email password baru berhasil dikirim"
+              }
+            }
+          },
+          "404": {
+            "description": "Pengguna tidak ditemukan",
+            "examples": {
+              "application/json": {
+                "error": "Pengguna tidak ditemukan"
+              }
+            }
+          },
+          "400": {
+            "description": "Data input tidak valid",
+            "examples": {
+              "application/json": {
+                "error": "user_id harus diisi"
+              }
+            }
+          }
+        },
+        "tags": [
+          "🔐 Authentication"
+        ]
       },
       "parameters": []
     },
@@ -1724,12 +2736,19 @@
             "description": "Daftar roles berhasil ditemukan",
             "examples": {
               "application/json": {
-                "roles": ["Admin", "Annotator", "Reviewer", "Kepala Riset"]
+                "roles": [
+                  "Admin",
+                  "Annotator",
+                  "Reviewer",
+                  "Kepala Riset"
+                ]
               }
             }
           }
         },
-        "tags": ["🔧 Role Management"]
+        "tags": [
+          "🔧 Role Management"
+        ]
       },
       "parameters": []
     },
@@ -1737,14 +2756,18 @@
       "post": {
         "operationId": "users_create_create",
         "summary": "Registrasi User Baru",
-        "description": "\nMembuat user baru dengan password yang di-generate secara otomatis menggunakan algoritma secure random.\n\n**Auto-Generated Features:**\n- Password dibuat secara random dengan kombinasi huruf, angka, dan simbol (12 karakter)\n- Backup key di-generate untuk recovery password (20 karakter alphanumeric)\n- Tidak perlu input password saat membuat user\n\n**Input yang Diperlukan:**\n- username: Username unik untuk login\n- email: Email address pengguna\n- full_name: Nama lengkap pengguna\n\n**Output:**\n- Password dan backup key akan dikembalikan dalam response untuk diberikan kepada user\n",
+        "description": "\nMembuat user baru dengan password yang di-generate secara otomatis menggunakan algoritma secure random.\n\n**Auto-Generated Features:**\n- Password dibuat secara random dengan kombinasi huruf, angka, dan simbol (12 karakter)\n- Tidak perlu input password saat membuat user\n\n**Email Features:**\n- Secara otomatis mengirim email kredensial ke pengguna baru\n- Dapat dimatikan dengan mengatur send_email=false\n- Dapat menyertakan login_url dalam email\n\nCatatan: Sistem kini menggunakan OTP email untuk proses reset password. Tidak ada lagi backup key.\n\n**Input yang Diperlukan:**\n- username: Username unik untuk login\n- email: Email address pengguna\n- full_name: Nama lengkap pengguna\n- institusi: Institusi/lembaga asal pengguna (optional)\n- send_email: Kirim email kredensial (default: true)\n- login_url: URL login untuk disertakan dalam email (optional)\n\n**Output:**\n- Password sementara dikembalikan dalam response\n- Status pengiriman email akan disertakan dalam response\n",
         "parameters": [
           {
             "name": "data",
             "in": "body",
             "required": true,
             "schema": {
-              "required": ["username", "email", "full_name"],
+              "required": [
+                "username",
+                "email",
+                "full_name"
+              ],
               "type": "object",
               "properties": {
                 "username": {
@@ -1759,6 +2782,20 @@
                 "full_name": {
                   "description": "Nama lengkap pengguna",
                   "type": "string"
+                },
+                "institusi": {
+                  "description": "Institusi/lembaga asal pengguna (optional)",
+                  "type": "string"
+                },
+                "send_email": {
+                  "description": "Kirim email kredensial ke pengguna (default: true)",
+                  "type": "boolean",
+                  "default": true
+                },
+                "login_url": {
+                  "description": "URL login untuk disertakan dalam email (optional)",
+                  "type": "string",
+                  "format": "uri"
                 }
               }
             }
@@ -1775,8 +2812,10 @@
                   "username": "dodit",
                   "email": "dodit@example.com",
                   "full_name": "Dodit Sukma Maulana",
+                  "institusi": "Universitas Gadjah Mada",
                   "password": "aB3dF7kL9m2q",
-                  "backup_key": "aB3dF7kL9mN2qR5tW8zX"
+                  "email_status": "sent",
+                  "email_message": "Email kredensial berhasil dikirim"
                 }
               }
             }
@@ -1785,14 +2824,22 @@
             "description": "Data input tidak valid",
             "examples": {
               "application/json": {
-                "full_name": ["Nama lengkap harus diisi."],
-                "username": ["Username sudah digunakan"],
-                "email": ["Email sudah terdaftar"]
+                "full_name": [
+                  "Nama lengkap harus diisi."
+                ],
+                "username": [
+                  "Username sudah digunakan"
+                ],
+                "email": [
+                  "Email sudah terdaftar"
+                ]
               }
             }
           }
         },
-        "tags": ["👥 User Management"]
+        "tags": [
+          "👥 User Management"
+        ]
       },
       "parameters": []
     },
@@ -1824,7 +2871,9 @@
                     "username": "deleted_user",
                     "email": "deleted@example.com",
                     "full_name": "Deleted User",
-                    "roles": ["Annotators"],
+                    "roles": [
+                      "Annotators"
+                    ],
                     "date_joined": "2024-01-01T00:00:00Z",
                     "is_deleted": true,
                     "deleted_at": "2024-01-02T12:00:00Z"
@@ -1833,60 +2882,13 @@
               }
             }
           },
-          "403": { "description": "Hanya admin yang dapat mengakses" }
-        },
-        "tags": ["👥 User Management"]
-      },
-      "parameters": []
-    },
-    "/users/generate-backup-key/": {
-      "post": {
-        "operationId": "users_generate-backup-key_create",
-        "summary": "Generate New Backup Key",
-        "description": "\nGenerate backup key baru untuk user tertentu. Hanya admin yang dapat melakukan ini.\n\n**Use Case:**\n- User kehilangan backup key\n- Recovery akses untuk password reset\n- Admin maintenance\n\n**Warning:**\n- Backup key lama akan diganti dan tidak dapat digunakan lagi\n- User harus mendapatkan backup key baru untuk reset password\n",
-        "parameters": [
-          {
-            "name": "data",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "required": ["user_id"],
-              "type": "object",
-              "properties": {
-                "user_id": {
-                  "description": "ID user yang akan di-generate backup key baru",
-                  "type": "string"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Backup key berhasil di-generate",
-            "examples": {
-              "application/json": {
-                "message": "Kunci cadangan berhasil dibuat untuk pengguna dodit",
-                "user_id": "550e8400-e29b-41d4-a716-446655440000",
-                "username": "dodit",
-                "new_backup_key": "aB3dF7kL9mN2qR5tW8zX"
-              }
-            }
-          },
-          "404": {
-            "description": "Pengguna tidak ditemukan",
-            "examples": {
-              "application/json": { "error": "Pengguna tidak ditemukan" }
-            }
-          },
-          "400": {
-            "description": "Data input tidak valid",
-            "examples": {
-              "application/json": { "error": "user_id harus diisi" }
-            }
+          "403": {
+            "description": "Hanya admin yang dapat mengakses"
           }
         },
-        "tags": ["🔐 Authentication"]
+        "tags": [
+          "👥 User Management"
+        ]
       },
       "parameters": []
     },
@@ -1905,7 +2907,10 @@
                 "username": "dodit",
                 "email": "dodit@example.com",
                 "full_name": "Dodit Sukma Maulana",
-                "roles": ["Annotators", "Reviewers"],
+                "roles": [
+                  "Annotators",
+                  "Reviewers"
+                ],
                 "date_joined": "2024-01-01T00:00:00Z"
               }
             }
@@ -1919,7 +2924,9 @@
             }
           }
         },
-        "tags": ["👥 User Management"]
+        "tags": [
+          "👥 User Management"
+        ]
       },
       "parameters": []
     },
@@ -1927,7 +2934,7 @@
       "get": {
         "operationId": "users_me_assigned-documents_list",
         "summary": "Get My Assigned Documents",
-        "description": "\nMendapatkan daftar semua dokumen yang di-assign kepada user yang sedang login.\n\n**Features:**\n- Pagination dengan default 20 items per page\n- Hanya menampilkan dokumen yang di-assign ke user yang sedang login\n- Diurutkan berdasarkan created_at (terbaru di atas)\n- Dapat diakses oleh Annotator dan Reviewer\n\n**Use Case:**\n- Dashboard user untuk melihat task yang diberikan\n- Frontend untuk menampilkan work queue\n- Progress tracking untuk user\n",
+        "description": "\nMendapatkan daftar semua dokumen yang di-assign kepada user yang sedang login\ndengan informasi lengkap termasuk progress dan metadata.\n\n**Features:**\n- Pagination dengan default 20 items per page\n- Hanya menampilkan dokumen yang di-assign ke user yang sedang login\n- Diurutkan berdasarkan created_at (terbaru di atas)\n- Dapat diakses oleh Annotator dan Reviewer\n- Informasi tambahan: assigned_by, status, jumlah_sentence, institusi\n\n**Fields Tambahan:**\n- `assigned_by`: Informasi lengkap user yang melakukan assignment (id, username, full_name, institusi)\n- `status`: Progress detail dengan 6 status:\n  - \"belum_dianotasi\": Belum memulai anotasi sama sekali\n  - \"sedang_dianotasi\": Sedang dalam proses anotasi\n  - \"sudah_dianotasi\": Selesai anotasi semua sentence\n  - \"belum_direview\": Belum memulai review\n  - \"sedang_direview\": Sedang dalam proses review\n  - \"sudah_direview\": Selesai review semua sentence\n- `jumlah_sentence`: Total jumlah kalimat dalam dokumen\n- `institusi`: Institusi user yang sedang login\n\n**Use Case:**\n- Dashboard user untuk melihat task yang diberikan\n- Frontend untuk menampilkan work queue dengan progress\n- Progress tracking untuk user\n- Monitoring workload dan status completion\n",
         "parameters": [
           {
             "name": "page",
@@ -1949,40 +2956,155 @@
                   {
                     "id": 1,
                     "title": "Dokumen Anotasi 1",
-                    "text": "Ini adalah teks dokumen untuk diannotasi...",
+                    "text": "Ini adalah teks dokumen untuk diannotasi. Kalimat kedua untuk testing. Kalimat ketiga juga ada.",
                     "created_at": "2024-01-01T10:00:00Z",
                     "updated_at": "2024-01-01T10:00:00Z",
-                    "assigned_to": ["uuid-user1", "uuid-user2"]
+                    "assigned_by": {
+                      "id": "550e8400-e29b-41d4-a716-446655440000",
+                      "username": "admin_user",
+                      "full_name": "Admin Utama",
+                      "institusi": "Universitas Indonesia"
+                    },
+                    "status": "sedang_dianotasi",
+                    "jumlah_sentence": 3,
+                    "institusi": "Universitas Gadjah Mada"
                   },
                   {
                     "id": 2,
                     "title": "Dokumen Review 1",
-                    "text": "Ini adalah teks dokumen untuk direview...",
+                    "text": "Ini adalah teks dokumen untuk direview. Sudah ada beberapa kalimat.",
                     "created_at": "2024-01-01T09:00:00Z",
                     "updated_at": "2024-01-01T09:00:00Z",
-                    "assigned_to": ["uuid-user1"]
+                    "assigned_by": {
+                      "id": "550e8400-e29b-41d4-a716-446655440001",
+                      "username": "admin_user2",
+                      "full_name": "Admin Kedua",
+                      "institusi": "Institut Teknologi Bandung"
+                    },
+                    "status": "belum_direview",
+                    "jumlah_sentence": 2,
+                    "institusi": "Universitas Gadjah Mada"
+                  },
+                  {
+                    "id": 3,
+                    "title": "Dokumen Selesai",
+                    "text": "Dokumen yang sudah selesai semua.",
+                    "created_at": "2024-01-01T08:00:00Z",
+                    "updated_at": "2024-01-01T08:00:00Z",
+                    "assigned_by": {
+                      "id": "550e8400-e29b-41d4-a716-446655440000",
+                      "username": "admin_user",
+                      "full_name": "Admin Utama",
+                      "institusi": "Universitas Indonesia"
+                    },
+                    "status": "sudah_direview",
+                    "jumlah_sentence": 1,
+                    "institusi": "Universitas Gadjah Mada"
                   }
                 ]
               }
             }
           },
-          "401": { "description": "Authentication required - User belum login" }
+          "401": {
+            "description": "Authentication required - User belum login"
+          }
         },
-        "tags": ["📋 User Documents"]
+        "tags": [
+          "📋 User Documents"
+        ]
       },
       "parameters": []
     },
-    "/users/password-reset/": {
+    "/users/password-reset/request/": {
       "post": {
-        "operationId": "users_password-reset_create",
-        "summary": "Reset Password",
-        "description": "\nReset password user menggunakan backup key yang diperoleh saat registrasi.\n\n**Requirements:**\n- User harus sudah login (authenticated)\n- Backup key harus valid dan sesuai dengan user\n- Password baru minimal 6 karakter\n",
+        "operationId": "users_password-reset_request_create",
+        "summary": "Request Password Reset OTP",
+        "description": "\nMeminta kode OTP untuk reset password yang akan dikirim via email.\n\n**Flow Baru:**\n1. User memasukkan email\n2. Sistem generate OTP 6 digit\n3. OTP dikirim via email (expire 15 menit)\n4. User gunakan OTP + password baru untuk reset\n\n**Security Features:**\n- Rate limiting: maksimal 5 request per jam\n- OTP expire dalam 15 menit\n- Maksimal 3 attempt verification per OTP\n- Auto cleanup OTP yang sudah expire\n",
         "parameters": [
           {
             "name": "data",
             "in": "body",
             "required": true,
-            "schema": { "$ref": "#/definitions/UserPasswordReset" }
+            "schema": {
+              "required": [
+                "email"
+              ],
+              "type": "object",
+              "properties": {
+                "email": {
+                  "description": "Email user yang terdaftar",
+                  "type": "string",
+                  "format": "email"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OTP berhasil dikirim",
+            "examples": {
+              "application/json": {
+                "message": "Kode OTP telah dikirim ke email Anda",
+                "email": "user@example.com",
+                "expires_in_minutes": 15,
+                "email_status": "sent"
+              }
+            }
+          },
+          "400": {
+            "description": "Email tidak valid atau rate limit exceeded",
+            "examples": {
+              "application/json": {
+                "email": [
+                  "Email tidak terdaftar dalam sistem."
+                ],
+                "non_field_errors": [
+                  "Terlalu banyak permintaan reset password. Coba lagi dalam 1 jam."
+                ]
+              }
+            }
+          }
+        },
+        "tags": [
+          "🔐 Authentication"
+        ]
+      },
+      "parameters": []
+    },
+    "/users/password-reset/verify/": {
+      "post": {
+        "operationId": "users_password-reset_verify_create",
+        "summary": "Verify OTP and Reset Password",
+        "description": "\nVerifikasi kode OTP dan set password baru.\n\n**Requirements:**\n- Email harus terdaftar dan aktif\n- OTP harus valid dan belum expire\n- Password baru minimal 6 karakter\n\n**Features:**\n- OTP hanya bisa digunakan sekali\n- Maksimal 3 kali percobaan per OTP\n- Auto kirim email konfirmasi setelah berhasil\n- OTP otomatis dihapus setelah digunakan\n",
+        "parameters": [
+          {
+            "name": "data",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "required": [
+                "email",
+                "otp_code",
+                "new_password"
+              ],
+              "type": "object",
+              "properties": {
+                "email": {
+                  "description": "Email user",
+                  "type": "string",
+                  "format": "email"
+                },
+                "otp_code": {
+                  "description": "6 digit kode OTP",
+                  "type": "string"
+                },
+                "new_password": {
+                  "description": "Password baru minimal 6 karakter",
+                  "type": "string"
+                }
+              }
+            }
           }
         ],
         "responses": {
@@ -1990,19 +3112,30 @@
             "description": "Password berhasil direset",
             "examples": {
               "application/json": {
-                "message": "Password berhasil diatur ulang",
-                "username": "dodit"
+                "message": "Password berhasil direset",
+                "email": "user@example.com",
+                "username": "testuser",
+                "email_status": "sent"
               }
             }
           },
           "400": {
-            "description": "Kunci cadangan tidak valid atau input tidak valid"
-          },
-          "401": {
-            "description": "Tidak terautentikasi - Pengguna belum login"
+            "description": "OTP tidak valid atau input salah",
+            "examples": {
+              "application/json": {
+                "non_field_errors": [
+                  "OTP sudah kedaluwarsa. Silakan request OTP baru."
+                ],
+                "otp_code": [
+                  "Kode OTP harus berupa 6 digit angka."
+                ]
+              }
+            }
           }
         },
-        "tags": ["🔐 Authentication"]
+        "tags": [
+          "🔐 Authentication"
+        ]
       },
       "parameters": []
     },
@@ -2016,7 +3149,9 @@
             "name": "data",
             "in": "body",
             "required": true,
-            "schema": { "$ref": "#/definitions/UserRoleManagement" }
+            "schema": {
+              "$ref": "#/definitions/UserRoleManagement"
+            }
           }
         ],
         "responses": {
@@ -2027,7 +3162,10 @@
                 "message": "Role \"Annotators\" berhasil ditambahkan ke pengguna dodit.",
                 "user_id": "550e8400-e29b-41d4-a716-446655440000",
                 "username": "dodit",
-                "current_roles": ["Reviewers", "Annotators"]
+                "current_roles": [
+                  "Reviewers",
+                  "Annotators"
+                ]
               }
             }
           },
@@ -2035,7 +3173,9 @@
             "description": "Input tidak valid atau pelanggaran constraint",
             "examples": {
               "application/json": {
-                "user_id": ["Pengguna tidak ditemukan"],
+                "user_id": [
+                  "Pengguna tidak ditemukan"
+                ],
                 "role": [
                   "Role tidak valid. Role tersedia: Admin, Annotators, Reviewers, Researcher, Kepala Riset"
                 ],
@@ -2049,11 +3189,15 @@
           "404": {
             "description": "Pengguna tidak ditemukan",
             "examples": {
-              "application/json": { "error": "Pengguna tidak ditemukan" }
+              "application/json": {
+                "error": "Pengguna tidak ditemukan"
+              }
             }
           }
         },
-        "tags": ["🔧 Role Management"]
+        "tags": [
+          "🔧 Role Management"
+        ]
       },
       "parameters": []
     },
@@ -2077,7 +3221,9 @@
           "404": {
             "description": "Pengguna tidak ditemukan",
             "examples": {
-              "application/json": { "error": "Pengguna tidak ditemukan" }
+              "application/json": {
+                "error": "Pengguna tidak ditemukan"
+              }
             }
           },
           "400": {
@@ -2089,10 +3235,17 @@
             }
           }
         },
-        "tags": ["👥 User Management"]
+        "tags": [
+          "👥 User Management"
+        ]
       },
       "parameters": [
-        { "name": "id", "in": "path", "required": true, "type": "string" }
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
       ]
     },
     "/users/{id}/update/": {
@@ -2105,7 +3258,9 @@
             "name": "data",
             "in": "body",
             "required": true,
-            "schema": { "$ref": "#/definitions/UserUpdate" }
+            "schema": {
+              "$ref": "#/definitions/UserUpdate"
+            }
           }
         ],
         "responses": {
@@ -2119,7 +3274,9 @@
                   "username": "dodit_updated",
                   "email": "dodit_new@example.com",
                   "full_name": "Dodit Sukma Maulana Updated",
-                  "roles": ["Admin"],
+                  "roles": [
+                    "Admin"
+                  ],
                   "date_joined": "2024-01-01T00:00:00Z"
                 }
               }
@@ -2129,20 +3286,30 @@
             "description": "Data input tidak valid",
             "examples": {
               "application/json": {
-                "username": ["Username sudah digunakan"],
-                "email": ["Email sudah terdaftar"],
-                "full_name": ["Nama lengkap harus diisi."]
+                "username": [
+                  "Username sudah digunakan"
+                ],
+                "email": [
+                  "Email sudah terdaftar"
+                ],
+                "full_name": [
+                  "Nama lengkap harus diisi."
+                ]
               }
             }
           },
           "404": {
             "description": "Pengguna tidak ditemukan",
             "examples": {
-              "application/json": { "error": "Pengguna tidak ditemukan" }
+              "application/json": {
+                "error": "Pengguna tidak ditemukan"
+              }
             }
           }
         },
-        "tags": ["👥 User Management"]
+        "tags": [
+          "👥 User Management"
+        ]
       },
       "patch": {
         "operationId": "users_update_partial_update",
@@ -2153,15 +3320,25 @@
             "name": "data",
             "in": "body",
             "required": true,
-            "schema": { "$ref": "#/definitions/UserUpdate" }
+            "schema": {
+              "$ref": "#/definitions/UserUpdate"
+            }
           }
         ],
         "responses": {
-          "200": { "description": "Pengguna berhasil diperbarui" },
-          "400": { "description": "Data input tidak valid" },
-          "404": { "description": "Pengguna tidak ditemukan" }
+          "200": {
+            "description": "Pengguna berhasil diperbarui"
+          },
+          "400": {
+            "description": "Data input tidak valid"
+          },
+          "404": {
+            "description": "Pengguna tidak ditemukan"
+          }
         },
-        "tags": ["👥 User Management"]
+        "tags": [
+          "👥 User Management"
+        ]
       },
       "parameters": [
         {
@@ -2210,7 +3387,10 @@
                     "text": "Ini adalah teks dokumen untuk diannotasi...",
                     "created_at": "2024-01-01T10:00:00Z",
                     "updated_at": "2024-01-01T10:00:00Z",
-                    "assigned_to": ["uuid-user1", "uuid-user2"]
+                    "assigned_to": [
+                      "uuid-user1",
+                      "uuid-user2"
+                    ]
                   }
                 ]
               }
@@ -2219,17 +3399,26 @@
           "404": {
             "description": "User tidak ditemukan",
             "examples": {
-              "application/json": { "error": "User tidak ditemukan" }
+              "application/json": {
+                "error": "User tidak ditemukan"
+              }
             }
           },
           "403": {
             "description": "Hanya Admin atau Kepala Riset yang dapat mengakses"
           }
         },
-        "tags": ["📋 User Documents"]
+        "tags": [
+          "📋 User Documents"
+        ]
       },
       "parameters": [
-        { "name": "user_id", "in": "path", "required": true, "type": "string" }
+        {
+          "name": "user_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
       ]
     },
     "/users/{user_id}/roles/": {
@@ -2254,32 +3443,207 @@
                 "user_id": "550e8400-e29b-41d4-a716-446655440000",
                 "username": "dodit",
                 "full_name": "Dodit Sukma Maulana",
-                "roles": ["Reviewers", "Annotators"]
+                "roles": [
+                  "Reviewers",
+                  "Annotators"
+                ]
               }
             }
           },
-          "404": { "description": "Pengguna tidak ditemukan" }
+          "404": {
+            "description": "Pengguna tidak ditemukan"
+          }
         },
-        "tags": ["🔧 Role Management"]
+        "tags": [
+          "🔧 Role Management"
+        ]
       },
       "parameters": [
-        { "name": "user_id", "in": "path", "required": true, "type": "string" }
+        {
+          "name": "user_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
       ]
     }
   },
   "definitions": {
-    "Project": {
-      "required": ["name"],
+    "ErrorType": {
+      "required": [
+        "error_code",
+        "description"
+      ],
       "type": "object",
       "properties": {
-        "id": { "title": "ID", "type": "integer", "readOnly": true },
+        "id": {
+          "title": "ID",
+          "type": "integer",
+          "readOnly": true
+        },
+        "error_code": {
+          "title": "Error code",
+          "type": "string",
+          "maxLength": 255,
+          "minLength": 1
+        },
+        "description": {
+          "title": "Description",
+          "type": "string",
+          "minLength": 1
+        },
+        "project": {
+          "title": "Project",
+          "description": "Jika null, error type ini berlaku untuk semua project (default)",
+          "type": "integer",
+          "x-nullable": true
+        },
+        "project_name": {
+          "title": "Project name",
+          "type": "string",
+          "readOnly": true,
+          "minLength": 1
+        },
+        "is_default": {
+          "title": "Is default",
+          "description": "Error type default yang akan tersedia di semua project baru",
+          "type": "boolean"
+        },
+        "created_by": {
+          "title": "Created by",
+          "description": "User yang membuat error type ini",
+          "type": "string",
+          "format": "uuid",
+          "readOnly": true,
+          "x-nullable": true
+        },
+        "created_by_username": {
+          "title": "Created by username",
+          "type": "string",
+          "readOnly": true,
+          "minLength": 1
+        },
+        "created_at": {
+          "title": "Created at",
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "updated_at": {
+          "title": "Updated at",
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      }
+    },
+    "Review": {
+      "required": [
+        "start_index",
+        "end_index",
+        "correction",
+        "document",
+        "annotation",
+        "sentence",
+        "error_type"
+      ],
+      "type": "object",
+      "properties": {
+        "id": {
+          "title": "ID",
+          "type": "integer",
+          "readOnly": true
+        },
+        "error_type_details": {
+          "$ref": "#/definitions/ErrorType"
+        },
+        "start_index": {
+          "title": "Start index",
+          "type": "integer",
+          "maximum": 9.223372036854776e+18,
+          "minimum": 0
+        },
+        "end_index": {
+          "title": "End index",
+          "type": "integer",
+          "maximum": 9.223372036854776e+18,
+          "minimum": 0
+        },
+        "correction": {
+          "title": "Correction",
+          "type": "string",
+          "minLength": 1
+        },
+        "is_required": {
+          "title": "Is required",
+          "type": "boolean"
+        },
+        "comments": {
+          "title": "Comments",
+          "type": "string",
+          "minLength": 1,
+          "x-nullable": true
+        },
+        "is_submitted": {
+          "title": "Is submitted",
+          "type": "boolean"
+        },
+        "created_at": {
+          "title": "Created at",
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "title": "Updated at",
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "reviewer": {
+          "title": "Reviewer",
+          "type": "string",
+          "format": "uuid",
+          "readOnly": true
+        },
+        "document": {
+          "title": "Document",
+          "type": "integer"
+        },
+        "annotation": {
+          "title": "Annotation",
+          "type": "integer"
+        },
+        "sentence": {
+          "title": "Sentence",
+          "type": "integer"
+        },
+        "error_type": {
+          "title": "Error type",
+          "type": "integer"
+        }
+      }
+    },
+    "Project": {
+      "required": [
+        "name"
+      ],
+      "type": "object",
+      "properties": {
+        "id": {
+          "title": "ID",
+          "type": "integer",
+          "readOnly": true
+        },
         "name": {
           "title": "Name",
           "type": "string",
           "maxLength": 255,
           "minLength": 1
         },
-        "description": { "title": "Description", "type": "string" },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
         "created_at": {
           "title": "Created at",
           "type": "string",
@@ -2294,47 +3658,54 @@
         },
         "documents": {
           "type": "array",
-          "items": { "type": "integer" },
+          "items": {
+            "type": "integer"
+          },
           "uniqueItems": true
         },
         "assigned_admins": {
           "type": "array",
-          "items": { "type": "string", "format": "uuid" },
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
           "uniqueItems": true
         }
       }
     },
-    "UserPasswordReset": {
-      "required": ["new_password", "backup_key"],
+    "UserRoleManagement": {
+      "required": [
+        "user_id",
+        "role",
+        "action"
+      ],
       "type": "object",
       "properties": {
-        "new_password": {
-          "title": "New password",
+        "user_id": {
+          "title": "User id",
           "type": "string",
-          "minLength": 6
+          "format": "uuid"
         },
-        "backup_key": {
-          "title": "Backup key",
+        "role": {
+          "title": "Role",
           "type": "string",
           "minLength": 1
-        }
-      }
-    },
-    "UserRoleManagement": {
-      "required": ["user_id", "role", "action"],
-      "type": "object",
-      "properties": {
-        "user_id": { "title": "User id", "type": "string", "format": "uuid" },
-        "role": { "title": "Role", "type": "string", "minLength": 1 },
+        },
         "action": {
           "title": "Action",
           "type": "string",
-          "enum": ["add", "remove"]
+          "enum": [
+            "add",
+            "remove"
+          ]
         }
       }
     },
     "UserUpdate": {
-      "required": ["username", "full_name"],
+      "required": [
+        "username",
+        "full_name"
+      ],
       "type": "object",
       "properties": {
         "username": {

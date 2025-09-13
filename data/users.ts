@@ -11,6 +11,7 @@ import type {
   AvailableRolesResponse,
   UserRolesResponse,
   ErrorResponse,
+  DocumentResponse,
 } from "~/types/api";
 
 const BASE = "/users";
@@ -50,10 +51,110 @@ export function useUsersApi() {
   const getUsersInProject = (projectId: number) =>
     fetcher<UserResponse[]>(`/projects/${projectId}/assigned-users/`);
 
+  // New endpoints from API docs
+  const getMyAssignedDocuments = (page?: number) => {
+    let url = `${BASE}/me/assigned-documents/`;
+    if (page) {
+      url += `?page=${page}`;
+    }
+    return fetcher<{
+      count: number;
+      next: string | null;
+      previous: string | null;
+      results: DocumentResponse[];
+    }>(url);
+  };
+
+  const getUserAssignedDocuments = (userId: string, page?: number) => {
+    let url = `${BASE}/${userId}/assigned-documents/`;
+    if (page) {
+      url += `?page=${page}`;
+    }
+    return fetcher<{
+      count: number;
+      next: string | null;
+      previous: string | null;
+      results: DocumentResponse[];
+    }>(url);
+  };
+
+  const adminPasswordReset = (data: {
+    user_id: string;
+    send_email?: boolean;
+  }) =>
+    fetcher<{
+      message: string;
+      user_id: string;
+      username: string;
+      new_password: string;
+      email_status: string;
+      email_message: string;
+    }>(`${BASE}/admin-password-reset/`, { method: "POST", body: data });
+
+  const requestPasswordReset = (data: { email: string }) =>
+    fetcher(`${BASE}/password-reset/request/`, { method: "POST", body: data });
+
+  const verifyPasswordReset = (data: {
+    email: string;
+    otp_code: string;
+    new_password: string;
+  }) =>
+    fetcher(`${BASE}/password-reset/verify/`, { method: "POST", body: data });
+
+  const getAllUsers = async (): Promise<UserResponse[]> => {
+    const allUsers: UserResponse[] = [];
+    let page = 1;
+    let hasMore = true;
+
+    while (hasMore) {
+      try {
+        const response = await getUsers(page);
+        if (response.results && response.results.length > 0) {
+          allUsers.push(...response.results);
+          hasMore = !!response.next;
+          page++;
+        } else {
+          hasMore = false;
+        }
+      } catch (error) {
+        console.error(`Error fetching users page ${page}:`, error);
+        hasMore = false;
+      }
+    }
+
+    return allUsers;
+  };
+
+  const getAllDeletedUsers = async (): Promise<UserResponse[]> => {
+    const allUsers: UserResponse[] = [];
+    let page = 1;
+    let hasMore = true;
+
+    while (hasMore) {
+      try {
+        const response = await getDeletedUsers(page);
+        if (response.results && response.results.length > 0) {
+          allUsers.push(...response.results);
+          hasMore = !!response.next;
+          page++;
+        } else {
+          hasMore = false;
+        }
+      } catch (error) {
+        console.error(`Error fetching deleted users page ${page}:`, error);
+        hasMore = false;
+      }
+    }
+
+    return allUsers;
+  };
+
   return {
     getUsers,
+    getAllUsers,
     getUsersInProject,
     getDeletedUsers,
+    getAllDeletedUsers,
     getCurrentUser,
     createUser,
     updateUser,
@@ -64,5 +165,10 @@ export function useUsersApi() {
     manageUserRole,
     resetPassword,
     generateBackupKey,
+    getMyAssignedDocuments,
+    getUserAssignedDocuments,
+    adminPasswordReset,
+    requestPasswordReset,
+    verifyPasswordReset,
   };
 }
