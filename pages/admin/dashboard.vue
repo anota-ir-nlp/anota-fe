@@ -7,32 +7,25 @@
         <p class="text-gray-600">
           Monitor performance metrics, inter-annotator agreement, dan statistik sistem
         </p>
+        <div v-if="selectedProject" class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <p class="text-sm text-blue-800">
+            <strong>Project terpilih:</strong> {{ selectedProject.name }}
+          </p>
+          <p class="text-xs text-blue-600 mt-1">
+            Data yang ditampilkan hanya untuk project ini
+          </p>
+        </div>
+        <div v-else class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+          <p class="text-sm text-gray-600">
+            Menampilkan data dari semua project
+          </p>
+        </div>
       </div>
 
       <!-- Filters -->
       <Card class="mb-8 p-6">
         <h2 class="text-lg font-semibold text-gray-900 mb-4">Filter Data</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              Project
-            </label>
-            <Select v-model="selectedProject">
-              <SelectTrigger>
-                <SelectValue placeholder="Pilih project..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Semua Project</SelectItem>
-                <SelectItem 
-                  v-for="project in projects" 
-                  :key="project.id" 
-                  :value="project.id.toString()"
-                >
-                  {{ project.name }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <div class="grid grid-cols-1 gap-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">
               Document
@@ -56,7 +49,7 @@
         </div>
         <div class="mt-4">
           <Button @click="loadDashboardData" :loading="loading">
-            Update Data
+            Refresh Data
           </Button>
         </div>
       </Card>
@@ -389,7 +382,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { Card } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
@@ -398,6 +391,7 @@ import { useDashboardApi } from "~/data/dashboard";
 import { useProjectsApi } from "~/data/projects";
 import { useDocumentsApi } from "~/data/documents";
 import { useUsersApi } from "~/data/users";
+import { useProjectContext } from "~/composables/project-context";
 import { toast } from "vue-sonner";
 import type {
   DashboardSummaryResponse,
@@ -412,6 +406,7 @@ const { getDashboardSummary, getAnnotatorPerformance, getReviewerPerformance, ge
 const { getProjects } = useProjectsApi();
 const { getDocuments } = useDocumentsApi();
 const { getAllUsers } = useUsersApi();
+const { selectedProject, selectedProjectId } = useProjectContext();
 
 // State
 const loading = ref(false);
@@ -419,7 +414,6 @@ const loadingAnnotator = ref(false);
 const loadingReviewer = ref(false);
 const loadingIAA = ref(false);
 
-const selectedProject = ref<string>("all");
 const selectedDocument = ref<string>("all");
 const selectedAnnotator = ref<string>("");
 const selectedReviewer = ref<string>("");
@@ -444,8 +438,8 @@ async function loadDashboardData() {
   loading.value = true;
   try {
     const params: any = {};
-    if (selectedProject.value !== "all") {
-      params.project_id = parseInt(selectedProject.value);
+    if (selectedProjectId.value) {
+      params.project_id = selectedProjectId.value;
     }
     if (selectedDocument.value !== "all") {
       params.document_id = parseInt(selectedDocument.value);
@@ -466,8 +460,8 @@ async function loadAnnotatorPerformance() {
   loadingAnnotator.value = true;
   try {
     const params: any = { user_id: selectedAnnotator.value };
-    if (selectedProject.value !== "all") {
-      params.project_id = parseInt(selectedProject.value);
+    if (selectedProjectId.value) {
+      params.project_id = selectedProjectId.value;
     }
     if (selectedDocument.value !== "all") {
       params.document_id = parseInt(selectedDocument.value);
@@ -488,8 +482,8 @@ async function loadReviewerPerformance() {
   loadingReviewer.value = true;
   try {
     const params: any = { user_id: selectedReviewer.value };
-    if (selectedProject.value !== "all") {
-      params.project_id = parseInt(selectedProject.value);
+    if (selectedProjectId.value) {
+      params.project_id = selectedProjectId.value;
     }
     if (selectedDocument.value !== "all") {
       params.document_id = parseInt(selectedDocument.value);
@@ -513,8 +507,8 @@ async function loadIAA() {
       annotator_id: iaaAnnotator.value,
       reviewer_id: iaaReviewer.value
     };
-    if (selectedProject.value !== "all") {
-      params.project_id = parseInt(selectedProject.value);
+    if (selectedProjectId.value) {
+      params.project_id = selectedProjectId.value;
     }
     if (selectedDocument.value !== "all") {
       params.document_id = parseInt(selectedDocument.value);
@@ -550,6 +544,11 @@ async function loadInitialData() {
 
 onMounted(() => {
   loadInitialData();
+});
+
+// Watch for project context changes
+watch(selectedProjectId, async () => {
+  await loadDashboardData();
 });
 
 // Define layout

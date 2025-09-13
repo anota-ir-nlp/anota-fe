@@ -4,7 +4,7 @@
     "title": "Anota API - Annotation Management System",
     "version": "v1"
   },
-  "host": "localhost:8000",
+  "host": "anota-dev.cs.ui.ac.id",
   "schemes": [
     "http"
   ],
@@ -34,15 +34,7 @@
         "operationId": "annotations_list",
         "summary": "List My Annotations",
         "description": "\nMendapatkan daftar semua annotations yang dibuat oleh annotator yang sedang login.\n\n**Features:**\n- Pagination dengan default 20 items per page\n- Hanya menampilkan annotations milik user yang sedang login\n- Termasuk informasi error type, sentence, dan document\n\n**User Access:**\n- Hanya user dengan role 'Annotator' yang dapat mengakses\n",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "description": "A page number within the paginated result set.",
-            "required": false,
-            "type": "integer"
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Daftar annotations berhasil ditemukan",
@@ -251,6 +243,13 @@
             "name": "page",
             "in": "query",
             "description": "A page number within the paginated result set.",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "Number of results to return per page.",
             "required": false,
             "type": "integer"
           }
@@ -500,6 +499,13 @@
             "name": "page",
             "in": "query",
             "description": "A page number within the paginated result set.",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "Number of results to return per page.",
             "required": false,
             "type": "integer"
           },
@@ -842,15 +848,7 @@
         "operationId": "annotations_reviews_list",
         "summary": "List My Reviews",
         "description": "\nMendapatkan daftar semua reviews yang dibuat oleh reviewer yang sedang login.\n\n**Review System:**\n- Review adalah evaluasi terhadap annotation yang dibuat oleh annotator\n- Reviewer dapat setuju atau tidak setuju dengan annotation\n- Review membantu dalam proses quality assurance\n\n**User Access:**\n- Hanya user dengan role 'Reviewer' yang dapat mengakses\n",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "description": "A page number within the paginated result set.",
-            "required": false,
-            "type": "integer"
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Daftar reviews berhasil ditemukan",
@@ -894,7 +892,7 @@
       "post": {
         "operationId": "annotations_reviews_create",
         "summary": "Create New Review",
-        "description": "\nMembuat review baru untuk mengevaluasi annotation yang dibuat oleh annotator.\n\n**Input Requirements:**\n- annotation: ID annotation yang akan di-review\n- document: ID dokumen (harus sama dengan annotation.document)\n- sentence: ID sentence (harus sama dengan annotation.sentence)\n- start_index: Posisi awal (dapat sama atau berbeda dengan annotation)\n- end_index: Posisi akhir (dapat sama atau berbeda dengan annotation)\n- error_type: ID tipe error (dapat sama atau berbeda dengan annotation)\n- correction: Teks koreksi hasil review\n- is_required: Boolean apakah koreksi ini wajib atau opsional\n- comments: Komentar reviewer terhadap annotation\n\n**Review Flow:**\n1. Reviewer menganalisis annotation yang dibuat annotator\n2. Reviewer dapat setuju atau memberikan koreksi alternatif\n3. Review membantu dalam consensus building dan quality control\n\n**Business Rules:**\n- Reviewer hanya dapat membuat review pada dokumen yang di-assign kepadanya\n- Annotation yang di-review harus valid dan ada\n- Document dan sentence harus konsisten dengan annotation\n",
+        "description": "\nMembuat review baru untuk mengevaluasi annotation yang dibuat oleh annotator, atau membuat \"new issue\" tanpa referensi annotation.\n\n**Input Requirements:**\n- annotation: ID annotation yang akan di-review (opsional untuk mode new_issue)\n- document: ID dokumen (harus sama dengan annotation.document)\n- sentence: ID sentence (harus sama dengan annotation.sentence)\n- start_index: Posisi awal (dapat sama atau berbeda dengan annotation)\n- end_index: Posisi akhir (dapat sama atau berbeda dengan annotation)\n- error_type: ID tipe error (dapat sama atau berbeda dengan annotation)\n- correction: Teks koreksi hasil review\n- is_required: Boolean apakah koreksi ini wajib atau opsional\n- comments: Komentar reviewer terhadap annotation\n\n**Review Flow:**\n1. Reviewer menganalisis annotation yang dibuat annotator\n2. Reviewer dapat setuju atau memberikan koreksi alternatif\n3. Review membantu dalam consensus building dan quality control\n\n**Business Rules:**\n- Reviewer hanya dapat membuat review pada dokumen yang di-assign kepadanya\n- Jika mereview annotation: annotation harus valid, cocok dengan document/sentence, dan sudah disubmit\n- Jika new_issue (tanpa annotation): dokumen harus sudah disubmit oleh annotator, sentence harus milik dokumen\n- Document dan sentence harus konsisten dengan annotation\n",
         "parameters": [
           {
             "name": "data",
@@ -902,7 +900,6 @@
             "required": true,
             "schema": {
               "required": [
-                "annotation",
                 "document",
                 "sentence",
                 "start_index",
@@ -1431,7 +1428,7 @@
       "post": {
         "operationId": "assignments_create",
         "summary": "Assign Document to User",
-        "description": "\nAssign dokumen kepada user tertentu untuk proses anotasi atau review.\n\n**Constraints:**\n- Hanya user dengan role Annotators atau Reviewers yang dapat di-assign\n- Satu dokumen dapat di-assign ke multiple users\n- Hanya admin yang dapat melakukan assignment\n",
+        "description": "\nAssign dokumen kepada user tertentu untuk proses anotasi atau review.\n\n**Constraints:**\n- Hanya user dengan role Annotators atau Reviewers yang dapat di-assign\n- Satu dokumen dapat di-assign ke multiple users (Annotator bisa lebih dari satu; Reviewer maksimal 1 aktif per dokumen)\n- Hanya admin yang dapat melakukan assignment\n",
         "parameters": [
           {
             "name": "data",
@@ -1728,11 +1725,7 @@
                     "text": "Ini adalah teks dokumen...",
                     "created_at": "2024-01-01T00:00:00Z",
                     "updated_at": "2024-01-01T00:00:00Z",
-                    "assigned_to": [
-                      1,
-                      2,
-                      3
-                    ]
+                    "assigned_to": [1, 2, 3]
                   }
                 ]
               }
@@ -1749,7 +1742,7 @@
       "post": {
         "operationId": "documents_create",
         "summary": "Create New Document",
-        "description": "\nMembuat dokumen baru dan secara otomatis split text menjadi sentences.\n\n**Auto-Processing:**\n- Text akan dipecah menjadi sentences menggunakan NLTK\n- Setiap sentence akan disimpan sebagai object terpisah\n- Mendukung fallback parsing jika NLTK tidak tersedia\n- assigned_by otomatis di-set ke user yang membuat dokumen\n",
+        "description": "\nMembuat dokumen baru dan secara otomatis split text menjadi sentences.\n\n**Auto-Processing:**\n- Text akan dipecah menjadi sentences menggunakan NLTK\n- Setiap sentence akan disimpan sebagai object terpisah\n- Mendukung fallback parsing jika NLTK tidak tersedia\n- assigned_by otomatis di-set ke user yang membuat dokumen\n\n**Project Scope:**\n- Dokumen sekarang harus dimiliki tepat satu project (one-project-per-document)\n- Sertakan field `project` (ID project) saat membuat dokumen\n",
         "parameters": [
           {
             "name": "data",
@@ -1758,7 +1751,8 @@
             "schema": {
               "required": [
                 "title",
-                "text"
+                "text",
+                "project"
               ],
               "type": "object",
               "properties": {
@@ -1769,6 +1763,10 @@
                 "text": {
                   "description": "Teks dokumen yang akan di-split menjadi sentences",
                   "type": "string"
+                },
+                "project": {
+                  "description": "ID project pemilik dokumen",
+                  "type": "integer"
                 }
               }
             }
@@ -1815,7 +1813,7 @@
       "post": {
         "operationId": "documents_assignment_create",
         "summary": "Assign Document to User",
-        "description": "\nAssign dokumen kepada user tertentu untuk proses anotasi atau review.\n\n**Constraints:**\n- Hanya user dengan role Annotators atau Reviewers yang dapat di-assign\n- Satu dokumen dapat di-assign ke multiple users\n- Hanya admin yang dapat melakukan assignment\n",
+        "description": "\nAssign dokumen kepada user tertentu untuk proses anotasi atau review.\n\n**Constraints:**\n- Hanya user dengan role Annotators atau Reviewers yang dapat di-assign\n- Satu dokumen dapat di-assign ke multiple users (Annotator bisa lebih dari satu; Reviewer maksimal 1 aktif per dokumen)\n- Hanya admin yang dapat melakukan assignment\n",
         "parameters": [
           {
             "name": "data",
@@ -2004,6 +2002,65 @@
         }
       ]
     },
+    "/documents/my-assigned/{id}/review-queue/": {
+      "get": {
+        "operationId": "documents_my-assigned_review-queue_list",
+        "summary": "Review Queue (Reviewer)",
+        "description": "\nMengembalikan daftar kalimat dalam dokumen yang memiliki annotation yang sudah disubmit oleh annotator lain\ndan perlu direview oleh reviewer yang sedang login.\n\n- Hanya dapat diakses oleh user dengan role 'Reviewer'\n- User harus memiliki assignment aktif pada dokumen tersebut\n- Setiap item berisi informasi apakah reviewer sudah memberikan review untuk kalimat itu\n",
+        "parameters": [
+          {
+            "name": "include_unannotated",
+            "in": "query",
+            "description": "Jika true, sertakan juga kalimat tanpa anotasi submitted (untuk mode new_issue).",
+            "type": "boolean"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar kalimat untuk direview",
+            "examples": {
+              "application/json": {
+                "document_id": 1,
+                "total_sentences": 10,
+                "submitted_sentences": 4,
+                "reviewed_sentences": 1,
+                "pending_sentences": 3,
+                "next_sentence_id": 123,
+                "sentences": [
+                  {
+                    "sentence_id": 123,
+                    "text": "Kalimat dengan annotation yang sudah disubmit.",
+                    "has_submitted_annotations": true,
+                    "my_review_exists": false,
+                    "annotation_ids": [11, 12]
+                  }
+                ]
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Hanya reviewer yang dapat mengakses"
+          },
+          "404": {
+            "description": "Dokumen atau assignment tidak ditemukan"
+          }
+        },
+        "tags": [
+          "📋 Reviews"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ]
+    },
     "/documents/preview/": {
       "post": {
         "operationId": "documents_preview_create",
@@ -2078,10 +2135,7 @@
                 "text": "Ini adalah teks dokumen. Ini adalah kalimat kedua.",
                 "created_at": "2024-01-01T00:00:00Z",
                 "updated_at": "2024-01-01T00:00:00Z",
-                "assigned_to": [
-                  1,
-                  2
-                ],
+                "assigned_to": [1, 2],
                 "sentences": [
                   {
                     "id": 1,
@@ -2247,6 +2301,13 @@
             "name": "page",
             "in": "query",
             "description": "A page number within the paginated result set.",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "Number of results to return per page.",
             "required": false,
             "type": "integer"
           }
@@ -2627,6 +2688,13 @@
             "description": "A page number within the paginated result set.",
             "required": false,
             "type": "integer"
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "Number of results to return per page.",
+            "required": false,
+            "type": "integer"
           }
         ],
         "responses": {
@@ -2855,6 +2923,13 @@
             "description": "A page number within the paginated result set.",
             "required": false,
             "type": "integer"
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "Number of results to return per page.",
+            "required": false,
+            "type": "integer"
           }
         ],
         "responses": {
@@ -2940,6 +3015,13 @@
             "name": "page",
             "in": "query",
             "description": "A page number within the paginated result set.",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "Number of results to return per page.",
             "required": false,
             "type": "integer"
           }
@@ -3365,6 +3447,13 @@
             "type": "integer"
           },
           {
+            "name": "page_size",
+            "in": "query",
+            "description": "Number of results to return per page.",
+            "required": false,
+            "type": "integer"
+          },
+          {
             "name": "user_id",
             "in": "path",
             "description": "UUID user yang ingin dilihat assigned documents-nya",
@@ -3543,7 +3632,6 @@
         "end_index",
         "correction",
         "document",
-        "annotation",
         "sentence",
         "error_type"
       ],
@@ -3560,13 +3648,13 @@
         "start_index": {
           "title": "Start index",
           "type": "integer",
-          "maximum": 9.223372036854776e+18,
+          "maximum": 2147483647,
           "minimum": 0
         },
         "end_index": {
           "title": "End index",
           "type": "integer",
-          "maximum": 9.223372036854776e+18,
+          "maximum": 2147483647,
           "minimum": 0
         },
         "correction": {
@@ -3611,7 +3699,8 @@
         },
         "annotation": {
           "title": "Annotation",
-          "type": "integer"
+          "type": "integer",
+          "x-nullable": true
         },
         "sentence": {
           "title": "Sentence",
@@ -3655,13 +3744,6 @@
           "type": "string",
           "format": "date-time",
           "readOnly": true
-        },
-        "documents": {
-          "type": "array",
-          "items": {
-            "type": "integer"
-          },
-          "uniqueItems": true
         },
         "assigned_admins": {
           "type": "array",

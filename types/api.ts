@@ -34,6 +34,7 @@ export interface UserResponse {
   username: string;
   email: string;
   full_name: string;
+  institution?: string;
   roles: string[];
   date_joined: string;
 }
@@ -67,6 +68,7 @@ export interface CreateUserResponse extends UserResponse {
 
 export interface UpdateUserRequest {
   name?: string;
+  institution?: string;
   roles?: string[];
   active_role?: string;
 }
@@ -157,10 +159,6 @@ export interface DocumentResponse {
   institusi: string;
   assignment_details: any; // type as needed
   multiple_assignments: boolean;
-}
-export interface CreateDocumentRequest {
-  title: string;
-  text: string;
 }
 export interface SentenceResponse {
   id: number;
@@ -293,12 +291,14 @@ export interface ReviewsListResponse {
 export interface DocumentRequest {
   title: string;
   text: string;
+  project: number;
 }
 
 export interface UserRegistrationRequest {
   username: string;
   email?: string;
   full_name?: string;
+  institution?: string;
 }
 
 export interface UserRegistrationResponse {

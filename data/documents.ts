@@ -33,19 +33,6 @@ export function useDocumentsApi() {
   const getDocumentsInProject = (projectId: number) =>
     fetcher<DocumentResponse[]>(`/projects/${projectId}/documents/`);
 
-  const assignDocumentsToProject = (projectId: number, documentIds: number[]) =>
-    fetcher(`/projects/${projectId}/`, {
-      method: "PATCH",
-      body: { documents: documentIds },
-    });
-
-  const removeDocumentsFromProject = (projectId: number, documentIds: number[]) =>
-    fetcher(`/projects/${projectId}/`, {
-      method: "PATCH",
-      body: { documents: documentIds },
-    });
-
-  // New endpoints from API docs
   const assignDocumentToUser = (data: {
     document_id: number;
     user_id: string;
@@ -91,8 +78,6 @@ export function useDocumentsApi() {
     updateDocument,
     deleteDocument,
     getDocumentsInProject,
-    assignDocumentsToProject,
-    removeDocumentsFromProject,
     assignDocumentToUser,
     unassignDocumentFromUser,
     getMyAssignedDocument,

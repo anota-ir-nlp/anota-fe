@@ -495,7 +495,7 @@ const handleLogout = async () => {
               <div class="flex items-center gap-2">
                 <div
                   v-if="
-                    (hasRole('Admin') || hasRole('Kepala Riset')) &&
+                    hasRole('Admin') &&
                     userProjects.length > 0
                   "
                   class="flex items-center"

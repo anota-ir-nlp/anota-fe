@@ -38,14 +38,43 @@
             </DialogHeader>
             <div class="flex-1 flex flex-col gap-4 py-4 overflow-hidden">
               <Input type="file" accept=".txt,.docx" @change="handleSingleFile" class="mb-2" />
-              <div v-if="singleFilePreview"
+              
+              <!-- Loading State -->
+              <div v-if="isLoadingPreview" class="flex-1 bg-gray-50 border border-gray-200 rounded p-4 text-sm flex flex-col items-center justify-center">
+                <Loader2 class="w-8 h-8 animate-spin text-blue-600 mb-2" />
+                <div class="text-gray-600">Memproses file dan menganalisis kalimat...</div>
+              </div>
+              
+              <div v-else-if="singleFilePreview"
                 class="flex-1 bg-gray-50 border border-gray-200 rounded p-4 text-sm flex flex-col overflow-hidden">
                 <div class="font-semibold text-blue-600 mb-3">Preview:</div>
                 <div class="flex-1 text-left space-y-3 flex flex-col overflow-hidden">
                   <div class="font-medium text-lg text-gray-900">{{ singleFilePreview.title }}</div>
+                  
+                  <!-- Sentence Count Info -->
+                  <div v-if="singleFilePreview.sentence_count !== undefined" class="bg-blue-50 border border-blue-200 rounded p-3">
+                    <div class="text-blue-800 font-medium">Informasi Kalimat</div>
+                    <div class="text-blue-700 text-sm">Jumlah kalimat: {{ singleFilePreview.sentence_count }}</div>
+                  </div>
+                  
+                  <!-- Text Content -->
                   <div class="flex-1 text-gray-700 p-4 bg-white border border-gray-200 rounded overflow-y-auto whitespace-pre-wrap">
                     {{ singleFilePreview.text }}
                   </div>
+                  
+                  <!-- Sentences Preview -->
+                  <div v-if="singleFilePreview.sentences && singleFilePreview.sentences.length > 0" class="bg-green-50 border border-green-200 rounded p-3">
+                    <div class="text-green-800 font-medium mb-2">Preview Kalimat</div>
+                    <div class="max-h-32 overflow-y-auto space-y-1">
+                      <div v-for="(sentence, index) in singleFilePreview.sentences.slice(0, 5)" :key="index" class="text-green-700 text-xs p-2 bg-white rounded border">
+                        <span class="font-medium">{{ index + 1 }}:</span> {{ sentence }}
+                      </div>
+                      <div v-if="singleFilePreview.sentences.length > 5" class="text-green-600 text-xs text-center py-1">
+                        ... dan {{ singleFilePreview.sentences.length - 5 }} kalimat lainnya
+                      </div>
+                    </div>
+                  </div>
+                  
                   <div class="flex gap-2 mt-4 pt-4 border-t border-gray-200">
                     <Button @click="confirmFile('single')" variant="default" size="sm" class="flex items-center gap-2">
                       <Plus class="w-4 h-4" />
@@ -92,7 +121,13 @@
             <div class="flex-1 flex flex-col gap-4 py-4 overflow-hidden">
               <Input type="file" webkitdirectory multiple accept=".txt,.docx" @change="handleBulkFiles" class="mb-2" />
 
-              <div v-if="bulkFilesPreview.length" class="flex-1 flex flex-col gap-4 overflow-hidden">
+              <!-- Loading State -->
+              <div v-if="isLoadingBulkPreview" class="flex-1 bg-gray-50 border border-gray-200 rounded p-6 flex flex-col items-center justify-center">
+                <Loader2 class="w-8 h-8 animate-spin text-blue-600 mb-2" />
+                <div class="text-gray-600">Memproses file dan menganalisis kalimat...</div>
+              </div>
+
+              <div v-else-if="bulkFilesPreview.length" class="flex-1 flex flex-col gap-4 overflow-hidden">
                 <div class="flex items-center justify-between">
                   <div class="font-semibold">
                     <template v-if="currentBulkFile">
@@ -113,10 +148,31 @@
                 <div v-if="currentBulkFile" class="flex-1 bg-gray-50 border border-gray-200 rounded p-6 flex flex-col overflow-hidden">
                   <div class="space-y-4 flex-1 flex flex-col overflow-hidden">
                     <div class="font-medium text-blue-600 text-lg">{{ currentBulkFile.title }}</div>
+                    
+                    <!-- Sentence Count Info -->
+                    <div v-if="currentBulkFile.sentence_count !== undefined" class="bg-blue-50 border border-blue-200 rounded p-3">
+                      <div class="text-blue-800 font-medium">Informasi Kalimat</div>
+                      <div class="text-blue-700 text-sm">Jumlah kalimat: {{ currentBulkFile.sentence_count }}</div>
+                    </div>
+                    
                     <div
                       class="flex-1 text-gray-700 p-4 bg-white border border-gray-200 rounded overflow-y-auto whitespace-pre-wrap text-sm">
                       {{ currentBulkFile.text }}
                     </div>
+                    
+                    <!-- Sentences Preview -->
+                    <div v-if="currentBulkFile.sentences && currentBulkFile.sentences.length > 0" class="bg-green-50 border border-green-200 rounded p-3">
+                      <div class="text-green-800 font-medium mb-2">Preview Kalimat</div>
+                      <div class="max-h-24 overflow-y-auto space-y-1">
+                        <div v-for="(sentence, index) in currentBulkFile.sentences.slice(0, 3)" :key="index" class="text-green-700 text-xs p-2 bg-white rounded border">
+                          <span class="font-medium">{{ index + 1 }}:</span> {{ sentence }}
+                        </div>
+                        <div v-if="currentBulkFile.sentences.length > 3" class="text-green-600 text-xs text-center py-1">
+                          ... dan {{ currentBulkFile.sentences.length - 3 }} kalimat lainnya
+                        </div>
+                      </div>
+                    </div>
+                    
                     <div class="flex gap-2 pt-4 border-t border-gray-200">
                       <Button @click="confirmFile('bulk')" variant="default" size="sm" class="flex items-center gap-2">
                         <Plus class="w-4 h-4" />
@@ -370,12 +426,19 @@ import { ref, onMounted, computed, watch } from "vue";
 import { useDocumentsApi } from "~/data/documents";
 import { useUsersApi } from "~/data/users";
 import { useAssignmentsApi } from "~/data/document-assignments";
-import { useProjectsApi } from "~/data/projects";
 import { useAnnotationsApi } from "~/data/annotations";
 import { useReviewsApi } from "~/data/reviews";
 import { useProjectContext } from "~/composables/project-context";
 import type { DocumentResponse, DocumentRequest, UserResponse } from "~/types/api";
 import { Input } from "~/components/ui/input";
+
+// Local interface for file parsing (without project)
+interface DocumentPreview {
+  title: string;
+  text: string;
+  sentence_count?: number;
+  sentences?: string[];
+}
 import { Textarea } from "~/components/ui/textarea";
 import { Button } from "~/components/ui/button";
 import {
@@ -410,7 +473,7 @@ import DataTable from "~/components/ui/data-table/data-table.vue";
 import { createColumns } from "~/components/documents/columns";
 import { parseFile, isValidFileType } from "~/utils/file-parser";
 
-const { getDocumentsInProject, createDocument: apiCreateDocument, deleteDocument: apiDeleteDocument, assignDocumentsToProject, exportDocument: exportDocumentApi } = useDocumentsApi();
+const { getDocumentsInProject, createDocument: apiCreateDocument, deleteDocument: apiDeleteDocument, exportDocument: exportDocumentApi, previewDocumentSentences } = useDocumentsApi();
 const { getAllUsers } = useUsersApi();
 const { assignDocument: apiAssignDocument, unassignDocument: apiUnassignDocument, bulkAssignDocument: apiBulkAssignDocument } = useAssignmentsApi();
 const { adminReopenAnnotator } = useAnnotationsApi();
@@ -428,12 +491,14 @@ const isCreateDialogOpen = ref(false);
 const isBulkDialogOpen = ref(false);
 const isUploading = ref(false);
 const uploadProgress = ref(0);
-const singleFilePreview = ref<DocumentRequest | null>(null);
+const singleFilePreview = ref<DocumentPreview | null>(null);
 const singleFileConfirmed = ref(false);
+const isLoadingPreview = ref(false);
+const isLoadingBulkPreview = ref(false);
 const fileError = ref("");
 const applyToAllFiles = ref(false);
 
-interface BulkFilePreview extends DocumentRequest {
+interface BulkFilePreview extends DocumentPreview {
   status?: 'pending' | 'confirmed' | 'deleted';
 }
 
@@ -485,7 +550,6 @@ const paginationPages = computed(() => {
 
 const documentColumns = computed(() => createColumns(getUserName, handleDeleteDocument, handleExportDocument, handleReopenDocument));
 
-// Consolidated file handling functions
 async function handleSingleFile(e: Event) {
   resetFileState();
   const files = (e.target as HTMLInputElement).files;
@@ -498,9 +562,24 @@ async function handleSingleFile(e: Event) {
   }
 
   try {
-    singleFilePreview.value = await parseFile(file);
+    isLoadingPreview.value = true;
+    // Parse the file first to get title and text
+    const parsedFile = await parseFile(file);
+    
+    // Get sentence preview from API
+    const previewResult = await previewDocumentSentences({ text: parsedFile.text });
+    
+    // Combine the results
+    singleFilePreview.value = {
+      title: parsedFile.title,
+      text: parsedFile.text,
+      sentence_count: previewResult.sentence_count,
+      sentences: previewResult.sentences
+    };
   } catch (error) {
     fileError.value = error instanceof Error ? error.message : "Gagal membaca file";
+  } finally {
+    isLoadingPreview.value = false;
   }
 }
 
@@ -517,20 +596,37 @@ async function handleBulkFiles(e: Event) {
     return;
   }
 
-  const documents: BulkFilePreview[] = [];
-  for (const file of validFiles) {
-    try {
-      const parsed = await parseFile(file);
-      documents.push({ ...parsed, status: 'pending' });
-    } catch (error) {
-      console.error(`Failed to parse ${file.name}:`, error);
+  try {
+    isLoadingBulkPreview.value = true;
+    const documents: BulkFilePreview[] = [];
+    
+    for (const file of validFiles) {
+      try {
+        // Parse the file first to get title and text
+        const parsed = await parseFile(file);
+        
+        // Get sentence preview from API
+        const previewResult = await previewDocumentSentences({ text: parsed.text });
+        
+        // Combine the results
+        documents.push({ 
+          ...parsed, 
+          sentence_count: previewResult.sentence_count,
+          sentences: previewResult.sentences,
+          status: 'pending' 
+        });
+      } catch (error) {
+        console.error(`Failed to parse ${file.name}:`, error);
+      }
     }
-  }
 
-  if (documents.length === 0) {
-    fileError.value = "Tidak ada file dengan konten valid ditemukan";
-  } else {
-    bulkFilesPreview.value = documents;
+    if (documents.length === 0) {
+      fileError.value = "Tidak ada file dengan konten valid ditemukan";
+    } else {
+      bulkFilesPreview.value = documents;
+    }
+  } finally {
+    isLoadingBulkPreview.value = false;
   }
 }
 
@@ -587,6 +683,8 @@ function deleteFile(mode: 'single' | 'bulk') {
 
 function resetFileState() {
   fileError.value = "";
+  isLoadingPreview.value = false;
+  isLoadingBulkPreview.value = false;
 }
 
 function resetBulkState() {
@@ -641,13 +739,14 @@ async function uploadFiles(mode: 'single' | 'bulk') {
   }
 }
 
-async function createAndAssignDocument(docRequest: DocumentRequest) {
-  const createdDocument = await apiCreateDocument(docRequest);
-  const currentDocuments = selectedProject.value?.documents || [];
-  const updatedDocuments = [...currentDocuments, createdDocument.id];
-  if (selectedProjectId.value) {
-    await assignDocumentsToProject(selectedProjectId.value, updatedDocuments);
-  }
+async function createAndAssignDocument(docRequest: DocumentPreview) {
+  // Add project ID to the document request
+  const documentWithProject: DocumentRequest = {
+    ...docRequest,
+    project: selectedProjectId.value!
+  };
+  const createdDocument = await apiCreateDocument(documentWithProject);
+  return createdDocument;
 }
 
 async function bulkCreateAndAssignDocuments() {
@@ -657,12 +756,15 @@ async function bulkCreateAndAssignDocuments() {
   let successCount = 0;
   let failCount = 0;
   const total = filesToUpload.length;
-  const createdDocumentIds: number[] = [];
 
   for (const [idx, doc] of filesToUpload.entries()) {
     try {
-      const createdDocument = await apiCreateDocument(doc);
-      createdDocumentIds.push(createdDocument.id);
+      // Add project ID to each document request
+      const documentWithProject: DocumentRequest = {
+        ...doc,
+        project: selectedProjectId.value!
+      };
+      await apiCreateDocument(documentWithProject);
       successCount++;
     } catch (error) {
       failCount++;
@@ -670,21 +772,8 @@ async function bulkCreateAndAssignDocuments() {
     uploadProgress.value = Math.round(((idx + 1) / total) * 100);
   }
 
-  if (createdDocumentIds.length > 0) {
-    try {
-      const currentDocuments = selectedProject.value?.documents || [];
-      const updatedDocuments = [...currentDocuments, ...createdDocumentIds];
-      if (selectedProjectId.value) {
-        await assignDocumentsToProject(selectedProjectId.value, updatedDocuments);
-      }
-    } catch (error) {
-      console.error('Error assigning documents to project:', error);
-      toast.error("Dokumen berhasil dibuat tapi gagal ditambahkan ke project");
-    }
-  }
-
   toast.warning("Bulk Upload Selesai", {
-    description: `Berhasil: ${successCount}, Gagal: ${failCount}${createdDocumentIds.length > 0 ? ', Ditambahkan ke project' : ''}`,
+    description: `Berhasil: ${successCount}, Gagal: ${failCount}`,
   });
 }
 

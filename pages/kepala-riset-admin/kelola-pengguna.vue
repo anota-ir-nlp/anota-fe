@@ -41,6 +41,10 @@
               <Input id="full_name" v-model="newUser.full_name" placeholder="Nama Lengkap" class="w-full" />
             </div>
             <div class="grid gap-2">
+              <label for="institution" class="text-sm font-medium text-left">Institusi (Opsional)</label>
+              <Input id="institution" v-model="newUser.institution" placeholder="Institusi" class="w-full" />
+            </div>
+            <div class="grid gap-2">
               <label for="roles" class="text-sm font-medium text-left">Roles</label>
               <Combobox v-model="newUserRoles" v-model:open="openCreateRoles" :ignore-filter="true">
                 <ComboboxAnchor as-child>
@@ -114,6 +118,10 @@
           <div class="grid gap-2">
             <label for="edit_full_name" class="text-sm font-medium text-left">Nama Lengkap</label>
             <Input id="edit_full_name" v-model="editingUser.full_name" placeholder="Nama Lengkap" class="w-full" />
+          </div>
+          <div class="grid gap-2">
+            <label for="edit_institution" class="text-sm font-medium text-left">Institusi (Opsional)</label>
+            <Input id="edit_institution" v-model="editingUser.institution" placeholder="Institusi" class="w-full" />
           </div>
           <div class="grid gap-2">
             <label for="edit_roles" class="text-sm font-medium text-left">Roles</label>
@@ -352,12 +360,14 @@ const newUser = ref<UserRegistrationRequest>({
   username: "",
   email: "",
   full_name: "",
+  institution: "",
 });
 
 const editingUser = ref<Partial<UserResponse>>({
   username: "",
   email: "",
   full_name: "",
+  institution: "",
 });
 
 const availableRoles = ref<string[]>([]);
@@ -507,6 +517,7 @@ async function updateUser() {
           username: editingUser.value.username,
           email: editingUser.value.email,
           full_name: editingUser.value.full_name,
+          institution: editingUser.value.institution,
         };
 
         await apiUpdateUser(editingUser.value.id!, updateData);
@@ -644,6 +655,7 @@ function editUser(user: {
   username: string;
   email: string;
   full_name: string;
+  institution?: string;
   roles: string[];
   date_joined: string;
 }) {
@@ -652,6 +664,7 @@ function editUser(user: {
     username: user.username,
     email: user.email,
     full_name: user.full_name,
+    institution: user.institution || "",
   };
   editingUserRoles.value = [...user.roles];
   isEditDialogOpen.value = true;
@@ -662,6 +675,7 @@ function cancelEdit() {
     username: "",
     email: "",
     full_name: "",
+    institution: "",
   };
   editingUserRoles.value = [];
   isEditDialogOpen.value = false;
@@ -672,6 +686,7 @@ function resetForm() {
     username: "",
     email: "",
     full_name: "",
+    institution: "",
   };
   newUserRoles.value = [];
   isCreateDialogOpen.value = false;

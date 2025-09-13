@@ -57,6 +57,15 @@ export function createUserColumns(
       enableSorting: false,
     },
     {
+      accessorKey: 'institution',
+      header: 'Institusi',
+      cell: ({ row }) => {
+        const institution = row.getValue('institution') as string
+        return h('span', { class: 'text-gray-700 text-left' }, institution || '-')
+      },
+      enableSorting: false,
+    },
+    {
       accessorKey: 'roles',
       header: 'Roles',
       cell: ({ row }) => {

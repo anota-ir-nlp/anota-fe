@@ -469,30 +469,25 @@
           </div>
         </div>
 
+        <!-- Project Context Notice -->
+        <div v-if="selectedProject" class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <p class="text-sm text-blue-800">
+            <strong>Project terpilih:</strong> {{ selectedProject.name }}
+          </p>
+          <p class="text-xs text-blue-600 mt-1">
+            Data yang ditampilkan hanya untuk project ini
+          </p>
+        </div>
+        <div v-else class="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+          <p class="text-sm text-gray-600">
+            Menampilkan data dari semua project
+          </p>
+        </div>
+
         <!-- Filters -->
         <Card variant="glassmorphism" class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none">
           <h3 class="text-lg font-semibold text-gray-900 mb-4">Filter Data</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Project
-              </label>
-              <Select v-model="selectedProject">
-                <SelectTrigger>
-                  <SelectValue placeholder="Pilih project..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Semua Project</SelectItem>
-                  <SelectItem
-                    v-for="project in projects"
-                    :key="project.id"
-                    :value="project.id.toString()"
-                  >
-                    {{ project.name }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div class="grid grid-cols-1 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
                 Document
@@ -508,7 +503,7 @@
                     :key="doc.id"
                     :value="doc.id.toString()"
                   >
-                    {{ doc.title }}
+                    {{ doc.title || doc.name || `Document ${doc.id}` }}
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -807,7 +802,7 @@
 
 <script setup lang="ts">
 import { navigateTo } from "#app";
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import {
   ArrowLeft,
   ArrowRight,
@@ -844,6 +839,7 @@ import { useDocumentsApi } from "~/data/documents";
 import { useUserDocumentsApi } from "~/data/user-documents";
 import { useAssignmentsApi } from "~/data/document-assignments";
 import { useProjectsApi } from "~/data/projects";
+import { useProjectContext } from "~/composables/project-context";
 import type { DocumentStatus } from "~/types/api";
 
 const { user } = useAuth();
@@ -852,6 +848,7 @@ const { getUsers, getAllUsers } = useUsersApi();
 const { getDocuments } = useDocumentsApi();
 const { getAssignedDocuments } = useUserDocumentsApi();
 const { getProjects } = useProjectsApi();
+const { selectedProject, selectedProjectId } = useProjectContext();
 
 const pending = ref(false);
 
@@ -1008,7 +1005,6 @@ const recentActivities = ref<
 >([]);
 
 // Dashboard filters and analytics
-const selectedProject = ref<string>("all");
 const selectedDocument = ref<string>("all");
 const loadingFilter = ref(false);
 const showPerformanceSection = ref(false);
@@ -1070,10 +1066,21 @@ onMounted(async () => {
   }
 });
 
+// Watch for project context changes
+watch(selectedProjectId, async () => {
+  if (hasRole("Kepala Riset")) {
+    await updateDashboardData();
+  }
+});
+
 const fetchDashboardData = async () => {
   try {
-    // Get dashboard summary data for all roles
-    const dashboardData = await getDashboardSummary();
+    // Get dashboard summary data for all roles with project context
+    const params: any = {};
+    if (selectedProjectId.value) {
+      params.project_id = selectedProjectId.value;
+    }
+    const dashboardData = await getDashboardSummary(params);
 
     // Store analytics data for admin dashboard
     dashboardAnalytics.value = dashboardData;
@@ -1277,8 +1284,8 @@ const updateDashboardData = async () => {
   loadingFilter.value = true;
   try {
     const params: any = {};
-    if (selectedProject.value !== "all") {
-      params.project_id = parseInt(selectedProject.value);
+    if (selectedProjectId.value) {
+      params.project_id = selectedProjectId.value;
     }
     if (selectedDocument.value !== "all") {
       params.document_id = parseInt(selectedDocument.value);
@@ -1337,8 +1344,8 @@ const loadAnnotatorPerformance = async () => {
   loadingAnnotator.value = true;
   try {
     const params: any = { user_id: selectedAnnotator.value };
-    if (selectedProject.value !== "all") {
-      params.project_id = parseInt(selectedProject.value);
+    if (selectedProjectId.value) {
+      params.project_id = selectedProjectId.value;
     }
     if (selectedDocument.value !== "all") {
       params.document_id = parseInt(selectedDocument.value);
@@ -1359,8 +1366,8 @@ const loadReviewerPerformance = async () => {
   loadingReviewer.value = true;
   try {
     const params: any = { user_id: selectedReviewer.value };
-    if (selectedProject.value !== "all") {
-      params.project_id = parseInt(selectedProject.value);
+    if (selectedProjectId.value) {
+      params.project_id = selectedProjectId.value;
     }
     if (selectedDocument.value !== "all") {
       params.document_id = parseInt(selectedDocument.value);
