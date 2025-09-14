@@ -7,8 +7,9 @@ export default defineNuxtConfig({
 
   nitro: {
     routeRules: {
-      "/proxy": {
-        proxy: process.env.NUXT_BACKEND_URL || "http://127.0.0.1:8000/api/v1",
+      "/proxy/**": {
+        proxy: `${process.env.NUXT_BACKEND_URL || "http://127.0.0.1:8000/api/v1"}/**`,
+        cors: true
       },
     },
   },
