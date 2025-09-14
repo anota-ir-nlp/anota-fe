@@ -5,12 +5,10 @@ export default defineNuxtConfig({
   compatibilityDate: "2025-05-15",
   devtools: { enabled: true },
 
-  nitro: {
-    routeRules: {
-      "/proxy/**": {
-        proxy: `${process.env.NUXT_BACKEND_URL || "http://127.0.0.1:8000/api/v1"}/**`,
-        cors: true
-      },
+  routeRules: {
+    "/proxy/**": {
+      proxy: `${process.env.NUXT_BACKEND_URL || "http://127.0.0.1:8000/api/v1"}/**`,
+      cors: true
     },
   },
 
