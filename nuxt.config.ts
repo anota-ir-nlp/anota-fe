@@ -33,7 +33,7 @@ export default defineNuxtConfig({
     backendUrl: process.env.NUXT_BACKEND_URL || "http://127.0.0.1:8000/api/v1",
 
     public: {
-      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || "/api/proxy",
+      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || "/api/v1",
     },
   },
 
