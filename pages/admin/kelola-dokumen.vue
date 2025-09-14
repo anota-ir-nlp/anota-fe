@@ -38,30 +38,30 @@
             </DialogHeader>
             <div class="flex-1 flex flex-col gap-4 py-4 overflow-hidden">
               <Input type="file" accept=".txt,.docx" @change="handleSingleFile" class="mb-2" />
-              
+
               <!-- Loading State -->
               <div v-if="isLoadingPreview" class="flex-1 bg-gray-50 border border-gray-200 rounded p-4 text-sm flex flex-col items-center justify-center">
                 <Loader2 class="w-8 h-8 animate-spin text-blue-600 mb-2" />
                 <div class="text-gray-600">Memproses file dan menganalisis kalimat...</div>
               </div>
-              
+
               <div v-else-if="singleFilePreview"
                 class="flex-1 bg-gray-50 border border-gray-200 rounded p-4 text-sm flex flex-col overflow-hidden">
                 <div class="font-semibold text-blue-600 mb-3">Preview:</div>
                 <div class="flex-1 text-left space-y-3 flex flex-col overflow-hidden">
                   <div class="font-medium text-lg text-gray-900">{{ singleFilePreview.title }}</div>
-                  
+
                   <!-- Sentence Count Info -->
                   <div v-if="singleFilePreview.sentence_count !== undefined" class="bg-blue-50 border border-blue-200 rounded p-3">
                     <div class="text-blue-800 font-medium">Informasi Kalimat</div>
                     <div class="text-blue-700 text-sm">Jumlah kalimat: {{ singleFilePreview.sentence_count }}</div>
                   </div>
-                  
+
                   <!-- Text Content -->
                   <div class="flex-1 text-gray-700 p-4 bg-white border border-gray-200 rounded overflow-y-auto whitespace-pre-wrap">
                     {{ singleFilePreview.text }}
                   </div>
-                  
+
                   <!-- Sentences Preview -->
                   <div v-if="singleFilePreview.sentences && singleFilePreview.sentences.length > 0" class="bg-green-50 border border-green-200 rounded p-3">
                     <div class="text-green-800 font-medium mb-2">Preview Kalimat</div>
@@ -74,7 +74,7 @@
                       </div>
                     </div>
                   </div>
-                  
+
                   <div class="flex gap-2 mt-4 pt-4 border-t border-gray-200">
                     <Button @click="confirmFile('single')" variant="default" size="sm" class="flex items-center gap-2">
                       <Plus class="w-4 h-4" />
@@ -148,18 +148,18 @@
                 <div v-if="currentBulkFile" class="flex-1 bg-gray-50 border border-gray-200 rounded p-6 flex flex-col overflow-hidden">
                   <div class="space-y-4 flex-1 flex flex-col overflow-hidden">
                     <div class="font-medium text-blue-600 text-lg">{{ currentBulkFile.title }}</div>
-                    
+
                     <!-- Sentence Count Info -->
                     <div v-if="currentBulkFile.sentence_count !== undefined" class="bg-blue-50 border border-blue-200 rounded p-3">
                       <div class="text-blue-800 font-medium">Informasi Kalimat</div>
                       <div class="text-blue-700 text-sm">Jumlah kalimat: {{ currentBulkFile.sentence_count }}</div>
                     </div>
-                    
+
                     <div
                       class="flex-1 text-gray-700 p-4 bg-white border border-gray-200 rounded overflow-y-auto whitespace-pre-wrap text-sm">
                       {{ currentBulkFile.text }}
                     </div>
-                    
+
                     <!-- Sentences Preview -->
                     <div v-if="currentBulkFile.sentences && currentBulkFile.sentences.length > 0" class="bg-green-50 border border-green-200 rounded p-3">
                       <div class="text-green-800 font-medium mb-2">Preview Kalimat</div>
@@ -172,7 +172,7 @@
                         </div>
                       </div>
                     </div>
-                    
+
                     <div class="flex gap-2 pt-4 border-t border-gray-200">
                       <Button @click="confirmFile('bulk')" variant="default" size="sm" class="flex items-center gap-2">
                         <Plus class="w-4 h-4" />
@@ -321,7 +321,7 @@
           <DialogHeader>
             <DialogTitle>Reopen Dokumen</DialogTitle>
             <DialogDescription>
-              Buka kembali pekerjaan {{ reopenMode === 'annotator' ? 'anotator' : 'reviewer' }} pada dokumen 
+              Buka kembali pekerjaan {{ reopenMode === 'annotator' ? 'anotator' : 'reviewer' }} pada dokumen
               "{{ documentToReopen?.title }}".
             </DialogDescription>
           </DialogHeader>
@@ -329,7 +329,7 @@
             <div class="grid gap-2">
               <label class="text-sm font-medium text-left">Tipe Reopen</label>
               <div class="flex gap-2">
-                <Button 
+                <Button
                   :variant="reopenMode === 'annotator' ? 'default' : 'outline'"
                   @click="reopenMode = 'annotator'"
                   size="sm"
@@ -337,7 +337,7 @@
                 >
                   Anotator
                 </Button>
-                <Button 
+                <Button
                   :variant="reopenMode === 'reviewer' ? 'default' : 'outline'"
                   @click="reopenMode = 'reviewer'"
                   size="sm"
@@ -565,10 +565,10 @@ async function handleSingleFile(e: Event) {
     isLoadingPreview.value = true;
     // Parse the file first to get title and text
     const parsedFile = await parseFile(file);
-    
+
     // Get sentence preview from API
     const previewResult = await previewDocumentSentences({ text: parsedFile.text });
-    
+
     // Combine the results
     singleFilePreview.value = {
       title: parsedFile.title,
@@ -599,21 +599,21 @@ async function handleBulkFiles(e: Event) {
   try {
     isLoadingBulkPreview.value = true;
     const documents: BulkFilePreview[] = [];
-    
+
     for (const file of validFiles) {
       try {
         // Parse the file first to get title and text
         const parsed = await parseFile(file);
-        
+
         // Get sentence preview from API
         const previewResult = await previewDocumentSentences({ text: parsed.text });
-        
+
         // Combine the results
-        documents.push({ 
-          ...parsed, 
+        documents.push({
+          ...parsed,
           sentence_count: previewResult.sentence_count,
           sentences: previewResult.sentences,
-          status: 'pending' 
+          status: 'pending'
         });
       } catch (error) {
         console.error(`Failed to parse ${file.name}:`, error);
@@ -1053,7 +1053,7 @@ async function submitReopen() {
   }
 
   isReopening.value = true;
-  
+
   try {
     const requestData = {
       document: documentToReopen.value.id,
