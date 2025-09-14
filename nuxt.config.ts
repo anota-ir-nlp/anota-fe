@@ -5,6 +5,15 @@ export default defineNuxtConfig({
   compatibilityDate: "2025-05-15",
   devtools: { enabled: true },
 
+  nitro: {
+    devProxy: {
+      "/proxy": {
+        target: process.env.NUXT_BACKEND_URL || "http://127.0.0.1:8000/api/v1",
+        changeOrigin: true,
+      },
+    },
+  },
+
   modules: [
     "@nuxt/devtools",
     "@pinia/nuxt",
