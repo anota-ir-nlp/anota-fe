@@ -6,10 +6,9 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
 
   nitro: {
-    devProxy: {
+    routeRules: {
       "/proxy": {
-        target: process.env.NUXT_BACKEND_URL || "http://127.0.0.1:8000/api/v1",
-        changeOrigin: true,
+        proxy: process.env.NUXT_BACKEND_URL || "http://127.0.0.1:8000/api/v1",
       },
     },
   },
