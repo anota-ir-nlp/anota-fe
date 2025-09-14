@@ -1,25 +1,58 @@
 import { useProtectedFetcher } from "~/composables/protected-fetcher";
-import type { ReviewRequest, ReviewResponse } from "~/types/api";
+import type { 
+  ReviewRequest, 
+  ReviewResponse, 
+  ReviewsListResponse,
+  ReopenReviewRequest,
+  ReopenResponse,
+  SubmitReviewRequest,
+  SubmitResponse,
+
+} from "~/types/api";
 
 const BASE = "/annotations/reviews";
 
 export function useReviewsApi() {
   const { fetcher } = useProtectedFetcher();
 
-  const getReviews = () => fetcher<ReviewResponse[]>(BASE);
-  const getReview = (id: number) => fetcher<ReviewResponse>(`${BASE}/${id}`);
+  const getReviews = (page?: number) => {
+    let url = BASE;
+    if (page) {
+      url += `?page=${page}`;
+    }
+    return fetcher<ReviewsListResponse>(url);
+  };
+  
+  const getReview = (id: number) => fetcher<ReviewResponse>(`${BASE}/${id}/`);
+  
   const createReview = (data: ReviewRequest) =>
-    fetcher<ReviewResponse>(BASE, { method: "POST", body: data });
+    fetcher<ReviewResponse>(BASE + "/", { method: "POST", body: data });
+  
   const updateReview = (id: number, data: ReviewRequest) =>
-    fetcher<ReviewResponse>(`${BASE}/${id}`, { method: "PUT", body: data });
+    fetcher<ReviewResponse>(`${BASE}/${id}/`, { method: "PUT", body: data });
+  
   const partialUpdateReview = (id: number, data: Partial<ReviewRequest>) =>
-    fetcher<ReviewResponse>(`${BASE}/${id}`, { method: "PATCH", body: data });
+    fetcher<ReviewResponse>(`${BASE}/${id}/`, { method: "PATCH", body: data });
+  
+  const reopenReview = (data: ReopenReviewRequest) =>
+    fetcher<ReopenResponse>("/annotations/reviews/reopen/", { method: "POST", body: data });
+  
+  const submitReview = (data: SubmitReviewRequest) =>
+    fetcher<SubmitResponse>("/annotations/reviews/submit/", { method: "POST", body: data });
   const deleteReview = (id: number) =>
     fetcher(`${BASE}/${id}`, { method: "DELETE" });
-  const reopenReview = (data: { document: number; reason?: string }) =>
-    fetcher("/annotations/reviews/reopen/", { method: "POST", body: data });
-  const submitReview = (data: { document: number }) =>
-    fetcher("/annotations/reviews/submit/", { method: "POST", body: data });
+
+  const getReviewQueue = (
+    documentId: number | string,
+    includeUnannotated?: boolean
+  ) => {
+    let url = `/documents/my-assigned/${documentId}/review-queue/`;
+    if (includeUnannotated !== undefined) {
+      url += `?include_unannotated=${includeUnannotated}`;
+    }
+    return fetcher(url);
+  };
+
   const adminReopenReview = (data: {
     document: number;
     user_id: string;
@@ -40,5 +73,6 @@ export function useReviewsApi() {
     reopenReview,
     submitReview,
     adminReopenReview,
+    getReviewQueue,
   };
 }

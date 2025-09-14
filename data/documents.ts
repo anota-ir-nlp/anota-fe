@@ -2,6 +2,7 @@ import { useProtectedFetcher } from "~/composables/protected-fetcher";
 import type {
   DocumentResponse,
   DocumentRequest,
+  DocumentAssignedDetailResponse,
 } from "~/types/api";
 
 const BASE = "/documents";
@@ -32,16 +33,42 @@ export function useDocumentsApi() {
   const getDocumentsInProject = (projectId: number) =>
     fetcher<DocumentResponse[]>(`/projects/${projectId}/documents/`);
 
-  const assignDocumentsToProject = (projectId: number, documentIds: number[]) =>
-    fetcher(`/projects/${projectId}/`, {
-      method: "PATCH",
-      body: { documents: documentIds },
+  const assignDocumentToUser = (data: {
+    document_id: number;
+    user_id: string;
+    notes?: string;
+  }) =>
+    fetcher(`${BASE}/assignment/`, {
+      method: "POST",
+      body: data,
     });
 
-  const removeDocumentsFromProject = (projectId: number, documentIds: number[]) =>
-    fetcher(`/projects/${projectId}/`, {
-      method: "PATCH", 
-      body: { documents: documentIds },
+  const unassignDocumentFromUser = (data: {
+    document_id: number;
+    user_id: string;
+  }) =>
+    fetcher(`${BASE}/assignment/`, {
+      method: "DELETE",
+      body: data,
+    });
+
+  const getMyAssignedDocument = (id: number) =>
+    fetcher<DocumentAssignedDetailResponse>(`${BASE}/my-assigned/${id}/`);
+
+  const previewDocumentSentences = (data: { text: string }) =>
+    fetcher<{
+      text: string;
+      sentence_count: number;
+      sentences: string[];
+    }>(`${BASE}/preview/`, {
+      method: "POST",
+      body: data,
+    });
+
+  const exportDocument = (id: number, format: "parallel" | "m2") =>
+    fetcher<Blob>(`${BASE}/${id}/export/${format}/`, {
+      method: "GET",
+      responseType: "blob",
     });
 
   return {
@@ -51,8 +78,11 @@ export function useDocumentsApi() {
     updateDocument,
     deleteDocument,
     getDocumentsInProject,
-    assignDocumentsToProject,
-    removeDocumentsFromProject,
+    assignDocumentToUser,
+    unassignDocumentFromUser,
+    getMyAssignedDocument,
+    previewDocumentSentences,
+    exportDocument,
   };
 }
 

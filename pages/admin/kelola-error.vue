@@ -1,13 +1,18 @@
 <template>
-  <div class="flex flex-col items-center justify-start text-center bg-slate-900 text-white p-8 min-h-screen">
-    <div class="flex items-center justify-center gap-4 mb-20">
-      <h1 class="text-4xl font-bold text-blue-400">Kelola Error Types</h1>
-    </div>
+  <div class="min-h-screen px-2 sm:px-4 py-10 font-inter bg-gray-50">
+    <div class="w-full max-w-[95vw] mx-auto px-2 sm:px-4 pb-16">
+      <!-- Header -->
+      <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Kelola Error Types</h1>
+        <p class="text-gray-600">
+          Buat dan kelola jenis error untuk proses anotasi
+        </p>
+      </div>
 
-    <!-- Add Error Type Button -->
-    <div class="mb-6 w-full">
-      <Dialog v-model:open="isCreateDialogOpen">
-        <div class="flex gap-3 items-start w-full max-w-6xl mx-auto">
+      <!-- Add Error Type Button -->
+      <div class="mb-6">
+        <Dialog v-model:open="isCreateDialogOpen">
+          <div class="flex gap-3 items-start">
           <DialogTrigger as-child>
             <Button class="flex items-center gap-2">
               <Plus class="w-4 h-4" />
@@ -25,11 +30,11 @@
           </DialogHeader>
           <div class="grid gap-4 py-4">
             <div class="grid gap-2">
-              <label for="error_code" class="text-sm font-medium text-left">Error Code</label>
+              <label for="error_code" class="text-sm font-medium text-gray-700 mb-2">Error Code</label>
               <Input id="error_code" v-model="newErrorType.error_code" placeholder="Kode error (ex: GRAMMAR_ERROR)" class="w-full" />
             </div>
             <div class="grid gap-2">
-              <label for="description" class="text-sm font-medium text-left">Deskripsi</label>
+              <label for="description" class="text-sm font-medium text-gray-700 mb-2">Deskripsi</label>
               <Input id="description" v-model="newErrorType.description" placeholder="Deskripsi error type" class="w-full" />
             </div>
           </div>
@@ -58,11 +63,11 @@
         </DialogHeader>
         <div class="grid gap-4 py-4">
           <div class="grid gap-2">
-            <label for="edit_error_code" class="text-sm font-medium text-left">Error Code</label>
+            <label for="edit_error_code" class="text-sm font-medium text-gray-700 mb-2">Error Code</label>
             <Input id="edit_error_code" v-model="editingErrorType.error_code" placeholder="Kode error" class="w-full" />
           </div>
           <div class="grid gap-2">
-            <label for="edit_description" class="text-sm font-medium text-left">Deskripsi</label>
+            <label for="edit_description" class="text-sm font-medium text-gray-700 mb-2">Deskripsi</label>
             <Input id="edit_description" v-model="editingErrorType.description" placeholder="Deskripsi error type" class="w-full" />
           </div>
         </div>
@@ -79,23 +84,23 @@
       </DialogContent>
     </Dialog>
 
-    <div v-if="isLoading" class="text-gray-300 mb-4">
-      Memuat data error types...
-    </div>
+      <div v-if="isLoading" class="text-gray-600 mb-4">
+        Memuat data error types...
+      </div>
 
-    <div v-if="errorTypes && errorTypes.length > 0"
-      class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl shadow-lg p-6 mb-6 w-full max-w-6xl">
-      <DataTable
-        :columns="errorTypeColumns"
-        :data="errorTypes"
-        @selection-change="handleSelectionChange"
-        @edit-error-type="editErrorType"
-        @delete-error-type="deleteErrorType"
-      />
-    </div>
+      <div v-if="errorTypes && errorTypes.length > 0"
+        class="bg-white border border-gray-200 rounded-xl shadow-sm p-6 mb-6">
+        <DataTable
+          :columns="errorTypeColumns"
+          :data="errorTypes"
+          @selection-change="handleSelectionChange"
+          @edit-error-type="editErrorType"
+          @delete-error-type="deleteErrorType"
+        />
+      </div>
 
-    <!-- Pagination Controls -->
-    <div v-if="errorTypes && errorTypes.length > 0 && totalPages > 1" class="mt-4 flex justify-center w-full max-w-6xl">
+      <!-- Pagination Controls -->
+      <div v-if="errorTypes && errorTypes.length > 0 && totalPages > 1" class="mt-4 flex justify-center">
       <Pagination
         :page="currentPage"
         :total="totalPages"
@@ -124,9 +129,10 @@
       </Pagination>
     </div>
 
-    <div v-if="(!errorTypes || errorTypes.length === 0) && !isLoading"
-      class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl shadow-lg p-6 text-center w-full max-w-6xl mx-auto">
-      <span class="text-gray-400">Tidak ada error type ditemukan.</span>
+      <div v-if="(!errorTypes || errorTypes.length === 0) && !isLoading"
+        class="bg-white border border-gray-200 rounded-xl p-6 text-center">
+        <span class="text-gray-500">Tidak ada error type ditemukan.</span>
+      </div>
     </div>
   </div>
 </template>

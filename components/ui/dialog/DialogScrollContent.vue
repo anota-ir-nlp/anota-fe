@@ -24,12 +24,12 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
 <template>
   <DialogPortal>
     <DialogOverlay
-      class="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-slate-950/80 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+      class="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-black/50 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
     >
       <DialogContent
         :class="
           cn(
-            'relative z-50 grid w-full max-w-lg my-8 gap-4 border border-slate-700 bg-slate-900/95 backdrop-blur-sm text-white p-6 shadow-2xl duration-200 sm:rounded-lg md:w-full',
+            'relative z-50 grid w-full max-w-lg my-8 gap-4 border border-gray-200 bg-white/95 backdrop-blur-sm text-gray-900 p-6 shadow-2xl duration-200 sm:rounded-lg md:w-full',
             props.class,
           )
         "
@@ -45,7 +45,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
         <slot />
 
         <DialogClose
-          class="absolute top-4 right-4 p-0.5 transition-colors rounded-md hover:bg-slate-800 text-slate-300 hover:text-white"
+          class="absolute top-4 right-4 p-0.5 transition-colors rounded-md hover:bg-gray-100 text-gray-600 hover:text-gray-900"
         >
           <X class="w-4 h-4" />
           <span class="sr-only">Close</span>

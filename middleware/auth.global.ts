@@ -6,6 +6,7 @@ const roleBasedRoutes = {
     "/admin/kelola-error",
     "/kepala-riset-admin/kelola-pengguna",
     "/admin/reopen",
+    "/admin/dashboard",
   ],
   Annotator: ["/anotator/anotasi"],
   Reviewer: ["/reviewer/review"],
@@ -14,10 +15,11 @@ const roleBasedRoutes = {
     "/kepala-riset-admin/kelola-pengguna",
     "/admin/kelola-dokumen",
     "/admin/kelola-error",
+    "/admin/dashboard",
   ],
 };
 
-const publicRoutes = ["/", "/login"];
+const publicRoutes = ["/", "/login", "/reset-password"];
 const commonAuthenticatedRoutes = ["/beranda", "/change-password"];
 
 function hasRoleAccess(userRoles: string[], routePath: string): boolean {

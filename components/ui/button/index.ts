@@ -8,18 +8,20 @@ export const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg hover:from-blue-700 hover:to-purple-700 hover:shadow-xl hover:scale-105 transition-all duration-200',
+          'animated-gradient-btn-greenblue text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 border-0',
         destructive:
-          'bg-destructive text-white shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60',
+          'btn-gradient-danger text-white shadow-lg hover:shadow-xl focus-visible:ring-red-500/20',
         outline:
-          'border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50',
+          'border-2 bg-white/90 border-gray-300 text-gray-700 shadow-xs hover:bg-white hover:border-blue-500 hover:text-blue-600 backdrop-filter backdrop-blur-sm transition-all duration-200',
         secondary:
-          'bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80',
+          'btn-gradient-primary text-white shadow-lg hover:shadow-xl transition-all duration-200',
         ghost:
-          'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50',
-        link: 'text-primary underline-offset-4 hover:underline',
+          'hover:bg-gray-100 hover:text-gray-900 text-gray-700 transition-all duration-200',
+        link: 'text-blue-600 underline-offset-4 hover:underline hover:text-blue-700 transition-colors',
         gradient:
-          'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg hover:from-blue-600 hover:to-purple-700 hover:shadow-xl hover:scale-105 transition-all duration-300 border border-white/20 relative overflow-hidden',
+          'animated-gradient-btn-pinkblue text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 border-0',
+        success:
+          'btn-gradient-success text-white shadow-lg hover:shadow-xl transition-all duration-200',
       },
       size: {
         default: 'h-9 px-4 py-2 has-[>svg]:px-3',

@@ -42,7 +42,6 @@ import {
   Building2,
   Menu as MenuIcon,
   X as CloseIcon,
-  Key,
 } from "lucide-vue-next";
 import { toast } from "vue-sonner";
 import type { AvailableRole, ProjectResponse } from "~/types/api";
@@ -160,6 +159,12 @@ const menuGroups = computed<MenuGroup[]>(() => {
       icon: BarChart3,
       items: [
         {
+          label: "Dashboard Analytics",
+          path: "/admin/dashboard",
+          icon: BarChart3,
+          description: "View system analytics and performance metrics",
+        },
+        {
           label: "Kelola Project",
           path: "/kepala-riset/kelola-project",
           icon: BarChart3,
@@ -169,19 +174,7 @@ const menuGroups = computed<MenuGroup[]>(() => {
           label: "Kelola Pengguna",
           path: "/kepala-riset-admin/kelola-pengguna",
           icon: Users,
-          description: "Manage system users",
-        },
-        {
-          label: "Rekap Kinerja",
-          path: "/kepala-riset/rekap-kinerja",
-          icon: BarChart3,
-          description: "Performance summary",
-        },
-        {
-          label: "Generate Dataset",
-          path: "/kepala-riset/generate-dataset",
-          icon: Download,
-          description: "Generate dataset files",
+          description: "Manage system users and reset passwords",
         },
       ],
     });
@@ -194,16 +187,22 @@ const menuGroups = computed<MenuGroup[]>(() => {
       icon: Users,
       items: [
         {
+          label: "Dashboard Analytics",
+          path: "/admin/dashboard",
+          icon: BarChart3,
+          description: "View system analytics and performance metrics",
+        },
+        {
           label: "Kelola Pengguna",
           path: "/kepala-riset-admin/kelola-pengguna",
           icon: Users,
-          description: "Manage system users",
+          description: "Manage system users and reset passwords",
         },
         {
           label: "Kelola Dokumen",
           path: "/admin/kelola-dokumen",
           icon: FileText,
-          description: "Manage documents",
+          description: "Manage and export documents",
         },
         {
           label: "Kelola Error",
@@ -496,7 +495,7 @@ const handleLogout = async () => {
               <div class="flex items-center gap-2">
                 <div
                   v-if="
-                    (hasRole('Admin') || hasRole('Kepala Riset')) &&
+                    hasRole('Admin') &&
                     userProjects.length > 0
                   "
                   class="flex items-center"
@@ -775,5 +774,19 @@ const handleLogout = async () => {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+/* Toast light theme override */
+:deep([data-sonner-toaster][data-theme="light"]),
+:deep([data-sonner-toast][data-theme="light"]) {
+  --normal-bg: #fff !important;
+  --normal-text: #222 !important;
+  --normal-border: #e5e7eb !important;
+  background: #fff !important;
+  color: #222 !important;
+}
+:deep([data-sonner-toast][data-theme="light"] .sonner-title),
+:deep([data-sonner-toast][data-theme="light"] .sonner-description) {
+  color: #222 !important;
 }
 </style>

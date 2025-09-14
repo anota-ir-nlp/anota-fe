@@ -1,13 +1,18 @@
 <template>
-  <div class="flex flex-col items-center justify-start text-center bg-slate-900 text-white p-8 min-h-screen">
-    <div class="flex items-center justify-center gap-4 mb-20">
-      <h1 class="text-4xl font-bold text-blue-400">Kelola Pengguna</h1>
-    </div>
+  <div class="min-h-screen px-2 sm:px-4 py-10 font-inter bg-gray-50">
+    <div class="w-full max-w-[95vw] mx-auto px-2 sm:px-4 pb-16">
+      <!-- Header -->
+      <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Kelola Pengguna</h1>
+        <p class="text-gray-600">
+          Buat dan kelola pengguna sistem anotasi
+        </p>
+      </div>
 
-    <!-- Add User Button -->
-    <div class="mb-6 w-full">
-      <Dialog v-model:open="isCreateDialogOpen">
-        <div class="flex gap-3 items-start w-full max-w-6xl mx-auto">
+      <!-- Add User Button -->
+      <div class="mb-6">
+        <Dialog v-model:open="isCreateDialogOpen">
+          <div class="flex gap-3 items-start">
           <DialogTrigger as-child>
             <Button class="flex items-center gap-2">
               <Plus class="w-4 h-4" />
@@ -34,6 +39,10 @@
             <div class="grid gap-2">
               <label for="full_name" class="text-sm font-medium text-left">Nama Lengkap</label>
               <Input id="full_name" v-model="newUser.full_name" placeholder="Nama Lengkap" class="w-full" />
+            </div>
+            <div class="grid gap-2">
+              <label for="institution" class="text-sm font-medium text-left">Institusi (Opsional)</label>
+              <Input id="institution" v-model="newUser.institution" placeholder="Institusi" class="w-full" />
             </div>
             <div class="grid gap-2">
               <label for="roles" class="text-sm font-medium text-left">Roles</label>
@@ -111,6 +120,10 @@
             <Input id="edit_full_name" v-model="editingUser.full_name" placeholder="Nama Lengkap" class="w-full" />
           </div>
           <div class="grid gap-2">
+            <label for="edit_institution" class="text-sm font-medium text-left">Institusi (Opsional)</label>
+            <Input id="edit_institution" v-model="editingUser.institution" placeholder="Institusi" class="w-full" />
+          </div>
+          <div class="grid gap-2">
             <label for="edit_roles" class="text-sm font-medium text-left">Roles</label>
             <Combobox v-model="editingUserRoles" v-model:open="openEditRoles" :ignore-filter="true">
               <ComboboxAnchor as-child>
@@ -185,23 +198,77 @@
       </DialogContent>
     </Dialog>
 
-    <div v-if="isLoading" class="text-gray-300 mb-4">
-      Memuat data pengguna...
-    </div>
+    <!-- Reset Password Dialog -->
+    <Dialog v-model:open="isResetPasswordDialogOpen">
+      <DialogContent class="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Reset Password Pengguna</DialogTitle>
+          <DialogDescription>
+            Reset password untuk "{{ userToResetPassword?.full_name }}". Sistem akan generate password baru otomatis dan mengirimkannya via email.
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div class="py-4">
+          <div class="flex items-center space-x-2">
+            <input
+              id="send-email-reset"
+              v-model="sendEmailOnReset"
+              type="checkbox"
+              class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+            />
+            <label for="send-email-reset" class="text-sm font-medium text-gray-700">
+              Kirim password baru via email
+            </label>
+          </div>
 
-    <div v-if="users && users.length > 0"
-      class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl shadow-lg p-6 mb-6 w-full max-w-6xl">
-      <DataTable
-        :columns="userColumns"
-        :data="users"
-        @selection-change="handleSelectionChange"
-        @edit-user="editUser"
-        @delete-user="showDeleteDialog"
-      />
-    </div>
+          <div v-if="resetPasswordSuccess" class="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+            <div class="text-green-800">
+              <strong>{{ resetPasswordSuccess.message }}</strong>
+            </div>
+            <div v-if="resetPasswordSuccess.new_password" class="mt-2 text-sm text-green-700">
+              <strong>Password Baru:</strong> 
+              <code class="bg-green-100 px-2 py-1 rounded font-mono">{{ resetPasswordSuccess.new_password }}</code>
+            </div>
+            <div v-if="resetPasswordSuccess.email_message" class="mt-1 text-sm text-green-600">
+              {{ resetPasswordSuccess.email_message }}
+            </div>
+          </div>
+          
+          <div v-if="resetPasswordError" class="mt-4 text-red-500 text-sm">
+            {{ resetPasswordError }}
+          </div>
+        </div>
 
-    <!-- Pagination Controls -->
-    <div v-if="users && users.length > 0 && totalPages > 1" class="mt-4 flex justify-center w-full max-w-6xl">
+        <DialogFooter>
+          <Button variant="outline" @click="cancelResetPassword">
+            Batal
+          </Button>
+          <Button @click="confirmResetPassword" :disabled="isResettingPassword" class="flex items-center gap-2">
+            <KeyRound v-if="!isResettingPassword" class="w-4 h-4" />
+            <Loader2 v-else class="w-4 h-4 animate-spin" />
+            {{ isResettingPassword ? 'Mereset...' : 'Reset Password' }}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+      <div v-if="isLoading" class="text-gray-600 mb-4">
+        Memuat data pengguna...
+      </div>
+
+      <div v-if="users && users.length > 0"
+        class="bg-white border border-gray-200 rounded-xl shadow-sm p-6 mb-6">
+        <DataTable
+          :columns="userColumns"
+          :data="users"
+          @selection-change="handleSelectionChange"
+          @edit-user="editUser"
+          @delete-user="showDeleteDialog"
+        />
+      </div>
+
+      <!-- Pagination Controls -->
+      <div v-if="users && users.length > 0 && totalPages > 1" class="mt-4 flex justify-center">
       <Pagination :page="currentPage" :total="totalPages" :items-per-page="Math.max(users?.length || 1, 1)"
         @update:page="fetchUsers">
         <PaginationContent>
@@ -222,11 +289,12 @@
       </Pagination>
     </div>
 
-    <div v-if="(!users || users.length === 0) && !isLoading"
-      class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl shadow-lg p-6 text-center w-full max-w-6xl mx-auto">
-      <span class="text-gray-400">Tidak ada pengguna ditemukan.</span>
-    </div>
+      <div v-if="(!users || users.length === 0) && !isLoading"
+        class="bg-white border border-gray-200 rounded-xl p-6 text-center">
+        <span class="text-gray-500">Tidak ada pengguna ditemukan.</span>
+      </div>
 
+    </div>
   </div>
 </template>
 
@@ -258,7 +326,7 @@ import {
 import { TagsInput, TagsInputItem, TagsInputInput, TagsInputItemDelete, TagsInputItemText } from "~/components/ui/tags-input";
 import { Combobox, ComboboxAnchor, ComboboxEmpty, ComboboxGroup, ComboboxInput, ComboboxItem, ComboboxList } from '@/components/ui/combobox'
 import {
-  Plus, Loader2, Check, Pencil, Trash2, ArrowLeft, ArrowRight, MoreHorizontal
+  Plus, Loader2, Check, Pencil, Trash2, ArrowLeft, ArrowRight, MoreHorizontal, KeyRound
 } from "lucide-vue-next";
 import { toast } from "vue-sonner";
 import DataTable from "~/components/ui/data-table/data-table.vue";
@@ -272,6 +340,7 @@ const {
   updateUser: apiUpdateUser,
   getAvailableRoles,
   manageUserRole,
+  adminPasswordReset,
 } = useUsersApi();
 
 const { selectedProject, selectedProjectId, isAllProjects } = useProjectContext();
@@ -285,17 +354,20 @@ const isDeleting = ref(false);
 const isCreateDialogOpen = ref(false);
 const isEditDialogOpen = ref(false);
 const isDeleteDialogOpen = ref(false);
+const isResetPasswordDialogOpen = ref(false);
 
 const newUser = ref<UserRegistrationRequest>({
   username: "",
   email: "",
   full_name: "",
+  institution: "",
 });
 
 const editingUser = ref<Partial<UserResponse>>({
   username: "",
   email: "",
   full_name: "",
+  institution: "",
 });
 
 const availableRoles = ref<string[]>([]);
@@ -310,6 +382,19 @@ const currentPage = ref(1);
 const totalPages = ref(1);
 
 const userToDelete = ref<UserResponse | null>(null);
+
+// Reset password state
+const userToResetPassword = ref<UserResponse | null>(null);
+const isResettingPassword = ref(false);
+const sendEmailOnReset = ref(true);
+const resetPasswordSuccess = ref<{
+  message: string;
+  new_password?: string;
+  email_message?: string;
+  user_id?: string;
+  username?: string;
+} | null>(null);
+const resetPasswordError = ref("");
 
 async function fetchAvailableRoles() {
   try {
@@ -372,7 +457,8 @@ const paginationPages = computed(() => {
 
 const userColumns = computed(() => createUserColumns(
   (user: UserResponse) => editUser(user),
-  (user: UserResponse) => showDeleteDialog(user)
+  (user: UserResponse) => showDeleteDialog(user),
+  (user: UserResponse) => showResetPasswordDialog(user)
 ));
 
 function handleSelectionChange(selection: UserResponse[]) {
@@ -431,6 +517,7 @@ async function updateUser() {
           username: editingUser.value.username,
           email: editingUser.value.email,
           full_name: editingUser.value.full_name,
+          institution: editingUser.value.institution,
         };
 
         await apiUpdateUser(editingUser.value.id!, updateData);
@@ -511,11 +598,64 @@ async function confirmDelete() {
   }
 }
 
+function showResetPasswordDialog(user: UserResponse) {
+  userToResetPassword.value = user;
+  sendEmailOnReset.value = true;
+  resetPasswordSuccess.value = null;
+  resetPasswordError.value = "";
+  isResetPasswordDialogOpen.value = true;
+}
+
+function cancelResetPassword() {
+  userToResetPassword.value = null;
+  sendEmailOnReset.value = true;
+  resetPasswordSuccess.value = null;
+  resetPasswordError.value = "";
+  isResetPasswordDialogOpen.value = false;
+}
+
+async function confirmResetPassword() {
+  if (!userToResetPassword.value) return;
+
+  isResettingPassword.value = true;
+  resetPasswordError.value = "";
+  resetPasswordSuccess.value = null;
+
+  try {
+    const response = await adminPasswordReset({
+      user_id: userToResetPassword.value.id,
+      send_email: sendEmailOnReset.value,
+    });
+
+    resetPasswordSuccess.value = {
+      message: response.message || `Password berhasil direset untuk ${response.username || 'pengguna'}`,
+      new_password: response.new_password,
+      email_message: response.email_message,
+      user_id: response.user_id,
+      username: response.username,
+    };
+
+    toast.success("Password berhasil direset dan dikirim via email");
+    
+    // Auto close dialog after showing success for a few seconds
+    setTimeout(() => {
+      cancelResetPassword();
+    }, 5000);
+  } catch (error: any) {
+    resetPasswordError.value = error.message || "Gagal mereset password";
+    toast.error("Gagal mereset password");
+    console.error(error);
+  } finally {
+    isResettingPassword.value = false;
+  }
+}
+
 function editUser(user: {
   id: string;
   username: string;
   email: string;
   full_name: string;
+  institution?: string;
   roles: string[];
   date_joined: string;
 }) {
@@ -524,6 +664,7 @@ function editUser(user: {
     username: user.username,
     email: user.email,
     full_name: user.full_name,
+    institution: user.institution || "",
   };
   editingUserRoles.value = [...user.roles];
   isEditDialogOpen.value = true;
@@ -534,6 +675,7 @@ function cancelEdit() {
     username: "",
     email: "",
     full_name: "",
+    institution: "",
   };
   editingUserRoles.value = [];
   isEditDialogOpen.value = false;
@@ -544,6 +686,7 @@ function resetForm() {
     username: "",
     email: "",
     full_name: "",
+    institution: "",
   };
   newUserRoles.value = [];
   isCreateDialogOpen.value = false;

@@ -5,6 +5,13 @@ export default defineNuxtConfig({
   compatibilityDate: "2025-05-15",
   devtools: { enabled: true },
 
+  routeRules: {
+    "/proxy/**": {
+      proxy: `${process.env.NUXT_BACKEND_URL || "http://127.0.0.1:8000/api/v1"}/**`,
+      cors: true
+    },
+  },
+
   modules: [
     "@nuxt/devtools",
     "@pinia/nuxt",
@@ -28,12 +35,8 @@ export default defineNuxtConfig({
   plugins: ["~/plugins/vuetify.ts"],
 
   runtimeConfig: {
-    AUTH_ORIGIN: process.env.AUTH_ORIGIN,
-    AUTH_SECRET: process.env.AUTH_SECRET,
-    backendUrl: process.env.NUXT_BACKEND_URL || "http://127.0.0.1:8000/api/v1",
-
     public: {
-      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || "/api/proxy",
+      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || "/proxy",
     },
   },
 
