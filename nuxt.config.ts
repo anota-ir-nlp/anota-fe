@@ -3,7 +3,6 @@ import tailwindcss from "@tailwindcss/vite";
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: "2025-05-15",
-  devtools: { enabled: true },
 
   routeRules: {
     "/proxy/**": {
@@ -30,6 +29,9 @@ export default defineNuxtConfig({
     locales: ["id"],
     defaultLocale: "id",
     vueI18n: "./i18n.config.ts",
+    bundle: {
+      optimizeTranslationDirective: false
+    }
   },
 
   plugins: ["~/plugins/vuetify.ts"],
