@@ -3,14 +3,11 @@ import tailwindcss from "@tailwindcss/vite";
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: "2025-05-15",
-  devtools: { enabled: true },
 
-  nitro: {
-    devProxy: {
-      "/proxy": {
-        target: process.env.NUXT_BACKEND_URL || "http://127.0.0.1:8000/api/v1",
-        changeOrigin: true,
-      },
+  routeRules: {
+    "/proxy/**": {
+      proxy: `${process.env.NUXT_BACKEND_URL || "http://127.0.0.1:8000/api/v1"}/**`,
+      cors: true
     },
   },
 
@@ -32,6 +29,9 @@ export default defineNuxtConfig({
     locales: ["id"],
     defaultLocale: "id",
     vueI18n: "./i18n.config.ts",
+    bundle: {
+      optimizeTranslationDirective: false
+    }
   },
 
   plugins: ["~/plugins/vuetify.ts"],
