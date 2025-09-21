@@ -1,31 +1,44 @@
 <template>
   <div>
     <!-- Welcome Section -->
-    <section class="w-full max-w-[95vw] mx-auto px-2 sm:px-4 pb-16 pt-10 flex flex-col gap-8">
-      <Card variant="glassmorphism"
-        class="p-0 border border-gray-200 bg-gradient-to-r from-green-500 to-green-600 text-white w-full !shadow-none">
+    <section
+      class="w-full max-w-[95vw] mx-auto px-2 sm:px-4 pb-16 pt-10 flex flex-col gap-8"
+    >
+      <Card
+        variant="glassmorphism"
+        class="p-0 border border-gray-200 bg-gradient-to-r from-green-500 to-green-600 text-white w-full !shadow-none"
+      >
         <div class="flex flex-col md:flex-row items-center gap-8 p-8 w-full">
           <Avatar class="w-24 h-24 ring-4 ring-green-400/30">
             <AvatarImage :src="userData.avatar" :alt="userData.name" />
             <AvatarFallback class="text-xl font-semibold">{{
               userData.name.charAt(0)
-              }}</AvatarFallback>
+            }}</AvatarFallback>
           </Avatar>
           <div class="flex-1 text-center md:text-left">
-            <div class="flex items-center gap-3 justify-center md:justify-start mb-3 text-3xl">
-              <span class="font-medium text-white bg-white/10 px-4 py-2 rounded-lg">
+            <div
+              class="flex items-center gap-3 justify-center md:justify-start mb-3 text-3xl"
+            >
+              <span
+                class="font-medium text-white bg-white/10 px-4 py-2 rounded-lg"
+              >
                 Hi,
                 <span class="font-bold text-white">{{ userData.name }}</span>
-
               </span>
             </div>
             <div class="flex gap-2 mt-2 mb-8">
-              <Badge v-for="role in userData.roles" :key="role" variant="green"
-                class="text-xs uppercase tracking-wider font-semibold px-3 py-1 bg-white/20 text-white border border-white/30">
+              <Badge
+                v-for="role in userData.roles"
+                :key="role"
+                variant="green"
+                class="text-xs uppercase tracking-wider font-semibold px-3 py-1 bg-white/20 text-white border border-white/30"
+              >
                 {{ role }}
               </Badge>
             </div>
-            <div class="flex flex-wrap gap-4 justify-center md:justify-start text-sm">
+            <div
+              class="flex flex-wrap gap-4 justify-center md:justify-start text-sm"
+            >
               <span class="flex items-center gap-2 text-white/80 font-medium">
                 <Mail class="w-4 h-4" />
                 {{ userData.email }}
@@ -37,9 +50,12 @@
             </div>
           </div>
           <div class="hidden md:block">
-            <Button variant="outline" size="lg"
+            <Button
+              variant="outline"
+              size="lg"
               class="bg-transparent text-white border border-gray-300 hover:bg-gray-100/10 hover:text-gray-900"
-              @click="navigateTo('/')">
+              @click="navigateTo('/')"
+            >
               <ArrowLeft class="w-4 h-4" />
               Ke Halaman Utama
             </Button>
@@ -48,16 +64,28 @@
       </Card>
 
       <!-- Activity Timeline -->
-      <Card variant="glassmorphism" class="p-8 bg-white/90 border border-gray-200 w-full !shadow-none">
-        <h3 class="text-2xl font-bold mb-6 flex items-center gap-3 text-gray-900">
+      <Card
+        variant="glassmorphism"
+        class="p-8 bg-white/90 border border-gray-200 w-full !shadow-none"
+      >
+        <h3
+          class="text-2xl font-bold mb-6 flex items-center gap-3 text-gray-900"
+        >
           <Clock class="w-7 h-7 text-blue-400" />
           Aktivitas Terbaru
         </h3>
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6">
-          <Card v-for="activity in recentActivities" :key="activity.id" variant="glassmorphism"
-            class="flex flex-col items-start gap-4 p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 border border-gray-200 bg-white/80 w-full !shadow-none">
+          <Card
+            v-for="activity in recentActivities"
+            :key="activity.id"
+            variant="glassmorphism"
+            class="flex flex-col items-start gap-4 p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 border border-gray-200 bg-white/80 w-full !shadow-none"
+          >
             <div class="flex items-center gap-4 mb-2">
-              <component :is="getIcon(activity.icon)" :class="`w-8 h-8 ${activity.color}`" />
+              <component
+                :is="getIcon(activity.icon)"
+                :class="`w-8 h-8 ${activity.color}`"
+              />
               <div>
                 <p class="font-semibold text-gray-900 text-lg">
                   {{ activity.title }}
@@ -76,7 +104,9 @@
     </section>
 
     <!-- Role-specific Content -->
-    <section class="w-full max-w-[95vw] mx-auto px-2 sm:px-4 pb-12 flex-col space-y-20">
+    <section
+      class="w-full max-w-[95vw] mx-auto px-2 sm:px-4 pb-12 flex-col space-y-20"
+    >
       <!-- Admin Dashboard -->
       <div v-if="hasRole('Admin')" class="space-y-8">
         <!-- Admin Role Header -->
@@ -92,21 +122,33 @@
 
         <!-- Stats Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-          <Card v-if="pending" v-for="i in 4" :key="i" variant="glassmorphism"
-            class="p-6 animate-pulse bg-white/80 border border-gray-200 w-full !shadow-none">
+          <Card
+            v-if="pending"
+            v-for="i in 4"
+            :key="i"
+            variant="glassmorphism"
+            class="p-6 animate-pulse bg-white/80 border border-gray-200 w-full !shadow-none"
+          >
             <div class="w-12 h-12 bg-gray-200 rounded-lg mb-4"></div>
             <div class="w-16 h-8 bg-gray-200 rounded mb-3"></div>
             <div class="w-28 h-4 bg-gray-200 rounded"></div>
           </Card>
 
-          <Card v-else v-for="stat in adminStats" :key="stat.label" variant="glassmorphism"
-            class="p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 group cursor-pointer bg-white/80 border border-gray-200 w-full !shadow-none">
+          <Card
+            v-else
+            v-for="stat in adminStats"
+            :key="stat.label"
+            variant="glassmorphism"
+            class="p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 group cursor-pointer bg-white/80 border border-gray-200 w-full !shadow-none"
+          >
             <div class="flex items-center justify-between mb-6">
-              <component :is="getIcon(stat.icon)"
-                :class="`w-12 h-12 ${stat.color} group-hover:scale-110 transition-transform duration-300`" />
+              <component
+                :is="getIcon(stat.icon)"
+                :class="`w-12 h-12 ${stat.color} group-hover:scale-110 transition-transform duration-300`"
+              />
               <span class="text-3xl font-bold text-gray-900">{{
                 stat.value
-                }}</span>
+              }}</span>
             </div>
             <h3 class="text-gray-800 font-semibold text-lg mb-2">
               {{ stat.label }}
@@ -118,24 +160,41 @@
         </div>
 
         <!-- Quick Actions -->
-        <Card variant="glassmorphism" class="p-8 bg-white/90 border border-gray-200 w-full !shadow-none">
-          <h3 class="text-2xl font-bold mb-6 flex items-center gap-3 text-gray-900">
+        <Card
+          variant="glassmorphism"
+          class="p-8 bg-white/90 border border-gray-200 w-full !shadow-none"
+        >
+          <h3
+            class="text-2xl font-bold mb-6 flex items-center gap-3 text-gray-900"
+          >
             <Zap class="w-7 h-7 text-yellow-500" />
             Aksi Cepat
           </h3>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Button variant="outline" size="lg" class="justify-start h-14 text-base font-medium"
-              @click="navigateTo('/kepala-riset-admin/kelola-pengguna')">
+            <Button
+              variant="outline"
+              size="lg"
+              class="justify-start h-14 text-base font-medium"
+              @click="navigateTo('/kepala-riset-admin/kelola-pengguna')"
+            >
               <UserPlus class="w-5 h-5" />
               Kelola Pengguna
             </Button>
-            <Button variant="outline" size="lg" class="justify-start h-14 text-base font-medium"
-              @click="navigateTo('/admin/kelola-dokumen')">
+            <Button
+              variant="outline"
+              size="lg"
+              class="justify-start h-14 text-base font-medium"
+              @click="navigateTo('/admin/kelola-dokumen')"
+            >
               <FilePlus class="w-5 h-5" />
               Kelola Dokumen
             </Button>
-            <Button variant="outline" size="lg" class="justify-start h-14 text-base font-medium"
-              @click="navigateTo('/admin/kelola-error')">
+            <Button
+              variant="outline"
+              size="lg"
+              class="justify-start h-14 text-base font-medium"
+              @click="navigateTo('/admin/kelola-error')"
+            >
               <AlertTriangle class="w-5 h-5" />
               Kelola Error
             </Button>
@@ -143,35 +202,61 @@
         </Card>
 
         <!-- Analytics Dashboard -->
-        <Card variant="glassmorphism" class="p-8 bg-white/90 border border-gray-200 w-full !shadow-none">
+        <Card
+          variant="glassmorphism"
+          class="p-8 bg-white/90 border border-gray-200 w-full !shadow-none"
+        >
           <div class="flex items-center justify-between mb-6">
-            <h3 class="text-2xl font-bold flex items-center gap-3 text-gray-900">
+            <h3
+              class="text-2xl font-bold flex items-center gap-3 text-gray-900"
+            >
               <BarChart3 class="w-7 h-7 text-purple-500" />
               Analytics Dashboard
             </h3>
-            <Button variant="outline" size="sm" @click="navigateTo('/admin/dashboard')">
+            <Button
+              variant="outline"
+              size="sm"
+              @click="navigateTo('/admin/dashboard')"
+            >
               Lihat Detail
             </Button>
           </div>
 
           <!-- Charts and Analytics -->
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8" v-if="dashboardAnalytics">
+          <div
+            class="grid grid-cols-1 lg:grid-cols-2 gap-8"
+            v-if="dashboardAnalytics"
+          >
             <!-- Annotations by Error Type -->
             <div>
               <h4 class="text-lg font-semibold text-gray-900 mb-4">
                 Distribusi Anotasi per Tipe Error
               </h4>
-              <div v-if="dashboardAnalytics.annotations_by_error_type?.length" class="space-y-3">
-                <div v-for="item in dashboardAnalytics.annotations_by_error_type.slice(0, 5)" :key="item.error_type"
-                  class="flex items-center justify-between">
-                  <span class="text-sm text-gray-600">{{ item.error_type }}</span>
+              <div
+                v-if="dashboardAnalytics.annotations_by_error_type?.length"
+                class="space-y-3"
+              >
+                <div
+                  v-for="item in dashboardAnalytics.annotations_by_error_type.slice(
+                    0,
+                    5
+                  )"
+                  :key="item.error_type"
+                  class="flex items-center justify-between"
+                >
+                  <span class="text-sm text-gray-600">{{
+                    item.error_type
+                  }}</span>
                   <div class="flex items-center gap-2">
                     <div class="w-24 bg-gray-200 rounded-full h-2">
-                      <div class="bg-blue-600 h-2 rounded-full"
-                        :style="{ width: `${(item.count / Math.max(...dashboardAnalytics.annotations_by_error_type.map((i: any) => i.count))) * 100}%` }">
-                      </div>
+                      <div
+                        class="bg-blue-600 h-2 rounded-full"
+                        :style="{ width: `${(item.count / Math.max(...dashboardAnalytics.annotations_by_error_type.map((i: any) => i.count))) * 100}%` }"
+                      ></div>
                     </div>
-                    <span class="text-sm font-medium text-gray-900 w-8">{{ item.count }}</span>
+                    <span class="text-sm font-medium text-gray-900 w-8">{{
+                      item.count
+                    }}</span>
                   </div>
                 </div>
               </div>
@@ -185,17 +270,31 @@
               <h4 class="text-lg font-semibold text-gray-900 mb-4">
                 Distribusi Review per Tipe Error
               </h4>
-              <div v-if="dashboardAnalytics.reviews_by_error_type?.length" class="space-y-3">
-                <div v-for="item in dashboardAnalytics.reviews_by_error_type.slice(0, 5)" :key="item.error_type"
-                  class="flex items-center justify-between">
-                  <span class="text-sm text-gray-600">{{ item.error_type }}</span>
+              <div
+                v-if="dashboardAnalytics.reviews_by_error_type?.length"
+                class="space-y-3"
+              >
+                <div
+                  v-for="item in dashboardAnalytics.reviews_by_error_type.slice(
+                    0,
+                    5
+                  )"
+                  :key="item.error_type"
+                  class="flex items-center justify-between"
+                >
+                  <span class="text-sm text-gray-600">{{
+                    item.error_type
+                  }}</span>
                   <div class="flex items-center gap-2">
                     <div class="w-24 bg-gray-200 rounded-full h-2">
-                      <div class="bg-purple-600 h-2 rounded-full"
-                        :style="{ width: `${(item.count / Math.max(...dashboardAnalytics.reviews_by_error_type.map((i: any) => i.count))) * 100}%` }">
-                      </div>
+                      <div
+                        class="bg-purple-600 h-2 rounded-full"
+                        :style="{ width: `${(item.count / Math.max(...dashboardAnalytics.reviews_by_error_type.map((i: any) => i.count))) * 100}%` }"
+                      ></div>
                     </div>
-                    <span class="text-sm font-medium text-gray-900 w-8">{{ item.count }}</span>
+                    <span class="text-sm font-medium text-gray-900 w-8">{{
+                      item.count
+                    }}</span>
                   </div>
                 </div>
               </div>
@@ -207,19 +306,29 @@
 
           <!-- Document Status Overview -->
           <div class="mt-8 pt-6 border-t border-gray-200">
-            <h4 class="text-lg font-semibold text-gray-900 mb-4">Status Dokumen</h4>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4" v-if="dashboardAnalytics">
+            <h4 class="text-lg font-semibold text-gray-900 mb-4">
+              Status Dokumen
+            </h4>
+            <div
+              class="grid grid-cols-1 md:grid-cols-3 gap-4"
+              v-if="dashboardAnalytics"
+            >
               <div class="text-center p-4 bg-blue-50 rounded-lg">
-                <div class="text-2xl font-bold text-blue-600">{{ dashboardAnalytics.pending_documents || 0 }}</div>
+                <div class="text-2xl font-bold text-blue-600">
+                  {{ dashboardAnalytics.pending_documents || 0 }}
+                </div>
                 <div class="text-sm text-blue-600">Pending</div>
               </div>
               <div class="text-center p-4 bg-yellow-50 rounded-lg">
-                <div class="text-2xl font-bold text-yellow-600">{{ dashboardAnalytics.in_progress_documents || 0 }}
+                <div class="text-2xl font-bold text-yellow-600">
+                  {{ dashboardAnalytics.in_progress_documents || 0 }}
                 </div>
                 <div class="text-sm text-yellow-600">In Progress</div>
               </div>
               <div class="text-center p-4 bg-green-50 rounded-lg">
-                <div class="text-2xl font-bold text-green-600">{{ dashboardAnalytics.completed_documents || 0 }}</div>
+                <div class="text-2xl font-bold text-green-600">
+                  {{ dashboardAnalytics.completed_documents || 0 }}
+                </div>
                 <div class="text-sm text-green-600">Completed</div>
               </div>
             </div>
@@ -242,13 +351,15 @@
 
         <!-- Progress Overview -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card variant="glassmorphism"
-            class="p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 bg-white/80 border border-gray-200 w-full !shadow-none cursor-pointer">
+          <Card
+            variant="glassmorphism"
+            class="p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 bg-white/80 border border-gray-200 w-full !shadow-none cursor-pointer"
+          >
             <div class="flex items-center justify-between mb-6">
               <FileText class="w-12 h-12 text-blue-500" />
               <span class="text-3xl font-bold text-gray-900">{{
                 annotatorStats.assignedDocuments || 0
-                }}</span>
+              }}</span>
             </div>
             <h3 class="text-gray-800 font-semibold text-lg mb-2">
               Dokumen Ditugaskan
@@ -258,13 +369,15 @@
             </p>
           </Card>
 
-          <Card variant="glassmorphism"
-            class="p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 bg-white/80 border border-gray-200 w-full !shadow-none cursor-pointer">
+          <Card
+            variant="glassmorphism"
+            class="p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 bg-white/80 border border-gray-200 w-full !shadow-none cursor-pointer"
+          >
             <div class="flex items-center justify-between mb-6">
               <CheckCircle class="w-12 h-12 text-green-500" />
               <span class="text-3xl font-bold text-gray-900">{{
                 annotatorStats.completedDocuments || 0
-                }}</span>
+              }}</span>
             </div>
             <h3 class="text-gray-800 font-semibold text-lg mb-2">
               Dokumen Selesai
@@ -274,13 +387,15 @@
             </p>
           </Card>
 
-          <Card variant="glassmorphism"
-            class="p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 bg-white/80 border border-gray-200 w-full !shadow-none cursor-pointer">
+          <Card
+            variant="glassmorphism"
+            class="p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 bg-white/80 border border-gray-200 w-full !shadow-none cursor-pointer"
+          >
             <div class="flex items-center justify-between mb-6">
               <Clock class="w-12 h-12 text-yellow-500" />
               <span class="text-3xl font-bold text-gray-900">{{
                 annotatorStats.inProgressDocuments || 0
-                }}</span>
+              }}</span>
             </div>
             <h3 class="text-gray-800 font-semibold text-lg mb-2">
               Sedang Dikerjakan
@@ -292,15 +407,24 @@
         </div>
 
         <!-- Recent Assignments -->
-        <Card variant="glassmorphism" class="p-8 bg-white/90 border border-gray-200 w-full !shadow-none">
-          <h3 class="text-2xl font-bold mb-6 flex items-center gap-3 text-gray-900">
+        <Card
+          variant="glassmorphism"
+          class="p-8 bg-white/90 border border-gray-200 w-full !shadow-none"
+        >
+          <h3
+            class="text-2xl font-bold mb-6 flex items-center gap-3 text-gray-900"
+          >
             <ClipboardList class="w-7 h-7 text-blue-500" />
             Tugas Terbaru
           </h3>
           <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            <Card v-for="task in recentTasks" :key="task.id" variant="glassmorphism"
+            <Card
+              v-for="task in recentTasks"
+              :key="task.id"
+              variant="glassmorphism"
               class="flex flex-col items-start gap-4 p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 border border-gray-200 bg-white/80 w-full !shadow-none cursor-pointer"
-              @click="navigateTo(`/anotator/anotasi/${task.id}`)">
+              @click="navigateTo(`/anotator/anotasi/${task.id}`)"
+            >
               <div class="flex items-center gap-4 mb-2">
                 <FileText class="w-8 h-8 text-blue-400" />
                 <div>
@@ -312,7 +436,8 @@
                   </p>
                 </div>
               </div>
-              <span class="text-xs font-semibold px-3 py-1 rounded border border-gray-300 text-gray-700 bg-gray-50"
+              <span
+                class="text-xs font-semibold px-3 py-1 rounded border border-gray-300 text-gray-700 bg-gray-50"
                 :class="{
                   'text-blue-700 border-blue-200 bg-blue-50':
                     getTaskStatusColor(task.status) === 'blue',
@@ -324,14 +449,19 @@
                     getTaskStatusColor(task.status) === 'purple',
                   'text-orange-700 border-orange-200 bg-orange-50':
                     getTaskStatusColor(task.status) === 'orange',
-                }">
+                }"
+              >
                 {{ formatStatus(task.status) }}
               </span>
             </Card>
           </div>
           <div class="mt-8 pt-6 border-t border-gray-200 text-center">
-            <Button variant="outline" size="lg" class="hover:bg-gray-900 hover:text-white transition"
-              @click="navigateTo('/anotator/anotasi')">
+            <Button
+              variant="outline"
+              size="lg"
+              class="hover:bg-gray-900 hover:text-white transition"
+              @click="navigateTo('/anotator/anotasi')"
+            >
               Lihat Semua Tugas
               <ArrowRight class="w-4 h-4" />
             </Button>
@@ -348,106 +478,127 @@
           </div>
           <div>
             <h2 class="text-3xl font-bold text-gray-900">Dashboard Reviewer</h2>
-            <p class="text-gray-500 text-lg">Tinjau dan validasi anotasi</p>
+            <p class="text-gray-500 text-lg">
+              Ringkasan aktivitas dan statistik review Anda
+            </p>
           </div>
         </div>
 
-        <!-- Review Stats -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card variant="glassmorphism"
-            class="p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 bg-white/80 border border-gray-200 w-full !shadow-none cursor-pointer">
-            <div class="flex items-center justify-between mb-6">
-              <Eye class="w-12 h-12 text-purple-500" />
-              <span class="text-3xl font-bold text-gray-900">{{
-                reviewerStats.pendingReviews || 0
-                }}</span>
+        <!-- Reviewer Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card class="p-6 bg-white/80 border border-gray-200 rounded-xl">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-gray-500 mb-1">Total Review</p>
+                <p class="text-2xl font-bold text-black">
+                  {{ reviewerStatsSummary.reviewed }}
+                </p>
+              </div>
+              <Eye class="w-8 h-8 text-purple-500" />
             </div>
-            <h3 class="text-gray-800 font-semibold text-lg mb-2">
-              Menunggu Review
-            </h3>
-            <p class="text-sm text-gray-500 leading-relaxed">
-              Dokumen yang perlu ditinjau
-            </p>
           </Card>
-
-          <Card variant="glassmorphism"
-            class="p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 bg-white/80 border border-gray-200 w-full !shadow-none cursor-pointer">
-            <div class="flex items-center justify-between mb-6">
-              <CheckCircle2 class="w-12 h-12 text-green-500" />
-              <span class="text-3xl font-bold text-gray-900">{{
-                reviewerStats.completedReviews || 0
-                }}</span>
+          <Card class="p-6 bg-white/80 border border-gray-200 rounded-xl">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-gray-500 mb-1">Hari Ini</p>
+                <p class="text-2xl font-bold text-black">
+                  {{ reviewerStatsSummary.todayReviewed }}
+                </p>
+              </div>
+              <Clock class="w-8 h-8 text-green-500" />
             </div>
-            <h3 class="text-gray-800 font-semibold text-lg mb-2">
-              Review Selesai
-            </h3>
-            <p class="text-sm text-gray-500 leading-relaxed">
-              Dokumen yang telah direview
-            </p>
           </Card>
-
-          <Card variant="glassmorphism"
-            class="p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 bg-white/80 border border-gray-200 w-full !shadow-none cursor-pointer">
-            <div class="flex items-center justify-between mb-6">
-              <AlertTriangle class="w-12 h-12 text-yellow-500" />
-              <span class="text-3xl font-bold text-gray-900">{{
-                reviewerStats.errorsFound || 0
-                }}</span>
+          <Card class="p-6 bg-white/80 border border-gray-200 rounded-xl">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-gray-500 mb-1">Akurasi</p>
+                <p class="text-2xl font-bold text-black">
+                  {{ reviewerStatsSummary.accuracy }}%
+                </p>
+              </div>
+              <CheckCircle2 class="w-8 h-8 text-blue-500" />
             </div>
-            <h3 class="text-gray-800 font-semibold text-lg mb-2">
-              Error Ditemukan
-            </h3>
-            <p class="text-sm text-gray-500 leading-relaxed">
-              Total error yang ditemukan
-            </p>
+          </Card>
+          <Card class="p-6 bg-white/80 border border-gray-200 rounded-xl">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-gray-500 mb-1">Total Dokumen</p>
+                <p class="text-2xl font-bold text-black">
+                  {{ reviewerStatsSummary.total }}
+                </p>
+              </div>
+              <FileText class="w-8 h-8 text-gray-700" />
+            </div>
           </Card>
         </div>
 
-        <!-- Review Queue -->
-        <Card variant="glassmorphism" class="p-8 bg-white/90 border border-gray-200 w-full !shadow-none">
-          <h3 class="text-2xl font-bold mb-6 flex items-center gap-3 text-gray-900">
-            <List class="w-7 h-7 text-purple-500" />
-            Antrian Review
+        <!-- Weekly Review Chart -->
+        <Card class="p-6 bg-white/90 border border-gray-200 rounded-xl mb-8">
+          <h3
+            class="text-lg font-semibold mb-6 flex items-center gap-3 text-black"
+          >
+            <BarChart3 class="w-6 h-6 text-purple-500" />
+            Statistik Review Mingguan
           </h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            <Card v-for="review in reviewQueue" :key="review.id" variant="glassmorphism"
-              class="flex flex-col items-start gap-4 p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 border border-gray-200 bg-white/80 w-full !shadow-none cursor-pointer"
-              @click="navigateTo(`/reviewer/review/${review.id}`)">
-              <div class="flex items-center gap-4 mb-2">
-                <FileCheck class="w-8 h-8 text-purple-400" />
-                <div>
-                  <h4 class="font-semibold text-gray-900 text-lg">
-                    {{ review.title }}
-                  </h4>
-                  <p class="text-sm text-gray-500 mt-1">
-                    Oleh {{ review.annotator }}
-                  </p>
+          <div class="flex items-end gap-4 h-32">
+            <div
+              v-for="(val, i) in reviewerWeeklyStats"
+              :key="i"
+              class="flex flex-col items-center flex-1"
+            >
+              <div class="relative w-full group">
+                <div
+                  class="bg-purple-500 rounded-t transition-all duration-300"
+                  :style="{ height: `${Math.max(val.count * 8, 12)}px` }"
+                ></div>
+                <div
+                  class="absolute -top-7 left-1/2 transform -translate-x-1/2 bg-purple-500 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  {{ val.count }}
                 </div>
               </div>
-              <div class="flex items-center gap-3 mt-2 w-full justify-between">
-                <span class="text-xs font-semibold px-3 py-1 rounded border border-gray-300 text-gray-700 bg-gray-50"
-                  :class="{
-                    'text-red-700 border-red-200 bg-red-50':
-                      review.priority === 'High',
-                    'text-yellow-700 border-yellow-200 bg-yellow-50':
-                      review.priority === 'Medium',
-                    'text-gray-700 border-gray-200 bg-gray-50':
-                      review.priority === 'Low',
-                  }">
-                  {{ review.priority }}
-                </span>
-                <Button size="sm" variant="outline" class="flex items-center gap-2">
-                  <Eye class="w-4 h-4" />
-                  Review
-                </Button>
-              </div>
-            </Card>
+              <span class="text-xs text-gray-700 mt-2 font-medium">
+                {{ val.label }}
+              </span>
+            </div>
           </div>
-          <div class="mt-8 pt-6 border-t border-gray-200 text-center">
-            <Button variant="outline" size="lg" @click="navigateTo('/reviewer/review')">
-              Lihat Semua Review
-              <ArrowRight class="w-4 h-4" />
-            </Button>
+          <div class="mt-3 text-center">
+            <span class="text-sm text-gray-500">
+              Total minggu ini: {{ reviewerWeeklyTotal }} dokumen
+            </span>
+          </div>
+        </Card>
+
+        <!-- Recent Reviewed Documents -->
+        <Card class="p-6 bg-white/90 border border-gray-200 rounded-xl">
+          <h3
+            class="text-lg font-semibold mb-6 flex items-center gap-3 text-black"
+          >
+            <FileCheck class="w-6 h-6 text-purple-500" />
+            Review Terbaru
+          </h3>
+          <div v-if="recentReviewedDocs.length" class="space-y-4">
+            <div
+              v-for="doc in recentReviewedDocs"
+              :key="doc.id"
+              class="flex items-center justify-between"
+            >
+              <div>
+                <p class="font-semibold text-gray-900">{{ doc.title }}</p>
+                <p class="text-xs text-gray-500">
+                  {{ formatDate(doc.created_at) }}
+                </p>
+              </div>
+              <span
+                :class="getStatusClass(doc.status)"
+                class="px-3 py-1 rounded-full text-xs font-medium"
+              >
+                {{ getStatusText(doc.status) }}
+              </span>
+            </div>
+          </div>
+          <div v-else class="text-gray-400 text-center py-6">
+            Belum ada review terbaru.
           </div>
         </Card>
       </div>
@@ -470,7 +621,10 @@
         </div>
 
         <!-- Project Context Notice -->
-        <div v-if="selectedProject" class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <div
+          v-if="selectedProject"
+          class="p-4 bg-blue-50 border border-blue-200 rounded-lg"
+        >
           <p class="text-sm text-blue-800">
             <strong>Project terpilih:</strong> {{ selectedProject.name }}
           </p>
@@ -485,7 +639,10 @@
         </div>
 
         <!-- Filters -->
-        <Card variant="glassmorphism" class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none">
+        <Card
+          variant="glassmorphism"
+          class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none"
+        >
           <h3 class="text-lg font-semibold text-gray-900 mb-4">Filter Data</h3>
           <div class="grid grid-cols-1 gap-4">
             <div>
@@ -519,20 +676,33 @@
 
         <!-- Overview Stats -->
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-          <Card v-if="pending" v-for="i in 4" :key="i" variant="glassmorphism"
-            class="p-6 animate-pulse bg-white/80 border border-gray-200 w-full !shadow-none">
+          <Card
+            v-if="pending"
+            v-for="i in 4"
+            :key="i"
+            variant="glassmorphism"
+            class="p-6 animate-pulse bg-white/80 border border-gray-200 w-full !shadow-none"
+          >
             <div class="w-12 h-12 bg-gray-200 rounded-lg mb-4"></div>
             <div class="w-16 h-8 bg-gray-200 rounded mb-3"></div>
             <div class="w-28 h-4 bg-gray-200 rounded"></div>
           </Card>
 
-          <Card v-else v-for="stat in researchStats" :key="stat.label" variant="glassmorphism"
-            class="p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 cursor-pointer bg-white/80 border border-gray-200 w-full !shadow-none">
+          <Card
+            v-else
+            v-for="stat in researchStats"
+            :key="stat.label"
+            variant="glassmorphism"
+            class="p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 cursor-pointer bg-white/80 border border-gray-200 w-full !shadow-none"
+          >
             <div class="flex items-center justify-between mb-6">
-              <component :is="getIcon(stat.icon)" :class="`w-12 h-12 ${stat.color}`" />
+              <component
+                :is="getIcon(stat.icon)"
+                :class="`w-12 h-12 ${stat.color}`"
+              />
               <span class="text-3xl font-bold text-gray-900">{{
                 stat.value
-                }}</span>
+              }}</span>
             </div>
             <h3 class="text-gray-800 font-semibold text-lg mb-2">
               {{ stat.label }}
@@ -546,11 +716,17 @@
         <!-- Charts and Analytics -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <!-- Annotations by Error Type -->
-          <Card variant="glassmorphism" class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none">
+          <Card
+            variant="glassmorphism"
+            class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none"
+          >
             <h3 class="text-lg font-semibold text-gray-900 mb-4">
               Distribusi Anotasi per Tipe Error
             </h3>
-            <div v-if="dashboardAnalytics?.annotations_by_error_type?.length" class="space-y-3">
+            <div
+              v-if="dashboardAnalytics?.annotations_by_error_type?.length"
+              class="space-y-3"
+            >
               <div
                 v-for="item in dashboardAnalytics.annotations_by_error_type"
                 :key="item.error_type"
@@ -564,7 +740,9 @@
                       :style="{ width: `${(item.count / Math.max(...dashboardAnalytics.annotations_by_error_type.map((i: any) => i.count))) * 100}%` }"
                     ></div>
                   </div>
-                  <span class="text-sm font-medium text-gray-900 w-8">{{ item.count }}</span>
+                  <span class="text-sm font-medium text-gray-900 w-8">{{
+                    item.count
+                  }}</span>
                 </div>
               </div>
             </div>
@@ -574,11 +752,17 @@
           </Card>
 
           <!-- Reviews by Error Type -->
-          <Card variant="glassmorphism" class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none">
+          <Card
+            variant="glassmorphism"
+            class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none"
+          >
             <h3 class="text-lg font-semibold text-gray-900 mb-4">
               Distribusi Review per Tipe Error
             </h3>
-            <div v-if="dashboardAnalytics?.reviews_by_error_type?.length" class="space-y-3">
+            <div
+              v-if="dashboardAnalytics?.reviews_by_error_type?.length"
+              class="space-y-3"
+            >
               <div
                 v-for="item in dashboardAnalytics.reviews_by_error_type"
                 :key="item.error_type"
@@ -592,7 +776,9 @@
                       :style="{ width: `${(item.count / Math.max(...dashboardAnalytics.reviews_by_error_type.map((i: any) => i.count))) * 100}%` }"
                     ></div>
                   </div>
-                  <span class="text-sm font-medium text-gray-900 w-8">{{ item.count }}</span>
+                  <span class="text-sm font-medium text-gray-900 w-8">{{
+                    item.count
+                  }}</span>
                 </div>
               </div>
             </div>
@@ -603,27 +789,46 @@
         </div>
 
         <!-- Document Status Overview -->
-        <Card variant="glassmorphism" class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none">
-          <h3 class="text-lg font-semibold text-gray-900 mb-4">Status Dokumen</h3>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4" v-if="dashboardAnalytics">
+        <Card
+          variant="glassmorphism"
+          class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none"
+        >
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">
+            Status Dokumen
+          </h3>
+          <div
+            class="grid grid-cols-1 md:grid-cols-3 gap-4"
+            v-if="dashboardAnalytics"
+          >
             <div class="text-center p-4 bg-blue-50 rounded-lg">
-              <div class="text-2xl font-bold text-blue-600">{{ dashboardAnalytics.pending_documents || 0 }}</div>
+              <div class="text-2xl font-bold text-blue-600">
+                {{ dashboardAnalytics.pending_documents || 0 }}
+              </div>
               <div class="text-sm text-blue-600">Pending</div>
             </div>
             <div class="text-center p-4 bg-yellow-50 rounded-lg">
-              <div class="text-2xl font-bold text-yellow-600">{{ dashboardAnalytics.in_progress_documents || 0 }}</div>
+              <div class="text-2xl font-bold text-yellow-600">
+                {{ dashboardAnalytics.in_progress_documents || 0 }}
+              </div>
               <div class="text-sm text-yellow-600">In Progress</div>
             </div>
             <div class="text-center p-4 bg-green-50 rounded-lg">
-              <div class="text-2xl font-bold text-green-600">{{ dashboardAnalytics.completed_documents || 0 }}</div>
+              <div class="text-2xl font-bold text-green-600">
+                {{ dashboardAnalytics.completed_documents || 0 }}
+              </div>
               <div class="text-sm text-green-600">Completed</div>
             </div>
           </div>
         </Card>
 
         <!-- Progress Chart -->
-        <Card variant="glassmorphism" class="p-8 bg-white/90 border border-gray-200 w-full !shadow-none">
-          <h3 class="text-2xl font-bold mb-8 flex items-center gap-3 text-gray-900">
+        <Card
+          variant="glassmorphism"
+          class="p-8 bg-white/90 border border-gray-200 w-full !shadow-none"
+        >
+          <h3
+            class="text-2xl font-bold mb-8 flex items-center gap-3 text-gray-900"
+          >
             <TrendingUp class="w-7 h-7 text-green-500" />
             Progress Proyek
           </h3>
@@ -633,61 +838,102 @@
               <div>
                 <div class="flex justify-between text-sm mb-2">
                   <span class="text-gray-500">Anotasi</span>
-                  <span class="text-gray-400">{{
-                    dashboardAnalytics?.totals?.annotations || 0
-                  }} total</span>
+                  <span class="text-gray-400"
+                    >{{
+                      dashboardAnalytics?.totals?.annotations || 0
+                    }}
+                    total</span
+                  >
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-2">
-                  <div class="bg-blue-500 h-2 rounded-full transition-all duration-1000"
-                    :style="`width: ${Math.min(((dashboardAnalytics?.totals?.annotations || 0) / Math.max(dashboardAnalytics?.per_document?.length || 1, 1)) * 10, 100)}%`">
-                  </div>
+                  <div
+                    class="bg-blue-500 h-2 rounded-full transition-all duration-1000"
+                    :style="`width: ${Math.min(
+                      ((dashboardAnalytics?.totals?.annotations || 0) /
+                        Math.max(
+                          dashboardAnalytics?.per_document?.length || 1,
+                          1
+                        )) *
+                        10,
+                      100
+                    )}%`"
+                  ></div>
                 </div>
               </div>
 
               <div>
                 <div class="flex justify-between text-sm mb-2">
                   <span class="text-gray-500">Review</span>
-                  <span class="text-gray-400">{{
-                    dashboardAnalytics?.totals?.reviews || 0
-                  }} total</span>
+                  <span class="text-gray-400"
+                    >{{ dashboardAnalytics?.totals?.reviews || 0 }} total</span
+                  >
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-2">
-                  <div class="bg-green-500 h-2 rounded-full transition-all duration-1000"
-                    :style="`width: ${Math.min(((dashboardAnalytics?.totals?.reviews || 0) / Math.max(dashboardAnalytics?.totals?.annotations || 1, 1)) * 100, 100)}%`">
-                  </div>
+                  <div
+                    class="bg-green-500 h-2 rounded-full transition-all duration-1000"
+                    :style="`width: ${Math.min(
+                      ((dashboardAnalytics?.totals?.reviews || 0) /
+                        Math.max(
+                          dashboardAnalytics?.totals?.annotations || 1,
+                          1
+                        )) *
+                        100,
+                      100
+                    )}%`"
+                  ></div>
                 </div>
               </div>
 
               <div>
                 <div class="flex justify-between text-sm mb-2">
                   <span class="text-gray-500">Inter-Annotator Agreement</span>
-                  <span class="text-gray-400">{{
-                    ((dashboardAnalytics?.inter_annotator_agreement?.cohen_kappa_avg || 0) * 100).toFixed(1)
-                  }}%</span>
+                  <span class="text-gray-400"
+                    >{{
+                      (
+                        (dashboardAnalytics?.inter_annotator_agreement
+                          ?.cohen_kappa_avg || 0) * 100
+                      ).toFixed(1)
+                    }}%</span
+                  >
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-2">
-                  <div class="bg-purple-500 h-2 rounded-full transition-all duration-1000"
-                    :style="`width: ${((dashboardAnalytics?.inter_annotator_agreement?.cohen_kappa_avg || 0) * 100)}%`">
-                  </div>
+                  <div
+                    class="bg-purple-500 h-2 rounded-full transition-all duration-1000"
+                    :style="`width: ${
+                      (dashboardAnalytics?.inter_annotator_agreement
+                        ?.cohen_kappa_avg || 0) * 100
+                    }%`"
+                  ></div>
                 </div>
               </div>
             </div>
 
             <!-- Quick Actions -->
             <div class="space-y-4">
-              <Button variant="outline" size="lg" class="w-full justify-start h-14 text-base font-medium"
-                @click="navigateTo('/kepala-riset/kelola-project')">
+              <Button
+                variant="outline"
+                size="lg"
+                class="w-full justify-start h-14 text-base font-medium"
+                @click="navigateTo('/kepala-riset/kelola-project')"
+              >
                 <ClipboardList class="w-5 h-5" />
                 Kelola Proyek
               </Button>
-              <Button variant="outline" size="lg" class="w-full justify-start h-14 text-base font-medium"
-                @click="togglePerformanceSection">
+              <Button
+                variant="outline"
+                size="lg"
+                class="w-full justify-start h-14 text-base font-medium"
+                @click="togglePerformanceSection"
+              >
                 <Users class="w-5 h-5" />
                 Performance Team
               </Button>
-              <Button variant="outline" size="lg"
+              <Button
+                variant="outline"
+                size="lg"
                 class="w-full justify-start h-14 text-base font-medium bg-black text-white border border-gray-900 hover:bg-gray-800 hover:scale-105 hover:shadow-lg transition-all duration-200 active:scale-95"
-                @click="navigateTo('/admin/kelola-dokumen')">
+                @click="navigateTo('/admin/kelola-dokumen')"
+              >
                 <Download class="w-5 h-5" />
                 Export Dataset
               </Button>
@@ -696,9 +942,15 @@
         </Card>
 
         <!-- User Performance Section -->
-        <div v-if="showPerformanceSection" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div
+          v-if="showPerformanceSection"
+          class="grid grid-cols-1 lg:grid-cols-2 gap-8"
+        >
           <!-- Annotator Performance -->
-          <Card variant="glassmorphism" class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none">
+          <Card
+            variant="glassmorphism"
+            class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none"
+          >
             <h3 class="text-lg font-semibold text-gray-900 mb-4">
               Performance Anotator
             </h3>
@@ -732,26 +984,47 @@
               <div v-if="annotatorPerformance" class="space-y-2 pt-4 border-t">
                 <div class="flex justify-between">
                   <span class="text-sm text-gray-600">Total Anotasi:</span>
-                  <span class="font-medium">{{ annotatorPerformance.totals.annotations }}</span>
+                  <span class="font-medium">{{
+                    annotatorPerformance.totals.annotations
+                  }}</span>
                 </div>
                 <div class="flex justify-between">
                   <span class="text-sm text-gray-600">Dokumen Dikerjakan:</span>
-                  <span class="font-medium">{{ annotatorPerformance.per_document.length }}</span>
+                  <span class="font-medium">{{
+                    annotatorPerformance.per_document.length
+                  }}</span>
                 </div>
                 <div class="flex justify-between">
                   <span class="text-sm text-gray-600">Cohen's Kappa Avg:</span>
-                  <span class="font-medium">{{ (annotatorPerformance.agreement_with_others.cohen_kappa_avg * 100).toFixed(1) }}%</span>
+                  <span class="font-medium"
+                    >{{
+                      (
+                        annotatorPerformance.agreement_with_others
+                          .cohen_kappa_avg * 100
+                      ).toFixed(1)
+                    }}%</span
+                  >
                 </div>
                 <div class="flex justify-between">
                   <span class="text-sm text-gray-600">Agreement Ratio:</span>
-                  <span class="font-medium">{{ (annotatorPerformance.agreement_with_others.approx_ratio * 100).toFixed(1) }}%</span>
+                  <span class="font-medium"
+                    >{{
+                      (
+                        annotatorPerformance.agreement_with_others
+                          .approx_ratio * 100
+                      ).toFixed(1)
+                    }}%</span
+                  >
                 </div>
               </div>
             </div>
           </Card>
 
           <!-- Reviewer Performance -->
-          <Card variant="glassmorphism" class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none">
+          <Card
+            variant="glassmorphism"
+            class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none"
+          >
             <h3 class="text-lg font-semibold text-gray-900 mb-4">
               Performance Reviewer
             </h3>
@@ -785,11 +1058,15 @@
               <div v-if="reviewerPerformance" class="space-y-2 pt-4 border-t">
                 <div class="flex justify-between">
                   <span class="text-sm text-gray-600">Total Review:</span>
-                  <span class="font-medium">{{ reviewerPerformance.totals.reviews }}</span>
+                  <span class="font-medium">{{
+                    reviewerPerformance.totals.reviews
+                  }}</span>
                 </div>
                 <div class="flex justify-between">
                   <span class="text-sm text-gray-600">Dokumen Dikerjakan:</span>
-                  <span class="font-medium">{{ reviewerPerformance.per_document.length }}</span>
+                  <span class="font-medium">{{
+                    reviewerPerformance.per_document.length
+                  }}</span>
                 </div>
               </div>
             </div>
@@ -831,7 +1108,13 @@ import { Card } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "~/components/ui/avatar";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 import { useAuth } from "~/data/auth";
 import { useDashboardApi } from "~/data/dashboard";
 import { useUsersApi } from "~/data/users";
@@ -843,7 +1126,8 @@ import { useProjectContext } from "~/composables/project-context";
 import type { DocumentStatus } from "~/types/api";
 
 const { user } = useAuth();
-const { getDashboardSummary, getAnnotatorPerformance, getReviewerPerformance } = useDashboardApi();
+const { getDashboardSummary, getAnnotatorPerformance, getReviewerPerformance } =
+  useDashboardApi();
 const { getUsers, getAllUsers } = useUsersApi();
 const { getDocuments } = useDocumentsApi();
 const { getAssignedDocuments } = useUserDocumentsApi();
@@ -1023,7 +1307,10 @@ const reviewerPerformance = ref<any>(null);
 
 // Helper functions
 const getTaskStatusColor = (status: DocumentStatus | string) => {
-  const colorMap: Record<string, "blue" | "yellow" | "green" | "purple" | "orange" | "gray"> = {
+  const colorMap: Record<
+    string,
+    "blue" | "yellow" | "green" | "purple" | "orange" | "gray"
+  > = {
     // Document statuses
     belum_dianotasi: "gray",
     sedang_dianotasi: "yellow",
@@ -1128,11 +1415,13 @@ const fetchDashboardData = async () => {
 
       // Calculate stats based on document status
       const docResults = assignedDocs.results || [];
-      const completedDocs = docResults.filter((doc: any) =>
-        doc.status === "sudah_dianotasi" || doc.status === "sudah_direview"
+      const completedDocs = docResults.filter(
+        (doc: any) =>
+          doc.status === "sudah_dianotasi" || doc.status === "sudah_direview"
       );
-      const inProgressDocs = docResults.filter((doc: any) =>
-        doc.status === "sedang_dianotasi" || doc.status === "sedang_direview"
+      const inProgressDocs = docResults.filter(
+        (doc: any) =>
+          doc.status === "sedang_dianotasi" || doc.status === "sedang_direview"
       );
 
       annotatorStats.value = {
@@ -1142,20 +1431,25 @@ const fetchDashboardData = async () => {
       };
 
       // Map assigned documents to recent tasks format
-      recentTasks.value = assignedDocs.results?.slice(0, 3).map((doc: any, index: number) => ({
-        id: doc.id.toString(),
-        title: doc.title || `Dokumen ${doc.id}`,
-        sentences: doc.jumlah_sentence || doc.sentence_count || 0,
-        status: (doc.status as DocumentStatus) || "belum_dianotasi",
-      })) || [];
+      recentTasks.value =
+        assignedDocs.results?.slice(0, 3).map((doc: any, index: number) => ({
+          id: doc.id.toString(),
+          title: doc.title || `Dokumen ${doc.id}`,
+          sentences: doc.jumlah_sentence || doc.sentence_count || 0,
+          status: (doc.status as DocumentStatus) || "belum_dianotasi",
+        })) || [];
     }
 
     if (hasRole("Reviewer") && user.value?.id) {
       // Get reviewer-specific performance data
-      const reviewerData = await getReviewerPerformance({ user_id: user.value.id });
+      const reviewerData = await getReviewerPerformance({
+        user_id: user.value.id,
+      });
 
       reviewerStats.value = {
-        pendingReviews: dashboardData.per_document?.filter((doc: any) => doc.reviews === 0)?.length || 0,
+        pendingReviews:
+          dashboardData.per_document?.filter((doc: any) => doc.reviews === 0)
+            ?.length || 0,
         completedReviews: reviewerData.per_document?.length || 0,
         errorsFound: reviewerData.totals?.reviews || 0,
       };
@@ -1205,7 +1499,10 @@ const fetchDashboardData = async () => {
         },
         {
           label: "Dokumen Aktif",
-          value: dashboardData.per_document?.filter((doc: any) => doc.annotations > 0 || doc.reviews > 0)?.length || 0,
+          value:
+            dashboardData.per_document?.filter(
+              (doc: any) => doc.annotations > 0 || doc.reviews > 0
+            )?.length || 0,
           icon: "user-group",
           color: "text-orange-400",
           description: "Dokumen dalam progress",
@@ -1237,7 +1534,6 @@ const fetchDashboardData = async () => {
     }
 
     recentActivities.value = activities;
-
   } catch (error) {
     console.error("Error fetching dashboard data:", error);
     // Fallback to basic activities on error
@@ -1270,8 +1566,12 @@ const loadFilterData = async () => {
     // Load users for performance tracking
     const allUsers = await getAllUsers();
 
-    annotators.value = allUsers.filter((user: any) => user.roles?.includes("Annotator"));
-    reviewers.value = allUsers.filter((user: any) => user.roles?.includes("Reviewer"));
+    annotators.value = allUsers.filter((user: any) =>
+      user.roles?.includes("Annotator")
+    );
+    reviewers.value = allUsers.filter((user: any) =>
+      user.roles?.includes("Reviewer")
+    );
   } catch (error) {
     console.error("Error loading filter data:", error);
   }
@@ -1320,7 +1620,10 @@ const updateDashboardData = async () => {
       },
       {
         label: "Dokumen Aktif",
-        value: dashboardData.per_document?.filter((doc: any) => doc.annotations > 0 || doc.reviews > 0)?.length || 0,
+        value:
+          dashboardData.per_document?.filter(
+            (doc: any) => doc.annotations > 0 || doc.reviews > 0
+          )?.length || 0,
         icon: "user-group",
         color: "text-orange-400",
         description: "Dokumen dalam progress",
@@ -1336,7 +1639,6 @@ const updateDashboardData = async () => {
 const togglePerformanceSection = () => {
   showPerformanceSection.value = !showPerformanceSection.value;
 };
-
 
 const loadAnnotatorPerformance = async () => {
   if (!selectedAnnotator.value) return;

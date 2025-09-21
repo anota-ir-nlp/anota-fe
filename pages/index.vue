@@ -59,13 +59,6 @@
             Masuk ke Anota
             <ArrowRightFromLine class="ml-3 w-5 h-5" />
           </Button>
-          <Button
-            variant="outline"
-            size="lg"
-            class="btn-rect btn-rect-outline text-base"
-          >
-            Learn More
-          </Button>
         </div>
         <div class="scroll-indicator" style="bottom: -8rem; margin-top: 0rem">
           <div

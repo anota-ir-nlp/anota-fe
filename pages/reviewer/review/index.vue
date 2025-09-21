@@ -268,10 +268,7 @@
             <Button
               class="w-full justify-start bg-yellow-50 text-yellow-700 hover:bg-yellow-100 hover:text-yellow-800 font-medium transition"
               @click="
-                () =>
-                  toast.info(
-                    'Riwayat Kerja: Total dokumen ' + stats.total
-                  )
+                () => toast.info('Riwayat Kerja: Total dokumen ' + stats.total)
               "
             >
               <svg
@@ -516,8 +513,7 @@
                     :disabled="
                       !(
                         doc.status === 'belum_direview' ||
-                        doc.status === 'sedang_direview' ||
-                        doc.status === 'sudah_direview'
+                        doc.status === 'sedang_direview'
                       )
                     "
                     class="bg-blue-500 hover:bg-blue-600 text-white hover:scale-105 transition-all duration-150"
@@ -617,7 +613,11 @@ import { Button } from "~/components/ui/button";
 import { useUserDocumentsApi } from "~/data/user-documents";
 import { useReviewsApi } from "~/data/reviews";
 import { toast } from "vue-sonner";
-import type { DocumentResponse, AnnotationResponse, DocumentStatus } from "~/types/api";
+import type {
+  DocumentResponse,
+  AnnotationResponse,
+  DocumentStatus,
+} from "~/types/api";
 
 const { getAssignedDocuments } = useUserDocumentsApi();
 const { reopenReview } = useReviewsApi();

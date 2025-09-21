@@ -1,26 +1,38 @@
-﻿# Generic Dockerfile for Nuxt SSR (works for projects with "build" and "start" scripts)
-FROM node:18-alpine
+﻿# Stage 1: Build the application
+FROM node:18-alpine AS builder
 
+# Install pnpm
+RUN npm install -g pnpm
+
+# Set working directory
 WORKDIR /app
 
-# copy package manifests first for caching
-COPY package*.json ./
+# Copy package manifests and lockfile
+COPY package.json pnpm-lock.yaml* ./
 
-# install deps
-RUN npm install
+# Install dependencies
+RUN pnpm install --frozen-lockfile
 
-# copy app files
+# Copy the rest of the application source code
 COPY . .
 
-# build (assumes `npm run build` exists)
-RUN npm run build
+# Build the Nuxt application
+RUN pnpm run build
 
-# expose port
-EXPOSE 3000
+# Stage 2: Create the production image
+FROM node:18-alpine
 
-# ensure Nuxt listens on all interfaces
-ENV HOST=0.0.0.0
+# Set working directory
+WORKDIR /app
+
+# Set production environment
 ENV NODE_ENV=production
 
-# start (assumes `npm run start` exists)
-CMD ["npm", "run", "start"]
+# Copy the built output from the builder stage
+COPY --from=builder /app/.output ./.output
+
+# Expose the port Nuxt will run on
+EXPOSE 3000
+
+# The command to run the Nuxt server
+CMD ["node", ".output/server/index.mjs"]
