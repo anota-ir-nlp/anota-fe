@@ -288,6 +288,7 @@
               color="neutral"
               variant="ghost"
               @click="showCombinedHistory = false"
+              class="bg-black text-white hover:bg-gray-900"
             />
           </div>
           <div>
@@ -417,9 +418,10 @@
             <div class="flex gap-2 pt-4">
               <UButton
                 label="Simpan"
-                icon="i-heroicons-device-floppy"
+                icon="i-heroicons-paper-airplane"
                 class="rounded-full px-4 py-2 bg-black text-white border border-gray-900 hover:bg-gray-900 focus:ring-2 focus:ring-black shadow-none"
                 @click="saveEditAnnotation"
+                variant="ghost"
               />
               <UButton
                 label="Simpan Parsial"
@@ -619,8 +621,8 @@
           <div class="flex gap-2 pt-4">
             <UButton
               label="Simpan"
-              icon="i-heroicons-device-floppy"
-              class="rounded-full px-4 py-2 bg-black text-white border border-gray-900 hover:bg-gray-900 focus:ring-2 focus:ring-black shadow-none anotasi-btn"
+              class="rounded-2xl px-4 py-2 bg-blue-100 text-blue-700 border border-blue-700 hover:bg-blue-200 focus:ring-2 focus:ring-blue-700 shadow-none 
+              anotasi-btn flex items-center gap-2"
               @click="saveAnnotation"
               :disabled="
                 !correctionInput ||
@@ -628,14 +630,20 @@
                 annotationCreating
               "
               :loading="annotationCreating"
-            />
+              variant="ghost"
+            >
+              <UIcon name="i-heroicons-paper-airplane" class="w-4 h-4 mr-1" />
+              Simpan
+            </UButton>
             <UButton
               label="Batal"
               color="neutral"
               variant="ghost"
               @click="showAnnotationUI = false"
-              class="hover:bg-gray-100"
-            />
+              class="rounded-2xl bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200 flex items-center px-4 py-2 shadow-none"
+            >
+              <UIcon name="i-heroicons-x-mark" class="w-4 h-4 mr-1" /> Batal
+            </UButton>
           </div>
         </div>
       </div>
@@ -1363,21 +1371,16 @@ function hasAnnotations(sentenceId: number) {
 
 /* Anotasi button custom style for better feedback */
 .anotasi-btn {
-  transition: background 0.2s, color 0.2s, border 0.2s, opacity 0.2s;
-  background-color: #2563eb !important; /* blue-600 */
-  color: #fff !important;
-  border: 1.5px solid #2563eb !important;
+  /* Remove black background, use blue for enabled, gray for disabled */
   opacity: 1;
+  transition: background 0.2s, color 0.2s, border 0.2s, opacity 0.2s;
 }
 .anotasi-btn:hover:not(:disabled) {
-  background-color: #1d4ed8 !important; /* blue-700 */
-  color: #fff !important;
-  border-color: #1d4ed8 !important;
   box-shadow: 0 2px 8px 0 #2563eb22;
 }
 .anotasi-btn:disabled,
 .anotasi-btn[disabled] {
-  background-color: #e5e7eb !important; /* gray-200 */
+  background-color: #686a6d !important; /* gray-200 */
   color: #9ca3af !important; /* gray-400 */
   border-color: #e5e7eb !important;
   cursor: not-allowed !important;

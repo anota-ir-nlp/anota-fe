@@ -54,6 +54,6 @@ export default defineNuxtConfig({
   },
 
   build: {
-    transpile: ["vuetify"],
+    transpile: ["vuetify", "@sidebase/nuxt-auth", "next-auth"],
   },
 });

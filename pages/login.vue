@@ -118,7 +118,7 @@ const goBack = () => {
           <User class="w-12 h-12 text-gray-700 mb-2 mx-auto" />
           <h2 class="text-3xl font-bold text-gray-900 mb-2">Masuk</h2>
           <p class="text-base text-gray-500">
-            Masukkan kredensial Anda untuk mengakses akun.
+            Masukkan kredensial Anda untuk mengakses akun ANOTA.
           </p>
         </CardHeader>
 

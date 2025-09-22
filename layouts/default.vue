@@ -42,6 +42,7 @@ import {
   Building2,
   Menu as MenuIcon,
   X as CloseIcon,
+  Key, // <-- make sure Key is imported from lucide-vue-next
 } from "lucide-vue-next";
 import { toast } from "vue-sonner";
 import type { AvailableRole, ProjectResponse } from "~/types/api";
@@ -494,10 +495,7 @@ const handleLogout = async () => {
               <!-- Right: Project Selector + Profile Dropdown -->
               <div class="flex items-center gap-2">
                 <div
-                  v-if="
-                    hasRole('Admin') &&
-                    userProjects.length > 0
-                  "
+                  v-if="hasRole('Admin') && userProjects.length > 0"
                   class="flex items-center"
                 >
                   <Select
