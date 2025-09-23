@@ -8,7 +8,7 @@ export default defineNuxtConfig({
   routeRules: {
     "/proxy/**": {
       proxy: `${
-        process.env.NUXT_BACKEND_URL || "http://127.0.0.1:8000/api/v1"
+        process.env.NUXT_BACKEND_URL || "https://anota-dev.cs.ui.ac.id/api/v1"
       }/**`,
       cors: true,
     },
