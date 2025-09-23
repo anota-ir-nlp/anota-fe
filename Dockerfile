@@ -25,13 +25,13 @@ FROM node:18-alpine
 WORKDIR /app
 ENV NODE_ENV=production
 
-# Copy package manifests
+# Copy only production node_modules from builder
+COPY --from=builder /app/node_modules ./node_modules
+
+# Copy package manifests (optional, for debugging)
 COPY package.json pnpm-lock.yaml* ./
 
-# Install only prod dependencies
-RUN pnpm install --prod --frozen-lockfile
-
-# Copy built output from builder
+# Copy built output
 COPY --from=builder /app/.output ./.output
 
 EXPOSE 3000
