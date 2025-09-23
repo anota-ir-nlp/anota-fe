@@ -19,20 +19,20 @@ COPY . .
 # Build the Nuxt application
 RUN pnpm run build
 
-# Stage 2: Create the production image
+# Stage 2: Production image
 FROM node:18-alpine
 
-# Set working directory
 WORKDIR /app
-
-# Set production environment
 ENV NODE_ENV=production
 
-# Copy the built output from the builder stage
+# Copy package manifests
+COPY package.json pnpm-lock.yaml* ./
+
+# Install only prod dependencies
+RUN pnpm install --prod --frozen-lockfile
+
+# Copy built output from builder
 COPY --from=builder /app/.output ./.output
 
-# Expose the port Nuxt will run on
 EXPOSE 3000
-
-# The command to run the Nuxt server
 CMD ["node", ".output/server/index.mjs"]
