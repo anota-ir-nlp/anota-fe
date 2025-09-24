@@ -14,7 +14,7 @@ const BASE = "/roles";
 export function useRolesApi() {
   const { fetcher } = useProtectedFetcher();
 
-  const getRoles = () => fetcher<RoleResponse[]>(BASE);
+  const getRoles = () => fetcher<RoleResponse[]>(`${BASE}/`);
   const getActiveRoles = () => fetcher<RoleResponse[]>(`${BASE}/active`);
   const getRoleNames = () => fetcher<RoleNamesResponse>(`${BASE}/names`);
   const getRole = (id: number) => fetcher<RoleResponse>(`${BASE}/${id}`);

@@ -19,7 +19,7 @@ export function useAnnotationsApi() {
   const getAnnotations = (page?: number) => {
     let url = BASE;
     if (page) {
-      url += `?page=${page}`;
+      url += `?page=${page}/`;
     }
     return fetcher<AnnotationsListResponse>(url);
   };

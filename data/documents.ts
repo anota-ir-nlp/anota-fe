@@ -19,7 +19,7 @@ export function useDocumentsApi() {
     fetcher<DocumentResponse>(`${BASE}/${id}/`);
 
   const createDocument = (data: DocumentRequest) =>
-    fetcher<DocumentResponse>(BASE, { method: "POST", body: data });
+    fetcher<DocumentResponse>(`${BASE}/`, { method: "POST", body: data });
 
   const updateDocument = (id: number, data: Partial<DocumentRequest>) =>
     fetcher<DocumentResponse>(`${BASE}/${id}/`, {

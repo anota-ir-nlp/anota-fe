@@ -125,7 +125,7 @@ export function useDashboardApi() {
       if (params.project_id) searchParams.append("project_id", params.project_id.toString());
       if (params.document_id) searchParams.append("document_id", params.document_id.toString());
       if (searchParams.toString()) {
-        url += `?${searchParams.toString()}`;
+        url += `?${searchParams.toString()}/`;
       }
     }
     return fetcher<DashboardSummaryResponse>(url);
