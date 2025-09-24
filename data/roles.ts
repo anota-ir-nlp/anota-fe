@@ -21,12 +21,12 @@ export function useRolesApi() {
   const createRole = (data: CreateRoleRequest) =>
     fetcher<CreateRoleResponse>(BASE, { method: "POST", body: data });
   const updateRole = (id: number, data: UpdateRoleRequest) =>
-    fetcher<UpdateRoleResponse>(`${BASE}/${id}`, {
+    fetcher<UpdateRoleResponse>(`${BASE}/${id}/`, {
       method: "PATCH",
       body: data,
     });
   const deleteRole = (id: number) =>
-    fetcher<DeleteRoleResponse>(`${BASE}/${id}`, { method: "DELETE" });
+    fetcher<DeleteRoleResponse>(`${BASE}/${id}/`, { method: "DELETE" });
 
   return {
     getRoles,
