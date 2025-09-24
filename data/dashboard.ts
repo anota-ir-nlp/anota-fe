@@ -137,7 +137,7 @@ export function useDashboardApi() {
     if (params.project_id) searchParams.append("project_id", params.project_id.toString());
     if (params.document_id) searchParams.append("document_id", params.document_id.toString());
     if (searchParams.toString()) {
-      url += `?${searchParams.toString()}`;
+      url += `?${searchParams.toString()}/`;
     }
     return fetcher<AnnotatorPerformanceResponse>(url);
   };
@@ -160,7 +160,7 @@ export function useDashboardApi() {
     searchParams.append("reviewer_id", params.reviewer_id);
     if (params.project_id) searchParams.append("project_id", params.project_id.toString());
     if (params.document_id) searchParams.append("document_id", params.document_id.toString());
-    url += `?${searchParams.toString()}`;
+    url += `?${searchParams.toString()}/`;
     return fetcher<IAAResponse>(url);
   };
 

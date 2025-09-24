@@ -15,9 +15,9 @@ export function useRolesApi() {
   const { fetcher } = useProtectedFetcher();
 
   const getRoles = () => fetcher<RoleResponse[]>(`${BASE}/`);
-  const getActiveRoles = () => fetcher<RoleResponse[]>(`${BASE}/active`);
-  const getRoleNames = () => fetcher<RoleNamesResponse>(`${BASE}/names`);
-  const getRole = (id: number) => fetcher<RoleResponse>(`${BASE}/${id}`);
+  const getActiveRoles = () => fetcher<RoleResponse[]>(`${BASE}/active/`);
+  const getRoleNames = () => fetcher<RoleNamesResponse>(`${BASE}/names/`);
+  const getRole = (id: number) => fetcher<RoleResponse>(`${BASE}/${id}/`);
   const createRole = (data: CreateRoleRequest) =>
     fetcher<CreateRoleResponse>(BASE, { method: "POST", body: data });
   const updateRole = (id: number, data: UpdateRoleRequest) =>

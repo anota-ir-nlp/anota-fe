@@ -27,25 +27,25 @@ export function useUsersApi() {
     fetcher<UsersListResponse>(
       page ? `${BASE}/deleted/?page=${page}` : `${BASE}/deleted/`
     );
-  const getCurrentUser = () => fetcher<UserResponse>(`${BASE}/me`);
+  const getCurrentUser = () => fetcher<UserResponse>(`${BASE}/me/`);
   const createUser = (data: UserRegistrationRequest) =>
-    fetcher<UserRegistrationResponse>(`${BASE}/create`, { method: "POST", body: data });
+    fetcher<UserRegistrationResponse>(`${BASE}/create/`, { method: "POST", body: data });
   const updateUser = (id: string, data: UserUpdateRequest) =>
-    fetcher(`${BASE}/${id}/update`, { method: "PUT", body: data });
+    fetcher(`${BASE}/${id}/update/`, { method: "PUT", body: data });
   const partialUpdateUser = (id: string, data: Partial<UserUpdateRequest>) =>
-    fetcher(`${BASE}/${id}/update`, { method: "PATCH", body: data });
+    fetcher(`${BASE}/${id}/update/`, { method: "PATCH", body: data });
   const deleteUser = (id: string) =>
-    fetcher(`${BASE}/${id}/delete`, { method: "DELETE" });
+    fetcher(`${BASE}/${id}/delete/`, { method: "DELETE" });
   const getUserRoles = (userId: string) =>
-    fetcher<UserRolesResponse>(`${BASE}/${userId}/roles`);
+    fetcher<UserRolesResponse>(`${BASE}/${userId}/roles/`);
   const getAvailableRoles = () =>
-    fetcher<AvailableRolesResponse>(`${BASE}/available-roles`);
+    fetcher<AvailableRolesResponse>(`${BASE}/available-roles/`);
   const manageUserRole = (data: UserRoleManagementRequest) =>
-    fetcher(`${BASE}/role-management`, { method: "POST", body: data });
+    fetcher(`${BASE}/role-management/`, { method: "POST", body: data });
   const resetPassword = (data: UserPasswordResetRequest) =>
-    fetcher(`${BASE}/password-reset`, { method: "POST", body: data });
+    fetcher(`${BASE}/password-reset/`, { method: "POST", body: data });
   const generateBackupKey = (userId: string) =>
-    fetcher(`${BASE}/generate-backup-key`, { method: "POST", body: { user_id: userId } });
+    fetcher(`${BASE}/generate-backup-key/`, { method: "POST", body: { user_id: userId } });
 
 
   const getUsersInProject = (projectId: number) =>
@@ -55,7 +55,7 @@ export function useUsersApi() {
   const getMyAssignedDocuments = (page?: number) => {
     let url = `${BASE}/me/assigned-documents/`;
     if (page) {
-      url += `?page=${page}`;
+      url += `?page=${page}/`;
     }
     return fetcher<{
       count: number;
@@ -68,7 +68,7 @@ export function useUsersApi() {
   const getUserAssignedDocuments = (userId: string, page?: number) => {
     let url = `${BASE}/${userId}/assigned-documents/`;
     if (page) {
-      url += `?page=${page}`;
+      url += `?page=${page}/`;
     }
     return fetcher<{
       count: number;

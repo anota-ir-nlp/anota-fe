@@ -40,7 +40,7 @@ export function useReviewsApi() {
   const submitReview = (data: SubmitReviewRequest) =>
     fetcher<SubmitResponse>("/annotations/reviews/submit/", { method: "POST", body: data });
   const deleteReview = (id: number) =>
-    fetcher(`${BASE}/${id}`, { method: "DELETE" });
+    fetcher(`${BASE}/${id}/`, { method: "DELETE" });
 
   const getReviewQueue = (
     documentId: number | string,
@@ -48,7 +48,7 @@ export function useReviewsApi() {
   ) => {
     let url = `/documents/my-assigned/${documentId}/review-queue/`;
     if (includeUnannotated !== undefined) {
-      url += `?include_unannotated=${includeUnannotated}`;
+      url += `?include_unannotated=${includeUnannotated}/`;
     }
     return fetcher(url);
   };
