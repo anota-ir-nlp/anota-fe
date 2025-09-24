@@ -20,17 +20,16 @@ export function useAuth() {
     maxAge: 60 * 60 * 24,
     httpOnly: false,
     secure: false,
-    sameSite: 'lax',
-    default: () => null
+    sameSite: "lax",
+    default: () => null,
   });
   const refreshTokenCookie = useCookie<string | null>(REFRESH_TOKEN_KEY, {
     maxAge: 60 * 60 * 24 * 7,
     httpOnly: false,
     secure: false,
-    sameSite: 'lax',
-    default: () => null
+    sameSite: "lax",
+    default: () => null,
   });
-
 
   if (!accessToken.value && accessTokenCookie.value) {
     accessToken.value = accessTokenCookie.value;
@@ -66,13 +65,16 @@ export function useAuth() {
         return null;
       }
 
-      const res = await $fetch<TokenRefreshResponse>(`${runtimeConfig.public.apiBaseUrl}/token/refresh/`, {
-        method: "POST",
-        body: {
-          refresh: refresh
-        },
-        credentials: 'include',
-      });
+      const res = await $fetch<TokenRefreshResponse>(
+        `${runtimeConfig.public.apiBaseUrl}/token/refresh/`,
+        {
+          method: "POST",
+          body: {
+            refresh: refresh,
+          },
+          credentials: "include",
+        }
+      );
 
       setTokens(res.access);
       return res.access;
@@ -87,7 +89,7 @@ export function useAuth() {
     const { fetcher } = useProtectedFetcher();
 
     try {
-      const res = await fetcher<UserResponse>('/users/me/');
+      const res = await fetcher<UserResponse>("/users/me/");
       user.value = res;
       return res;
     } catch (error) {
@@ -98,11 +100,14 @@ export function useAuth() {
 
   async function login(username: string, password: string) {
     try {
-      const res = await $fetch<LoginResponse>(`${runtimeConfig.public.apiBaseUrl}/login/`, {
-        method: "POST",
-        body: { username, password },
-        credentials: 'include',
-      });
+      const res = await $fetch<LoginResponse>(
+        `${runtimeConfig.public.apiBaseUrl}/login/`,
+        {
+          method: "POST",
+          body: { username, password },
+          credentials: "include",
+        }
+      );
 
       setTokens(res.access, res.refresh);
       await fetchMe();
@@ -128,31 +133,47 @@ export function useAuth() {
         const newToken = await refreshAccessToken();
         if (newToken) {
           await fetchMe();
+        } else {
+          setTokens(null, null);
+          user.value = null;
         }
       }
+    } else if (!token) {
+      setTokens(null, null);
+      user.value = null;
     }
   }
 
   async function requestPasswordReset(email: string) {
     try {
-      const res = await $fetch(`${runtimeConfig.public.apiBaseUrl}/users/password-reset/request/`, {
-        method: "POST",
-        body: { email },
-        credentials: 'include',
-      });
+      const res = await $fetch(
+        `${runtimeConfig.public.apiBaseUrl}/users/password-reset/request/`,
+        {
+          method: "POST",
+          body: { email },
+          credentials: "include",
+        }
+      );
       return res;
     } catch (err) {
       throw err;
     }
   }
 
-  async function verifyPasswordReset(email: string, otp_code: string, new_password: string) {
+  async function verifyPasswordReset(
+    email: string,
+    otp_code: string,
+    new_password: string
+  ) {
     try {
-      const res = await $fetch(`${runtimeConfig.public.apiBaseUrl}/users/password-reset/verify/`, {
-        method: "POST",
-        body: { email, otp_code, new_password },
-        credentials: 'include',
-      });
+      const res = await $fetch(
+        `${runtimeConfig.public.apiBaseUrl}/users/password-reset/verify/`,
+        {
+          method: "POST",
+          body: { email, otp_code, new_password },
+          credentials: "include",
+        }
+      );
       return res;
     } catch (err) {
       throw err;
@@ -182,4 +203,3 @@ export function useAuth() {
     verifyPasswordReset,
   };
 }
-
