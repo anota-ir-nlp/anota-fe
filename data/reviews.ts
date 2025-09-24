@@ -1,7 +1,7 @@
 import { useProtectedFetcher } from "~/composables/protected-fetcher";
-import type { 
-  ReviewRequest, 
-  ReviewResponse, 
+import type {
+  ReviewRequest,
+  ReviewResponse,
   ReviewsListResponse,
   ReopenReviewRequest,
   ReopenResponse,
@@ -22,21 +22,21 @@ export function useReviewsApi() {
     }
     return fetcher<ReviewsListResponse>(url);
   };
-  
+
   const getReview = (id: number) => fetcher<ReviewResponse>(`${BASE}/${id}/`);
-  
+
   const createReview = (data: ReviewRequest) =>
     fetcher<ReviewResponse>(BASE + "/", { method: "POST", body: data });
-  
+
   const updateReview = (id: number, data: ReviewRequest) =>
     fetcher<ReviewResponse>(`${BASE}/${id}/`, { method: "PUT", body: data });
-  
+
   const partialUpdateReview = (id: number, data: Partial<ReviewRequest>) =>
     fetcher<ReviewResponse>(`${BASE}/${id}/`, { method: "PATCH", body: data });
-  
+
   const reopenReview = (data: ReopenReviewRequest) =>
     fetcher<ReopenResponse>("/annotations/reviews/reopen/", { method: "POST", body: data });
-  
+
   const submitReview = (data: SubmitReviewRequest) =>
     fetcher<SubmitResponse>("/annotations/reviews/submit/", { method: "POST", body: data });
   const deleteReview = (id: number) =>

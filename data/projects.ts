@@ -23,7 +23,7 @@ export function useProjectsApi() {
     fetcher<ProjectResponse>(`${BASE}/${id}`);
 
   const createProject = (data: ProjectRequest) =>
-    fetcher<ProjectResponse>(BASE, { method: "POST", body: data });
+    fetcher<ProjectResponse>(`${BASE}/`, { method: "POST", body: data });
 
   const updateProject = (id: number, data: Partial<ProjectRequest>) =>
     fetcher<ProjectResponse>(`${BASE}/${id}`, {
