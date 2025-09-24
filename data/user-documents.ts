@@ -15,7 +15,7 @@ export function useUserDocumentsApi() {
       next: string | null;
       previous: string | null;
       results: DocumentResponse[];
-    }>(page ? `${BASE}?page=${page}/` : `${BASE}/`);
+    }>(page ? `${BASE}?page=${page}` : BASE);
 
   const getAssignedDocument = (id: number | string) =>
     fetcher<DocumentAssignedDetailResponse>(`/documents/my-assigned/${id}/`);

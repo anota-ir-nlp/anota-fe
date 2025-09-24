@@ -11,14 +11,14 @@ export function useErrorTypesApi() {
   const { fetcher } = useProtectedFetcher();
 
   const getErrorTypes = (page?: number, projectId?: number) => {
-    let url = BASE;
+    let url = `${BASE}/`;
     const params = new URLSearchParams();
 
     if (page) params.append("page", page.toString());
     if (projectId) params.append("project_id", projectId.toString());
 
     if (params.toString()) {
-      url += `/?${params.toString()}/`;
+      url += `?${params.toString()}`;
     }
 
     return fetcher<ErrorTypesListResponse | ErrorTypeResponse[]>(url);

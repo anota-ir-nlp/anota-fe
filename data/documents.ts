@@ -28,7 +28,7 @@ export function useDocumentsApi() {
     });
 
   const deleteDocument = (id: number) =>
-    fetcher(`${BASE}/${id}`, { method: "DELETE" });
+    fetcher(`${BASE}/${id}/`, { method: "DELETE" });
 
   const getDocumentsInProject = (projectId: number) =>
     fetcher<DocumentResponse[]>(`/projects/${projectId}/documents/`);
