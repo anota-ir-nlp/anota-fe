@@ -10,7 +10,6 @@ export default defineNuxtConfig({
       proxy: `${
         process.env.NUXT_BACKEND_URL || "https://anota-dev.cs.ui.ac.id/api/v1"
       }/**`,
-      cors: true,
     },
   },
 

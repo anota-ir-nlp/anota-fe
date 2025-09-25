@@ -33,14 +33,14 @@
             Mode Kepala Riset
           </h3>
           <p class="text-blue-700">
-            Anda dapat melihat semua dokumen dari seluruh project. Untuk upload dokumen baru, silakan pilih project terlebih dahulu.
+            Anda dapat melihat semua dokumen dari seluruh project.
           </p>
         </div>
       </div>
 
       <template v-if="selectedProject || isKepalaRiset">
-        <!-- Upload Controls (Only show if project selected or admin role) -->
-        <div v-if="selectedProject" class="mb-6 flex gap-3">
+        <!-- Upload Controls (Only show for admin users when project selected) -->
+        <div v-if="selectedProject && !isKepalaRiset" class="mb-6 flex gap-3">
           <!-- Single Upload Dialog -->
           <Dialog v-model:open="isCreateDialogOpen">
             <DialogTrigger as-child>
@@ -390,36 +390,38 @@
             </DialogContent>
           </Dialog>
 
-          <!-- Bulk Actions -->
-          <div v-if="selectedDocuments.length > 0" class="flex gap-2 ml-auto">
-            <!-- Bulk Export Button -->
-            <DropdownMenu>
-              <DropdownMenuTrigger as-child>
-                <Button variant="outline" class="flex items-center gap-2">
-                  <Download class="w-4 h-4" />
-                  Bulk Export ({{ selectedDocuments.length }})
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem @click="handleBulkExport('parallel')">
-                  Export All Parallel TSV
-                </DropdownMenuItem>
-                <DropdownMenuItem @click="handleBulkExport('m2')">
-                  Export All M2 Format
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+        </div>
 
-            <!-- Bulk Assignment Button -->
-            <Button
-              variant="outline"
-              class="flex items-center gap-2"
-              @click="openAssignmentDialog('bulk')"
-            >
-              <UserPlus class="w-4 h-4" />
-              Kelola Assignment ({{ selectedDocuments.length }})
-            </Button>
-          </div>
+        <!-- Bulk Actions (Available for both Admin and Kepala Riset) -->
+        <div v-if="selectedDocuments.length > 0" class="mb-6 flex gap-2 justify-end">
+          <!-- Bulk Export Button -->
+          <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+              <Button variant="outline" class="flex items-center gap-2">
+                <Download class="w-4 h-4" />
+                Bulk Export ({{ selectedDocuments.length }})
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem @click="handleBulkExport('parallel')">
+                Export All Parallel TSV
+              </DropdownMenuItem>
+              <DropdownMenuItem @click="handleBulkExport('m2')">
+                Export All M2 Format
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <!-- Bulk Assignment Button (Only for Admin users) -->
+          <Button
+            v-if="!isKepalaRiset"
+            variant="outline"
+            class="flex items-center gap-2"
+            @click="openAssignmentDialog('bulk')"
+          >
+            <UserPlus class="w-4 h-4" />
+            Kelola Assignment ({{ selectedDocuments.length }})
+          </Button>
         </div>
 
         <!-- Assignment Dialog -->

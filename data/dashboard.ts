@@ -66,15 +66,10 @@ export interface AnnotatorPerformanceResponse {
     annotations: number;
   };
   per_document: Array<{
-    document_id: number;
-    document_title: string;
-    annotations: number;
+    document__id: number;
+    document__title: string;
+    annotations_count: number;
   }>;
-  agreement_with_others: {
-    cohen_kappa_avg: number;
-    approx_ratio: number;
-    matching_annotation_count: number;
-  };
 }
 
 export interface ReviewerPerformanceResponse {
@@ -95,24 +90,40 @@ export interface ReviewerPerformanceResponse {
 }
 
 export interface IAAResponse {
-  filters: {
+  participants: {
     annotator_id: string;
+    annotator_name: string;
     reviewer_id: string;
+    reviewer_name: string;
+  };
+  filters: {
     project_id: number | null;
     document_id: number | null;
   };
-  totals: {
-    items: number;
-    correct: number;
+  results: {
+    cohen_kappa: number;
     accuracy: number;
+    span_agreement_ratio: number;
+    total_items: number;
+    correct_items: number;
+    total_unique_spans: number;
+    matching_spans: number;
   };
-  confusion_like: {
-    agree_no_annotation: number;
-    agree_error_type: number;
-    disagree_presence: number;
-    disagree_error_type: number;
+  detailed_analysis: {
+    confusion_like: {
+      agree_no_annotation: number;
+      agree_error_type: number;
+      disagree_presence: number;
+      disagree_error_type: number;
+    };
+    perfect_agreement_spans: number[][];
+    annotator_only_spans: number[][];
+    reviewer_only_spans: number[][];
   };
-  kappa: number;
+  metadata: {
+    execution_time: number;
+    data_size: number;
+  };
 }
 
 export function useDashboardApi() {

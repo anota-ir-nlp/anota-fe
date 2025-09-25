@@ -2,7 +2,7 @@ import { useAuth } from "~/data/auth";
 
 const roleBasedRoutes = {
   Admin: [
-    "/admin/kelola-dokumen",
+    "/kepala-riset-admin/kelola-dokumen",
     "/admin/kelola-error",
     "/kepala-riset-admin/kelola-pengguna",
     "/admin/reopen",
@@ -13,7 +13,7 @@ const roleBasedRoutes = {
   "Kepala Riset": [
     "/kepala-riset/kelola-project",
     "/kepala-riset-admin/kelola-pengguna",
-    "/admin/kelola-dokumen",
+    "/kepala-riset-admin/kelola-dokumen",
     "/admin/kelola-error",
     "/admin/dashboard",
   ],

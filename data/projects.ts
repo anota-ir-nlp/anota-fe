@@ -16,7 +16,7 @@ export function useProjectsApi() {
 
   const getProjects = (page?: number) =>
     fetcher<ProjectsListResponse>(
-      page ? `${BASE}/?page=${page}/` : `${BASE}/`
+      page ? `${BASE}?/page=${page}` : `${BASE}/`
     );
 
   const getProject = (id: number) =>

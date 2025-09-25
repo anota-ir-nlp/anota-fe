@@ -78,9 +78,17 @@ export function useAuth() {
 
       setTokens(res.access);
       return res.access;
-    } catch {
-      setTokens(null, null);
-      user.value = null;
+    } catch (error: any) {
+      console.error("Token refresh failed:", error);
+      
+      // If refresh token is also expired or invalid, clear everything
+      if (error?.data?.code === "token_not_valid" || 
+          error?.status === 401 || 
+          error?.response?.status === 401) {
+        setTokens(null, null);
+        user.value = null;
+      }
+      
       return null;
     }
   }
@@ -129,10 +137,24 @@ export function useAuth() {
     if (token && !user.value) {
       try {
         await fetchMe();
-      } catch (error) {
-        const newToken = await refreshAccessToken();
-        if (newToken) {
-          await fetchMe();
+      } catch (error: any) {
+        // If access token is expired, try to refresh
+        if (error?.status === 401 || 
+            error?.response?.status === 401 ||
+            error?.data?.code === "token_not_valid") {
+          const newToken = await refreshAccessToken();
+          if (newToken) {
+            try {
+              await fetchMe();
+            } catch {
+              // If still fails after refresh, clear tokens
+              setTokens(null, null);
+              user.value = null;
+            }
+          } else {
+            setTokens(null, null);
+            user.value = null;
+          }
         } else {
           setTokens(null, null);
           user.value = null;

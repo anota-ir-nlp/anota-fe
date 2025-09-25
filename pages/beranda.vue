@@ -184,7 +184,7 @@
               variant="outline"
               size="lg"
               class="justify-start h-14 text-base font-medium"
-              @click="navigateTo('/admin/kelola-dokumen')"
+              @click="navigateTo('/kepala-riset-admin/kelola-dokumen')"
             >
               <FilePlus class="w-5 h-5" />
               Kelola Dokumen
@@ -930,8 +930,8 @@
               <Button
                 variant="outline"
                 size="lg"
-                class="w-full justify-start h-14 text-base font-medium bg-black text-white border border-gray-900 hover:bg-gray-800 hover:scale-105 hover:shadow-lg transition-all duration-200 active:scale-95"
-                @click="navigateTo('/admin/kelola-dokumen')"
+                class="w-full justify-start h-14 text-base font-medium hover:bg-gray-50 hover:scale-105 hover:shadow-lg transition-all duration-200 active:scale-95"
+                @click="navigateTo('/kepala-riset-admin/kelola-dokumen')"
               >
                 <Download class="w-5 h-5" />
                 Export Dataset
@@ -993,27 +993,20 @@
                     annotatorPerformance.per_document.length
                   }}</span>
                 </div>
-                <div class="flex justify-between">
-                  <span class="text-sm text-gray-600">Cohen's Kappa Avg:</span>
-                  <span class="font-medium"
-                    >{{
-                      (
-                        annotatorPerformance.agreement_with_others
-                          .cohen_kappa_avg * 100
-                      ).toFixed(1)
-                    }}%</span
-                  >
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-sm text-gray-600">Agreement Ratio:</span>
-                  <span class="font-medium"
-                    >{{
-                      (
-                        annotatorPerformance.agreement_with_others
-                          .approx_ratio * 100
-                      ).toFixed(1)
-                    }}%</span
-                  >
+                <div v-if="annotatorPerformance.per_document.length > 0" class="mt-2">
+                  <span class="text-xs text-gray-500">Per Dokumen:</span>
+                  <div class="max-h-20 overflow-y-auto mt-1">
+                    <div 
+                      v-for="doc in annotatorPerformance.per_document.slice(0, 3)" 
+                      :key="doc.document__id"
+                      class="text-xs text-gray-600 truncate"
+                    >
+                      {{ doc.document__title }}: {{ doc.annotations_count }} anotasi
+                    </div>
+                    <div v-if="annotatorPerformance.per_document.length > 3" class="text-xs text-gray-400">
+                      +{{ annotatorPerformance.per_document.length - 3 }} dokumen lainnya
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

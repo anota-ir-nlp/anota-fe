@@ -1,5 +1,12 @@
 export interface ErrorResponse {
   error: string;
+  detail?: string;
+  code?: string;
+  messages?: Array<{
+    token_class?: string;
+    token_type?: string;
+    message: string;
+  }>;
 }
 
 // Document status type
