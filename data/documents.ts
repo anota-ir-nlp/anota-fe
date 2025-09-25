@@ -16,19 +16,19 @@ export function useDocumentsApi() {
     );
 
   const getDocument = (id: number) =>
-    fetcher<DocumentResponse>(`${BASE}/${id}`);
+    fetcher<DocumentResponse>(`${BASE}/${id}/`);
 
   const createDocument = (data: DocumentRequest) =>
-    fetcher<DocumentResponse>(BASE, { method: "POST", body: data });
+    fetcher<DocumentResponse>(`${BASE}/`, { method: "POST", body: data });
 
   const updateDocument = (id: number, data: Partial<DocumentRequest>) =>
-    fetcher<DocumentResponse>(`${BASE}/${id}`, {
+    fetcher<DocumentResponse>(`${BASE}/${id}/`, {
       method: "PATCH",
       body: data,
     });
 
   const deleteDocument = (id: number) =>
-    fetcher(`${BASE}/${id}`, { method: "DELETE" });
+    fetcher(`${BASE}/${id}/`, { method: "DELETE" });
 
   const getDocumentsInProject = (projectId: number) =>
     fetcher<DocumentResponse[]>(`/projects/${projectId}/documents/`);

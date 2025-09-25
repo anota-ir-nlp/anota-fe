@@ -16,7 +16,7 @@ export function useReviewsApi() {
   const { fetcher } = useProtectedFetcher();
 
   const getReviews = (page?: number) => {
-    let url = BASE;
+    let url = `${BASE}/`;
     if (page) {
       url += `?page=${page}`;
     }
@@ -26,7 +26,7 @@ export function useReviewsApi() {
   const getReview = (id: number) => fetcher<ReviewResponse>(`${BASE}/${id}/`);
 
   const createReview = (data: ReviewRequest) =>
-    fetcher<ReviewResponse>(BASE + "/", { method: "POST", body: data });
+    fetcher<ReviewResponse>(`${BASE}/`, { method: "POST", body: data });
 
   const updateReview = (id: number, data: ReviewRequest) =>
     fetcher<ReviewResponse>(`${BASE}/${id}/`, { method: "PUT", body: data });
@@ -35,12 +35,12 @@ export function useReviewsApi() {
     fetcher<ReviewResponse>(`${BASE}/${id}/`, { method: "PATCH", body: data });
 
   const reopenReview = (data: ReopenReviewRequest) =>
-    fetcher<ReopenResponse>("/annotations/reviews/reopen/", { method: "POST", body: data });
+    fetcher<ReopenResponse>(`${BASE}/reopen/`, { method: "POST", body: data });
 
   const submitReview = (data: SubmitReviewRequest) =>
-    fetcher<SubmitResponse>("/annotations/reviews/submit/", { method: "POST", body: data });
+    fetcher<SubmitResponse>(`${BASE}/submit/`, { method: "POST", body: data });
   const deleteReview = (id: number) =>
-    fetcher(`${BASE}/${id}`, { method: "DELETE" });
+    fetcher(`${BASE}/${id}/`, { method: "DELETE" });
 
   const getReviewQueue = (
     documentId: number | string,
@@ -58,7 +58,7 @@ export function useReviewsApi() {
     user_id: string;
     reason?: string;
   }) =>
-    fetcher("/annotations/admin/reopen-review/", {
+    fetcher(`${BASE}/admin/reopen-review/`, {
       method: "POST",
       body: data,
     });

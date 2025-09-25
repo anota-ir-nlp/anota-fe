@@ -119,7 +119,7 @@ export function useDashboardApi() {
   const { fetcher } = useProtectedFetcher();
 
   const getDashboardSummary = (params?: DashboardSummaryParams) => {
-    let url = BASE;
+    let url = `${BASE}/`;
     if (params) {
       const searchParams = new URLSearchParams();
       if (params.project_id) searchParams.append("project_id", params.project_id.toString());
@@ -132,7 +132,7 @@ export function useDashboardApi() {
   };
 
   const getAnnotatorPerformance = (params: AnnotatorPerformanceParams) => {
-    let url = `${BASE}/annotators/${params.user_id}`;
+    let url = `${BASE}/annotators/${params.user_id}/`;
     const searchParams = new URLSearchParams();
     if (params.project_id) searchParams.append("project_id", params.project_id.toString());
     if (params.document_id) searchParams.append("document_id", params.document_id.toString());
@@ -143,7 +143,7 @@ export function useDashboardApi() {
   };
 
   const getReviewerPerformance = (params: ReviewerPerformanceParams) => {
-    let url = `${BASE}/reviewers/${params.user_id}`;
+    let url = `${BASE}/reviewers/${params.user_id}/`;
     const searchParams = new URLSearchParams();
     if (params.project_id) searchParams.append("project_id", params.project_id.toString());
     if (params.document_id) searchParams.append("document_id", params.document_id.toString());
@@ -154,7 +154,7 @@ export function useDashboardApi() {
   };
 
   const getInterAnnotatorAgreement = (params: IAAParams) => {
-    let url = `${BASE}/iaa`;
+    let url = `${BASE}/iaa/`;
     const searchParams = new URLSearchParams();
     searchParams.append("annotator_id", params.annotator_id);
     searchParams.append("reviewer_id", params.reviewer_id);

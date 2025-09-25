@@ -16,23 +16,23 @@ export function useProjectsApi() {
 
   const getProjects = (page?: number) =>
     fetcher<ProjectsListResponse>(
-      page ? `${BASE}/?page=${page}` : `${BASE}/`
+      page ? `${BASE}/?page=${page}/` : `${BASE}/`
     );
 
   const getProject = (id: number) =>
-    fetcher<ProjectResponse>(`${BASE}/${id}`);
+    fetcher<ProjectResponse>(`${BASE}/${id}/`);
 
   const createProject = (data: ProjectRequest) =>
     fetcher<ProjectResponse>(`${BASE}/`, { method: "POST", body: data });
 
   const updateProject = (id: number, data: Partial<ProjectRequest>) =>
-    fetcher<ProjectResponse>(`${BASE}/${id}`, {
+    fetcher<ProjectResponse>(`${BASE}/${id}/`, {
       method: "PATCH",
       body: data,
     });
 
   const deleteProject = (id: number) =>
-    fetcher(`${BASE}/${id}`, { method: "DELETE" });
+    fetcher(`${BASE}/${id}/`, { method: "DELETE" });
 
   const assignAdmin = (projectId: number, data: AssignAdminRequest) =>
     fetcher<AssignAdminResponse>(`${BASE}/${projectId}/assign_admin/`, {
