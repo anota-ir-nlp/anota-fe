@@ -172,7 +172,7 @@
               <div class="relative w-full group">
                 <div
                   class="bg-black rounded-t transition-all duration-300 group-hover:bg-gray-800"
-                  :style="{ height: `${Math.max(val.count * 8, 20)}px` }"
+                  :style="{ height: `${getBarHeight(val.count)}px` }"
                 ></div>
                 <div
                   class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
@@ -581,6 +581,7 @@
               rows="3"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none"
               placeholder="Tulis alasan mengapa dokumen perlu dibuka kembali..."
+              style="color: #222"
             ></textarea>
           </div>
           <div class="flex justify-end gap-2 mt-6">
@@ -923,6 +924,13 @@ async function submitReopen() {
   } finally {
     reopenLoading.value = false;
   }
+}
+
+// Bar chart height calculation
+function getBarHeight(count: number) {
+  const max = Math.max(...weeklyStats.value.map((d) => d.count), 1);
+  // Scale so the tallest bar is 120px, others proportional
+  return max ? Math.max((count / max) * 120, 20) : 20;
 }
 </script>
 
