@@ -48,6 +48,11 @@ import { toast } from "vue-sonner";
 import type { AvailableRole, ProjectResponse } from "~/types/api";
 import type { AcceptableValue } from "reka-ui";
 
+useHead({
+  title: "Anota",
+  meta: [{ name: "description", content: "Halaman aplikasi ANOTA." }],
+});
+
 const { user, isAuthenticated, userRoles, logout, initializeAuth } = useAuth();
 const { getProjects } = useProjectsApi();
 const { selectedProject, setSelectedProject, clearSelectedProject } =

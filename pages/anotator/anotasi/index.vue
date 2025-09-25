@@ -587,6 +587,7 @@
               rows="3"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none"
               placeholder="Tulis alasan mengapa dokumen perlu dibuka kembali..."
+              style="color: #222"
             ></textarea>
           </div>
           <div class="flex justify-end gap-2 mt-6">
@@ -618,7 +619,11 @@ import { navigateTo } from "#app";
 import { Button } from "~/components/ui/button";
 import { useUserDocumentsApi } from "~/data/user-documents";
 import { useAnnotationsApi } from "~/data/annotations";
-import type { DocumentResponse, AnnotationResponse, DocumentStatus } from "~/types/api";
+import type {
+  DocumentResponse,
+  AnnotationResponse,
+  DocumentStatus,
+} from "~/types/api";
 import { toast } from "vue-sonner";
 
 const { getAssignedDocuments } = useUserDocumentsApi();
