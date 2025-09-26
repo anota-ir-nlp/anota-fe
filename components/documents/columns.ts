@@ -61,7 +61,7 @@ export function createColumns(
       accessorKey: "assigned_to",
       header: "Assigned To",
       cell: ({ row }) => {
-        const assignedTo = (row.getValue("assigned_to") as number[]) || [];
+        const assignedTo = (row.getValue("assigned_to") as string[]) || [];
 
         if (!assignedTo.length) {
           return h(
@@ -74,14 +74,14 @@ export function createColumns(
         return h(
           "div",
           { class: "flex flex-wrap gap-1" },
-          assignedTo.map((userId) =>
+          assignedTo.map((userName) =>
             h(
               Badge,
               {
-                key: userId,
+                key: userName,
                 variant: "blue",
               },
-              () => getUserName(userId.toString())
+              () => userName
             )
           )
         );

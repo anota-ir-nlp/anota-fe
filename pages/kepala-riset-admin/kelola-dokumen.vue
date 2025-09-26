@@ -1149,9 +1149,15 @@ function openAssignmentDialog(
 
   if (mode === "single" && document) {
     documentToManage.value = document;
-    originalAssignedUsers.value =
-      document.assigned_to?.map((id) => id.toString()) || [];
-    assignedUserIds.value = [...originalAssignedUsers.value];
+    // Map user names to user IDs
+    const assignedUserNames = document.assigned_to || [];
+    const assignedIds = assignedUserNames.map((userName: string) => {
+      const user = users.value.find((u: UserResponse) => u.full_name === userName || u.username === userName);
+      return user ? user.id : null;
+    }).filter((id: string | null) => id !== null) as string[];
+    
+    originalAssignedUsers.value = assignedIds;
+    assignedUserIds.value = [...assignedIds];
   }
 
   isAssignmentDialogOpen.value = true;
@@ -1336,7 +1342,7 @@ function handleDeleteDocument(documentId: string) {
       toast.success("Dokumen berhasil dihapus");
       fetchDocuments(currentPage.value);
     })
-    .catch((error) => {
+    .catch((error: any) => {
       console.error("Error deleting document:", error);
       toast.error("Gagal menghapus dokumen");
     });
@@ -1491,7 +1497,7 @@ async function submitReopen() {
 }
 
 function getUserName(userId: string) {
-  const user = users.value.find((u) => u.id === userId);
+  const user = users.value.find((u: UserResponse) => u.id === userId);
   return user ? user.full_name : "Unknown User";
 }
 
