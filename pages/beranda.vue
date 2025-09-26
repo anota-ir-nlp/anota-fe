@@ -63,17 +63,114 @@
         </div>
       </Card>
 
+      <!-- Admin Project Table Section -->
+      <div v-if="hasRole('Admin') && userProjects.length > 0" class="mt-8 mb-8">
+        <!-- Admin Role Header -->
+        <div class="flex items-center gap-4 mb-8">
+          <div class="p-3 rounded-lg bg-pink-500/10 border border-pink-200">
+            <Users class="w-8 h-8 text-pink-500" />
+          </div>
+          <div>
+            <h2 class="text-3xl font-bold text-gray-900">Projects</h2>
+            <p class="text-gray-500 text-lg">Pilih Project</p>
+          </div>
+        </div>
+        <Card
+          variant="glassmorphism"
+          class="p-0 bg-white/90 border border-gray-200 w-full !shadow-none"
+        >
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-lg">
+              <thead>
+                <tr class="bg-gray-100 text-gray-700">
+                  <th class="px-4 py-2 text-left font-semibold">
+                    Nama Project
+                  </th>
+                  <th class="px-4 py-2 text-left font-semibold">Deskripsi</th>
+                  <th class="px-4 py-2 text-left font-semibold">
+                    Tanggal Dibuat
+                  </th>
+                  <th class="px-4 py-2 text-left font-semibold">
+                    Jumlah Admin
+                  </th>
+                  <th class="px-4 py-2"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  :class="[
+                    !selectedProject || selectedProject.id === undefined
+                      ? 'bg-blue-50 text-blue-700 font-semibold'
+                      : 'hover:bg-blue-50 cursor-pointer',
+                  ]"
+                  @click="handleProjectChange('all')"
+                >
+                  <td class="px-4 py-2 text-black">Semua Project</td>
+                  <td class="px-4 py-2 text-gray-500">
+                    Menampilkan semua project
+                  </td>
+                  <td class="px-4 py-2 text-gray-400">-</td>
+                  <td class="px-4 py-2 text-gray-400">-</td>
+                  <td class="px-4 py-2">
+                    <span
+                      v-if="
+                        !selectedProject || selectedProject.id === undefined
+                      "
+                      class="inline-block px-3 py-1 rounded bg-blue-100 text-blue-700 text-xs font-semibold"
+                      >Aktif</span
+                    >
+                  </td>
+                </tr>
+                <tr
+                  v-for="project in userProjects"
+                  :key="project.id"
+                  :class="[
+                    selectedProject?.id === project.id
+                      ? 'bg-blue-50 text-blue-700 font-semibold'
+                      : 'hover:bg-blue-50 cursor-pointer',
+                  ]"
+                  @click="handleProjectChange(project.id.toString())"
+                >
+                  <td class="px-4 py-2 text-black">{{ project.name }}</td>
+                  <td class="px-4 py-2 text-gray-500">
+                    {{ project.description || "-" }}
+                  </td>
+                  <td class="px-4 py-2 text-gray-400">
+                    {{ formatDate(project.created_at) }}
+                  </td>
+                  <td class="px-4 py-2 text-gray-500">
+                    {{ project.assigned_admins?.length || 0 }}
+                  </td>
+                  <td class="px-4 py-2">
+                    <span
+                      v-if="selectedProject?.id === project.id"
+                      class="inline-block px-3 py-1 rounded bg-blue-100 text-blue-700 text-xs font-semibold"
+                      >Aktif</span
+                    >
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      </div>
+
       <!-- Activity Timeline -->
+
+      <div class="flex items-center gap-4">
+        <div class="p-3 rounded-lg bg-green-500/10 border border-green-200">
+          <Clock class="w-7 h-7 text-green-400" />
+        </div>
+        <div>
+          <h2 class="text-3xl font-bold text-gray-900">Aktivitas Terbaru</h2>
+          <p class="text-gray-500 text-lg">Monitoring Aktivitas</p>
+        </div>
+      </div>
+
       <Card
         variant="glassmorphism"
         class="p-8 bg-white/90 border border-gray-200 w-full !shadow-none"
       >
-        <h3
-          class="text-2xl font-bold mb-6 flex items-center gap-3 text-gray-900"
-        >
-          <Clock class="w-7 h-7 text-blue-400" />
-          Aktivitas Terbaru
-        </h3>
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6">
           <Card
             v-for="activity in recentActivities"
@@ -87,7 +184,7 @@
                 :class="`w-8 h-8 ${activity.color}`"
               />
               <div>
-                <p class="font-semibold text-gray-900 text-lg">
+                <p class="text-gray-900 text-lg">
                   {{ activity.title }}
                 </p>
                 <p class="text-sm text-gray-500 mt-1">
@@ -993,18 +1090,29 @@
                     annotatorPerformance.per_document.length
                   }}</span>
                 </div>
-                <div v-if="annotatorPerformance.per_document.length > 0" class="mt-2">
+                <div
+                  v-if="annotatorPerformance.per_document.length > 0"
+                  class="mt-2"
+                >
                   <span class="text-xs text-gray-500">Per Dokumen:</span>
                   <div class="max-h-20 overflow-y-auto mt-1">
-                    <div 
-                      v-for="doc in annotatorPerformance.per_document.slice(0, 3)" 
+                    <div
+                      v-for="doc in annotatorPerformance.per_document.slice(
+                        0,
+                        3
+                      )"
                       :key="doc.document__id"
                       class="text-xs text-gray-600 truncate"
                     >
-                      {{ doc.document__title }}: {{ doc.annotations_count }} anotasi
+                      {{ doc.document__title }}:
+                      {{ doc.annotations_count }} anotasi
                     </div>
-                    <div v-if="annotatorPerformance.per_document.length > 3" class="text-xs text-gray-400">
-                      +{{ annotatorPerformance.per_document.length - 3 }} dokumen lainnya
+                    <div
+                      v-if="annotatorPerformance.per_document.length > 3"
+                      class="text-xs text-gray-400"
+                    >
+                      +{{ annotatorPerformance.per_document.length - 3 }}
+                      dokumen lainnya
                     </div>
                   </div>
                 </div>
@@ -1124,7 +1232,12 @@ const { getUsers, getAllUsers } = useUsersApi();
 const { getDocuments } = useDocumentsApi();
 const { getAssignedDocuments } = useUserDocumentsApi();
 const { getProjects } = useProjectsApi();
-const { selectedProject, selectedProjectId } = useProjectContext();
+const {
+  selectedProject,
+  setSelectedProject,
+  clearSelectedProject,
+  selectedProjectId,
+} = useProjectContext();
 
 const pending = ref(false);
 
@@ -1290,6 +1403,8 @@ const loadingFilter = ref(false);
 const showPerformanceSection = ref(false);
 const projects = ref<any[]>([]);
 const documents = ref<any[]>([]);
+const userProjects = ref<any[]>([]);
+const isLoadingProjects = ref(false);
 
 // Performance tracking
 const selectedAnnotator = ref<string>("");
@@ -1361,6 +1476,7 @@ useHead({
 
 onMounted(async () => {
   pending.value = true;
+  await fetchUserProjects();
   try {
     await fetchDashboardData();
     await loadFilterData();
@@ -1705,4 +1821,47 @@ const loadReviewerPerformance = async () => {
     loadingReviewer.value = false;
   }
 };
+
+// Fetch projects for admin
+async function fetchUserProjects() {
+  if (!hasRole("Admin")) return;
+  isLoadingProjects.value = true;
+  try {
+    const response = await getProjects();
+    userProjects.value = response.results || [];
+  } catch (error) {
+    console.error("Error fetching projects:", error);
+  } finally {
+    isLoadingProjects.value = false;
+  }
+}
+
+// Handle project change
+function handleProjectChange(value: string) {
+  if (!value || value === "all") {
+    clearSelectedProject();
+  } else {
+    const project = userProjects.value.find(
+      (p: any) => p.id.toString() === value
+    );
+    if (project) {
+      setSelectedProject(project);
+    }
+  }
+  // Refresh dashboard data
+  fetchDashboardData();
+}
+
+onMounted(async () => {
+  pending.value = true;
+  await fetchUserProjects();
+  try {
+    await fetchDashboardData();
+    await loadFilterData();
+  } catch (error) {
+    console.error("Error fetching dashboard data:", error);
+  } finally {
+    pending.value = false;
+  }
+});
 </script>
