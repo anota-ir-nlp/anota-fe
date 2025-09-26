@@ -14,19 +14,19 @@ const BASE = "/roles";
 export function useRolesApi() {
   const { fetcher } = useProtectedFetcher();
 
-  const getRoles = () => fetcher<RoleResponse[]>(BASE);
-  const getActiveRoles = () => fetcher<RoleResponse[]>(`${BASE}/active`);
-  const getRoleNames = () => fetcher<RoleNamesResponse>(`${BASE}/names`);
-  const getRole = (id: number) => fetcher<RoleResponse>(`${BASE}/${id}`);
+  const getRoles = () => fetcher<RoleResponse[]>(`${BASE}/`);
+  const getActiveRoles = () => fetcher<RoleResponse[]>(`${BASE}/active/`);
+  const getRoleNames = () => fetcher<RoleNamesResponse>(`${BASE}/names/`);
+  const getRole = (id: number) => fetcher<RoleResponse>(`${BASE}/${id}/`);
   const createRole = (data: CreateRoleRequest) =>
     fetcher<CreateRoleResponse>(BASE, { method: "POST", body: data });
   const updateRole = (id: number, data: UpdateRoleRequest) =>
-    fetcher<UpdateRoleResponse>(`${BASE}/${id}`, {
+    fetcher<UpdateRoleResponse>(`${BASE}/${id}/`, {
       method: "PATCH",
       body: data,
     });
   const deleteRole = (id: number) =>
-    fetcher<DeleteRoleResponse>(`${BASE}/${id}`, { method: "DELETE" });
+    fetcher<DeleteRoleResponse>(`${BASE}/${id}/`, { method: "DELETE" });
 
   return {
     getRoles,

@@ -184,7 +184,7 @@
               variant="outline"
               size="lg"
               class="justify-start h-14 text-base font-medium"
-              @click="navigateTo('/admin/kelola-dokumen')"
+              @click="navigateTo('/kepala-riset-admin/kelola-dokumen')"
             >
               <FilePlus class="w-5 h-5" />
               Kelola Dokumen
@@ -478,127 +478,126 @@
           </div>
           <div>
             <h2 class="text-3xl font-bold text-gray-900">Dashboard Reviewer</h2>
-            <p class="text-gray-500 text-lg">
-              Ringkasan aktivitas dan statistik review Anda
-            </p>
+            <p class="text-gray-500 text-lg">Kelola tugas review Anda</p>
           </div>
         </div>
 
-        <!-- Reviewer Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card class="p-6 bg-white/80 border border-gray-200 rounded-xl">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-sm text-gray-500 mb-1">Total Review</p>
-                <p class="text-2xl font-bold text-black">
-                  {{ reviewerStatsSummary.reviewed }}
-                </p>
-              </div>
-              <Eye class="w-8 h-8 text-purple-500" />
+        <!-- Progress Overview (same as annotator, but for reviewer) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card
+            variant="glassmorphism"
+            class="p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 bg-white/80 border border-gray-200 w-full !shadow-none cursor-pointer"
+          >
+            <div class="flex items-center justify-between mb-6">
+              <FileText class="w-12 h-12 text-purple-500" />
+              <span class="text-3xl font-bold text-gray-900">{{
+                reviewerStats.pendingReviews || 0
+              }}</span>
             </div>
+            <h3 class="text-gray-800 font-semibold text-lg mb-2">
+              Dokumen Ditugaskan
+            </h3>
+            <p class="text-sm text-gray-500 leading-relaxed">
+              Dokumen yang harus direview
+            </p>
           </Card>
-          <Card class="p-6 bg-white/80 border border-gray-200 rounded-xl">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-sm text-gray-500 mb-1">Hari Ini</p>
-                <p class="text-2xl font-bold text-black">
-                  {{ reviewerStatsSummary.todayReviewed }}
-                </p>
-              </div>
-              <Clock class="w-8 h-8 text-green-500" />
+
+          <Card
+            variant="glassmorphism"
+            class="p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 bg-white/80 border border-gray-200 w-full !shadow-none cursor-pointer"
+          >
+            <div class="flex items-center justify-between mb-6">
+              <CheckCircle class="w-12 h-12 text-green-500" />
+              <span class="text-3xl font-bold text-gray-900">{{
+                reviewerStats.completedReviews || 0
+              }}</span>
             </div>
+            <h3 class="text-gray-800 font-semibold text-lg mb-2">
+              Dokumen Selesai
+            </h3>
+            <p class="text-sm text-gray-500 leading-relaxed">
+              Dokumen yang telah direview
+            </p>
           </Card>
-          <Card class="p-6 bg-white/80 border border-gray-200 rounded-xl">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-sm text-gray-500 mb-1">Akurasi</p>
-                <p class="text-2xl font-bold text-black">
-                  {{ reviewerStatsSummary.accuracy }}%
-                </p>
-              </div>
-              <CheckCircle2 class="w-8 h-8 text-blue-500" />
+
+          <Card
+            variant="glassmorphism"
+            class="p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 bg-white/80 border border-gray-200 w-full !shadow-none cursor-pointer"
+          >
+            <div class="flex items-center justify-between mb-6">
+              <Clock class="w-12 h-12 text-yellow-500" />
+              <span class="text-3xl font-bold text-gray-900">{{
+                reviewerStats.inProgressDocuments || 0
+              }}</span>
             </div>
-          </Card>
-          <Card class="p-6 bg-white/80 border border-gray-200 rounded-xl">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-sm text-gray-500 mb-1">Total Dokumen</p>
-                <p class="text-2xl font-bold text-black">
-                  {{ reviewerStatsSummary.total }}
-                </p>
-              </div>
-              <FileText class="w-8 h-8 text-gray-700" />
-            </div>
+            <h3 class="text-gray-800 font-semibold text-lg mb-2">
+              Sedang Dikerjakan
+            </h3>
+            <p class="text-sm text-gray-500 leading-relaxed">
+              Dokumen dalam proses review
+            </p>
           </Card>
         </div>
 
-        <!-- Weekly Review Chart -->
-        <Card class="p-6 bg-white/90 border border-gray-200 rounded-xl mb-8">
+        <!-- Recent Assignments (same as annotator, but for reviewer) -->
+        <Card
+          variant="glassmorphism"
+          class="p-8 bg-white/90 border border-gray-200 w-full !shadow-none"
+        >
           <h3
-            class="text-lg font-semibold mb-6 flex items-center gap-3 text-black"
+            class="text-2xl font-bold mb-6 flex items-center gap-3 text-gray-900"
           >
-            <BarChart3 class="w-6 h-6 text-purple-500" />
-            Statistik Review Mingguan
+            <ClipboardList class="w-7 h-7 text-purple-500" />
+            Tugas Review Terbaru
           </h3>
-          <div class="flex items-end gap-4 h-32">
-            <div
-              v-for="(val, i) in reviewerWeeklyStats"
-              :key="i"
-              class="flex flex-col items-center flex-1"
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <Card
+              v-for="task in recentReviewedDocs"
+              :key="task.id"
+              variant="glassmorphism"
+              class="flex flex-col items-start gap-4 p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 border border-gray-200 bg-white/80 w-full !shadow-none cursor-pointer"
+              @click="navigateTo(`/reviewer/review/${task.id}`)"
             >
-              <div class="relative w-full group">
-                <div
-                  class="bg-purple-500 rounded-t transition-all duration-300"
-                  :style="{ height: `${Math.max(val.count * 8, 12)}px` }"
-                ></div>
-                <div
-                  class="absolute -top-7 left-1/2 transform -translate-x-1/2 bg-purple-500 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  {{ val.count }}
+              <div class="flex items-center gap-4 mb-2">
+                <FileText class="w-8 h-8 text-purple-400" />
+                <div>
+                  <h4 class="font-semibold text-gray-900 text-lg">
+                    {{ task.title }}
+                  </h4>
+                  <p class="text-xs text-gray-500 mt-1">
+                    {{ formatDate(task.created_at) }}
+                  </p>
                 </div>
               </div>
-              <span class="text-xs text-gray-700 mt-2 font-medium">
-                {{ val.label }}
-              </span>
-            </div>
-          </div>
-          <div class="mt-3 text-center">
-            <span class="text-sm text-gray-500">
-              Total minggu ini: {{ reviewerWeeklyTotal }} dokumen
-            </span>
-          </div>
-        </Card>
-
-        <!-- Recent Reviewed Documents -->
-        <Card class="p-6 bg-white/90 border border-gray-200 rounded-xl">
-          <h3
-            class="text-lg font-semibold mb-6 flex items-center gap-3 text-black"
-          >
-            <FileCheck class="w-6 h-6 text-purple-500" />
-            Review Terbaru
-          </h3>
-          <div v-if="recentReviewedDocs.length" class="space-y-4">
-            <div
-              v-for="doc in recentReviewedDocs"
-              :key="doc.id"
-              class="flex items-center justify-between"
-            >
-              <div>
-                <p class="font-semibold text-gray-900">{{ doc.title }}</p>
-                <p class="text-xs text-gray-500">
-                  {{ formatDate(doc.created_at) }}
-                </p>
-              </div>
               <span
-                :class="getStatusClass(doc.status)"
-                class="px-3 py-1 rounded-full text-xs font-medium"
+                class="text-xs font-semibold px-3 py-1 rounded border border-gray-300 text-gray-700 bg-gray-50"
+                :class="{
+                  'text-blue-700 border-blue-200 bg-blue-50':
+                    getTaskStatusColor(task.status) === 'blue',
+                  'text-yellow-700 border-yellow-200 bg-yellow-50':
+                    getTaskStatusColor(task.status) === 'yellow',
+                  'text-green-700 border-green-200 bg-green-50':
+                    getTaskStatusColor(task.status) === 'green',
+                  'text-purple-700 border-purple-200 bg-purple-50':
+                    getTaskStatusColor(task.status) === 'purple',
+                  'text-orange-700 border-orange-200 bg-orange-50':
+                    getTaskStatusColor(task.status) === 'orange',
+                }"
               >
-                {{ getStatusText(doc.status) }}
+                {{ formatStatus(task.status) }}
               </span>
-            </div>
+            </Card>
           </div>
-          <div v-else class="text-gray-400 text-center py-6">
-            Belum ada review terbaru.
+          <div class="mt-8 pt-6 border-t border-gray-200 text-center">
+            <Button
+              variant="outline"
+              size="lg"
+              class="hover:bg-gray-900 hover:text-white transition"
+              @click="navigateTo('/reviewer/review')"
+            >
+              Lihat Semua Tugas
+              <ArrowRight class="w-4 h-4" />
+            </Button>
           </div>
         </Card>
       </div>
@@ -931,8 +930,8 @@
               <Button
                 variant="outline"
                 size="lg"
-                class="w-full justify-start h-14 text-base font-medium bg-black text-white border border-gray-900 hover:bg-gray-800 hover:scale-105 hover:shadow-lg transition-all duration-200 active:scale-95"
-                @click="navigateTo('/admin/kelola-dokumen')"
+                class="w-full justify-start h-14 text-base font-medium hover:bg-gray-50 hover:scale-105 hover:shadow-lg transition-all duration-200 active:scale-95"
+                @click="navigateTo('/kepala-riset-admin/kelola-dokumen')"
               >
                 <Download class="w-5 h-5" />
                 Export Dataset
@@ -994,27 +993,20 @@
                     annotatorPerformance.per_document.length
                   }}</span>
                 </div>
-                <div class="flex justify-between">
-                  <span class="text-sm text-gray-600">Cohen's Kappa Avg:</span>
-                  <span class="font-medium"
-                    >{{
-                      (
-                        annotatorPerformance.agreement_with_others
-                          .cohen_kappa_avg * 100
-                      ).toFixed(1)
-                    }}%</span
-                  >
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-sm text-gray-600">Agreement Ratio:</span>
-                  <span class="font-medium"
-                    >{{
-                      (
-                        annotatorPerformance.agreement_with_others
-                          .approx_ratio * 100
-                      ).toFixed(1)
-                    }}%</span
-                  >
+                <div v-if="annotatorPerformance.per_document.length > 0" class="mt-2">
+                  <span class="text-xs text-gray-500">Per Dokumen:</span>
+                  <div class="max-h-20 overflow-y-auto mt-1">
+                    <div 
+                      v-for="doc in annotatorPerformance.per_document.slice(0, 3)" 
+                      :key="doc.document__id"
+                      class="text-xs text-gray-600 truncate"
+                    >
+                      {{ doc.document__title }}: {{ doc.annotations_count }} anotasi
+                    </div>
+                    <div v-if="annotatorPerformance.per_document.length > 3" class="text-xs text-gray-400">
+                      +{{ annotatorPerformance.per_document.length - 3 }} dokumen lainnya
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1225,6 +1217,8 @@ const reviewerStats = ref({
   pendingReviews: 0,
   completedReviews: 0,
   errorsFound: 0,
+  todayReviewed: 0,
+  accuracy: 0,
 });
 
 // Research stats
@@ -1288,6 +1282,8 @@ const recentActivities = ref<
   }>
 >([]);
 
+const recentReviewedDocs = ref<any[]>([]);
+
 // Dashboard filters and analytics
 const selectedDocument = ref<string>("all");
 const loadingFilter = ref(false);
@@ -1304,6 +1300,14 @@ const annotators = ref<any[]>([]);
 const reviewers = ref<any[]>([]);
 const annotatorPerformance = ref<any>(null);
 const reviewerPerformance = ref<any>(null);
+
+// Reviewer stats summary
+const reviewerStatsSummary = computed(() => ({
+  reviewed: reviewerStats.value?.completedReviews ?? 0,
+  todayReviewed: reviewerStats.value?.todayReviewed ?? 0,
+  accuracy: reviewerStats.value?.accuracy ?? 0,
+  total: reviewerStats.value?.pendingReviews ?? 0,
+}));
 
 // Helper functions
 const getTaskStatusColor = (status: DocumentStatus | string) => {
@@ -1335,9 +1339,23 @@ const formatStatus = (status: DocumentStatus | string) => {
   return statusMap[status.toLowerCase()] || status;
 };
 
+// Date formatting function
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return "-";
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return dateStr;
+  return date.toLocaleDateString("id-ID", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
 // Page meta
 useHead({
-  title: "Beranda - ANOTA",
+  title: "Anota",
   meta: [{ name: "description", content: "Halaman beranda aplikasi ANOTA." }],
 });
 
@@ -1441,28 +1459,33 @@ const fetchDashboardData = async () => {
     }
 
     if (hasRole("Reviewer") && user.value?.id) {
-      // Get reviewer-specific performance data
-      const reviewerData = await getReviewerPerformance({
-        user_id: user.value.id,
-      });
+      const assignedDocs = await getAssignedDocuments();
+      const docResults = assignedDocs.results || [];
+      const completedDocs = docResults.filter(
+        (doc: any) => doc.status === "sudah_direview"
+      );
+      const inProgressDocs = docResults.filter(
+        (doc: any) => doc.status === "sedang_direview"
+      );
+      const pendingDocs = docResults.filter(
+        (doc: any) => doc.status === "belum_direview"
+      );
 
       reviewerStats.value = {
-        pendingReviews:
-          dashboardData.per_document?.filter((doc: any) => doc.reviews === 0)
-            ?.length || 0,
-        completedReviews: reviewerData.per_document?.length || 0,
-        errorsFound: reviewerData.totals?.reviews || 0,
+        pendingReviews: pendingDocs.length,
+        completedReviews: completedDocs.length,
+        errorsFound: 0,
+        todayReviewed: 0,
+        accuracy: 0,
       };
 
-      // Mock review queue - this would need a specific API endpoint
-      reviewQueue.value = [
-        {
-          id: "1",
-          title: "Review Anotasi Pending",
-          annotator: "Anotator",
-          priority: "High",
-        },
-      ];
+      recentReviewedDocs.value =
+        completedDocs.slice(0, 5).map((doc: any) => ({
+          id: doc.id.toString(),
+          title: doc.title || `Dokumen ${doc.id}`,
+          created_at: doc.created_at,
+          status: doc.status,
+        })) || [];
     }
 
     if (hasRole("Kepala Riset")) {

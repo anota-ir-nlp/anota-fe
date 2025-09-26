@@ -48,6 +48,11 @@ import { toast } from "vue-sonner";
 import type { AvailableRole, ProjectResponse } from "~/types/api";
 import type { AcceptableValue } from "reka-ui";
 
+useHead({
+  title: "Anota",
+  meta: [{ name: "description", content: "Halaman aplikasi ANOTA." }],
+});
+
 const { user, isAuthenticated, userRoles, logout, initializeAuth } = useAuth();
 const { getProjects } = useProjectsApi();
 const { selectedProject, setSelectedProject, clearSelectedProject } =
@@ -116,7 +121,7 @@ function canAccessRoute(route: string): boolean {
 
   const roleBasedRoutes = {
     Admin: [
-      "/admin/kelola-dokumen",
+      "/kepala-riset-admin/kelola-dokumen",
       "/admin/kelola-error",
       "/kepala-riset-admin/kelola-pengguna",
     ],
@@ -125,7 +130,7 @@ function canAccessRoute(route: string): boolean {
     "Kepala Riset": [
       "/kepala-riset/kelola-project",
       "/kepala-riset-admin/kelola-pengguna",
-      "/admin/kelola-dokumen",
+      "/kepala-riset-admin/kelola-dokumen",
       "/admin/kelola-error",
     ],
   };
@@ -201,7 +206,7 @@ const menuGroups = computed<MenuGroup[]>(() => {
         },
         {
           label: "Kelola Dokumen",
-          path: "/admin/kelola-dokumen",
+          path: "/kepala-riset-admin/kelola-dokumen",
           icon: FileText,
           description: "Manage and export documents",
         },

@@ -17,7 +17,7 @@ export function useAnnotationsApi() {
   const { fetcher } = useProtectedFetcher();
 
   const getAnnotations = (page?: number) => {
-    let url = BASE;
+    let url = `${BASE}/`;
     if (page) {
       url += `?page=${page}`;
     }
@@ -28,7 +28,7 @@ export function useAnnotationsApi() {
     fetcher<AnnotationResponse>(`${BASE}/${id}/`);
   
   const createAnnotation = (data: AnnotationRequest) =>
-    fetcher<AnnotationResponse>(BASE + "/", { method: "POST", body: data });
+    fetcher<AnnotationResponse>(`${BASE}/`, { method: "POST", body: data });
   
   const updateAnnotation = (id: number, data: Partial<AnnotationRequest>) =>
     fetcher<AnnotationResponse>(`${BASE}/${id}/`, { method: "PUT", body: data });
@@ -46,13 +46,13 @@ export function useAnnotationsApi() {
     fetcher(`${BASE}/${id}/`, { method: "DELETE" });
   
   const reopenAnnotation = (data: ReopenAnnotationRequest) =>
-    fetcher<ReopenResponse>("/annotations/reopen/", { method: "POST", body: data });
+    fetcher<ReopenResponse>(`${BASE}/reopen/`, { method: "POST", body: data });
   
   const submitAnnotation = (data: SubmitAnnotationRequest) =>
-    fetcher<SubmitResponse>("/annotations/submit/", { method: "POST", body: data });
+    fetcher<SubmitResponse>(`${BASE}/submit/`, { method: "POST", body: data });
   
   const adminReopenAnnotator = (data: AdminReopenAnnotatorRequest) =>
-    fetcher<AdminReopenResponse>("/annotations/admin/reopen-annotator/", {
+    fetcher<AdminReopenResponse>(`${BASE}/admin/reopen-annotator/`, {
       method: "POST",
       body: data,
     });

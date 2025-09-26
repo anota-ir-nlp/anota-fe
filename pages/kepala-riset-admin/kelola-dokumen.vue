@@ -9,8 +9,8 @@
         </p>
       </div>
 
-      <!-- Project Selection Required Notice -->
-      <div v-if="!selectedProject" class="mb-6">
+      <!-- Project Selection Required Notice (Only for Admin) -->
+      <div v-if="!selectedProject && !isKepalaRiset" class="mb-6">
         <div
           class="bg-yellow-50 border border-yellow-200 rounded-xl p-6 text-center"
         >
@@ -24,9 +24,23 @@
         </div>
       </div>
 
-      <template v-if="selectedProject">
-        <!-- Upload Controls -->
-        <div class="mb-6 flex gap-3">
+      <!-- Information Notice for Kepala Riset -->
+      <div v-if="isKepalaRiset" class="mb-6">
+        <div
+          class="bg-blue-50 border border-blue-200 rounded-xl p-6 text-center"
+        >
+          <h3 class="text-blue-800 font-semibold mb-2">
+            Mode Kepala Riset
+          </h3>
+          <p class="text-blue-700">
+            Anda dapat melihat semua dokumen dari seluruh project.
+          </p>
+        </div>
+      </div>
+
+      <template v-if="selectedProject || isKepalaRiset">
+        <!-- Upload Controls (Only show for admin users when project selected) -->
+        <div v-if="selectedProject && !isKepalaRiset" class="mb-6 flex gap-3">
           <!-- Single Upload Dialog -->
           <Dialog v-model:open="isCreateDialogOpen">
             <DialogTrigger as-child>
@@ -376,36 +390,38 @@
             </DialogContent>
           </Dialog>
 
-          <!-- Bulk Actions -->
-          <div v-if="selectedDocuments.length > 0" class="flex gap-2 ml-auto">
-            <!-- Bulk Export Button -->
-            <DropdownMenu>
-              <DropdownMenuTrigger as-child>
-                <Button variant="outline" class="flex items-center gap-2">
-                  <Download class="w-4 h-4" />
-                  Bulk Export ({{ selectedDocuments.length }})
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem @click="handleBulkExport('parallel')">
-                  Export All Parallel TSV
-                </DropdownMenuItem>
-                <DropdownMenuItem @click="handleBulkExport('m2')">
-                  Export All M2 Format
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+        </div>
 
-            <!-- Bulk Assignment Button -->
-            <Button
-              variant="outline"
-              class="flex items-center gap-2"
-              @click="openAssignmentDialog('bulk')"
-            >
-              <UserPlus class="w-4 h-4" />
-              Kelola Assignment ({{ selectedDocuments.length }})
-            </Button>
-          </div>
+        <!-- Bulk Actions (Available for both Admin and Kepala Riset) -->
+        <div v-if="selectedDocuments.length > 0" class="mb-6 flex gap-2 justify-end">
+          <!-- Bulk Export Button -->
+          <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+              <Button variant="outline" class="flex items-center gap-2">
+                <Download class="w-4 h-4" />
+                Bulk Export ({{ selectedDocuments.length }})
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem @click="handleBulkExport('parallel')">
+                Export All Parallel TSV
+              </DropdownMenuItem>
+              <DropdownMenuItem @click="handleBulkExport('m2')">
+                Export All M2 Format
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <!-- Bulk Assignment Button (Only for Admin users) -->
+          <Button
+            v-if="!isKepalaRiset"
+            variant="outline"
+            class="flex items-center gap-2"
+            @click="openAssignmentDialog('bulk')"
+          >
+            <UserPlus class="w-4 h-4" />
+            Kelola Assignment ({{ selectedDocuments.length }})
+          </Button>
         </div>
 
         <!-- Assignment Dialog -->
@@ -680,6 +696,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from "vue";
+import { useAuth } from "~/data/auth";
 import { useDocumentsApi } from "~/data/documents";
 import { useUsersApi } from "~/data/users";
 import { useAssignmentsApi } from "~/data/document-assignments";
@@ -759,6 +776,7 @@ import { createColumns } from "~/components/documents/columns";
 import { parseFile, isValidFileType } from "~/utils/file-parser";
 
 const {
+  getDocuments,
   getDocumentsInProject,
   createDocument: apiCreateDocument,
   deleteDocument: apiDeleteDocument,
@@ -774,6 +792,11 @@ const {
 const { adminReopenAnnotator } = useAnnotationsApi();
 const { adminReopenReview } = useReviewsApi();
 const { selectedProject, selectedProjectId } = useProjectContext();
+const { userRoles } = useAuth();
+
+// Role-based computed properties
+const isKepalaRiset = computed(() => userRoles.value.includes("Kepala Riset"));
+const isAdmin = computed(() => userRoles.value.includes("Admin"));
 
 const documents = ref<DocumentResponse[]>([]);
 const users = ref<UserResponse[]>([]);
@@ -1046,8 +1069,9 @@ function resetForm(mode: "single" | "bulk") {
 }
 
 async function uploadFiles(mode: "single" | "bulk") {
+  // For upload, both roles need to have a project selected
   if (!selectedProjectId.value) {
-    toast.error("Pilih project terlebih dahulu");
+    toast.error("Pilih project terlebih dahulu untuk mengupload dokumen");
     return;
   }
 
@@ -1472,20 +1496,30 @@ function getUserName(userId: string) {
 }
 
 async function fetchDocuments(page = 1) {
-  if (!selectedProjectId.value) {
-    documents.value = [];
-    totalPages.value = 1;
-    return;
-  }
-
   isLoading.value = true;
   try {
-    const projectDocuments = await getDocumentsInProject(
-      selectedProjectId.value
-    );
-    documents.value = projectDocuments || [];
-    currentPage.value = 1;
-    totalPages.value = 1;
+    if (isKepalaRiset.value) {
+      // Kepala Riset can see all documents across all projects
+      const response = await getDocuments(page);
+      documents.value = response.results || [];
+
+      // Calculate pagination based on response
+      const itemsPerPage = 20; // Assuming default page size
+      totalPages.value = Math.ceil((response.count || 0) / itemsPerPage);
+      currentPage.value = page;
+    } else {
+      // Admin users need project selection
+      if (!selectedProjectId.value) {
+        documents.value = [];
+        totalPages.value = 1;
+        return;
+      }
+
+      const projectDocuments = await getDocumentsInProject(selectedProjectId.value);
+      documents.value = projectDocuments || [];
+      currentPage.value = 1;
+      totalPages.value = 1;
+    }
   } catch (error) {
     console.error("Error fetching documents:", error);
     toast.error("Gagal memuat data dokumen");
@@ -1508,7 +1542,8 @@ async function fetchUsers() {
 
 onMounted(async () => {
   await fetchUsers();
-  if (selectedProjectId.value) {
+  // For Kepala Riset, always fetch documents. For Admin, only if project is selected
+  if (isKepalaRiset.value || selectedProjectId.value) {
     await fetchDocuments(currentPage.value);
   }
 });
@@ -1516,13 +1551,17 @@ onMounted(async () => {
 watch(
   selectedProjectId,
   async () => {
-    if (selectedProjectId.value) {
-      await fetchDocuments(1);
-      currentPage.value = 1;
-    } else {
-      documents.value = [];
-      totalPages.value = 1;
-      currentPage.value = 1;
+    // For Admin users, fetch documents only when project is selected
+    // For Kepala Riset, this doesn't affect document fetching since they see all documents
+    if (!isKepalaRiset.value) {
+      if (selectedProjectId.value) {
+        await fetchDocuments(1);
+        currentPage.value = 1;
+      } else {
+        documents.value = [];
+        totalPages.value = 1;
+        currentPage.value = 1;
+      }
     }
   },
   { immediate: false }

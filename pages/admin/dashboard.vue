@@ -215,13 +215,18 @@
                 <span class="text-sm text-gray-600">Dokumen yang Dikerjakan:</span>
                 <span class="font-medium">{{ annotatorPerformance.per_document.length }}</span>
               </div>
-              <div class="flex justify-between">
-                <span class="text-sm text-gray-600">Cohen's Kappa Avg:</span>
-                <span class="font-medium">{{ (annotatorPerformance.agreement_with_others.cohen_kappa_avg * 100).toFixed(1) }}%</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-sm text-gray-600">Agreement Ratio:</span>
-                <span class="font-medium">{{ (annotatorPerformance.agreement_with_others.approx_ratio * 100).toFixed(1) }}%</span>
+              <div v-if="annotatorPerformance.per_document.length > 0" class="mt-4">
+                <h4 class="text-sm font-medium text-gray-700 mb-2">Per Dokumen:</h4>
+                <div class="space-y-2 max-h-32 overflow-y-auto">
+                  <div 
+                    v-for="doc in annotatorPerformance.per_document" 
+                    :key="doc.document__id"
+                    class="flex justify-between text-sm p-2 bg-gray-50 rounded"
+                  >
+                    <span class="text-gray-600">{{ doc.document__title }}</span>
+                    <span class="font-medium text-blue-600">{{ doc.annotations_count }} anotasi</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -267,6 +272,19 @@
               <div class="flex justify-between">
                 <span class="text-sm text-gray-600">Dokumen yang Dikerjakan:</span>
                 <span class="font-medium">{{ reviewerPerformance.per_document.length }}</span>
+              </div>
+              <div v-if="reviewerPerformance.per_document.length > 0" class="mt-4">
+                <h4 class="text-sm font-medium text-gray-700 mb-2">Per Dokumen:</h4>
+                <div class="space-y-2 max-h-32 overflow-y-auto">
+                  <div 
+                    v-for="doc in reviewerPerformance.per_document" 
+                    :key="doc.document_id"
+                    class="flex justify-between text-sm p-2 bg-gray-50 rounded"
+                  >
+                    <span class="text-gray-600">{{ doc.document_title }}</span>
+                    <span class="font-medium text-green-600">{{ doc.reviews }} review</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -327,51 +345,123 @@
         </Button>
         
         <div v-if="iaaData" class="mt-6 space-y-4">
+          <!-- Participants Info -->
+          <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h4 class="font-medium text-blue-900 mb-2">Participants</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <p class="text-blue-700"><strong>Annotator:</strong> {{ iaaData.participants.annotator_name }}</p>
+                <p class="text-blue-600 text-xs">{{ iaaData.participants.annotator_id }}</p>
+              </div>
+              <div>
+                <p class="text-blue-700"><strong>Reviewer:</strong> {{ iaaData.participants.reviewer_name }}</p>
+                <p class="text-blue-600 text-xs">{{ iaaData.participants.reviewer_id }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Results -->
           <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div class="text-center p-4 bg-blue-50 rounded-lg">
               <p class="text-sm text-gray-600">Cohen's Kappa</p>
               <p class="text-2xl font-bold text-blue-600">
-                {{ (iaaData.kappa * 100).toFixed(1) }}%
+                {{ (iaaData.results.cohen_kappa * 100).toFixed(1) }}%
               </p>
             </div>
             <div class="text-center p-4 bg-green-50 rounded-lg">
               <p class="text-sm text-gray-600">Accuracy</p>
               <p class="text-2xl font-bold text-green-600">
-                {{ (iaaData.totals.accuracy * 100).toFixed(1) }}%
+                {{ (iaaData.results.accuracy * 100).toFixed(1) }}%
               </p>
             </div>
             <div class="text-center p-4 bg-purple-50 rounded-lg">
-              <p class="text-sm text-gray-600">Total Items</p>
+              <p class="text-sm text-gray-600">Span Agreement</p>
               <p class="text-2xl font-bold text-purple-600">
-                {{ iaaData.totals.items }}
+                {{ (iaaData.results.span_agreement_ratio * 100).toFixed(1) }}%
               </p>
             </div>
             <div class="text-center p-4 bg-orange-50 rounded-lg">
-              <p class="text-sm text-gray-600">Correct</p>
+              <p class="text-sm text-gray-600">Total Items</p>
               <p class="text-2xl font-bold text-orange-600">
-                {{ iaaData.totals.correct }}
+                {{ iaaData.results.total_items }}
               </p>
             </div>
           </div>
 
-          <div class="mt-4">
-            <h4 class="font-medium text-gray-900 mb-2">Confusion Matrix</h4>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-              <div class="text-center p-3 bg-gray-50 rounded">
-                <p class="text-xs text-gray-600">Agree No Annotation</p>
-                <p class="text-lg font-bold text-gray-900">{{ iaaData.confusion_like.agree_no_annotation }}</p>
+          <!-- Additional Stats -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="text-center p-4 bg-gray-50 rounded-lg">
+              <p class="text-sm text-gray-600">Correct Items</p>
+              <p class="text-xl font-bold text-gray-700">{{ iaaData.results.correct_items }}</p>
+            </div>
+            <div class="text-center p-4 bg-indigo-50 rounded-lg">
+              <p class="text-sm text-gray-600">Total Unique Spans</p>
+              <p class="text-xl font-bold text-indigo-600">{{ iaaData.results.total_unique_spans }}</p>
+            </div>
+            <div class="text-center p-4 bg-emerald-50 rounded-lg">
+              <p class="text-sm text-gray-600">Matching Spans</p>
+              <p class="text-xl font-bold text-emerald-600">{{ iaaData.results.matching_spans }}</p>
+            </div>
+          </div>
+
+          <!-- Detailed Analysis -->
+          <div class="mt-6">
+            <h4 class="font-medium text-gray-900 mb-4">Detailed Analysis</h4>
+            
+            <!-- Confusion Matrix -->
+            <div class="mb-4">
+              <h5 class="text-sm font-medium text-gray-700 mb-2">Agreement Breakdown</h5>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                <div class="text-center p-3 bg-gray-50 rounded">
+                  <p class="text-xs text-gray-600">Agree No Annotation</p>
+                  <p class="text-lg font-bold text-gray-900">{{ iaaData.detailed_analysis.confusion_like.agree_no_annotation }}</p>
+                </div>
+                <div class="text-center p-3 bg-green-50 rounded">
+                  <p class="text-xs text-gray-600">Agree Error Type</p>
+                  <p class="text-lg font-bold text-green-600">{{ iaaData.detailed_analysis.confusion_like.agree_error_type }}</p>
+                </div>
+                <div class="text-center p-3 bg-yellow-50 rounded">
+                  <p class="text-xs text-gray-600">Disagree Presence</p>
+                  <p class="text-lg font-bold text-yellow-600">{{ iaaData.detailed_analysis.confusion_like.disagree_presence }}</p>
+                </div>
+                <div class="text-center p-3 bg-red-50 rounded">
+                  <p class="text-xs text-gray-600">Disagree Error Type</p>
+                  <p class="text-lg font-bold text-red-600">{{ iaaData.detailed_analysis.confusion_like.disagree_error_type }}</p>
+                </div>
               </div>
-              <div class="text-center p-3 bg-green-50 rounded">
-                <p class="text-xs text-gray-600">Agree Error Type</p>
-                <p class="text-lg font-bold text-green-600">{{ iaaData.confusion_like.agree_error_type }}</p>
+            </div>
+
+            <!-- Span Analysis -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="p-4 border rounded-lg">
+                <h6 class="text-sm font-medium text-gray-700 mb-2">Perfect Agreement Spans</h6>
+                <p class="text-2xl font-bold text-green-600">{{ iaaData.detailed_analysis.perfect_agreement_spans.length }}</p>
+                <p class="text-xs text-gray-500">Both annotated same spans</p>
               </div>
-              <div class="text-center p-3 bg-yellow-50 rounded">
-                <p class="text-xs text-gray-600">Disagree Presence</p>
-                <p class="text-lg font-bold text-yellow-600">{{ iaaData.confusion_like.disagree_presence }}</p>
+              <div class="p-4 border rounded-lg">
+                <h6 class="text-sm font-medium text-gray-700 mb-2">Annotator Only Spans</h6>
+                <p class="text-2xl font-bold text-blue-600">{{ iaaData.detailed_analysis.annotator_only_spans.length }}</p>
+                <p class="text-xs text-gray-500">Only annotator marked</p>
               </div>
-              <div class="text-center p-3 bg-red-50 rounded">
-                <p class="text-xs text-gray-600">Disagree Error Type</p>
-                <p class="text-lg font-bold text-red-600">{{ iaaData.confusion_like.disagree_error_type }}</p>
+              <div class="p-4 border rounded-lg">
+                <h6 class="text-sm font-medium text-gray-700 mb-2">Reviewer Only Spans</h6>
+                <p class="text-2xl font-bold text-purple-600">{{ iaaData.detailed_analysis.reviewer_only_spans.length }}</p>
+                <p class="text-xs text-gray-500">Only reviewer marked</p>
+              </div>
+            </div>
+
+            <!-- Metadata -->
+            <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+              <h6 class="text-sm font-medium text-gray-700 mb-2">Calculation Metadata</h6>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span class="text-gray-600">Execution Time:</span>
+                  <span class="font-medium ml-2">{{ (iaaData.metadata.execution_time * 1000).toFixed(2) }}ms</span>
+                </div>
+                <div>
+                  <span class="text-gray-600">Data Size:</span>
+                  <span class="font-medium ml-2">{{ iaaData.metadata.data_size }} items</span>
+                </div>
               </div>
             </div>
           </div>
