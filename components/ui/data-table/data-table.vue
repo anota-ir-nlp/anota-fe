@@ -83,7 +83,7 @@ const table = useVueTable({
             <TableHead
               v-for="header in headerGroup.headers"
               :key="header.id"
-              class="text-gray-300 font-medium text-left"
+              class="text-gray-900 dark:text-gray-100 font-medium text-left"
             >
               <FlexRender
                 v-if="!header.isPlaceholder"
@@ -104,7 +104,7 @@ const table = useVueTable({
               <TableCell
                 v-for="cell in row.getVisibleCells()"
                 :key="cell.id"
-                class="text-left"
+                class="text-left text-gray-900 dark:text-gray-100"
               >
                 <FlexRender
                   :render="cell.column.columnDef.cell"
@@ -117,7 +117,7 @@ const table = useVueTable({
             <TableRow class="border-white/10">
               <TableCell
                 :colspan="columns.length"
-                class="h-24 text-center text-gray-400"
+                class="h-24 text-center text-gray-900 dark:text-gray-100"
               >
                 Tidak ada data.
               </TableCell>
