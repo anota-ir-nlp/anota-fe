@@ -410,13 +410,15 @@ h6 {
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 1rem;
   backdrop-filter: blur(10px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
   transition: all 0.3s ease;
 }
 
 .card-enhanced:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 /* Toast improvements for better visibility */
@@ -459,4 +461,9 @@ h6 {
 .text-low-contrast {
   color: #6b7280;
   font-weight: 400;
+}
+
+.border-gray-200,
+.border-gray-300 {
+  border-color: var(--color-gray-300) !important;
 }

@@ -3,7 +3,6 @@ import type { UseFetchOptions } from "nuxt/app";
 import type { FetchRequest } from "ofetch";
 import { toast } from "vue-sonner";
 
-
 export const useProtectedFetcher = () => {
   const { getAccessToken, refreshAccessToken, logout } = useAuth();
   const runtimeConfig = useRuntimeConfig();
@@ -29,23 +28,26 @@ export const useProtectedFetcher = () => {
     async onResponseError({ response, request, options }) {
       if (response.status === 401) {
         const errorData = response._data;
-        
+
         // Check if it's a token expiration error
-        if (errorData?.code === "token_not_valid" || 
-            errorData?.detail?.includes("token") ||
-            errorData?.messages?.some((msg: any) => msg.message === "Token is expired")) {
-          
+        if (
+          errorData?.code === "token_not_valid" ||
+          errorData?.detail?.includes("token") ||
+          errorData?.messages?.some(
+            (msg: any) => msg.message === "Token is expired"
+          )
+        ) {
           console.log("Access token expired, attempting refresh...");
-          
+
           // Try to refresh token
           const newToken = await refreshAccessToken();
           if (newToken) {
             console.log("Token refreshed successfully, retrying request...");
-            
+
             // Retry the request with new token
             const headers = new Headers(options.headers);
             headers.set("Authorization", `Bearer ${newToken}`);
-            
+
             try {
               const retryResponse = await $fetch(request, {
                 ...options,
@@ -55,35 +57,42 @@ export const useProtectedFetcher = () => {
               return retryResponse;
             } catch (retryError: any) {
               console.error("Retry request failed:", retryError);
-              
+
               // If retry still fails with 401, logout user
-              if (retryError?.status === 401 || retryError?.response?.status === 401) {
+              if (
+                retryError?.status === 401 ||
+                retryError?.response?.status === 401
+              ) {
                 toast.error("Sesi berakhir", {
-                  description: "Silakan login kembali"
+                  description: "Silakan login kembali",
                 });
                 await logout();
-                await navigateTo("/login");
+                await navigateTo("/");
               }
               throw retryError;
             }
           } else {
             console.log("Token refresh failed, redirecting to login");
             toast.error("Sesi berakhir", {
-              description: "Silakan login kembali"
+              description: "Silakan login kembali",
             });
             await logout();
-            await navigateTo("/login");
+            await navigateTo("/");
           }
         } else {
           // Other 401 errors (not token related)
           toast.error("Akses ditolak", {
-            description: "Anda tidak memiliki izin untuk mengakses resource ini"
+            description:
+              "Anda tidak memiliki izin untuk mengakses resource ini",
           });
         }
       }
-      
+
       // For other errors, let them bubble up
-      throw response._data || new Error(`HTTP ${response.status}: ${response.statusText}`);
+      throw (
+        response._data ||
+        new Error(`HTTP ${response.status}: ${response.statusText}`)
+      );
     },
   });
 

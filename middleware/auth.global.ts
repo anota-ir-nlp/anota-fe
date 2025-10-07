@@ -19,8 +19,8 @@ const roleBasedRoutes = {
   ],
 };
 
-const publicRoutes = ["/", "/login", "/reset-password"];
-const commonAuthenticatedRoutes = ["/beranda", "/change-password"];
+const publicRoutes = ["/", "/reset-password"];
+const commonAuthenticatedRoutes = ["/change-password"];
 
 function hasRoleAccess(userRoles: string[], routePath: string): boolean {
   if (commonAuthenticatedRoutes.some((route) => routePath.startsWith(route))) {
@@ -47,10 +47,10 @@ export default defineNuxtRouteMiddleware(async (to) => {
   await initializeAuth();
 
   if (!isAuthenticated.value && !isPublicRoute) {
-    return navigateTo("/login");
+    return navigateTo("/");
   }
 
-  if (isAuthenticated.value && routePath === "/login") {
+  if (isAuthenticated.value && routePath === "/") {
     return navigateTo("/beranda");
   }
 

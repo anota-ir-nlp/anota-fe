@@ -80,15 +80,17 @@ export function useAuth() {
       return res.access;
     } catch (error: any) {
       console.error("Token refresh failed:", error);
-      
+
       // If refresh token is also expired or invalid, clear everything
-      if (error?.data?.code === "token_not_valid" || 
-          error?.status === 401 || 
-          error?.response?.status === 401) {
+      if (
+        error?.data?.code === "token_not_valid" ||
+        error?.status === 401 ||
+        error?.response?.status === 401
+      ) {
         setTokens(null, null);
         user.value = null;
       }
-      
+
       return null;
     }
   }
@@ -139,9 +141,11 @@ export function useAuth() {
         await fetchMe();
       } catch (error: any) {
         // If access token is expired, try to refresh
-        if (error?.status === 401 || 
-            error?.response?.status === 401 ||
-            error?.data?.code === "token_not_valid") {
+        if (
+          error?.status === 401 ||
+          error?.response?.status === 401 ||
+          error?.data?.code === "token_not_valid"
+        ) {
           const newToken = await refreshAccessToken();
           if (newToken) {
             try {

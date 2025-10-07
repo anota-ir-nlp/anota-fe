@@ -74,7 +74,7 @@ const userProjects = ref<ProjectResponse[]>([]);
 const isLoadingProjects = ref(false);
 
 async function fetchUserProjects() {
-  if (!hasRole("Admin") && !hasRole("Kepala Riset")) return;
+  if (!hasRole("Kepala Riset")) return;
 
   isLoadingProjects.value = true;
   try {
@@ -325,10 +325,6 @@ const closeMobileMenu = () => {
   isMobileMenuOpen.value = false;
 };
 
-const handleLoginClick = () => {
-  navigateTo("/login");
-};
-
 const handleLogout = async () => {
   await logout();
   toast.success("Anda telah keluar dari akun.");
@@ -400,8 +396,8 @@ const handleLogout = async () => {
           :class="[
             'relative w-full transition-all duration-200',
             isScrolled
-              ? 'mx-12 mt-4 rounded-2xl border border-gray-200 px-4 py-2 shadow-sm'
-              : 'mx-4 mt-0 rounded-2xl border-gray-200 px-4 py-2 md:px-6',
+              ? 'mx-12 mt-6 rounded-2xl border border-gray-200 px-4 py-2 shadow-sm'
+              : 'mx-4 mt-2 rounded-2xl border-gray-200 px-4 py-2 md:px-6',
           ]"
         >
           <div class="navbar-glass-effect"></div>
@@ -500,7 +496,7 @@ const handleLogout = async () => {
               <!-- Right: Project Selector + Profile Dropdown -->
               <div class="flex items-center gap-2">
                 <div
-                  v-if="hasRole('Admin') && userProjects.length > 0"
+                  v-if="hasRole('Kepala Riset') && userProjects.length > 0"
                   class="flex items-center"
                 >
                   <Select
@@ -595,8 +591,8 @@ const handleLogout = async () => {
             :class="[
               'relative w-full transition-all duration-200',
               isScrolled
-                ? 'mx-12 mt-4 rounded-2xl border border-gray-200 px-4 py-2 shadow-sm'
-                : 'mx-4 mt-0 rounded-2xl border-gray-200 px-4 py-2 md:px-6',
+                ? 'mx-12 mt-6 rounded-2xl border border-gray-200 px-4 py-2 shadow-sm'
+                : 'mx-4 mt-2 rounded-2xl border-gray-200 px-4 py-2 md:px-6',
             ]"
           >
             <!-- Glass background layers only when scrolled -->
@@ -616,22 +612,7 @@ const handleLogout = async () => {
                 </NuxtLink>
 
                 <!-- Right: Actions -->
-                <div class="flex items-center gap-3">
-                  <Button
-                    class="hidden md:inline-flex btn-rect btn-rect-outline animated-gradient-btn-greenblue"
-                    @click="handleLoginClick"
-                  >
-                    Masuk
-                  </Button>
-
-                  <!-- Mobile primary CTA -->
-                  <Button
-                    class="md:hidden btn-rect btn-rect-primary animated-gradient-btn-greenblue"
-                    @click="handleLoginClick"
-                  >
-                    Masuk
-                  </Button>
-                </div>
+                <div class="flex items-center gap-3"></div>
               </div>
             </div>
           </div>
@@ -656,7 +637,7 @@ const handleLogout = async () => {
             Anotasi Cerdas. Dataset Sempurna.
           </p>
         </div>
-        <div class="flex justify-center gap-8 text-sm text-gray-500">
+        <!-- <div class="flex justify-center gap-8 text-sm text-gray-500">
           <a href="#" class="hover:text-gray-700 transition-colors"
             >Privacy Policy</a
           >
@@ -667,7 +648,7 @@ const handleLogout = async () => {
             >Documentation</a
           >
           <a href="#" class="hover:text-gray-700 transition-colors">Support</a>
-        </div>
+        </div> -->
         <p class="text-gray-400 mt-6 font-light">
           © {{ new Date().getFullYear() }} Anota. All rights reserved.
         </p>

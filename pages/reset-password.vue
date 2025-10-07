@@ -1,5 +1,7 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center px-4 py-8 bg-gray-50">
+  <div
+    class="min-h-screen flex items-center justify-center px-4 py-8 bg-gray-50"
+  >
     <div class="max-w-md w-full">
       <Card class="p-8">
         <div class="text-center mb-8">
@@ -45,8 +47,8 @@
         <div v-if="currentStep === 'verify'">
           <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
             <p class="text-sm text-green-800">
-              Reset code has been sent to <strong>{{ email }}</strong>. 
-              Please check your email and enter the code below.
+              Reset code has been sent to <strong>{{ email }}</strong
+              >. Please check your email and enter the code below.
             </p>
           </div>
 
@@ -97,12 +99,20 @@
               type="submit"
               class="w-full"
               :loading="loading"
-              :disabled="!resetCode || !newPassword || !confirmPassword || newPassword !== confirmPassword"
+              :disabled="
+                !resetCode ||
+                !newPassword ||
+                !confirmPassword ||
+                newPassword !== confirmPassword
+              "
             >
               Reset Password
             </Button>
 
-            <div v-if="newPassword !== confirmPassword && confirmPassword" class="text-sm text-red-600 text-center">
+            <div
+              v-if="newPassword !== confirmPassword && confirmPassword"
+              class="text-sm text-red-600 text-center"
+            >
               Passwords do not match
             </div>
 
@@ -130,21 +140,17 @@
               Password Reset Successful!
             </p>
             <p class="text-sm text-green-700">
-              Your password has been reset successfully. You can now login with your new password.
+              Your password has been reset successfully. You can now login with
+              your new password.
             </p>
           </div>
 
-          <Button
-            @click="navigateTo('/login')"
-            class="w-full"
-          >
-            Go to Login
-          </Button>
+          <Button @click="navigateTo('/')" class="w-full"> Go to Login </Button>
         </div>
 
         <div class="mt-6 text-center">
           <NuxtLink
-            to="/login"
+            to="/"
             class="text-sm text-blue-600 hover:text-blue-800 underline"
           >
             Back to Login
@@ -166,42 +172,46 @@ import { toast } from "vue-sonner";
 const { requestPasswordReset, verifyPasswordReset } = useUsersApi();
 
 // State
-const currentStep = ref<'request' | 'verify' | 'success'>('request');
+const currentStep = ref<"request" | "verify" | "success">("request");
 const loading = ref(false);
-const error = ref('');
+const error = ref("");
 
 // Form data
-const email = ref('');
-const resetCode = ref('');
-const newPassword = ref('');
-const confirmPassword = ref('');
+const email = ref("");
+const resetCode = ref("");
+const newPassword = ref("");
+const confirmPassword = ref("");
 
 // Methods
 async function requestReset() {
   if (!email.value) return;
 
   loading.value = true;
-  error.value = '';
+  error.value = "";
 
   try {
     await requestPasswordReset({ email: email.value });
-    currentStep.value = 'verify';
-    toast.success('Reset code sent to your email');
+    currentStep.value = "verify";
+    toast.success("Reset code sent to your email");
   } catch (err: any) {
-    error.value = err.message || 'Failed to send reset code. Please try again.';
-    console.error('Password reset request error:', err);
+    error.value = err.message || "Failed to send reset code. Please try again.";
+    console.error("Password reset request error:", err);
   } finally {
     loading.value = false;
   }
 }
 
 async function verifyReset() {
-  if (!resetCode.value || !newPassword.value || newPassword.value !== confirmPassword.value) {
+  if (
+    !resetCode.value ||
+    !newPassword.value ||
+    newPassword.value !== confirmPassword.value
+  ) {
     return;
   }
 
   loading.value = true;
-  error.value = '';
+  error.value = "";
 
   try {
     await verifyPasswordReset({
@@ -209,18 +219,14 @@ async function verifyReset() {
       otp_code: resetCode.value,
       new_password: newPassword.value,
     });
-    currentStep.value = 'success';
-    toast.success('Password reset successfully');
+    currentStep.value = "success";
+    toast.success("Password reset successfully");
   } catch (err: any) {
-    error.value = err.message || 'Failed to reset password. Please check your reset code.';
-    console.error('Password reset verification error:', err);
+    error.value =
+      err.message || "Failed to reset password. Please check your reset code.";
+    console.error("Password reset verification error:", err);
   } finally {
     loading.value = false;
   }
 }
-
-// Layout
-definePageMeta({
-  layout: false, // No layout for auth pages
-});
 </script>
