@@ -78,12 +78,12 @@ const table = useVueTable({
           <TableRow
             v-for="headerGroup in table.getHeaderGroups()"
             :key="headerGroup.id"
-            class="bg-gray-800/60 hover:bg-gray-800/60"
+            class="bg-black hover:bg-black"
           >
             <TableHead
               v-for="header in headerGroup.headers"
               :key="header.id"
-              class="text-gray-900 dark:text-gray-100 font-medium text-left"
+              class="text-white font-medium text-left"
             >
               <FlexRender
                 v-if="!header.isPlaceholder"

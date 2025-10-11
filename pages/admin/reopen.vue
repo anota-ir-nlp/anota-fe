@@ -9,7 +9,7 @@
         <p class="text-gray-600">
           Buka kembali pekerjaan anotator atau reviewer pada dokumen tertentu.
         </p>
-        <div class="mb-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="mb-8 mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
           <!-- User List -->
           <div class="bg-white border border-gray-200 rounded-xl p-6">
             <h2 class="text-lg font-semibold text-blue-700 mb-4">

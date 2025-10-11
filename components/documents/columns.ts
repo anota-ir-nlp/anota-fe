@@ -154,7 +154,7 @@ export function createColumns(
                 {
                   size: "sm",
                   variant: "outline",
-                  class: "rounded-full px-4 py-1 font-semibold",
+                  class: "px-4 py-1 font-semibold",
                 },
                 () => [h(Download, { class: "w-4 h-4 mr-1" }), "Export"]
               )
@@ -181,7 +181,7 @@ export function createColumns(
             {
               size: "sm",
               variant: "outline",
-              class: "rounded-full px-4 py-1 font-semibold",
+              class: "px-4 py-1 font-semibold",
               onClick: () => handleReopenDocument(document),
             },
             () => [h(RotateCcw, { class: "w-4 h-4 mr-1" }), "Reopen"]
@@ -191,7 +191,7 @@ export function createColumns(
             {
               size: "sm",
               variant: "destructive",
-              class: "rounded-full px-4 py-1 font-semibold",
+              class: "px-4 py-1 font-semibold",
               onClick: () => handleDeleteDocument(document.id.toString()),
             },
             () => [h(Trash2, { class: "w-4 h-4 mr-1" }), "Hapus"]
