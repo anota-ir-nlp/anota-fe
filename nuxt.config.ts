@@ -23,6 +23,14 @@ export default defineNuxtConfig({
     "shadcn-nuxt",
   ],
 
+  colorMode: {
+    preference: "light",
+    fallback: "light",
+    classSuffix: "",
+    dataValue: "light",
+    storageKey: false,
+  },
+
   icon: {
     collections: ["mdi", "heroicons", "lucide"],
   },
