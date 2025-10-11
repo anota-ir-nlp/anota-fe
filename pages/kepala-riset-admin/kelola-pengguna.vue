@@ -300,9 +300,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from "vue";
+import { useAuth } from "~/data/auth";
 import { useUsersApi } from "~/data/users";
+import { useProjectsApi } from "~/data/projects";
 import { useProjectContext } from "~/composables/project-context";
-import type { UserResponse, UserRegistrationRequest, UserRegistrationResponse } from "~/types/api";
+import type { UserResponse, UserRegistrationRequest, UserRegistrationResponse, ProjectResponse } from "~/types/api";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
@@ -343,9 +345,16 @@ const {
   adminPasswordReset,
 } = useUsersApi();
 
+const { getProjects } = useProjectsApi();
+
 const { selectedProject, selectedProjectId, isAllProjects } = useProjectContext();
+const { userRoles } = useAuth();
+
+// Role-based computed property
+const isKepalaRiset = computed(() => userRoles.value.includes("Kepala Riset"));
 
 const users = ref<UserResponse[]>([]);
+const projects = ref<ProjectResponse[]>([]);
 const selectedUsers = ref<UserResponse[]>([]);
 const isLoading = ref(false);
 const isCreating = ref(false);
@@ -399,9 +408,25 @@ const resetPasswordError = ref("");
 async function fetchAvailableRoles() {
   try {
     const res = await getAvailableRoles();
-    availableRoles.value = res.roles;
+    
+    // Filter roles for Kepala Riset - only show Admin role
+    if (isKepalaRiset.value) {
+      availableRoles.value = res.roles.filter(role => role === "Admin");
+    } else {
+      availableRoles.value = res.roles;
+    }
   } catch (error) {
     toast.error("Gagal memuat daftar roles");
+  }
+}
+
+async function fetchProjects() {
+  try {
+    const response = await getProjects();
+    projects.value = response.results || [];
+  } catch (error) {
+    console.error('Error fetching projects:', error);
+    projects.value = [];
   }
 }
 
@@ -410,22 +435,45 @@ async function fetchUsers(page = 1) {
   try {
     let response;
 
-    if (isAllProjects.value) {
+    // For Kepala Riset users, always fetch all users and filter manually
+    // because getUsersInProject only returns annotators/reviewers, not admins
+    if (isKepalaRiset.value) {
       response = await getUsers(page);
       users.value = response?.results || [];
       currentPage.value = page;
       totalPages.value = Math.max(1, Math.ceil((response?.count || 0) / 20));
-    } else if (selectedProjectId.value) {
-      // Project-specific users don't support pagination
-      response = await getUsersInProject(selectedProjectId.value);
-      users.value = response || [];
-      currentPage.value = 1;
-      totalPages.value = 1;
+      
+      // Filter to only show Admin users
+      users.value = users.value.filter((user: UserResponse) => user.roles.includes("Admin"));
+      
+      // If a specific project is selected, further filter to show only admins assigned to that project
+      if (selectedProjectId.value) {
+        users.value = users.value.filter((user: UserResponse) => {
+          const assignedProject = projects.value.find((project: ProjectResponse) => 
+            project.assigned_admins.includes(user.id)
+          );
+          return assignedProject?.id === selectedProjectId.value;
+        });
+      }
     } else {
-      response = await getUsers(page);
-      users.value = response?.results || [];
-      currentPage.value = page;
-      totalPages.value = Math.max(1, Math.ceil((response?.count || 0) / 20));
+      // For non-Kepala Riset users, use the original logic
+      if (isAllProjects.value) {
+        response = await getUsers(page);
+        users.value = response?.results || [];
+        currentPage.value = page;
+        totalPages.value = Math.max(1, Math.ceil((response?.count || 0) / 20));
+      } else if (selectedProjectId.value) {
+        // Project-specific users don't support pagination
+        response = await getUsersInProject(selectedProjectId.value);
+        users.value = response || [];
+        currentPage.value = 1;
+        totalPages.value = 1;
+      } else {
+        response = await getUsers(page);
+        users.value = response?.results || [];
+        currentPage.value = page;
+        totalPages.value = Math.max(1, Math.ceil((response?.count || 0) / 20));
+      }
     }
   } catch (error) {
     console.error('Error fetching users:', error);
@@ -455,10 +503,19 @@ const paginationPages = computed(() => {
   return pages;
 });
 
+// Helper function to get project name for an admin user
+const getAdminProjectAssignment = (userId: string): string | null => {
+  const assignedProject = projects.value.find((project: ProjectResponse) => 
+    project.assigned_admins.includes(userId)
+  );
+  return assignedProject ? assignedProject.name : null;
+};
+
 const userColumns = computed(() => createUserColumns(
   (user: UserResponse) => editUser(user),
   (user: UserResponse) => showDeleteDialog(user),
-  (user: UserResponse) => showResetPasswordDialog(user)
+  (user: UserResponse) => showResetPasswordDialog(user),
+  getAdminProjectAssignment // Pass the project assignment function
 ));
 
 function handleSelectionChange(selection: UserResponse[]) {
@@ -471,12 +528,15 @@ async function createUser() {
     return;
   }
 
+  // For Kepala Riset, ensure only Admin role is assigned
+  const rolesToAssign = isKepalaRiset.value ? ["Admin"] : newUserRoles.value;
+
   isCreating.value = true;
   try {
     toast.promise(
       (async () => {
         const result = await apiCreateUser(newUser.value);
-        for (const role of newUserRoles.value) {
+        for (const role of rolesToAssign) {
           await manageUserRole({
             user_id: result.data.id,
             role,
@@ -509,6 +569,9 @@ async function updateUser() {
     return;
   }
 
+  // For Kepala Riset, ensure only Admin role is assigned
+  const rolesToAssign = isKepalaRiset.value ? ["Admin"] : editingUserRoles.value;
+
   isUpdating.value = true;
   try {
     toast.promise(
@@ -522,9 +585,9 @@ async function updateUser() {
 
         await apiUpdateUser(editingUser.value.id!, updateData);
 
-        const currentRoles = users.value.find(u => u.id === editingUser.value.id)?.roles || [];
-        const toAdd = editingUserRoles.value.filter(r => !currentRoles.includes(r));
-        const toRemove = currentRoles.filter(r => !editingUserRoles.value.includes(r));
+        const currentRoles = users.value.find((u: UserResponse) => u.id === editingUser.value.id)?.roles || [];
+        const toAdd = rolesToAssign.filter((r: string) => !currentRoles.includes(r));
+        const toRemove = currentRoles.filter((r: string) => !rolesToAssign.includes(r));
         for (const role of toAdd) {
           await manageUserRole({
             user_id: editingUser.value.id!,
@@ -666,7 +729,14 @@ function editUser(user: {
     full_name: user.full_name,
     institution: user.institution || "",
   };
-  editingUserRoles.value = [...user.roles];
+  
+  // For Kepala Riset, only allow Admin role editing
+  if (isKepalaRiset.value) {
+    editingUserRoles.value = ["Admin"];
+  } else {
+    editingUserRoles.value = [...user.roles];
+  }
+  
   isEditDialogOpen.value = true;
 }
 
@@ -688,7 +758,10 @@ function resetForm() {
     full_name: "",
     institution: "",
   };
-  newUserRoles.value = [];
+  
+  // For Kepala Riset, default to Admin role
+  newUserRoles.value = isKepalaRiset.value ? ["Admin"] : [];
+  
   isCreateDialogOpen.value = false;
 }
 
@@ -710,7 +783,13 @@ watch(selectedProjectId, async () => {
 
 onMounted(async () => {
   await fetchAvailableRoles();
+  await fetchProjects();
   await fetchUsers(currentPage.value);
+  
+  // Set default role for Kepala Riset
+  if (isKepalaRiset.value) {
+    newUserRoles.value = ["Admin"];
+  }
 });
 
 useHead({

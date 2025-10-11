@@ -74,12 +74,26 @@ const userProjects = ref<ProjectResponse[]>([]);
 const isLoadingProjects = ref(false);
 
 async function fetchUserProjects() {
-  if (!hasRole("Kepala Riset")) return;
+  if (!hasRole("Kepala Riset") && !hasRole("Admin")) return;
 
   isLoadingProjects.value = true;
   try {
     const response = await getProjects();
     userProjects.value = response.results;
+
+    // If user is Admin, automatically set project context to their assigned project
+    // (This takes precedence even if they also have Kepala Riset role)
+    if (hasRole("Admin") && user.value?.id) {
+      const adminProject = userProjects.value.find((project: ProjectResponse) => 
+        project.assigned_admins.includes(user.value.id)
+      );
+      if (adminProject) {
+        setSelectedProject(adminProject);
+      } else {
+        // Admin not assigned to any project yet, clear selection
+        clearSelectedProject();
+      }
+    }
   } catch (error) {
     console.error("Error fetching projects:", error);
     toast.error("Gagal memuat daftar project");
@@ -94,7 +108,7 @@ function handleProjectChange(value: AcceptableValue) {
     clearSelectedProject();
   } else {
     const project = userProjects.value.find(
-      (p) => p.id.toString() === projectId
+      (p: ProjectResponse) => p.id.toString() === projectId
     );
     if (project) {
       setSelectedProject(project);
@@ -301,6 +315,17 @@ watch(
   { immediate: false }
 );
 
+// Watch for user changes to update admin project context
+watch(
+  user,
+  async () => {
+    if (isAuthenticated.value && hasRole("Admin")) {
+      await fetchUserProjects(); // This will auto-set the admin's project
+    }
+  },
+  { immediate: false }
+);
+
 onMounted(async () => {
   await initializeAuth();
   // Only fetch projects after auth is initialized and user is authenticated
@@ -495,8 +520,9 @@ const handleLogout = async () => {
               </div>
               <!-- Right: Project Selector + Profile Dropdown -->
               <div class="flex items-center gap-2">
+                <!-- Project Selector for Kepala Riset (only if not Admin) -->
                 <div
-                  v-if="hasRole('Kepala Riset') && userProjects.length > 0"
+                  v-if="hasRole('Kepala Riset') && !hasRole('Admin') && userProjects.length > 0"
                   class="flex items-center"
                 >
                   <Select
@@ -525,6 +551,14 @@ const handleLogout = async () => {
                       </SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+                <!-- Show current project for Admin users (read-only) -->
+                <div
+                  v-if="hasRole('Admin') && selectedProject"
+                  class="flex items-center px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg"
+                >
+                  <Building2 class="w-4 h-4 text-blue-600 mr-2" />
+                  <span class="text-sm font-medium text-blue-900">{{ selectedProject.name }}</span>
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger as-child>

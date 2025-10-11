@@ -4,7 +4,7 @@
     "title": "Anota API - Annotation Management System",
     "version": "v1"
   },
-  "host": "anota-dev.cs.ui.ac.id",
+  "host": "localhost:8000",
   "schemes": [
     "http"
   ],
@@ -1742,7 +1742,7 @@
       "post": {
         "operationId": "documents_create",
         "summary": "Create New Document",
-        "description": "\nMembuat dokumen baru dan secara otomatis split text menjadi sentences.\n\n**Auto-Processing:**\n- Text akan dipecah menjadi sentences menggunakan NLTK\n- Setiap sentence akan disimpan sebagai object terpisah\n- Mendukung fallback parsing jika NLTK tidak tersedia\n- assigned_by otomatis di-set ke user yang membuat dokumen\n\n**Project Scope:**\n- Dokumen sekarang harus dimiliki tepat satu project (one-project-per-document)\n- Sertakan field `project` (ID project) saat membuat dokumen\n",
+        "description": "\nMembuat dokumen baru dan secara otomatis split text menjadi sentences.\n\n**Auto-Processing:**\n- Text akan dipecah menjadi sentences menggunakan NLTK\n- Setiap sentence akan disimpan sebagai object terpisah\n- Mendukung fallback parsing jika NLTK tidak tersedia\n- assigned_by otomatis di-set ke user yang membuat dokumen\n\n**Project Scope:**\n- Dokumen sekarang harus dimiliki tepat satu project (one-project-per-document)\n- Sertakan field `project` (ID project) saat membuat dokumen\n\n**Duplicate Handling:**\n- Dokumen dengan teks yang sama tidak akan dibuat ulang kecuali `allow_duplicate=true`\n- Hashing teks digunakan untuk deteksi duplikasi\n",
         "parameters": [
           {
             "name": "data",
@@ -1767,6 +1767,15 @@
                 "project": {
                   "description": "ID project pemilik dokumen",
                   "type": "integer"
+                },
+                "institution": {
+                  "description": "Institusi terkait dokumen (optional)",
+                  "type": "string"
+                },
+                "allow_duplicate": {
+                  "description": "Jika true, izinkan pembuatan dokumen dengan teks yang sama (default false)",
+                  "type": "boolean",
+                  "default": false
                 }
               }
             }
@@ -1780,6 +1789,7 @@
                 "id": 1,
                 "title": "Dokumen Baru",
                 "text": "Ini adalah teks dokumen. Ini adalah kalimat kedua.",
+                "institution": "SMK Negeri 1 Contoh",
                 "created_at": "2024-01-01T00:00:00Z",
                 "updated_at": "2024-01-01T00:00:00Z",
                 "assigned_by": "8ae9adeb-6e03-47c5-b25f-b36ec97e44ca",
@@ -1800,7 +1810,37 @@
             }
           },
           "400": {
-            "description": "Invalid input data"
+            "description": "Ada duplikasi dokumen dengan teks yang sama",
+            "examples": {
+              "application/json": {
+                "error": "Dokumen dengan teks yang sama sudah ada. Gunakan allow_duplicate=true untuk mengizinkan duplikasi.",
+                "existing_document": {
+                  "id": 2,
+                  "title": "Dokumen Lama",
+                  "text": "Ini adalah teks dokumen. Ini adalah kalimat kedua.",
+                  "institution": "Universitas Contoh",
+                  "created_at": "2023-12-31T00:00:00Z",
+                  "updated_at": "2023-12-31T00:00:00Z",
+                  "assigned_by": "123e4567-e89b-12d3-a456-426614174000",
+                  "assigned_to": [1],
+                  "sentences": [
+                    {
+                      "id": 1,
+                      "text": "Ini adalah teks dokumen.",
+                      "m2_text": "",
+                      "corrected_text": "",
+                      "has_error": false,
+                      "created_at": "2024-01-01T00:00:00Z",
+                      "updated_at": "2024-01-01T00:00:00Z",
+                      "document": 1
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Hanya admin yang dapat mengakses"
           }
         },
         "tags": [

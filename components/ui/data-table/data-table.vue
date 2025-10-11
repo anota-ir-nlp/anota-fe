@@ -78,12 +78,12 @@ const table = useVueTable({
           <TableRow
             v-for="headerGroup in table.getHeaderGroups()"
             :key="headerGroup.id"
-            class="bg-gray-800/60 hover:bg-gray-800/60"
+            class="bg-gray-50 hover:bg-gray-50"
           >
             <TableHead
               v-for="header in headerGroup.headers"
               :key="header.id"
-              class="text-gray-900 dark:text-gray-100 font-medium text-left"
+              class="text-gray-700 font-medium text-left"
             >
               <FlexRender
                 v-if="!header.isPlaceholder"
@@ -99,12 +99,12 @@ const table = useVueTable({
               v-for="row in table.getRowModel().rows"
               :key="row.id"
               :data-state="row.getIsSelected() ? 'selected' : undefined"
-              class="border-white/10 hover:bg-white/5"
+              class="border-gray-200 hover:bg-gray-50"
             >
               <TableCell
                 v-for="cell in row.getVisibleCells()"
                 :key="cell.id"
-                class="text-left text-gray-900 dark:text-gray-100"
+                class="text-left text-gray-900"
               >
                 <FlexRender
                   :render="cell.column.columnDef.cell"
@@ -114,10 +114,10 @@ const table = useVueTable({
             </TableRow>
           </template>
           <template v-else>
-            <TableRow class="border-white/10">
+            <TableRow class="border-gray-200">
               <TableCell
                 :colspan="columns.length"
-                class="h-24 text-center text-gray-900 dark:text-gray-100"
+                class="h-24 text-center text-gray-500"
               >
                 Tidak ada data.
               </TableCell>
@@ -133,6 +133,11 @@ const table = useVueTable({
 /* Force selected row to be light gray and text black, override any utility */
 [data-state="selected"] {
   background-color: #f3f4f6 !important; /* Tailwind's bg-gray-100 */
-  color: #111827 !important; /* Tailwind's text-black */
+  color: #111827 !important; /* Tailwind's text-gray-900 */
+}
+
+/* Ensure consistent hover state */
+[data-state="selected"]:hover {
+  background-color: #e5e7eb !important; /* Tailwind's bg-gray-200 */
 }
 </style>
