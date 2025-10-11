@@ -1,5 +1,6 @@
-import { useState, useCookie } from "#imports";
+import { useState, useCookie, computed } from "#imports";
 import { useRuntimeConfig } from "#imports";
+import { useProtectedFetcher } from "~/composables/protected-fetcher";
 import type {
   LoginResponse,
   TokenRefreshResponse,
@@ -8,6 +9,41 @@ import type {
 
 const ACCESS_TOKEN_KEY = "access_token";
 const REFRESH_TOKEN_KEY = "refresh_token";
+
+function decodeJwtPayload(token: string): Record<string, any> | null {
+  try {
+    const base64Url = token.split(".")[1];
+    if (!base64Url) {
+      return null;
+    }
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = (() => {
+      if (typeof globalThis.atob === "function") {
+        return globalThis.atob(base64);
+      }
+      const nodeBuffer = (globalThis as any).Buffer;
+      if (nodeBuffer) {
+        return nodeBuffer.from(base64, "base64").toString("utf-8");
+      }
+      return "";
+    })();
+    return JSON.parse(jsonPayload);
+  } catch (error) {
+    console.error("Failed to decode JWT payload", error);
+    return null;
+  }
+}
+
+function isTokenExpired(token: string | null): boolean {
+  if (!token) {
+    return true;
+  }
+  const payload = decodeJwtPayload(token);
+  if (!payload || !payload.exp) {
+    return true;
+  }
+  return payload.exp * 1000 <= Date.now();
+}
 
 export function useAuth() {
   const accessToken = useState<string | null>("access_token", () => null);
@@ -135,12 +171,28 @@ export function useAuth() {
   }
 
   async function initializeAuth() {
-    const token = getAccessToken();
-    if (token && !user.value) {
+    let token = getAccessToken();
+
+    if (!token) {
+      setTokens(null, null);
+      user.value = null;
+      return;
+    }
+
+    if (isTokenExpired(token)) {
+      const refreshedToken = await refreshAccessToken();
+      if (!refreshedToken) {
+        setTokens(null, null);
+        user.value = null;
+        return;
+      }
+      token = refreshedToken;
+    }
+
+    if (!user.value) {
       try {
         await fetchMe();
       } catch (error: any) {
-        // If access token is expired, try to refresh
         if (
           error?.status === 401 ||
           error?.response?.status === 401 ||
@@ -150,23 +202,18 @@ export function useAuth() {
           if (newToken) {
             try {
               await fetchMe();
+              return;
             } catch {
-              // If still fails after refresh, clear tokens
               setTokens(null, null);
               user.value = null;
+              return;
             }
-          } else {
-            setTokens(null, null);
-            user.value = null;
           }
-        } else {
-          setTokens(null, null);
-          user.value = null;
         }
+
+        setTokens(null, null);
+        user.value = null;
       }
-    } else if (!token) {
-      setTokens(null, null);
-      user.value = null;
     }
   }
 

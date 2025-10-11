@@ -49,17 +49,6 @@
               </span>
             </div>
           </div>
-          <div class="hidden md:block">
-            <Button
-              variant="outline"
-              size="lg"
-              class="bg-transparent text-white border border-gray-300 hover:bg-gray-100/10 hover:text-gray-900"
-              @click="navigateTo('/')"
-            >
-              <ArrowLeft class="w-4 h-4" />
-              Ke Halaman Utama
-            </Button>
-          </div>
         </div>
       </Card>
 
@@ -176,7 +165,7 @@
             v-for="activity in recentActivities"
             :key="activity.id"
             variant="glassmorphism"
-            class="flex flex-col items-start gap-4 p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 border border-gray-200 bg-white/80 w-full !shadow-none"
+            class="flex flex-col items-start gap-4 p-6 hover:border-gray-400 transition-all duration-300 border border-gray-200 bg-white/80 w-full !shadow-none"
           >
             <div class="flex items-center gap-4 mb-2">
               <component
@@ -236,12 +225,12 @@
             v-for="stat in adminStats"
             :key="stat.label"
             variant="glassmorphism"
-            class="p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 group cursor-pointer bg-white/80 border border-gray-200 w-full !shadow-none"
+            class="p-6 hover:border-gray-400 transition-all duration-300 group bg-white/80 border border-gray-200 w-full !shadow-none"
           >
             <div class="flex items-center justify-between mb-6">
               <component
                 :is="getIcon(stat.icon)"
-                :class="`w-12 h-12 ${stat.color} group-hover:scale-110 transition-transform duration-300`"
+                :class="`w-12 h-12 ${stat.color} transition-transform duration-300`"
               />
               <span class="text-3xl font-bold text-gray-900">{{
                 stat.value
@@ -255,48 +244,6 @@
             </p>
           </Card>
         </div>
-
-        <!-- Quick Actions -->
-        <Card
-          variant="glassmorphism"
-          class="p-8 bg-white/90 border border-gray-200 w-full !shadow-none"
-        >
-          <h3
-            class="text-2xl font-bold mb-6 flex items-center gap-3 text-gray-900"
-          >
-            <Zap class="w-7 h-7 text-yellow-500" />
-            Aksi Cepat
-          </h3>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Button
-              variant="outline"
-              size="lg"
-              class="justify-start h-14 text-base font-medium"
-              @click="navigateTo('/kepala-riset-admin/kelola-pengguna')"
-            >
-              <UserPlus class="w-5 h-5" />
-              Kelola Pengguna
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              class="justify-start h-14 text-base font-medium"
-              @click="navigateTo('/kepala-riset-admin/kelola-dokumen')"
-            >
-              <FilePlus class="w-5 h-5" />
-              Kelola Dokumen
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              class="justify-start h-14 text-base font-medium"
-              @click="navigateTo('/admin/kelola-error')"
-            >
-              <AlertTriangle class="w-5 h-5" />
-              Kelola Error
-            </Button>
-          </div>
-        </Card>
 
         <!-- Analytics Dashboard -->
         <Card
@@ -450,7 +397,7 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card
             variant="glassmorphism"
-            class="p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 bg-white/80 border border-gray-200 w-full !shadow-none cursor-pointer"
+            class="p-6 hover:border-gray-400 transition-all duration-300 bg-white/80 border border-gray-200 w-full !shadow-none"
           >
             <div class="flex items-center justify-between mb-6">
               <FileText class="w-12 h-12 text-blue-500" />
@@ -468,7 +415,7 @@
 
           <Card
             variant="glassmorphism"
-            class="p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 bg-white/80 border border-gray-200 w-full !shadow-none cursor-pointer"
+            class="p-6 hover:border-gray-400 transition-all duration-300 bg-white/80 border border-gray-200 w-full !shadow-none"
           >
             <div class="flex items-center justify-between mb-6">
               <CheckCircle class="w-12 h-12 text-green-500" />
@@ -486,7 +433,7 @@
 
           <Card
             variant="glassmorphism"
-            class="p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 bg-white/80 border border-gray-200 w-full !shadow-none cursor-pointer"
+            class="p-6 hover:border-gray-400 transition-all duration-300 bg-white/80 border border-gray-200 w-full !shadow-none"
           >
             <div class="flex items-center justify-between mb-6">
               <Clock class="w-12 h-12 text-yellow-500" />
@@ -519,7 +466,7 @@
               v-for="task in recentTasks"
               :key="task.id"
               variant="glassmorphism"
-              class="flex flex-col items-start gap-4 p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 border border-gray-200 bg-white/80 w-full !shadow-none cursor-pointer"
+              class="flex flex-col items-start gap-4 p-6 hover:border-gray-400 transition-all duration-300 border border-gray-200 bg-white/80 w-full !shadow-none"
               @click="navigateTo(`/anotator/anotasi/${task.id}`)"
             >
               <div class="flex items-center gap-4 mb-2">
@@ -583,7 +530,7 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card
             variant="glassmorphism"
-            class="p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 bg-white/80 border border-gray-200 w-full !shadow-none cursor-pointer"
+            class="p-6 hover:border-gray-400 transition-all duration-300 bg-white/80 border border-gray-200 w-full !shadow-none"
           >
             <div class="flex items-center justify-between mb-6">
               <FileText class="w-12 h-12 text-purple-500" />
@@ -601,7 +548,7 @@
 
           <Card
             variant="glassmorphism"
-            class="p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 bg-white/80 border border-gray-200 w-full !shadow-none cursor-pointer"
+            class="p-6 hover:border-gray-400 transition-all duration-300 bg-white/80 border border-gray-200 w-full !shadow-none"
           >
             <div class="flex items-center justify-between mb-6">
               <CheckCircle class="w-12 h-12 text-green-500" />
@@ -619,7 +566,7 @@
 
           <Card
             variant="glassmorphism"
-            class="p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 bg-white/80 border border-gray-200 w-full !shadow-none cursor-pointer"
+            class="p-6 hover:border-gray-400 transition-all duration-300 bg-white/80 border border-gray-200 w-full !shadow-none"
           >
             <div class="flex items-center justify-between mb-6">
               <Clock class="w-12 h-12 text-yellow-500" />
@@ -652,7 +599,7 @@
               v-for="task in recentReviewedDocs"
               :key="task.id"
               variant="glassmorphism"
-              class="flex flex-col items-start gap-4 p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 border border-gray-200 bg-white/80 w-full !shadow-none cursor-pointer"
+              class="flex flex-col items-start gap-4 p-6 hover:border-gray-400 transition-all duration-300 border border-gray-200 bg-white/80 w-full !shadow-none"
               @click="navigateTo(`/reviewer/review/${task.id}`)"
             >
               <div class="flex items-center gap-4 mb-2">
@@ -789,7 +736,7 @@
             v-for="stat in researchStats"
             :key="stat.label"
             variant="glassmorphism"
-            class="p-6 hover:scale-105 hover:border-gray-400 transition-all duration-300 cursor-pointer bg-white/80 border border-gray-200 w-full !shadow-none"
+            class="p-6 hover:border-gray-400 transition-all duration-300 bg-white/80 border border-gray-200 w-full !shadow-none"
           >
             <div class="flex items-center justify-between mb-6">
               <component
