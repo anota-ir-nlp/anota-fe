@@ -135,7 +135,7 @@ function canAccessRoute(route: string): boolean {
 
   const roleBasedRoutes = {
     Admin: [
-      "/kepala-riset-admin/kelola-dokumen",
+      "/admin/kelola-dokumen",
       "/admin/kelola-error",
       "/kepala-riset-admin/kelola-pengguna",
     ],
@@ -144,8 +144,7 @@ function canAccessRoute(route: string): boolean {
     "Kepala Riset": [
       "/kepala-riset/kelola-project",
       "/kepala-riset-admin/kelola-pengguna",
-      "/kepala-riset-admin/kelola-dokumen",
-      "/admin/kelola-error",
+      "/kepala-riset/dashboard",
     ],
   };
 
@@ -180,7 +179,7 @@ const menuGroups = computed<MenuGroup[]>(() => {
       items: [
         {
           label: "Dashboard Analytics",
-          path: "/admin/dashboard",
+          path: "/kepala-riset/dashboard",
           icon: BarChart3,
           description: "View system analytics and performance metrics",
         },
@@ -207,20 +206,8 @@ const menuGroups = computed<MenuGroup[]>(() => {
       icon: Users,
       items: [
         {
-          label: "Dashboard Analytics",
-          path: "/admin/dashboard",
-          icon: BarChart3,
-          description: "View system analytics and performance metrics",
-        },
-        {
-          label: "Kelola Pengguna",
-          path: "/kepala-riset-admin/kelola-pengguna",
-          icon: Users,
-          description: "Manage system users and reset passwords",
-        },
-        {
           label: "Kelola Dokumen",
-          path: "/kepala-riset-admin/kelola-dokumen",
+          path: "/admin/kelola-dokumen",
           icon: FileText,
           description: "Manage and export documents",
         },
@@ -231,10 +218,10 @@ const menuGroups = computed<MenuGroup[]>(() => {
           description: "Manage system errors",
         },
         {
-          label: "Reopen Dokumen",
-          path: "/admin/reopen",
-          icon: AlertTriangle,
-          description: "Admin buka kembali anotasi/review dokumen",
+          label: "Kelola Pengguna",
+          path: "/kepala-riset-admin/kelola-pengguna",
+          icon: Users,
+          description: "Manage system users and reset passwords",
         },
       ],
     });

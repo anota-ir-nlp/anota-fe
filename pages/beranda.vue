@@ -260,7 +260,7 @@
             <Button
               variant="outline"
               size="sm"
-              @click="navigateTo('/admin/dashboard')"
+              @click="navigateTo('/kepala-riset/dashboard')"
             >
               Lihat Detail
             </Button>
@@ -975,7 +975,7 @@
                 variant="outline"
                 size="lg"
                 class="w-full justify-start h-14 text-base font-medium hover:bg-gray-50 hover:scale-105 hover:shadow-lg transition-all duration-200 active:scale-95"
-                @click="navigateTo('/kepala-riset-admin/kelola-dokumen')"
+                @click="navigateTo('/admin/kelola-dokumen')"
               >
                 <Download class="w-5 h-5" />
                 Export Dataset

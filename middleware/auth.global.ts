@@ -2,20 +2,16 @@ import { useAuth } from "~/data/auth";
 
 const roleBasedRoutes = {
   Admin: [
-    "/kepala-riset-admin/kelola-dokumen",
+    "/admin/kelola-dokumen",
     "/admin/kelola-error",
     "/kepala-riset-admin/kelola-pengguna",
-    "/admin/reopen",
-    "/admin/dashboard",
   ],
   Annotator: ["/anotator/anotasi"],
   Reviewer: ["/reviewer/review"],
   "Kepala Riset": [
     "/kepala-riset/kelola-project",
     "/kepala-riset-admin/kelola-pengguna",
-    "/kepala-riset-admin/kelola-dokumen",
-    "/admin/kelola-error",
-    "/admin/dashboard",
+    "/kepala-riset/dashboard",
   ],
 };
 

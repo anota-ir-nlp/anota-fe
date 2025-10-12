@@ -25,26 +25,55 @@
       <!-- Filters -->
       <Card class="mb-8 p-6">
         <h2 class="text-lg font-semibold text-gray-900 mb-4">Filter Data</h2>
-        <div class="grid grid-cols-1 gap-4">
+        <div class="space-y-6">
+          <!-- Document Selection DataTable -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">
-              Document
+              Pilih Dokumen untuk Analisis
             </label>
-            <Select v-model="selectedDocument">
-              <SelectTrigger>
-                <SelectValue placeholder="Pilih document..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Semua Dokumen</SelectItem>
-                <SelectItem 
-                  v-for="doc in documents" 
-                  :key="doc.id" 
-                  :value="doc.id.toString()"
-                >
-                  {{ doc.title }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            
+            <!-- Selection Summary -->
+            <div v-if="selectedDocumentDetails" class="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p class="text-sm text-blue-800">
+                <strong>Dokumen dipilih:</strong>
+                <span class="text-blue-600">{{ selectedDocumentDetails.title }}</span>
+              </p>
+              <button 
+                @click="clearDocumentSelection"
+                class="text-xs text-blue-600 hover:text-blue-800 underline mt-1"
+              >
+                Batalkan pilihan (tampilkan semua)
+              </button>
+            </div>
+            <div v-else class="mb-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+              <p class="text-sm text-gray-600">
+                Tidak ada dokumen dipilih - menampilkan data dari semua dokumen
+              </p>
+            </div>
+            
+            <div class="border rounded-lg p-4 bg-white">
+              <div v-if="loadingDocuments" class="flex justify-center items-center py-8">
+                <div class="text-gray-500">Memuat dokumen...</div>
+              </div>
+              <div v-else-if="documents.length === 0" class="text-center py-8">
+                <div class="text-gray-500">
+                  <template v-if="!isKepalaRiset && !selectedProjectId">
+                    Pilih project terlebih dahulu untuk melihat dokumen
+                  </template>
+                  <template v-else>
+                    Tidak ada dokumen tersedia
+                  </template>
+                </div>
+              </div>
+              <DataTable
+                v-else
+                :columns="documentColumns"
+                :data="documents"
+              />
+            </div>
+            <p class="text-xs text-gray-500 mt-2">
+              Pilih satu dokumen untuk memfilter analisis. Gunakan tombol radio untuk memilih.
+            </p>
           </div>
         </div>
         <div class="mt-4">
@@ -477,11 +506,14 @@ import { Card } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { FileText, Pencil, BarChart3, ClipboardList } from "lucide-vue-next";
+import DataTable from "~/components/ui/data-table/data-table.vue";
+import { createDocumentColumns } from "~/components/dashboard/columns";
 import { useDashboardApi } from "~/data/dashboard";
 import { useProjectsApi } from "~/data/projects";
 import { useDocumentsApi } from "~/data/documents";
 import { useUsersApi } from "~/data/users";
 import { useProjectContext } from "~/composables/project-context";
+import { useAuth } from "~/data/auth";
 import { toast } from "vue-sonner";
 import type {
   DashboardSummaryResponse,
@@ -494,15 +526,17 @@ import type { ProjectResponse, DocumentResponse, UserResponse, DocumentStatus } 
 // APIs
 const { getDashboardSummary, getAnnotatorPerformance, getReviewerPerformance, getInterAnnotatorAgreement } = useDashboardApi();
 const { getProjects } = useProjectsApi();
-const { getDocuments } = useDocumentsApi();
+const { getDocuments, getDocumentsInProject } = useDocumentsApi();
 const { getAllUsers } = useUsersApi();
 const { selectedProject, selectedProjectId } = useProjectContext();
+const { userRoles } = useAuth();
 
 // State
 const loading = ref(false);
 const loadingAnnotator = ref(false);
 const loadingReviewer = ref(false);
 const loadingIAA = ref(false);
+const loadingDocuments = ref(false);
 
 const selectedDocument = ref<string>("all");
 const selectedAnnotator = ref<string>("");
@@ -522,6 +556,33 @@ const iaaData = ref<IAAResponse | null>(null);
 // Computed
 const annotators = computed(() => users.value.filter(u => u.roles.includes("Annotator")));
 const reviewers = computed(() => users.value.filter(u => u.roles.includes("Reviewer")));
+
+// Role-based computed property
+const isKepalaRiset = computed(() => userRoles.value.includes("Kepala Riset"));
+
+// Document columns for DataTable with single selection
+const documentColumns = computed(() => 
+  createDocumentColumns(selectedDocument.value, handleDocumentSelect)
+);
+
+// Single document selection handler
+function handleDocumentSelect(documentId: string) {
+  selectedDocument.value = documentId;
+  // Automatically refresh data when selection changes
+  loadDashboardData();
+}
+
+// Clear selection handler
+function clearDocumentSelection() {
+  selectedDocument.value = "all";
+  loadDashboardData();
+}
+
+// Get selected document details
+const selectedDocumentDetails = computed(() => {
+  if (selectedDocument.value === "all") return null;
+  return documents.value.find(doc => doc.id.toString() === selectedDocument.value) || null;
+});
 
 // Methods
 async function loadDashboardData() {
@@ -615,20 +676,48 @@ async function loadIAA() {
 
 async function loadInitialData() {
   try {
-    const [projectsRes, documentsRes, usersRes] = await Promise.all([
+    const [projectsRes, usersRes] = await Promise.all([
       getProjects(),
-      getDocuments(),
       getAllUsers()
     ]);
     
     projects.value = projectsRes.results || [];
-    documents.value = documentsRes.results || [];
     users.value = usersRes || [];
+    
+    // Fetch documents based on role and project context (similar to kelola-dokumen)
+    await fetchDocuments();
     
     await loadDashboardData();
   } catch (error) {
     toast.error("Gagal memuat data awal");
     console.error(error);
+  }
+}
+
+// Document fetching logic similar to kelola-dokumen
+async function fetchDocuments() {
+  loadingDocuments.value = true;
+  try {
+    if (isKepalaRiset.value) {
+      // Kepala Riset can see all documents across all projects
+      const response = await getDocuments();
+      documents.value = response.results || [];
+    } else {
+      // Other roles need project selection
+      if (!selectedProjectId.value) {
+        documents.value = [];
+        return;
+      }
+
+      const projectDocuments = await getDocumentsInProject(selectedProjectId.value);
+      documents.value = projectDocuments || [];
+    }
+  } catch (error) {
+    console.error("Error fetching documents:", error);
+    toast.error("Gagal memuat data dokumen");
+    documents.value = [];
+  } finally {
+    loadingDocuments.value = false;
   }
 }
 
@@ -638,6 +727,12 @@ onMounted(() => {
 
 // Watch for project context changes
 watch(selectedProjectId, async () => {
+  // For non-Kepala Riset users, refresh documents when project changes
+  if (!isKepalaRiset.value) {
+    await fetchDocuments();
+    // Reset document selection when project changes
+    selectedDocument.value = "all";
+  }
   await loadDashboardData();
 });
 
