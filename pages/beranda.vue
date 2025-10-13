@@ -51,8 +51,10 @@
         </div>
       </Card>
 
-      <!-- Admin Project Info Section -->
-      <div v-if="hasRole('Admin') && selectedProject" class="mt-8 mb-8">
+      <div
+        v-if="(hasRole('Admin') && selectedProject) || (hasRole('Kepala Riset') && userProjects.length > 0)"
+        class="mt-8 mb-8"
+      >
         <!-- Admin Role Header -->
         <div class="flex items-center gap-4 mb-8">
           <div class="p-3 rounded-lg bg-pink-500/10 border border-pink-200">
