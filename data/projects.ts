@@ -46,6 +46,9 @@ export function useProjectsApi() {
       body: data,
     });
 
+  const getAssignedUsers = (projectId: number) =>
+    fetcher<any[]>(`${BASE}/${projectId}/assigned-users/`);
+
   return {
     getProjects,
     getProject,
@@ -54,5 +57,6 @@ export function useProjectsApi() {
     deleteProject,
     assignAdmin,
     unassignAdmin,
+    getAssignedUsers,
   };
 }

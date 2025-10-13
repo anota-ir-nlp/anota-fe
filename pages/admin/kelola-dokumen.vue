@@ -387,26 +387,8 @@
 
         </div>
 
-        <!-- Bulk Actions (Available for both Admin and Kepala Riset) -->
-        <div v-if="selectedDocuments.length > 0" class="mb-6 flex gap-2 justify-end">
-          <!-- Bulk Export Button -->
-          <DropdownMenu>
-            <DropdownMenuTrigger as-child>
-              <Button variant="outline" class="flex items-center gap-2">
-                <Download class="w-4 h-4" />
-                Bulk Export ({{ selectedDocuments.length }})
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem @click="handleBulkExport('parallel')">
-                Export All Parallel TSV
-              </DropdownMenuItem>
-              <DropdownMenuItem @click="handleBulkExport('m2')">
-                Export All M2 Format
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
+        <!-- Bulk Actions -->
+        <div v-if="selectedDocuments.length > 0 && isAdmin" class="mb-6 flex gap-2 justify-end">
           <!-- Bulk Assignment Button (Only for Admin users) -->
           <Button
             v-if="!isKepalaRiset"
@@ -810,7 +792,6 @@ import {
   MoreHorizontal,
   UserPlus,
   Trash,
-  Download,
   AlertTriangle,
   X,
 } from "lucide-vue-next";
@@ -841,7 +822,6 @@ const {
   getDocumentsInProject,
   createDocument: apiCreateDocument,
   deleteDocument: apiDeleteDocument,
-  exportDocument: exportDocumentApi,
   previewDocumentSentences,
 } = useDocumentsApi();
 const { getAllUsers } = useUsersApi();
@@ -947,7 +927,6 @@ const documentColumns = computed(() =>
   createColumns(
     getUserName,
     handleDeleteDocument,
-    handleExportDocument,
     handleReopenDocument
   )
 );
@@ -1453,102 +1432,7 @@ function handleDeleteDocument(documentId: string) {
     });
 }
 
-async function handleExportDocument(
-  document: DocumentResponse,
-  format: "parallel" | "m2"
-) {
-  try {
-    toast.promise(
-      (async () => {
-        const blob = await exportDocumentApi(document.id, format);
 
-        // Create download link
-        const url = window.URL.createObjectURL(blob);
-        const link = window.document.createElement("a");
-        link.href = url;
-        link.download = `${document.title}_${format}.${
-          format === "parallel" ? "tsv" : "m2"
-        }`;
-        window.document.body.appendChild(link);
-        link.click();
-        window.document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-
-        return document;
-      })(),
-      {
-        loading: `Mengexport ${format.toUpperCase()}...`,
-        success: `Export ${format.toUpperCase()} berhasil untuk "${
-          document.title
-        }"`,
-        error: `Gagal export ${format.toUpperCase()}`,
-      }
-    );
-  } catch (error: any) {
-    console.error("Export error:", error);
-    toast.error(`Gagal export ${format.toUpperCase()}: ${error.message}`);
-  }
-}
-
-async function handleBulkExport(format: "parallel" | "m2") {
-  if (selectedDocuments.value.length === 0) {
-    toast.error("Tidak ada dokumen yang dipilih");
-    return;
-  }
-
-  const totalDocuments = selectedDocuments.value.length;
-  let successCount = 0;
-  let failCount = 0;
-
-  toast.promise(
-    (async () => {
-      for (const document of selectedDocuments.value) {
-        try {
-          const blob = await exportDocumentApi(document.id, format);
-
-          // Create download link
-          const url = window.URL.createObjectURL(blob);
-          const link = window.document.createElement("a");
-          link.href = url;
-          link.download = `${document.title}_${format}.${
-            format === "parallel" ? "tsv" : "m2"
-          }`;
-          window.document.body.appendChild(link);
-          link.click();
-          window.document.body.removeChild(link);
-          window.URL.revokeObjectURL(url);
-
-          successCount++;
-        } catch (error) {
-          console.error(`Export failed for document ${document.id}:`, error);
-          failCount++;
-        }
-      }
-
-      return { successCount, failCount, totalDocuments };
-    })(),
-    {
-      loading: `Mengexport ${totalDocuments} dokumen (${format.toUpperCase()})...`,
-      success: (result: {
-        successCount: number;
-        failCount: number;
-        totalDocuments: number;
-      }) => {
-        if (result.failCount === 0) {
-          return `Berhasil export semua ${
-            result.totalDocuments
-          } dokumen (${format.toUpperCase()})`;
-        } else {
-          return `Export selesai: ${result.successCount} berhasil, ${result.failCount} gagal`;
-        }
-      },
-      error: `Gagal bulk export ${format.toUpperCase()}`,
-    }
-  );
-
-  // Clear selection after export
-  selectedDocuments.value = [];
-}
 
 // Reopen functionality
 function handleReopenDocument(document: DocumentResponse) {

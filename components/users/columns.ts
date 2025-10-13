@@ -10,7 +10,7 @@ export function createUserColumns(
   handleEditUser: (user: UserResponse) => void,
   handleDeleteUser: (user: UserResponse) => void,
   handleResetPassword: (user: UserResponse) => void,
-  getAdminProjectAssignment?: (userId: string) => string | null
+  getProjectAssignment?: (userId: string, userRoles: string[]) => string | null
 ): ColumnDef<UserResponse>[] {
   return [
     {
@@ -120,16 +120,16 @@ export function createUserColumns(
       cell: ({ row }) => {
         const user = row.original
         
-        // Only show project assignment for Admin users
-        if (!user.roles.includes('Admin')) {
+        // Show project assignment for Admin, Annotator, and Reviewer users
+        if (!user.roles.some((role: string) => ['Admin', 'Annotator', 'Reviewer'].includes(role))) {
           return h('span', { class: 'text-gray-400 text-sm' }, '-')
         }
 
-        if (!getAdminProjectAssignment) {
+        if (!getProjectAssignment) {
           return h('span', { class: 'text-gray-400 text-sm' }, '-')
         }
 
-        const projectName = getAdminProjectAssignment(user.id)
+        const projectName = getProjectAssignment(user.id, user.roles)
         
         if (!projectName) {
           return h('span', { class: 'text-gray-500 text-sm italic' }, 'Belum ditugaskan')

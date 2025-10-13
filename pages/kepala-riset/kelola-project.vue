@@ -171,134 +171,6 @@
       </div>
 
       <!-- Edit Project Dialog -->
-      <Dialog v-model:open="isEditDialogOpen">
-        <DialogContent class="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Edit Project</DialogTitle>
-            <DialogDescription>
-              Update informasi project. Admin dapat diubah sesuai kebutuhan.
-            </DialogDescription>
-          </DialogHeader>
-          <div class="grid gap-6 py-4">
-            <div class="grid gap-4">
-              <h3 class="text-lg font-medium text-left">
-                Informasi Dasar Project
-              </h3>
-              <div class="grid gap-2">
-                <label for="edit_name" class="text-sm font-medium text-left"
-                  >Nama Project <span class="text-red-400">*</span></label
-                >
-                <Input
-                  id="edit_name"
-                  v-model="editingProject.name"
-                  placeholder="Nama Project"
-                  class="w-full"
-                />
-              </div>
-              <div class="grid gap-2">
-                <label
-                  for="edit_description"
-                  class="text-sm font-medium text-left"
-                  >Deskripsi</label
-                >
-                <Textarea
-                  id="edit_description"
-                  v-model="editingProject.description"
-                  placeholder="Deskripsi project..."
-                  class="w-full min-h-[100px]"
-                />
-              </div>
-            </div>
-
-            <!-- Admin Assignment (Optional) -->
-            <div class="grid gap-4">
-              <h3 class="text-lg font-medium text-left">
-                Admin yang Ditugaskan
-                <span class="text-sm text-gray-400 font-normal"
-                  >(Opsional)</span
-                >
-              </h3>
-              <div class="grid gap-2">
-                <Combobox
-                  v-model="editingProjectAdminIds"
-                  v-model:open="openEditAdmins"
-                  :ignore-filter="true"
-                >
-                  <ComboboxAnchor as-child>
-                    <TagsInput
-                      v-model="editingProjectAdminIds"
-                      class="px-2 w-full"
-                    >
-                      <div class="flex flex-col">
-                        <div
-                          v-if="editingProjectAdminIds.length"
-                          class="flex gap-2 flex-wrap items-center p-1 font-semibold"
-                        >
-                          <TagsInputItem
-                            v-for="adminId in editingProjectAdminIds"
-                            :key="adminId"
-                            :value="getAdminName(adminId)"
-                          >
-                            <TagsInputItemText class="text-xs">{{
-                              getAdminName(adminId)
-                            }}</TagsInputItemText>
-                            <TagsInputItemDelete
-                              @click="removeAdminFromEditingProject(adminId)"
-                            />
-                          </TagsInputItem>
-                        </div>
-                        <ComboboxInput v-model="searchTermEditAdmin" as-child>
-                          <TagsInputInput
-                            placeholder="Pilih admin (opsional)..."
-                            class="w-full"
-                            @keydown.enter.prevent
-                          />
-                        </ComboboxInput>
-                      </div>
-                    </TagsInput>
-                    <ComboboxList
-                      class="w-[--reka-popper-anchor-width]"
-                      align="start"
-                    >
-                      <ComboboxEmpty />
-                      <ComboboxGroup>
-                        <ComboboxItem
-                          v-for="admin in availableAdminsForEditingProject"
-                          :key="admin.id"
-                          :value="admin.id"
-                          @select.prevent="
-                            (ev) => {
-                              if (typeof ev.detail.value === 'string') {
-                                searchTermEditAdmin = '';
-                                editingProjectAdminIds.push(ev.detail.value);
-                              }
-                            }
-                          "
-                        >
-                          {{ admin.full_name }}
-                        </ComboboxItem>
-                      </ComboboxGroup>
-                    </ComboboxList>
-                  </ComboboxAnchor>
-                </Combobox>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" @click="cancelEdit"> Batal </Button>
-            <Button
-              @click="updateProject"
-              :disabled="isUpdating"
-              class="flex items-center gap-2"
-            >
-              <Check v-if="!isUpdating" class="w-4 h-4" />
-              <Loader2 v-else class="w-4 h-4 animate-spin" />
-              {{ isUpdating ? "Mengupdate..." : "Update Project" }}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
     <Dialog v-model:open="isEditDialogOpen">
       <DialogContent class="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
@@ -403,6 +275,160 @@
       </DialogContent>
     </Dialog>
 
+    <!-- Export Documents Dialog -->
+    <Dialog v-model:open="isExportDialogOpen">
+      <DialogContent class="sm:max-w-4xl max-h-[80vh]">
+        <DialogHeader>
+          <DialogTitle>Export Dokumen - {{ projectToExport?.name }}</DialogTitle>
+          <DialogDescription>
+            Pilih dokumen yang sudah dianotasi untuk diexport. Hanya dokumen dengan status "Sudah Dianotasi" atau lebih yang bisa diexport.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div class="space-y-4 max-h-[60vh] overflow-y-auto">
+          <!-- Loading state -->
+          <div v-if="isLoadingDocuments" class="flex items-center justify-center py-8">
+            <Loader2 class="w-6 h-6 animate-spin mr-2" />
+            <span>Memuat dokumen...</span>
+          </div>
+
+          <!-- Export format selection -->
+          <div v-else class="space-y-4">
+            <div class="border-b pb-4">
+              <label class="block text-sm font-medium mb-2">Format Export:</label>
+              <div class="flex gap-4">
+                <label class="flex items-center">
+                  <input 
+                    type="radio" 
+                    v-model="exportFormat" 
+                    value="parallel" 
+                    class="mr-2"
+                  />
+                  Parallel TSV (original → corrected)
+                </label>
+                <label class="flex items-center">
+                  <input 
+                    type="radio" 
+                    v-model="exportFormat" 
+                    value="m2" 
+                    class="mr-2"
+                  />
+                  M2 Format
+                </label>
+              </div>
+            </div>
+
+            <!-- Document selection controls -->
+            <div class="flex items-center justify-between border-b pb-4">
+              <div class="flex items-center gap-4">
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  @click="selectAllExportableDocuments"
+                  :disabled="exportableDocuments.length === 0"
+                >
+                  <CheckCircle class="w-4 h-4 mr-1" />
+                  Pilih Semua yang Bisa Diexport
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  @click="deselectAllDocuments"
+                  :disabled="selectedDocumentsForExport.length === 0"
+                >
+                  <XCircle class="w-4 h-4 mr-1" />
+                  Batalkan Pilihan
+                </Button>
+              </div>
+              <div class="text-sm text-gray-600">
+                {{ selectedDocumentsForExport.length }} dari {{ exportableDocuments.length }} dokumen dipilih
+              </div>
+            </div>
+
+            <!-- Exportable documents -->
+            <div v-if="exportableDocuments.length > 0">
+              <h4 class="font-medium text-green-700 mb-3 flex items-center">
+                <CheckCircle class="w-4 h-4 mr-2" />
+                Dokumen yang Dapat Diexport ({{ exportableDocuments.length }})
+              </h4>
+              <div class="space-y-2 max-h-40 overflow-y-auto border rounded p-3">
+                <label 
+                  v-for="document in exportableDocuments" 
+                  :key="document.id"
+                  class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer"
+                >
+                  <input 
+                    type="checkbox" 
+                    :checked="selectedDocumentsForExport.some(d => d.id === document.id)"
+                    @change="toggleDocumentSelection(document)"
+                    class="mr-3"
+                  />
+                  <div class="flex-1">
+                    <div class="font-medium text-sm">{{ document.title }}</div>
+                    <div class="flex items-center gap-2 text-xs text-gray-600">
+                      <span :class="getDocumentStatusInfo(document.status).color">
+                        {{ getDocumentStatusInfo(document.status).text }}
+                      </span>
+                      <span>•</span>
+                      <span>{{ document.jumlah_sentence }} kalimat</span>
+                    </div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Non-exportable documents info -->
+            <div v-if="nonExportableDocuments.length > 0">
+              <h4 class="font-medium text-gray-600 mb-3 flex items-center">
+                <XCircle class="w-4 h-4 mr-2" />
+                Dokumen Belum Siap Diexport ({{ nonExportableDocuments.length }})
+              </h4>
+              <div class="space-y-2 max-h-32 overflow-y-auto border rounded p-3 bg-gray-50">
+                <div 
+                  v-for="document in nonExportableDocuments" 
+                  :key="document.id"
+                  class="flex items-center p-2 rounded opacity-75"
+                >
+                  <FileText class="w-4 h-4 mr-3 text-gray-400" />
+                  <div class="flex-1">
+                    <div class="font-medium text-sm text-gray-700">{{ document.title }}</div>
+                    <div class="flex items-center gap-2 text-xs text-gray-500">
+                      <span :class="getDocumentStatusInfo(document.status).color">
+                        {{ getDocumentStatusInfo(document.status).text }}
+                      </span>
+                      <span>•</span>
+                      <span>{{ document.jumlah_sentence }} kalimat</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Empty state -->
+            <div v-if="documentsInProject.length === 0" class="text-center py-8 text-gray-500">
+              <FileText class="w-12 h-12 mx-auto mb-3 text-gray-300" />
+              <p>Tidak ada dokumen dalam project ini</p>
+            </div>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" @click="closeExportDialog">
+            Batal
+          </Button>
+          <Button 
+            @click="exportSelectedDocuments" 
+            :disabled="selectedDocumentsForExport.length === 0 || isExporting"
+            class="flex items-center gap-2"
+          >
+            <Download v-if="!isExporting" class="w-4 h-4" />
+            <Loader2 v-else class="w-4 h-4 animate-spin" />
+            {{ isExporting ? 'Mengexport...' : `Export ${selectedDocumentsForExport.length} Dokumen` }}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
       <div v-if="isLoading" class="text-gray-600 mb-4">
         Memuat data project...
       </div>
@@ -454,6 +480,15 @@
                 }}</TableCell>
                 <TableCell class="flex w-full justify-end">
                   <div class="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      @click="showExportDialog(project)"
+                      class="px-4 py-1 font-semibold"
+                    >
+                      <Download class="w-4 h-4 mr-1" />
+                      Export
+                    </Button>
                     <Button
                       size="sm"
                       variant="outline"
@@ -531,8 +566,9 @@
 import { ref, onMounted, computed, watch } from "vue";
 import { useProjectsApi } from "~/data/projects";
 import { useUsersApi } from "~/data/users";
+import { useDocumentsApi } from "~/data/documents";
 import { useProjectContext } from "~/composables/project-context";
-import type { ProjectResponse, ProjectRequest, UserResponse } from "~/types/api";
+import type { ProjectResponse, ProjectRequest, UserResponse, DocumentResponse } from "~/types/api";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
 import { Button } from "~/components/ui/button";
@@ -588,6 +624,10 @@ import {
   ArrowRight,
   MoreHorizontal,
   UserPlus,
+  Download,
+  FileText,
+  CheckCircle,
+  XCircle,
 } from "lucide-vue-next";
 import { toast } from "vue-sonner";
 
@@ -601,7 +641,8 @@ const {
 } = useProjectsApi();
 
 const { getAllUsers } = useUsersApi();
-const { selectedProject, setSelectedProject, clearSelectedProject, selectedProjectId, isAllProjects } = useProjectContext();
+const { getDocumentsInProject, exportDocument: exportDocumentApi } = useDocumentsApi();
+const { selectedProject, clearSelectedProject, selectedProjectId, isAllProjects } = useProjectContext();
 
 const projects = ref<ProjectResponse[]>([]);
 const adminUsers = ref<UserResponse[]>([]);
@@ -612,6 +653,13 @@ const isDeleting = ref(false);
 const isCreateDialogOpen = ref(false);
 const isEditDialogOpen = ref(false);
 const isDeleteDialogOpen = ref(false);
+const isExportDialogOpen = ref(false);
+const isExporting = ref(false);
+const projectToExport = ref<ProjectResponse | null>(null);
+const documentsInProject = ref<DocumentResponse[]>([]);
+const selectedDocumentsForExport = ref<DocumentResponse[]>([]);
+const exportFormat = ref<"parallel" | "m2">("parallel");
+const isLoadingDocuments = ref(false);
 
 const newProject = ref<ProjectRequest>({
   name: "",
@@ -883,7 +931,6 @@ async function updateProject() {
 }
 
 function editProject(project: ProjectResponse) {
-  setSelectedProject(project);
   editingProject.value = {
     id: project.id,
     name: project.name,
@@ -899,7 +946,6 @@ function cancelEdit() {
     description: "",
   };
   editingProjectAdminIds.value = [];
-  clearSelectedProject();
   isEditDialogOpen.value = false;
 }
 
@@ -954,17 +1000,149 @@ function formatDate(dateString: string) {
   return new Date(dateString).toLocaleDateString("id-ID");
 }
 
+// Export functionality
+async function showExportDialog(project: ProjectResponse) {
+  projectToExport.value = project;
+  isLoadingDocuments.value = true;
+  isExportDialogOpen.value = true;
+  selectedDocumentsForExport.value = [];
+
+  try {
+    const documents = await getDocumentsInProject(project.id);
+    documentsInProject.value = documents;
+  } catch (error) {
+    console.error("Error fetching project documents:", error);
+    toast.error("Gagal memuat dokumen project");
+    isExportDialogOpen.value = false;
+  } finally {
+    isLoadingDocuments.value = false;
+  }
+}
+
+function closeExportDialog() {
+  isExportDialogOpen.value = false;
+  projectToExport.value = null;
+  documentsInProject.value = [];
+  selectedDocumentsForExport.value = [];
+  exportFormat.value = "parallel";
+}
+
+function toggleDocumentSelection(document: DocumentResponse) {
+  const index = selectedDocumentsForExport.value.findIndex(d => d.id === document.id);
+  if (index > -1) {
+    selectedDocumentsForExport.value.splice(index, 1);
+  } else {
+    selectedDocumentsForExport.value.push(document);
+  }
+}
+
+function selectAllExportableDocuments() {
+  selectedDocumentsForExport.value = [...exportableDocuments.value];
+}
+
+function deselectAllDocuments() {
+  selectedDocumentsForExport.value = [];
+}
+
+async function exportSelectedDocuments() {
+  if (selectedDocumentsForExport.value.length === 0) {
+    toast.error("Pilih setidaknya satu dokumen untuk diexport");
+    return;
+  }
+
+  isExporting.value = true;
+  let successCount = 0;
+  let failCount = 0;
+  const totalDocuments = selectedDocumentsForExport.value.length;
+
+  try {
+    await toast.promise(
+      (async () => {
+        for (const document of selectedDocumentsForExport.value) {
+          try {
+            const blob = await exportDocumentApi(document.id, exportFormat.value);
+
+            // Create download link
+            const url = window.URL.createObjectURL(blob);
+            const link = window.document.createElement("a");
+            link.href = url;
+            link.download = `${document.title}_${exportFormat.value}.${
+              exportFormat.value === "parallel" ? "tsv" : "m2"
+            }`;
+            window.document.body.appendChild(link);
+            link.click();
+            window.document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+
+            successCount++;
+          } catch (error) {
+            console.error(`Export failed for document ${document.id}:`, error);
+            failCount++;
+          }
+        }
+
+        return { successCount, failCount, totalDocuments };
+      })(),
+      {
+        loading: `Mengexport ${totalDocuments} dokumen (${exportFormat.value.toUpperCase()})...`,
+        success: (result: { successCount: number; failCount: number; totalDocuments: number }) => {
+          if (result.failCount === 0) {
+            return `Berhasil export semua ${result.totalDocuments} dokumen (${exportFormat.value.toUpperCase()})`;
+          } else {
+            return `Export selesai: ${result.successCount} berhasil, ${result.failCount} gagal`;
+          }
+        },
+        error: `Gagal export ${exportFormat.value.toUpperCase()}`,
+      }
+    );
+
+    // Close dialog after successful export
+    closeExportDialog();
+  } catch (error: any) {
+    console.error("Export error:", error);
+    toast.error(`Gagal export: ${error.message}`);
+  } finally {
+    isExporting.value = false;
+  }
+}
+
 // Watch for project context changes
 watch(selectedProjectId, async () => {
   // No need to refetch projects, just let the computed filteredProjects handle the filtering
   currentPage.value = 1; // Reset to first page when context changes
 }, { immediate: false });
 
+// Filter documents that are annotated (ready for export)
+const exportableDocuments = computed(() => {
+  return documentsInProject.value.filter((doc: DocumentResponse) => {
+    // Only documents that are annotated or reviewed can be exported
+    return ["sudah_dianotasi", "belum_direview", "sedang_direview", "sudah_direview"].includes(doc.status);
+  });
+});
+
+const nonExportableDocuments = computed(() => {
+  return documentsInProject.value.filter((doc: DocumentResponse) => {
+    // Documents that are not yet annotated
+    return ["belum_dianotasi", "sedang_dianotasi"].includes(doc.status);
+  });
+});
+
+// Get status display text and color
+function getDocumentStatusInfo(status: string) {
+  const statusMap: Record<string, { text: string; color: string }> = {
+    "belum_dianotasi": { text: "Belum Dianotasi", color: "text-gray-500" },
+    "sedang_dianotasi": { text: "Sedang Dianotasi", color: "text-yellow-500" },
+    "sudah_dianotasi": { text: "Sudah Dianotasi", color: "text-green-500" },
+    "belum_direview": { text: "Belum Direview", color: "text-blue-500" },
+    "sedang_direview": { text: "Sedang Direview", color: "text-orange-500" },
+    "sudah_direview": { text: "Sudah Direview", color: "text-purple-500" },
+  };
+  return statusMap[status] || { text: status, color: "text-gray-500" };
+}
+
 // Dynamic page title based on project context
 const pageTitle = computed(() => {
-  if (selectedProject.value) {
-    return `Kelola Project - ${selectedProject.value.name}`;
-  }
+  if (selectedProject.value) {/* Lines 836-837 omitted */}
   return "Kelola Project - Semua Project";
 });
 

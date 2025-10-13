@@ -6,6 +6,20 @@
         <p class="text-gray-600">
           Buat dan kelola pengguna sistem anotasi
         </p>
+        <!-- Project Context Indicator - Only for Kepala Riset -->
+        <div v-if="isKepalaRiset && selectedProject" class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <p class="text-sm text-blue-800">
+            <strong>Project terpilih:</strong> {{ selectedProject.name }}
+          </p>
+          <p class="text-xs text-blue-600 mt-1">
+            Menampilkan pengguna yang terkait dengan project ini
+          </p>
+        </div>
+        <div v-else-if="isKepalaRiset && isAllProjects" class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+          <p class="text-sm text-gray-600">
+            Menampilkan semua admin dari semua project
+          </p>
+        </div>
       </div>
       <div class="mb-6">
         <Dialog v-model:open="isCreateDialogOpen">
@@ -284,7 +298,23 @@
 
       <div v-if="(!users || users.length === 0) && !isLoading"
         class="bg-white border border-gray-200 rounded-xl p-6 text-center">
-        <span class="text-gray-500">Tidak ada pengguna ditemukan.</span>
+        <div class="text-gray-500">
+          <div v-if="isKepalaRiset && selectedProject && !isAllProjects" class="space-y-2">
+            <p class="font-medium">Tidak ada pengguna ditemukan untuk project ini.</p>
+            <p class="text-sm text-gray-400">
+              Project "{{ selectedProject.name }}" belum memiliki pengguna yang di-assign.
+            </p>
+          </div>
+          <div v-else-if="isKepalaRiset && isAllProjects" class="space-y-2">
+            <p class="font-medium">Tidak ada admin ditemukan.</p>
+            <p class="text-sm text-gray-400">
+              Belum ada admin yang terdaftar di sistem.
+            </p>
+          </div>
+          <div v-else>
+            <p>Tidak ada pengguna ditemukan.</p>
+          </div>
+        </div>
       </div>
 
     </div>
@@ -295,7 +325,9 @@
 import { ref, onMounted, computed, watch } from "vue";
 import { useAuth } from "~/data/auth";
 import { useUsersApi } from "~/data/users";
-import type { UserResponse, UserRegistrationRequest, UserRegistrationResponse } from "~/types/api";
+import { useProjectsApi } from "~/data/projects";
+import { useProjectContext } from "~/composables/project-context";
+import type { UserResponse, UserRegistrationRequest, UserRegistrationResponse, ProjectResponse } from "~/types/api";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
@@ -327,6 +359,7 @@ import { createUserColumns } from "~/components/users/columns";
 
 const {
   getUsers,
+  getUsersInProject,
   createUser: apiCreateUser,
   deleteUser: apiDeleteUser,
   updateUser: apiUpdateUser,
@@ -335,7 +368,10 @@ const {
   adminPasswordReset,
 } = useUsersApi();
 
+const { getProjects, getAssignedUsers } = useProjectsApi();
+
 const { userRoles } = useAuth();
+const { selectedProject, selectedProjectId, isAllProjects } = useProjectContext();
 
 const isKepalaRiset = computed(() => userRoles.value.includes("Kepala Riset"));
 
@@ -375,6 +411,31 @@ const searchTermEdit = ref('');
 const currentPage = ref(1);
 const totalPages = ref(1);
 
+// Projects data for admin assignment display
+const projects = ref<ProjectResponse[]>([]);
+const projectUserMappings = ref<Record<number, string[]>>({});
+
+// Function to get project assignment for any user role
+function getProjectAssignment(userId: string, userRoles: string[]): string | null {
+  // For Admin users, check assigned_admins in projects
+  if (userRoles.includes('Admin')) {
+    const project = projects.value.find((p: ProjectResponse) => p.assigned_admins?.includes(userId));
+    return project?.name || null;
+  }
+  
+  // For Annotator and Reviewer users, check project user mappings
+  if (userRoles.includes('Annotator') || userRoles.includes('Reviewer')) {
+    for (const [projectId, assignedUserIds] of Object.entries(projectUserMappings.value)) {
+      if (assignedUserIds.includes(userId)) {
+        const project = projects.value.find((p: ProjectResponse) => p.id === parseInt(projectId));
+        return project?.name || null;
+      }
+    }
+  }
+  
+  return null;
+}
+
 const userToDelete = ref<UserResponse | null>(null);
 
 const userToResetPassword = ref<UserResponse | null>(null);
@@ -403,19 +464,88 @@ async function fetchAvailableRoles() {
   }
 }
 
+async function fetchProjects() {
+  try {
+    const response = await getProjects();
+    projects.value = response?.results || [];
+    
+    // Fetch assigned users for each project (for Annotator/Reviewer mapping)
+    await fetchProjectUserMappings();
+  } catch (error) {
+    console.error('Error fetching projects:', error);
+    toast.error("Gagal memuat data projects");
+    projects.value = [];
+  }
+}
+
+async function fetchProjectUserMappings() {
+  const mappings: Record<number, string[]> = {};
+  
+  for (const project of projects.value) {
+    try {
+      const assignedUsers = await getAssignedUsers(project.id);
+      mappings[project.id] = assignedUsers.map((user: any) => user.id);
+    } catch (error) {
+      console.error(`Error fetching assigned users for project ${project.id}:`, error);
+      mappings[project.id] = [];
+    }
+  }
+  
+  projectUserMappings.value = mappings;
+}
+
 async function fetchUsers(page = 1) {
   isLoading.value = true;
   try {
     let response;
+    let allUsers: UserResponse[] = [];
 
     if (isKepalaRiset.value) {
-      response = await getUsers(page);
-      users.value = response?.results || [];
-      currentPage.value = page;
-      totalPages.value = Math.max(1, Math.ceil((response?.count || 0) / 20));
-      
-      users.value = users.value.filter((user: UserResponse) => user.roles.includes("Admin"));
+      if (selectedProjectId.value && !isAllProjects.value) {
+        // Fetch users for specific project
+        try {
+          const projectUsers = await getUsersInProject(selectedProjectId.value);
+          allUsers = projectUsers || [];
+          
+          // For Kepala Riset, also include admins assigned to this project
+          const selectedProj = projects.value.find((p: ProjectResponse) => p.id === selectedProjectId.value);
+          if (selectedProj?.assigned_admins) {
+            // Fetch all users to get admin details
+            const allUsersResponse = await getUsers();
+            const adminUsers = (allUsersResponse?.results || []).filter((user: UserResponse) => 
+              selectedProj.assigned_admins.includes(user.id) && user.roles.includes("Admin")
+            );
+            
+            // Merge project users and admin users, avoiding duplicates
+            const existingUserIds = allUsers.map(u => u.id);
+            const uniqueAdmins = adminUsers.filter((admin: UserResponse) => !existingUserIds.includes(admin.id));
+            allUsers = [...allUsers, ...uniqueAdmins];
+          }
+        } catch (error) {
+          console.error('Error fetching project users:', error);
+          toast.error("Gagal memuat data pengguna project");
+          allUsers = [];
+        }
+        
+        // Manual pagination for project-specific users
+        const totalUsers = allUsers.length;
+        totalPages.value = Math.max(1, Math.ceil(totalUsers / 20));
+        const startIndex = (page - 1) * 20;
+        const endIndex = startIndex + 20;
+        users.value = allUsers.slice(startIndex, endIndex);
+        currentPage.value = page;
+      } else {
+        // Fetch all users (when "All Projects" is selected)
+        response = await getUsers(page);
+        users.value = response?.results || [];
+        currentPage.value = page;
+        totalPages.value = Math.max(1, Math.ceil((response?.count || 0) / 20));
+        
+        // Filter to show only Admins for Kepala Riset
+        users.value = users.value.filter((user: UserResponse) => user.roles.includes("Admin"));
+      }
     } else {
+      // Non-Kepala Riset users see all users
       response = await getUsers(page);
       users.value = response?.results || [];
       currentPage.value = page;
@@ -452,7 +582,8 @@ const paginationPages = computed(() => {
 const userColumns = computed(() => createUserColumns(
   (user: UserResponse) => editUser(user),
   (user: UserResponse) => showDeleteDialog(user),
-  (user: UserResponse) => showResetPasswordDialog(user)
+  (user: UserResponse) => showResetPasswordDialog(user),
+  getProjectAssignment
 ));
 
 function handleSelectionChange(selection: UserResponse[]) {
@@ -703,15 +834,27 @@ function formatDate(dateString: string) {
 }
 
 const pageTitle = computed(() => {
+  if (isKepalaRiset.value && selectedProject.value && !isAllProjects.value) {
+    return `Kelola Pengguna - ${selectedProject.value.name}`;
+  }
   return "Kelola Pengguna";
 });
 
 onMounted(async () => {
   await fetchAvailableRoles();
+  await fetchProjects();
   await fetchUsers(currentPage.value);
   
   if (isKepalaRiset.value) {
     newUserRoles.value = ["Admin"];
+  }
+});
+
+// Watch for project context changes and refetch users
+watch(selectedProjectId, async (newProjectId, oldProjectId) => {
+  if (newProjectId !== oldProjectId && isKepalaRiset.value) {
+    currentPage.value = 1; // Reset to first page
+    await fetchUsers(currentPage.value);
   }
 });
 

@@ -587,42 +587,6 @@
           </p>
         </div>
 
-        <!-- Filters -->
-        <Card
-          variant="glassmorphism"
-          class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none"
-        >
-          <h3 class="text-lg font-semibold text-gray-900 mb-4">Filter Data</h3>
-          <div class="grid grid-cols-1 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Document
-              </label>
-              <Select v-model="selectedDocument">
-                <SelectTrigger>
-                  <SelectValue placeholder="Pilih document..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Semua Dokumen</SelectItem>
-                  <SelectItem
-                    v-for="doc in documents"
-                    :key="doc.id"
-                    :value="doc.id.toString()"
-                  >
-                    {{ doc.title || doc.name || `Document ${doc.id}` }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div class="mt-4">
-            <Button @click="updateDashboardData" :loading="loadingFilter">
-              <RefreshCw class="w-4 h-4 mr-2" />
-              Update Data
-            </Button>
-          </div>
-        </Card>
-
         <!-- Overview Stats -->
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
           <Card
@@ -766,126 +730,6 @@
                 {{ dashboardAnalytics.completed_documents || 0 }}
               </div>
               <div class="text-sm text-green-600">Completed</div>
-            </div>
-          </div>
-        </Card>
-
-        <!-- Progress Chart -->
-        <Card
-          variant="glassmorphism"
-          class="p-8 bg-white/90 border border-gray-200 w-full !shadow-none"
-        >
-          <h3
-            class="text-2xl font-bold mb-8 flex items-center gap-3 text-gray-900"
-          >
-            <TrendingUp class="w-7 h-7 text-green-500" />
-            Progress Proyek
-          </h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- Progress Bars -->
-            <div class="space-y-6">
-              <div>
-                <div class="flex justify-between text-sm mb-2">
-                  <span class="text-gray-500">Anotasi</span>
-                  <span class="text-gray-400"
-                    >{{
-                      dashboardAnalytics?.totals?.annotations || 0
-                    }}
-                    total</span
-                  >
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    class="bg-blue-500 h-2 rounded-full transition-all duration-1000"
-                    :style="`width: ${Math.min(
-                      ((dashboardAnalytics?.totals?.annotations || 0) /
-                        Math.max(
-                          dashboardAnalytics?.per_document?.length || 1,
-                          1
-                        )) *
-                        10,
-                      100
-                    )}%`"
-                  ></div>
-                </div>
-              </div>
-
-              <div>
-                <div class="flex justify-between text-sm mb-2">
-                  <span class="text-gray-500">Review</span>
-                  <span class="text-gray-400"
-                    >{{ dashboardAnalytics?.totals?.reviews || 0 }} total</span
-                  >
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    class="bg-green-500 h-2 rounded-full transition-all duration-1000"
-                    :style="`width: ${Math.min(
-                      ((dashboardAnalytics?.totals?.reviews || 0) /
-                        Math.max(
-                          dashboardAnalytics?.totals?.annotations || 1,
-                          1
-                        )) *
-                        100,
-                      100
-                    )}%`"
-                  ></div>
-                </div>
-              </div>
-
-              <div>
-                <div class="flex justify-between text-sm mb-2">
-                  <span class="text-gray-500">Inter-Annotator Agreement</span>
-                  <span class="text-gray-400"
-                    >{{
-                      (
-                        (dashboardAnalytics?.inter_annotator_agreement
-                          ?.cohen_kappa_avg || 0) * 100
-                      ).toFixed(1)
-                    }}%</span
-                  >
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    class="bg-purple-500 h-2 rounded-full transition-all duration-1000"
-                    :style="`width: ${
-                      (dashboardAnalytics?.inter_annotator_agreement
-                        ?.cohen_kappa_avg || 0) * 100
-                    }%`"
-                  ></div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Quick Actions -->
-            <div class="space-y-4">
-              <Button
-                variant="outline"
-                size="lg"
-                class="w-full justify-start h-14 text-base font-medium"
-                @click="navigateTo('/kepala-riset/kelola-project')"
-              >
-                <ClipboardList class="w-5 h-5" />
-                Kelola Proyek
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                class="w-full justify-start h-14 text-base font-medium"
-                @click="togglePerformanceSection"
-              >
-                <Users class="w-5 h-5" />
-                Performance Team
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                class="w-full justify-start h-14 text-base font-medium hover:bg-gray-50 hover:scale-105 hover:shadow-lg transition-all duration-200 active:scale-95"
-                @click="navigateTo('/admin/kelola-dokumen')"
-              >
-                <Download class="w-5 h-5" />
-                Export Dataset
-              </Button>
             </div>
           </div>
         </Card>
@@ -1054,25 +898,17 @@ import {
   Download,
   Users,
   Pencil,
-  RefreshCw,
-  TrendingUp,
   Building2,
 } from "lucide-vue-next";
 import { Card } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "~/components/ui/avatar";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
+
 import { useAuth } from "~/data/auth";
 import { useDashboardApi } from "~/data/dashboard";
 import { useUsersApi } from "~/data/users";
-import { useDocumentsApi } from "~/data/documents";
+
 import { useUserDocumentsApi } from "~/data/user-documents";
 import { useAssignmentsApi } from "~/data/document-assignments";
 import { useProjectsApi } from "~/data/projects";
@@ -1083,7 +919,6 @@ const { user } = useAuth();
 const { getDashboardSummary, getAnnotatorPerformance, getReviewerPerformance } =
   useDashboardApi();
 const { getUsers, getAllUsers } = useUsersApi();
-const { getDocuments } = useDocumentsApi();
 const { getAssignedDocuments } = useUserDocumentsApi();
 const { getProjects } = useProjectsApi();
 const {
@@ -1178,6 +1013,7 @@ const annotatorStats = ref({
 const reviewerStats = ref({
   pendingReviews: 0,
   completedReviews: 0,
+  inProgressDocuments: 0,
   errorsFound: 0,
   todayReviewed: 0,
   accuracy: 0,
@@ -1234,12 +1070,8 @@ const reviewQueue = ref<
 
 const recentReviewedDocs = ref<any[]>([]);
 
-// Dashboard filters and analytics
-const selectedDocument = ref<string>("all");
-const loadingFilter = ref(false);
+// Dashboard analytics
 const showPerformanceSection = ref(false);
-const projects = ref<any[]>([]);
-const documents = ref<any[]>([]);
 const userProjects = ref<any[]>([]);
 const isLoadingProjects = ref(false);
 
@@ -1316,7 +1148,7 @@ onMounted(async () => {
   await fetchUserProjects();
   try {
     await fetchDashboardData();
-    await loadFilterData();
+    await loadUsersForPerformance();
   } catch (error) {
     console.error("Error fetching dashboard data:", error);
   } finally {
@@ -1327,7 +1159,7 @@ onMounted(async () => {
 // Watch for project context changes
 watch(selectedProjectId, async () => {
   if (hasRole("Kepala Riset")) {
-    await updateDashboardData();
+    await fetchDashboardData();
   }
 });
 
@@ -1346,7 +1178,6 @@ const fetchDashboardData = async () => {
     if (hasRole("Admin")) {
       // Get user count for admin
       const usersData = await getUsers();
-      const documentsData = await getDocuments();
 
       adminStats.value = [
         {
@@ -1358,7 +1189,7 @@ const fetchDashboardData = async () => {
         },
         {
           label: "Dokumen Upload",
-          value: documentsData.count || dashboardData.per_document?.length || 0,
+          value: dashboardData.per_document?.length || 0,
           icon: "document-text",
           color: "text-green-400",
           description: "Dokumen dalam sistem",
@@ -1427,6 +1258,7 @@ const fetchDashboardData = async () => {
       reviewerStats.value = {
         pendingReviews: pendingDocs.length,
         completedReviews: completedDocs.length,
+        inProgressDocuments: inProgressDocs.length,
         errorsFound: 0,
         todayReviewed: 0,
         accuracy: 0,
@@ -1490,20 +1322,9 @@ const fetchDashboardData = async () => {
   }
 };
 
-// Load additional data for Kepala Riset filters
-const loadFilterData = async () => {
-  if (!hasRole("Kepala Riset")) return;
-
+// Load users for performance tracking
+const loadUsersForPerformance = async () => {
   try {
-    // Load projects
-    const projectsData = await getProjects();
-    projects.value = projectsData.results || [];
-
-    // Load documents
-    const documentsData = await getDocuments();
-    documents.value = documentsData.results || [];
-
-    // Load users for performance tracking
     const allUsers = await getAllUsers();
 
     annotators.value = allUsers.filter((user: any) =>
@@ -1513,66 +1334,7 @@ const loadFilterData = async () => {
       user.roles?.includes("Reviewer")
     );
   } catch (error) {
-    console.error("Error loading filter data:", error);
-  }
-};
-
-// Update dashboard data with filters
-const updateDashboardData = async () => {
-  if (!hasRole("Kepala Riset")) return;
-
-  loadingFilter.value = true;
-  try {
-    const params: any = {};
-    if (selectedProjectId.value) {
-      params.project_id = selectedProjectId.value;
-    }
-    if (selectedDocument.value !== "all") {
-      params.document_id = parseInt(selectedDocument.value);
-    }
-
-    // Refresh dashboard data with filters
-    const dashboardData = await getDashboardSummary(params);
-    dashboardAnalytics.value = dashboardData;
-
-    // Update research stats with filtered data
-    researchStats.value = [
-      {
-        label: "Total Anotasi",
-        value: dashboardData.totals?.annotations || 0,
-        icon: "pencil",
-        color: "text-blue-400",
-        description: "Anotasi yang telah dibuat",
-      },
-      {
-        label: "Review Selesai",
-        value: dashboardData.totals?.reviews || 0,
-        icon: "check-circle",
-        color: "text-green-400",
-        description: "Review yang telah selesai",
-      },
-      {
-        label: "Total Dokumen",
-        value: dashboardData.per_document?.length || 0,
-        icon: "arrow-down-tray",
-        color: "text-purple-400",
-        description: "Total dokumen dalam sistem",
-      },
-      {
-        label: "Dokumen Aktif",
-        value:
-          dashboardData.per_document?.filter(
-            (doc: any) => doc.annotations > 0 || doc.reviews > 0
-          )?.length || 0,
-        icon: "user-group",
-        color: "text-orange-400",
-        description: "Dokumen dalam progress",
-      },
-    ];
-  } catch (error) {
-    console.error("Error updating dashboard data:", error);
-  } finally {
-    loadingFilter.value = false;
+    console.error("Error loading users:", error);
   }
 };
 
@@ -1588,9 +1350,6 @@ const loadAnnotatorPerformance = async () => {
     const params: any = { user_id: selectedAnnotator.value };
     if (selectedProjectId.value) {
       params.project_id = selectedProjectId.value;
-    }
-    if (selectedDocument.value !== "all") {
-      params.document_id = parseInt(selectedDocument.value);
     }
 
     annotatorPerformance.value = await getAnnotatorPerformance(params);
@@ -1610,9 +1369,6 @@ const loadReviewerPerformance = async () => {
     const params: any = { user_id: selectedReviewer.value };
     if (selectedProjectId.value) {
       params.project_id = selectedProjectId.value;
-    }
-    if (selectedDocument.value !== "all") {
-      params.document_id = parseInt(selectedDocument.value);
     }
 
     reviewerPerformance.value = await getReviewerPerformance(params);
@@ -1663,7 +1419,7 @@ onMounted(async () => {
   await fetchUserProjects();
   try {
     await fetchDashboardData();
-    await loadFilterData();
+    await loadUsersForPerformance();
   } catch (error) {
     console.error("Error fetching dashboard data:", error);
   } finally {
