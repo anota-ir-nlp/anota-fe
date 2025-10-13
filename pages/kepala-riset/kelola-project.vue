@@ -1,14 +1,11 @@
 <template>
   <div class="min-h-screen px-2 sm:px-4 py-10 font-inter bg-gray-50">
     <div class="w-full max-w-[95vw] mx-auto px-2 sm:px-4 pb-16">
-      <!-- Header -->
       <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 mb-2">Kelola Project</h1>
         <p class="text-gray-600">
           Buat dan kelola project penelitian untuk proses anotasi
         </p>
-
-        <!-- Project Context Notice -->
         <div v-if="selectedProject" class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <p class="text-sm text-blue-800">
             <strong>Project terpilih:</strong> {{ selectedProject.name }}
@@ -24,7 +21,6 @@
         </div>
       </div>
 
-      <!-- Add Project Button -->
       <div class="mb-6">
         <Dialog v-model:open="isCreateDialogOpen">
           <div class="flex gap-3 items-start">
@@ -43,7 +39,6 @@
             </DialogDescription>
           </DialogHeader>
           <div class="grid gap-6 py-4">
-            <!-- Basic Project Info -->
             <div class="grid gap-4">
               <h3 class="text-lg font-medium text-left">Informasi Dasar Project</h3>
               <div class="grid gap-2">

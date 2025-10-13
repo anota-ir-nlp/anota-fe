@@ -1,7 +1,6 @@
 <template>
   <div class="min-h-screen px-2 sm:px-4 py-10 font-inter bg-gray-50">
     <div class="w-full max-w-[95vw] mx-auto px-2 sm:px-4 pb-16">
-      <!-- Header -->
       <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 mb-2">Dashboard Analytics</h1>
         <p class="text-gray-600">
@@ -523,7 +522,6 @@ import type {
 } from "~/data/dashboard";
 import type { ProjectResponse, DocumentResponse, UserResponse, DocumentStatus } from "~/types/api";
 
-// APIs
 const { getDashboardSummary, getAnnotatorPerformance, getReviewerPerformance, getInterAnnotatorAgreement } = useDashboardApi();
 const { getProjects } = useProjectsApi();
 const { getDocuments, getDocumentsInProject } = useDocumentsApi();
@@ -531,7 +529,6 @@ const { getAllUsers } = useUsersApi();
 const { selectedProject, selectedProjectId } = useProjectContext();
 const { userRoles } = useAuth();
 
-// State
 const loading = ref(false);
 const loadingAnnotator = ref(false);
 const loadingReviewer = ref(false);

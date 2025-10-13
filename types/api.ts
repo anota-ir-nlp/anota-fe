@@ -299,6 +299,12 @@ export interface DocumentRequest {
   title: string;
   text: string;
   project: number;
+  allow_duplicate?: boolean;
+}
+
+export interface DuplicateDocumentError {
+  error: string;
+  existing_document: DocumentResponse;
 }
 
 export interface UserRegistrationRequest {

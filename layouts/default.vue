@@ -103,6 +103,11 @@ async function fetchUserProjects() {
 }
 
 function handleProjectChange(value: AcceptableValue) {
+  // Only allow project changes for Kepala Riset users who are not Admin
+  if (!hasRole('Kepala Riset') || hasRole('Admin')) {
+    return;
+  }
+  
   const projectId = value?.toString() || null;
   if (!projectId || projectId === "all") {
     clearSelectedProject();

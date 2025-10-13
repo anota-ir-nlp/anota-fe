@@ -1,6 +1,5 @@
 <template>
   <div>
-    <!-- Welcome Section -->
     <section
       class="w-full max-w-[95vw] mx-auto px-2 sm:px-4 pb-16 pt-10 flex flex-col gap-8"
     >
@@ -52,141 +51,46 @@
         </div>
       </Card>
 
-      <!-- Admin Project Table Section -->
-      <div v-if="hasRole('Admin') && userProjects.length > 0" class="mt-8 mb-8">
+      <!-- Admin Project Info Section -->
+      <div v-if="hasRole('Admin') && selectedProject" class="mt-8 mb-8">
         <!-- Admin Role Header -->
         <div class="flex items-center gap-4 mb-8">
           <div class="p-3 rounded-lg bg-pink-500/10 border border-pink-200">
             <Users class="w-8 h-8 text-pink-500" />
           </div>
           <div>
-            <h2 class="text-3xl font-bold text-gray-900">Projects</h2>
-            <p class="text-gray-500 text-lg">Pilih Project</p>
+            <h2 class="text-3xl font-bold text-gray-900">Project Assignment</h2>
+            <p class="text-gray-500 text-lg">Your assigned project</p>
           </div>
         </div>
         <Card
           variant="glassmorphism"
-          class="p-0 bg-white/90 border border-gray-200 w-full !shadow-none"
+          class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none"
         >
-          <div class="overflow-x-auto">
-            <table class="min-w-full text-lg">
-              <thead>
-                <tr class="bg-gray-100 text-gray-700">
-                  <th class="px-4 py-2 text-left font-semibold">
-                    Nama Project
-                  </th>
-                  <th class="px-4 py-2 text-left font-semibold">Deskripsi</th>
-                  <th class="px-4 py-2 text-left font-semibold">
-                    Tanggal Dibuat
-                  </th>
-                  <th class="px-4 py-2 text-left font-semibold">
-                    Jumlah Admin
-                  </th>
-                  <th class="px-4 py-2"></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  :class="[
-                    !selectedProject || selectedProject.id === undefined
-                      ? 'bg-blue-50 text-blue-700 font-semibold'
-                      : 'hover:bg-blue-50 cursor-pointer',
-                  ]"
-                  @click="handleProjectChange('all')"
-                >
-                  <td class="px-4 py-2 text-black">Semua Project</td>
-                  <td class="px-4 py-2 text-gray-500">
-                    Menampilkan semua project
-                  </td>
-                  <td class="px-4 py-2 text-gray-400">-</td>
-                  <td class="px-4 py-2 text-gray-400">-</td>
-                  <td class="px-4 py-2">
-                    <span
-                      v-if="
-                        !selectedProject || selectedProject.id === undefined
-                      "
-                      class="inline-block px-3 py-1 rounded bg-blue-100 text-blue-700 text-xs font-semibold"
-                      >Aktif</span
-                    >
-                  </td>
-                </tr>
-                <tr
-                  v-for="project in userProjects"
-                  :key="project.id"
-                  :class="[
-                    selectedProject?.id === project.id
-                      ? 'bg-blue-50 text-blue-700 font-semibold'
-                      : 'hover:bg-blue-50 cursor-pointer',
-                  ]"
-                  @click="handleProjectChange(project.id.toString())"
-                >
-                  <td class="px-4 py-2 text-black">{{ project.name }}</td>
-                  <td class="px-4 py-2 text-gray-500">
-                    {{ project.description || "-" }}
-                  </td>
-                  <td class="px-4 py-2 text-gray-400">
-                    {{ formatDate(project.created_at) }}
-                  </td>
-                  <td class="px-4 py-2 text-gray-500">
-                    {{ project.assigned_admins?.length || 0 }}
-                  </td>
-                  <td class="px-4 py-2">
-                    <span
-                      v-if="selectedProject?.id === project.id"
-                      class="inline-block px-3 py-1 rounded bg-blue-100 text-blue-700 text-xs font-semibold"
-                      >Aktif</span
-                    >
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </Card>
-      </div>
-
-      <!-- Activity Timeline -->
-
-      <div class="flex items-center gap-4">
-        <div class="p-3 rounded-lg bg-green-500/10 border border-green-200">
-          <Clock class="w-7 h-7 text-green-400" />
-        </div>
-        <div>
-          <h2 class="text-3xl font-bold text-gray-900">Aktivitas Terbaru</h2>
-          <p class="text-gray-500 text-lg">Monitoring Aktivitas</p>
-        </div>
-      </div>
-
-      <Card
-        variant="glassmorphism"
-        class="p-8 bg-white/90 border border-gray-200 w-full !shadow-none"
-      >
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6">
-          <Card
-            v-for="activity in recentActivities"
-            :key="activity.id"
-            variant="glassmorphism"
-            class="flex flex-col items-start gap-4 p-6 hover:border-gray-400 transition-all duration-300 border border-gray-200 bg-white/80 w-full !shadow-none"
-          >
-            <div class="flex items-center gap-4 mb-2">
-              <component
-                :is="getIcon(activity.icon)"
-                :class="`w-8 h-8 ${activity.color}`"
-              />
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <div class="p-3 rounded-lg bg-blue-500/10 border border-blue-200">
+                <Building2 class="w-6 h-6 text-blue-600" />
+              </div>
               <div>
-                <p class="text-gray-900 text-lg">
-                  {{ activity.title }}
-                </p>
+                <h3 class="text-xl font-semibold text-gray-900">{{ selectedProject.name }}</h3>
+                <p class="text-gray-600">{{ selectedProject.description || 'No description available' }}</p>
                 <p class="text-sm text-gray-500 mt-1">
-                  {{ activity.description }}
+                  Created: {{ formatDate(selectedProject.created_at) }}
                 </p>
               </div>
             </div>
-            <span class="text-xs text-gray-400 mt-2 font-medium">
-              {{ activity.time }}
-            </span>
-          </Card>
-        </div>
-      </Card>
+            <div class="text-right">
+              <span class="inline-block px-4 py-2 rounded-lg bg-green-100 text-green-700 text-sm font-semibold">
+                Active
+              </span>
+              <p class="text-xs text-gray-500 mt-1">
+                {{ selectedProject.assigned_admins?.length || 0 }} admin(s)
+              </p>
+            </div>
+          </div>
+        </Card>
+      </div>
     </section>
 
     <!-- Role-specific Content -->
@@ -1150,6 +1054,7 @@ import {
   Pencil,
   RefreshCw,
   TrendingUp,
+  Building2,
 } from "lucide-vue-next";
 import { Card } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
@@ -1215,7 +1120,6 @@ const getIcon = (iconName: string) => {
   return iconMap[iconName] || FileText;
 };
 
-// User data computed from auth
 const userData = computed(() => ({
   name: user.value?.full_name || "Pengguna",
   email: user.value?.email || "pengguna@anota.com",
@@ -1230,10 +1134,8 @@ const userData = computed(() => ({
     )}&background=0ea5e9&color=fff`,
 }));
 
-// Role checks
 const hasRole = (role: string) => user.value?.roles?.includes(role) || false;
 
-// Admin stats
 const adminStats = ref([
   {
     label: "Total Pengguna",
@@ -1265,14 +1167,12 @@ const adminStats = ref([
   },
 ]);
 
-// Annotator stats
 const annotatorStats = ref({
   assignedDocuments: 0,
   completedDocuments: 0,
   inProgressDocuments: 0,
 });
 
-// Reviewer stats
 const reviewerStats = ref({
   pendingReviews: 0,
   completedReviews: 0,
@@ -1281,7 +1181,6 @@ const reviewerStats = ref({
   accuracy: 0,
 });
 
-// Research stats
 const researchStats = ref([
   {
     label: "Total Anotasi",
@@ -1328,17 +1227,6 @@ const reviewQueue = ref<
     title: string;
     annotator: string;
     priority: string;
-  }>
->([]);
-
-const recentActivities = ref<
-  Array<{
-    id: string;
-    title: string;
-    description: string;
-    time: string;
-    icon: string;
-    color: string;
   }>
 >([]);
 
@@ -1595,44 +1483,8 @@ const fetchDashboardData = async () => {
         },
       ];
     }
-
-    // Set recent activities based on real data
-    const activities: any[] = [
-      {
-        id: "1",
-        title: "Login ke sistem",
-        description: "Anda berhasil masuk ke dalam sistem ANOTA",
-        time: "Baru saja",
-        icon: "check-circle",
-        color: "text-green-400",
-      },
-    ];
-
-    if (dashboardData.totals?.annotations > 0) {
-      activities.push({
-        id: "2",
-        title: "Statistik Terbaru",
-        description: `Sistem memiliki ${dashboardData.totals.annotations} anotasi dan ${dashboardData.totals.reviews} review`,
-        time: "Hari ini",
-        icon: "clipboard-document-list",
-        color: "text-blue-400",
-      });
-    }
-
-    recentActivities.value = activities;
   } catch (error) {
     console.error("Error fetching dashboard data:", error);
-    // Fallback to basic activities on error
-    recentActivities.value = [
-      {
-        id: "1",
-        title: "Login ke sistem",
-        description: "Anda berhasil masuk ke dalam sistem ANOTA",
-        time: "Baru saja",
-        icon: "check-circle",
-        color: "text-green-400",
-      },
-    ];
   }
 };
 
@@ -1785,6 +1637,11 @@ async function fetchUserProjects() {
 
 // Handle project change
 function handleProjectChange(value: string) {
+  // Only allow project changes for Kepala Riset users who are not Admin
+  if (!hasRole('Kepala Riset') || hasRole('Admin')) {
+    return;
+  }
+  
   if (!value || value === "all") {
     clearSelectedProject();
   } else {

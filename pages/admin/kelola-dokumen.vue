@@ -1,7 +1,6 @@
 <template>
   <div class="min-h-screen px-2 sm:px-4 py-10 font-inter bg-gray-50">
     <div class="w-full max-w-[95vw] mx-auto px-2 sm:px-4 pb-16">
-      <!-- Header -->
       <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 mb-2">Kelola Dokumen</h1>
         <p class="text-gray-600">
@@ -9,7 +8,6 @@
         </p>
       </div>
 
-      <!-- Project Selection Required Notice (Only for Admin) -->
       <div v-if="!selectedProject && !isKepalaRiset" class="mb-6">
         <div
           class="bg-yellow-50 border border-yellow-200 rounded-xl p-6 text-center"
@@ -24,7 +22,6 @@
         </div>
       </div>
 
-      <!-- Information Notice for Kepala Riset -->
       <div v-if="isKepalaRiset" class="mb-6">
         <div
           class="bg-blue-50 border border-blue-200 rounded-xl p-6 text-center"
@@ -39,9 +36,7 @@
       </div>
 
       <template v-if="selectedProject || isKepalaRiset">
-        <!-- Upload Controls (Only show for admin users when project selected) -->
         <div v-if="selectedProject && !isKepalaRiset" class="mb-6 flex gap-3">
-          <!-- Single Upload Dialog -->
           <Dialog v-model:open="isCreateDialogOpen">
             <DialogTrigger as-child>
               <Button class="flex items-center gap-2">
@@ -692,6 +687,70 @@
       </template>
     </div>
   </div>
+
+  <!-- Duplicate Document Warning Dialog -->
+  <Dialog v-model:open="isDuplicateWarningOpen">
+    <DialogContent class="max-w-2xl">
+      <DialogHeader>
+        <DialogTitle class="text-orange-600 flex items-center gap-2">
+          <AlertTriangle class="w-5 h-5" />
+          Dokumen Duplikat Terdeteksi
+        </DialogTitle>
+        <DialogDescription>
+          Dokumen dengan teks yang sama sudah ada dalam sistem. Anda dapat melanjutkan untuk menimpa atau membatalkan upload.
+        </DialogDescription>
+      </DialogHeader>
+
+      <div class="space-y-4">
+        <!-- Current Document Info -->
+        <div class="bg-blue-50 p-4 rounded-lg">
+          <h4 class="font-semibold text-blue-800 mb-2">Dokumen yang akan diupload:</h4>
+          <p class="text-sm text-blue-700">
+            <strong>Judul:</strong> {{ pendingDocumentRequest?.title }}
+          </p>
+          <p class="text-sm text-blue-700 mt-1">
+            <strong>Mode:</strong> {{ duplicateHandlingMode === 'single' ? 'Upload Tunggal' : 'Upload Massal' }}
+          </p>
+        </div>
+
+        <!-- Existing Document Info -->
+        <div class="bg-orange-50 p-4 rounded-lg" v-if="duplicateError?.existing_document">
+          <h4 class="font-semibold text-orange-800 mb-2">Dokumen yang sudah ada:</h4>
+          <p class="text-sm text-orange-700">
+            <strong>Judul:</strong> {{ duplicateError.existing_document.title }}
+          </p>
+          <p class="text-sm text-orange-700 mt-1">
+            <strong>Dibuat:</strong> {{ new Date(duplicateError.existing_document.created_at).toLocaleDateString('id-ID') }}
+          </p>
+          <p class="text-sm text-orange-700 mt-1">
+            <strong>ID:</strong> #{{ duplicateError.existing_document.id }}
+          </p>
+        </div>
+
+        <!-- Text Preview -->
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <h4 class="font-semibold text-gray-800 mb-2">Preview Teks:</h4>
+          <p class="text-sm text-gray-600 line-clamp-3">
+            {{ pendingDocumentRequest?.text?.substring(0, 200) }}{{ (pendingDocumentRequest?.text?.length || 0) > 200 ? '...' : '' }}
+          </p>
+        </div>
+      </div>
+
+      <DialogFooter class="flex gap-2">
+        <Button variant="outline" @click="cancelDuplicate">
+          <X class="w-4 h-4 mr-2" />
+          Batalkan
+        </Button>
+        <Button 
+          @click="proceedWithDuplicate"
+          class="bg-orange-600 hover:bg-orange-700 text-white"
+        >
+          <AlertTriangle class="w-4 h-4 mr-2" />
+          Lanjutkan Tetap (Izinkan Duplikat)
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
@@ -707,10 +766,10 @@ import type {
   DocumentResponse,
   DocumentRequest,
   UserResponse,
+  DuplicateDocumentError,
 } from "~/types/api";
 import { Input } from "~/components/ui/input";
 
-// Local interface for file parsing (without project)
 interface DocumentPreview {
   title: string;
   text: string;
@@ -752,6 +811,8 @@ import {
   UserPlus,
   Trash,
   Download,
+  AlertTriangle,
+  X,
 } from "lucide-vue-next";
 import { toast } from "vue-sonner";
 import { Progress } from "~/components/ui/progress";
@@ -794,7 +855,6 @@ const { adminReopenReview } = useReviewsApi();
 const { selectedProject, selectedProjectId } = useProjectContext();
 const { userRoles } = useAuth();
 
-// Role-based computed properties
 const isKepalaRiset = computed(() => userRoles.value.includes("Kepala Riset"));
 const isAdmin = computed(() => userRoles.value.includes("Admin"));
 
@@ -839,6 +899,12 @@ const reopenMode = ref<"annotator" | "reviewer">("annotator");
 const documentToReopen = ref<DocumentResponse | null>(null);
 const reopenUserId = ref("");
 const reopenReason = ref("");
+
+const isDuplicateWarningOpen = ref(false);
+const duplicateError = ref<DuplicateDocumentError | null>(null);
+const pendingDocumentRequest = ref<DocumentRequest | null>(null);
+const duplicateHandlingMode = ref<"single" | "bulk">("single");
+const currentDuplicateIndex = ref(0);
 
 const confirmedBulkFiles = computed(() =>
   processedBulkFiles.value.filter((file) => file.status === "confirmed")
@@ -1091,23 +1157,41 @@ async function uploadFiles(mode: "single" | "bulk") {
     }
 
     await fetchDocuments(currentPage.value);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error uploading files:", error);
-    toast.error("Gagal mengupload dokumen");
+    // Don't show error toast for duplicate detection, as it will be handled by the warning dialog
+    if (error.message !== 'DUPLICATE_DETECTED') {
+      toast.error("Gagal mengupload dokumen");
+    }
   } finally {
     isUploading.value = false;
     uploadProgress.value = 0;
   }
 }
 
-async function createAndAssignDocument(docRequest: DocumentPreview) {
+async function createAndAssignDocument(docRequest: DocumentPreview, allowDuplicate = false) {
   // Add project ID to the document request
   const documentWithProject: DocumentRequest = {
     ...docRequest,
     project: selectedProjectId.value!,
+    allow_duplicate: allowDuplicate,
   };
-  const createdDocument = await apiCreateDocument(documentWithProject);
-  return createdDocument;
+  
+  try {
+    const createdDocument = await apiCreateDocument(documentWithProject);
+    return createdDocument;
+  } catch (error: any) {
+    // Check if this is a duplicate error (400 status with specific error message)
+    if (error.status === 400 && error.data?.error?.includes('sudah ada')) {
+      // Store the duplicate error data for the warning dialog
+      duplicateError.value = error.data as DuplicateDocumentError;
+      pendingDocumentRequest.value = documentWithProject;
+      duplicateHandlingMode.value = "single";
+      isDuplicateWarningOpen.value = true;
+      throw new Error('DUPLICATE_DETECTED'); // Special error to handle in calling function
+    }
+    throw error; // Re-throw other errors
+  }
 }
 
 async function bulkCreateAndAssignDocuments() {
@@ -1116,6 +1200,7 @@ async function bulkCreateAndAssignDocuments() {
 
   let successCount = 0;
   let failCount = 0;
+  let duplicateCount = 0;
   const total = filesToUpload.length;
 
   for (const [idx, doc] of filesToUpload.entries()) {
@@ -1127,14 +1212,34 @@ async function bulkCreateAndAssignDocuments() {
       };
       await apiCreateDocument(documentWithProject);
       successCount++;
-    } catch (error) {
-      failCount++;
+    } catch (error: any) {
+      // Check if this is a duplicate error
+      if (error.status === 400 && error.data?.error?.includes('sudah ada')) {
+        duplicateCount++;
+        // Store the first duplicate error for the warning dialog
+        if (duplicateCount === 1) {
+          const documentWithProject: DocumentRequest = {
+            ...doc,
+            project: selectedProjectId.value!,
+          };
+          duplicateError.value = error.data as DuplicateDocumentError;
+          pendingDocumentRequest.value = documentWithProject;
+          duplicateHandlingMode.value = "bulk";
+          currentDuplicateIndex.value = idx;
+          isDuplicateWarningOpen.value = true;
+          // Pause bulk upload to show warning
+          return;
+        }
+      } else {
+        failCount++;
+      }
     }
     uploadProgress.value = Math.round(((idx + 1) / total) * 100);
   }
 
+  const duplicateMessage = duplicateCount > 0 ? `, Duplikat: ${duplicateCount}` : '';
   toast.warning("Bulk Upload Selesai", {
-    description: `Berhasil: ${successCount}, Gagal: ${failCount}`,
+    description: `Berhasil: ${successCount}, Gagal: ${failCount}${duplicateMessage}`,
   });
 }
 
@@ -1544,6 +1649,86 @@ async function fetchUsers() {
     console.error("Error fetching users:", error);
     toast.error("Gagal memuat daftar user");
   }
+}
+
+// Duplicate handling functions
+async function proceedWithDuplicate() {
+  if (!pendingDocumentRequest.value) return;
+  
+  try {
+    if (duplicateHandlingMode.value === "single") {
+      // Retry with allow_duplicate=true
+      const documentWithDuplicate = { ...pendingDocumentRequest.value, allow_duplicate: true };
+      await apiCreateDocument(documentWithDuplicate);
+      toast.success("Dokumen berhasil dibuat (duplikat diizinkan)");
+      resetForm("single");
+      await fetchDocuments(currentPage.value);
+    } else if (duplicateHandlingMode.value === "bulk") {
+      // Continue bulk upload with allow_duplicate=true for remaining files
+      await continueBulkUploadWithDuplicates();
+    }
+  } catch (error) {
+    console.error("Error creating document with duplicates allowed:", error);
+    toast.error("Gagal membuat dokumen");
+  } finally {
+    closeDuplicateWarning();
+  }
+}
+
+async function continueBulkUploadWithDuplicates() {
+  const filesToUpload = confirmedBulkFiles.value;
+  const startIndex = currentDuplicateIndex.value;
+  
+  let successCount = 0;
+  let failCount = 0;
+  const total = filesToUpload.length - startIndex;
+
+  // First, create the document that caused the duplicate warning
+  try {
+    const duplicateDocument = { ...pendingDocumentRequest.value!, allow_duplicate: true };
+    await apiCreateDocument(duplicateDocument);
+    successCount++;
+  } catch (error) {
+    failCount++;
+  }
+
+  // Continue with remaining files, allowing duplicates
+  for (let idx = startIndex + 1; idx < filesToUpload.length; idx++) {
+    try {
+      const doc = filesToUpload[idx];
+      const documentWithProject: DocumentRequest = {
+        ...doc,
+        project: selectedProjectId.value!,
+        allow_duplicate: true, // Allow duplicates for remaining files
+      };
+      await apiCreateDocument(documentWithProject);
+      successCount++;
+    } catch (error) {
+      failCount++;
+    }
+    uploadProgress.value = Math.round(((idx + 1) / filesToUpload.length) * 100);
+  }
+
+  toast.success("Bulk Upload Selesai", {
+    description: `Berhasil: ${successCount}, Gagal: ${failCount} (duplikat diizinkan)`,
+  });
+  
+  resetForm("bulk");
+  await fetchDocuments(currentPage.value);
+}
+
+function cancelDuplicate() {
+  closeDuplicateWarning();
+  // Reset upload state
+  isUploading.value = false;
+  uploadProgress.value = 0;
+}
+
+function closeDuplicateWarning() {
+  isDuplicateWarningOpen.value = false;
+  duplicateError.value = null;
+  pendingDocumentRequest.value = null;
+  currentDuplicateIndex.value = 0;
 }
 
 onMounted(async () => {
