@@ -1,15 +1,26 @@
 <template>
   <div class="min-h-screen px-2 sm:px-4 py-10 font-inter bg-gray-50">
     <div class="w-full max-w-[95vw] mx-auto px-2 sm:px-4 pb-16">
-      <!-- Header -->
       <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 mb-2">Kelola Project</h1>
         <p class="text-gray-600">
           Buat dan kelola project penelitian untuk proses anotasi
         </p>
+        <div v-if="selectedProject" class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <p class="text-sm text-blue-800">
+            <strong>Project terpilih:</strong> {{ selectedProject.name }}
+          </p>
+          <p class="text-xs text-blue-600 mt-1">
+            Menampilkan project yang dipilih dalam konteks
+          </p>
+        </div>
+        <div v-else class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+          <p class="text-sm text-gray-600">
+            Menampilkan semua project
+          </p>
+        </div>
       </div>
 
-      <!-- Add Project Button -->
       <div class="mb-6">
         <Dialog v-model:open="isCreateDialogOpen">
           <div class="flex gap-3 items-start">
@@ -169,7 +180,6 @@
             </DialogDescription>
           </DialogHeader>
           <div class="grid gap-6 py-4">
-            <!-- Basic Project Info -->
             <div class="grid gap-4">
               <h3 class="text-lg font-medium text-left">
                 Informasi Dasar Project
@@ -289,32 +299,109 @@
         </DialogContent>
       </Dialog>
 
-      <!-- Delete Confirmation Dialog -->
-      <Dialog v-model:open="isDeleteDialogOpen">
-        <DialogContent class="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Konfirmasi Hapus</DialogTitle>
-            <DialogDescription>
-              Apakah Anda yakin ingin menghapus project "{{
-                projectToDelete?.name
-              }}"? Tindakan ini tidak dapat dibatalkan.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" @click="cancelDelete"> Batal </Button>
-            <Button
-              variant="destructive"
-              @click="confirmDelete"
-              :disabled="isDeleting"
-              class="flex items-center gap-2"
-            >
-              <Trash2 v-if="!isDeleting" class="w-4 h-4" />
-              <Loader2 v-else class="w-4 h-4 animate-spin" />
-              {{ isDeleting ? "Menghapus..." : "Hapus" }}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+    <Dialog v-model:open="isEditDialogOpen">
+      <DialogContent class="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Edit Project</DialogTitle>
+          <DialogDescription>
+            Update informasi project. Admin dapat diubah sesuai kebutuhan.
+          </DialogDescription>
+        </DialogHeader>
+        <div class="grid gap-6 py-4">
+          <div class="grid gap-4">
+            <h3 class="text-lg font-medium text-left">Informasi Dasar Project</h3>
+            <div class="grid gap-2">
+              <label for="edit_name" class="text-sm font-medium text-left">Nama Project <span class="text-red-400">*</span></label>
+              <Input id="edit_name" v-model="editingProject.name" placeholder="Nama Project" class="w-full" />
+            </div>
+            <div class="grid gap-2">
+              <label for="edit_description" class="text-sm font-medium text-left">Deskripsi</label>
+              <Textarea id="edit_description" v-model="editingProject.description" placeholder="Deskripsi project..." class="w-full min-h-[100px]" />
+            </div>
+          </div>
+
+          <div class="grid gap-4">
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg font-medium text-left">Admin yang Ditugaskan <span class="text-sm text-gray-400 font-normal">(Opsional)</span></h3>
+              <div class="text-xs text-gray-500">
+                {{ adminAssignmentStats.available }} dari {{ adminAssignmentStats.total }} admin tersedia
+              </div>
+            </div>
+            <div class="grid gap-2">
+              <div class="text-xs text-gray-500 mb-1">
+                Admin hanya dapat ditugaskan ke satu project. Pilih admin yang belum ditugaskan.
+              </div>
+              <Combobox v-model="editingProjectAdminIds" v-model:open="openEditAdmins" :ignore-filter="true">
+                <ComboboxAnchor as-child>
+                  <TagsInput v-model="editingProjectAdminIds" class="px-2 w-full">
+                    <div class="flex flex-col">
+                      <div v-if="editingProjectAdminIds.length" class="flex gap-2 flex-wrap items-center p-1 font-semibold">
+                        <TagsInputItem v-for="adminId in editingProjectAdminIds" :key="adminId" :value="getAdminName(adminId)">
+                          <TagsInputItemText class="text-xs">{{ getAdminName(adminId) }}</TagsInputItemText>
+                          <TagsInputItemDelete @click="removeAdminFromEditingProject(adminId)" />
+                        </TagsInputItem>
+                      </div>
+                      <ComboboxInput v-model="searchTermEditAdmin" as-child>
+                        <TagsInputInput placeholder="Pilih admin (opsional)..." class="w-full" @keydown.enter.prevent />
+                      </ComboboxInput>
+                    </div>
+                  </TagsInput>
+                  <ComboboxList class="w-[--reka-popper-anchor-width]" align="start">
+                    <ComboboxEmpty />
+                    <ComboboxGroup>
+                      <ComboboxItem
+                        v-for="admin in availableAdminsForEditingProject"
+                        :key="admin.id"
+                        :value="admin.id"
+                        @select.prevent="(ev) => {
+                          if (typeof ev.detail.value === 'string') {
+                            searchTermEditAdmin = ''
+                            editingProjectAdminIds.push(ev.detail.value)
+                          }
+                        }">
+                        {{ admin.full_name }}
+                      </ComboboxItem>
+                    </ComboboxGroup>
+                  </ComboboxList>
+                </ComboboxAnchor>
+              </Combobox>
+            </div>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" @click="cancelEdit">
+            Batal
+          </Button>
+          <Button @click="updateProject" :disabled="isUpdating" class="flex items-center gap-2">
+            <Check v-if="!isUpdating" class="w-4 h-4" />
+            <Loader2 v-else class="w-4 h-4 animate-spin" />
+            {{ isUpdating ? 'Mengupdate...' : 'Update Project' }}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    <Dialog v-model:open="isDeleteDialogOpen">
+      <DialogContent class="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Konfirmasi Hapus</DialogTitle>
+          <DialogDescription>
+            Apakah Anda yakin ingin menghapus project "{{ projectToDelete?.name }}"?
+            Tindakan ini tidak dapat dibatalkan.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline" @click="cancelDelete">
+            Batal
+          </Button>
+          <Button variant="destructive" @click="confirmDelete" :disabled="isDeleting" class="flex items-center gap-2">
+            <Trash2 v-if="!isDeleting" class="w-4 h-4" />
+            <Loader2 v-else class="w-4 h-4 animate-spin" />
+            {{ isDeleting ? 'Menghapus...' : 'Hapus' }}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
 
       <div v-if="isLoading" class="text-gray-600 mb-4">
         Memuat data project...
@@ -342,17 +429,9 @@
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow
-                v-for="project in projects"
-                :key="project.id"
-                class="border-gray-200 hover:bg-gray-50"
-              >
-                <TableCell class="font-semibold text-gray-900 text-left">{{
-                  project.name
-                }}</TableCell>
-                <TableCell class="text-gray-700 text-left max-w-xs truncate">{{
-                  project.description || "-"
-                }}</TableCell>
+              <TableRow v-for="project in filteredProjects" :key="project.id" class="border-gray-200 hover:bg-gray-50">
+                <TableCell class="font-semibold text-gray-900 text-left">{{ project.name }}</TableCell>
+                <TableCell class="text-gray-700 text-left max-w-xs truncate">{{ project.description || '-' }}</TableCell>
                 <TableCell class="text-left">
                   <div class="flex flex-wrap gap-1">
                     <Badge
@@ -449,14 +528,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { useProjectsApi } from "~/data/projects";
 import { useUsersApi } from "~/data/users";
-import type {
-  ProjectResponse,
-  ProjectRequest,
-  UserResponse,
-} from "~/types/api";
+import { useProjectContext } from "~/composables/project-context";
+import type { ProjectResponse, ProjectRequest, UserResponse } from "~/types/api";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
 import { Button } from "~/components/ui/button";
@@ -525,6 +601,7 @@ const {
 } = useProjectsApi();
 
 const { getAllUsers } = useUsersApi();
+const { selectedProject, setSelectedProject, clearSelectedProject, selectedProjectId, isAllProjects } = useProjectContext();
 
 const projects = ref<ProjectResponse[]>([]);
 const adminUsers = ref<UserResponse[]>([]);
@@ -556,8 +633,6 @@ const editingProjectAdminIds = ref<string[]>([]);
 const openEditAdmins = ref(false);
 const searchTermEditAdmin = ref("");
 
-const selectedProject = ref<ProjectResponse | null>(null);
-
 const currentPage = ref(1);
 const totalPages = ref(1);
 
@@ -565,36 +640,79 @@ const availableAdmins = computed(() => {
   return adminUsers.value.filter((user) => user.roles.includes("Admin"));
 });
 
-const availableAdminsForNewProject = computed(() => {
-  if (!availableAdmins.value || availableAdmins.value.length === 0) {
-    return [];
+// Filtered projects based on project context
+const filteredProjects = computed(() => {
+  if (isAllProjects.value) {
+    return projects.value;
+  } else if (selectedProjectId.value) {
+    return projects.value.filter((project: ProjectResponse) => project.id === selectedProjectId.value);
   }
-  return availableAdmins.value.filter(
-    (admin) =>
-      (admin.full_name
-        .toLowerCase()
-        .includes(searchTermCreateAdmin.value.toLowerCase()) ||
-        admin.username
-          .toLowerCase()
-          .includes(searchTermCreateAdmin.value.toLowerCase())) &&
-      !newProjectAdminIds.value.includes(admin.id)
-  );
+  return projects.value;
+});
+
+// Get admin IDs that are already assigned to other projects
+const getAssignedAdminIds = (excludeProjectId?: number) => {
+  const assignedAdminIds = new Set<string>();
+  projects.value.forEach(project => {
+    if (excludeProjectId && project.id === excludeProjectId) {
+      return; // Skip the current editing project
+    }
+    project.assigned_admins.forEach(adminId => {
+      assignedAdminIds.add(adminId);
+    });
+  });
+  return assignedAdminIds;
+};
+
+const availableAdminsForNewProject = computed(() => {
+    if (!availableAdmins.value || availableAdmins.value.length === 0) {
+        return [];
+    }
+
+    const assignedAdminIds = getAssignedAdminIds();
+
+    return availableAdmins.value.filter(admin =>
+        (admin.full_name.toLowerCase().includes(searchTermCreateAdmin.value.toLowerCase()) ||
+         admin.username.toLowerCase().includes(searchTermCreateAdmin.value.toLowerCase())) &&
+        !newProjectAdminIds.value.includes(admin.id) &&
+        !assignedAdminIds.has(admin.id) // Exclude admins already assigned to other projects
+    );
 });
 
 const availableAdminsForEditingProject = computed(() => {
-  if (!availableAdmins.value || availableAdmins.value.length === 0) {
-    return [];
-  }
-  return availableAdmins.value.filter(
-    (admin) =>
-      (admin.full_name
-        .toLowerCase()
-        .includes(searchTermEditAdmin.value.toLowerCase()) ||
-        admin.username
-          .toLowerCase()
-          .includes(searchTermEditAdmin.value.toLowerCase())) &&
-      !editingProjectAdminIds.value.includes(admin.id)
+    if (!availableAdmins.value || availableAdmins.value.length === 0) {
+        return [];
+    }
+
+    // Exclude admins assigned to other projects (but allow admins from current editing project)
+    const assignedAdminIds = getAssignedAdminIds(editingProject.value.id);
+
+    return availableAdmins.value.filter(admin =>
+        (admin.full_name.toLowerCase().includes(searchTermEditAdmin.value.toLowerCase()) ||
+         admin.username.toLowerCase().includes(searchTermEditAdmin.value.toLowerCase())) &&
+        !editingProjectAdminIds.value.includes(admin.id) &&
+        !assignedAdminIds.has(admin.id) // Exclude admins already assigned to other projects
+    );
+});
+
+// Helper to get project name for an admin
+const getAdminProjectAssignment = (adminId: string): string | null => {
+  const assignedProject = projects.value.find(project =>
+    project.assigned_admins.includes(adminId)
   );
+  return assignedProject ? assignedProject.name : null;
+};
+
+// Helper to get admin assignment statistics
+const adminAssignmentStats = computed(() => {
+  const totalAdmins = availableAdmins.value.length;
+  const assignedAdmins = getAssignedAdminIds().size;
+  const freeAdmins = totalAdmins - assignedAdmins;
+  return {
+    total: totalAdmins,
+    assigned: assignedAdmins,
+    available: freeAdmins
+  };
 });
 
 const paginationPages = computed(() => {
@@ -751,7 +869,7 @@ async function updateProject() {
         success: (result: ProjectResponse) => {
           fetchProjects(currentPage.value);
           isEditDialogOpen.value = false;
-          selectedProject.value = null;
+          clearSelectedProject();
           return `Project ${result.name} berhasil diupdate.`;
         },
         error: "Gagal mengupdate project",
@@ -765,7 +883,7 @@ async function updateProject() {
 }
 
 function editProject(project: ProjectResponse) {
-  selectedProject.value = project;
+  setSelectedProject(project);
   editingProject.value = {
     id: project.id,
     name: project.name,
@@ -781,7 +899,7 @@ function cancelEdit() {
     description: "",
   };
   editingProjectAdminIds.value = [];
-  selectedProject.value = null;
+  clearSelectedProject();
   isEditDialogOpen.value = false;
 }
 
@@ -836,13 +954,27 @@ function formatDate(dateString: string) {
   return new Date(dateString).toLocaleDateString("id-ID");
 }
 
+// Watch for project context changes
+watch(selectedProjectId, async () => {
+  // No need to refetch projects, just let the computed filteredProjects handle the filtering
+  currentPage.value = 1; // Reset to first page when context changes
+}, { immediate: false });
+
+// Dynamic page title based on project context
+const pageTitle = computed(() => {
+  if (selectedProject.value) {
+    return `Kelola Project - ${selectedProject.value.name}`;
+  }
+  return "Kelola Project - Semua Project";
+});
+
 onMounted(async () => {
   await fetchAdminUsers();
   await fetchProjects(currentPage.value);
 });
 
 useHead({
-  title: "Kelola Project - ANOTA",
+  title: pageTitle.value + " - ANOTA",
   meta: [
     { name: "description", content: "Halaman kelola project aplikasi ANOTA." },
   ],

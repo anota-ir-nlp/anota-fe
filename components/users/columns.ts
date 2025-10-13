@@ -9,7 +9,8 @@ import type { UserResponse } from "@/types/api";
 export function createUserColumns(
   handleEditUser: (user: UserResponse) => void,
   handleDeleteUser: (user: UserResponse) => void,
-  handleResetPassword: (user: UserResponse) => void
+  handleResetPassword: (user: UserResponse) => void,
+  getAdminProjectAssignment?: (userId: string) => string | null
 ): ColumnDef<UserResponse>[] {
   return [
     {
@@ -114,8 +115,36 @@ export function createUserColumns(
       enableSorting: false,
     },
     {
-      accessorKey: "date_joined",
-      header: "Tanggal Bergabung",
+      id: 'project_assignment',
+      header: 'Project Assignment',
+      cell: ({ row }) => {
+        const user = row.original
+        
+        // Only show project assignment for Admin users
+        if (!user.roles.includes('Admin')) {
+          return h('span', { class: 'text-gray-400 text-sm' }, '-')
+        }
+
+        if (!getAdminProjectAssignment) {
+          return h('span', { class: 'text-gray-400 text-sm' }, '-')
+        }
+
+        const projectName = getAdminProjectAssignment(user.id)
+        
+        if (!projectName) {
+          return h('span', { class: 'text-gray-500 text-sm italic' }, 'Belum ditugaskan')
+        }
+
+        return h(Badge, {
+          variant: 'outline',
+          class: 'text-xs'
+        }, () => projectName)
+      },
+      enableSorting: false,
+    },
+    {
+      accessorKey: 'date_joined',
+      header: 'Tanggal Bergabung',
       cell: ({ row }) => {
         const date = new Date(row.getValue("date_joined") as string);
         return h(

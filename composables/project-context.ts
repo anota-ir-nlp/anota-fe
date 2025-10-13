@@ -1,4 +1,5 @@
 import { useState } from '#imports'
+import { computed, readonly } from 'vue'
 import type { ProjectResponse } from '~/types/api'
 
 export function useProjectContext() {
@@ -11,6 +12,8 @@ export function useProjectContext() {
   }
 
   function clearSelectedProject() {
+    // Note: This should only be used for Kepala Riset users who can view all projects
+    // Admin users should always have a specific project selected
     selectedProject.value = null
   }
 

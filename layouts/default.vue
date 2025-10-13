@@ -74,12 +74,26 @@ const userProjects = ref<ProjectResponse[]>([]);
 const isLoadingProjects = ref(false);
 
 async function fetchUserProjects() {
-  if (!hasRole("Kepala Riset")) return;
+  if (!hasRole("Kepala Riset") && !hasRole("Admin")) return;
 
   isLoadingProjects.value = true;
   try {
     const response = await getProjects();
     userProjects.value = response.results;
+
+    // If user is Admin, automatically set project context to their assigned project
+    // (This takes precedence even if they also have Kepala Riset role)
+    if (hasRole("Admin") && user.value?.id) {
+      const adminProject = userProjects.value.find((project: ProjectResponse) => 
+        project.assigned_admins.includes(user.value.id)
+      );
+      if (adminProject) {
+        setSelectedProject(adminProject);
+      } else {
+        // Admin not assigned to any project yet, clear selection
+        clearSelectedProject();
+      }
+    }
   } catch (error) {
     console.error("Error fetching projects:", error);
     toast.error("Gagal memuat daftar project");
@@ -89,12 +103,17 @@ async function fetchUserProjects() {
 }
 
 function handleProjectChange(value: AcceptableValue) {
+  // Only allow project changes for Kepala Riset users who are not Admin
+  if (!hasRole('Kepala Riset') || hasRole('Admin')) {
+    return;
+  }
+  
   const projectId = value?.toString() || null;
   if (!projectId || projectId === "all") {
     clearSelectedProject();
   } else {
     const project = userProjects.value.find(
-      (p) => p.id.toString() === projectId
+      (p: ProjectResponse) => p.id.toString() === projectId
     );
     if (project) {
       setSelectedProject(project);
@@ -121,7 +140,7 @@ function canAccessRoute(route: string): boolean {
 
   const roleBasedRoutes = {
     Admin: [
-      "/kepala-riset-admin/kelola-dokumen",
+      "/admin/kelola-dokumen",
       "/admin/kelola-error",
       "/kepala-riset-admin/kelola-pengguna",
     ],
@@ -130,8 +149,7 @@ function canAccessRoute(route: string): boolean {
     "Kepala Riset": [
       "/kepala-riset/kelola-project",
       "/kepala-riset-admin/kelola-pengguna",
-      "/kepala-riset-admin/kelola-dokumen",
-      "/admin/kelola-error",
+      "/kepala-riset/dashboard",
     ],
   };
 
@@ -166,7 +184,7 @@ const menuGroups = computed<MenuGroup[]>(() => {
       items: [
         {
           label: "Dashboard Analytics",
-          path: "/admin/dashboard",
+          path: "/kepala-riset/dashboard",
           icon: BarChart3,
           description: "View system analytics and performance metrics",
         },
@@ -193,20 +211,8 @@ const menuGroups = computed<MenuGroup[]>(() => {
       icon: Users,
       items: [
         {
-          label: "Dashboard Analytics",
-          path: "/admin/dashboard",
-          icon: BarChart3,
-          description: "View system analytics and performance metrics",
-        },
-        {
-          label: "Kelola Pengguna",
-          path: "/kepala-riset-admin/kelola-pengguna",
-          icon: Users,
-          description: "Manage system users and reset passwords",
-        },
-        {
           label: "Kelola Dokumen",
-          path: "/kepala-riset-admin/kelola-dokumen",
+          path: "/admin/kelola-dokumen",
           icon: FileText,
           description: "Manage and export documents",
         },
@@ -217,10 +223,10 @@ const menuGroups = computed<MenuGroup[]>(() => {
           description: "Manage system errors",
         },
         {
-          label: "Reopen Dokumen",
-          path: "/admin/reopen",
-          icon: AlertTriangle,
-          description: "Admin buka kembali anotasi/review dokumen",
+          label: "Kelola Pengguna",
+          path: "/kepala-riset-admin/kelola-pengguna",
+          icon: Users,
+          description: "Manage system users and reset passwords",
         },
       ],
     });
@@ -296,6 +302,17 @@ watch(
   async () => {
     if (isAuthenticated.value) {
       await fetchUserProjects();
+    }
+  },
+  { immediate: false }
+);
+
+// Watch for user changes to update admin project context
+watch(
+  user,
+  async () => {
+    if (isAuthenticated.value && hasRole("Admin")) {
+      await fetchUserProjects(); // This will auto-set the admin's project
     }
   },
   { immediate: false }
@@ -495,8 +512,9 @@ const handleLogout = async () => {
               </div>
               <!-- Right: Project Selector + Profile Dropdown -->
               <div class="flex items-center gap-2">
+                <!-- Project Selector for Kepala Riset (only if not Admin) -->
                 <div
-                  v-if="hasRole('Kepala Riset') && userProjects.length > 0"
+                  v-if="hasRole('Kepala Riset') && !hasRole('Admin') && userProjects.length > 0"
                   class="flex items-center"
                 >
                   <Select
@@ -525,6 +543,14 @@ const handleLogout = async () => {
                       </SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+                <!-- Show current project for Admin users (read-only) -->
+                <div
+                  v-if="hasRole('Admin') && selectedProject"
+                  class="flex items-center px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg"
+                >
+                  <Building2 class="w-4 h-4 text-blue-600 mr-2" />
+                  <span class="text-sm font-medium text-blue-900">{{ selectedProject.name }}</span>
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger as-child>
