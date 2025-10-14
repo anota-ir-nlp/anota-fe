@@ -9,7 +9,6 @@ export interface ErrorResponse {
   }>;
 }
 
-// Document status type
 export type DocumentStatus = 
   | "belum_dianotasi" 
   | "sedang_dianotasi" 
@@ -299,6 +298,7 @@ export interface DocumentRequest {
   title: string;
   text: string;
   project: number;
+  institution?: string;
   allow_duplicate?: boolean;
 }
 

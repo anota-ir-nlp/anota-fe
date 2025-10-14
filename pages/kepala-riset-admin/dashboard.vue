@@ -87,7 +87,7 @@
         <Card class="p-6">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm text-gray-500 mb-1">Total Dokumen</p>
+              <p class="text-sm text-gray-500 mb-1">Dokumen Beranotasi</p>
               <p class="text-2xl font-bold text-gray-900">
                 {{ dashboardData?.per_document?.length || 0 }}
               </p>
@@ -133,6 +133,9 @@
               <p class="text-2xl font-bold text-gray-900">
                 {{ ((dashboardData?.inter_annotator_agreement?.cohen_kappa_avg || 0) * 100).toFixed(1) }}%
               </p>
+              <p class="text-xs text-gray-500 mt-1">
+                {{ dashboardData?.inter_annotator_agreement?.matching_unique_span_count || 0 }}/{{ dashboardData?.inter_annotator_agreement?.total_unique_span_count || 0 }} spans match
+              </p>
             </div>
             <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
               <BarChart3 class="w-6 h-6 text-yellow-600" />
@@ -151,18 +154,18 @@
           <div v-if="dashboardData?.per_annotator?.length" class="space-y-3">
             <div 
               v-for="item in dashboardData.per_annotator" 
-              :key="item.annotator_id"
+              :key="item.annotator__id"
               class="flex items-center justify-between"
             >
-              <span class="text-sm text-gray-600">{{ item.annotator_name }}</span>
+              <span class="text-sm text-gray-600">{{ item.annotator__username }}</span>
               <div class="flex items-center gap-2">
                 <div class="w-24 bg-gray-200 rounded-full h-2">
                   <div 
                     class="bg-blue-600 h-2 rounded-full" 
-                    :style="{ width: `${(item.annotations / Math.max(...dashboardData.per_annotator.map(i => i.annotations))) * 100}%` }"
+                    :style="{ width: `${(item.num_annotations / Math.max(...dashboardData.per_annotator.map(i => i.num_annotations))) * 100}%` }"
                   ></div>
                 </div>
-                <span class="text-sm font-medium text-gray-900 w-8">{{ item.annotations }}</span>
+                <span class="text-sm font-medium text-gray-900 w-8">{{ item.num_annotations }}</span>
               </div>
             </div>
           </div>
@@ -179,18 +182,18 @@
           <div v-if="dashboardData?.per_reviewer?.length" class="space-y-3">
             <div 
               v-for="item in dashboardData.per_reviewer" 
-              :key="item.reviewer_id"
+              :key="item.reviewer__id"
               class="flex items-center justify-between"
             >
-              <span class="text-sm text-gray-600">{{ item.reviewer_name }}</span>
+              <span class="text-sm text-gray-600">{{ item.reviewer__username }}</span>
               <div class="flex items-center gap-2">
                 <div class="w-24 bg-gray-200 rounded-full h-2">
                   <div 
                     class="bg-purple-600 h-2 rounded-full" 
-                    :style="{ width: `${(item.reviews / Math.max(...dashboardData.per_reviewer.map(i => i.reviews))) * 100}%` }"
+                    :style="{ width: `${(item.num_reviews / Math.max(...dashboardData.per_reviewer.map(i => i.num_reviews))) * 100}%` }"
                   ></div>
                 </div>
-                <span class="text-sm font-medium text-gray-900 w-8">{{ item.reviews }}</span>
+                <span class="text-sm font-medium text-gray-900 w-8">{{ item.num_reviews }}</span>
               </div>
             </div>
           </div>
@@ -523,8 +526,8 @@ import type {
 import type { ProjectResponse, DocumentResponse, UserResponse, DocumentStatus } from "~/types/api";
 
 const { getDashboardSummary, getAnnotatorPerformance, getReviewerPerformance, getInterAnnotatorAgreement } = useDashboardApi();
-const { getProjects } = useProjectsApi();
-const { getDocuments, getDocumentsInProject } = useDocumentsApi();
+const { getProjects, getDocumentsInProject } = useProjectsApi();
+const { getDocuments } = useDocumentsApi();
 const { getAllUsers } = useUsersApi();
 const { selectedProject, selectedProjectId } = useProjectContext();
 const { userRoles } = useAuth();
@@ -691,23 +694,21 @@ async function loadInitialData() {
   }
 }
 
-// Document fetching logic similar to kelola-dokumen
+// Document fetching logic that respects project context
 async function fetchDocuments() {
   loadingDocuments.value = true;
   try {
-    if (isKepalaRiset.value) {
-      // Kepala Riset can see all documents across all projects
+    if (selectedProjectId.value) {
+      // When a project is selected, fetch documents from that project only
+      const projectDocuments = await getDocumentsInProject(selectedProjectId.value);
+      documents.value = projectDocuments || [];
+    } else if (isKepalaRiset.value) {
+      // Kepala Riset can see all documents when no specific project is selected
       const response = await getDocuments();
       documents.value = response.results || [];
     } else {
       // Other roles need project selection
-      if (!selectedProjectId.value) {
-        documents.value = [];
-        return;
-      }
-
-      const projectDocuments = await getDocumentsInProject(selectedProjectId.value);
-      documents.value = projectDocuments || [];
+      documents.value = [];
     }
   } catch (error) {
     console.error("Error fetching documents:", error);
@@ -724,12 +725,18 @@ onMounted(() => {
 
 // Watch for project context changes
 watch(selectedProjectId, async () => {
-  // For non-Kepala Riset users, refresh documents when project changes
-  if (!isKepalaRiset.value) {
-    await fetchDocuments();
-    // Reset document selection when project changes
-    selectedDocument.value = "all";
-  }
+  // Refresh documents when project changes for all users
+  await fetchDocuments();
+  // Reset all selections when project changes
+  selectedDocument.value = "all";
+  selectedAnnotator.value = "";
+  selectedReviewer.value = "";
+  iaaAnnotator.value = "";
+  iaaReviewer.value = "";
+  // Clear previous performance data
+  annotatorPerformance.value = null;
+  reviewerPerformance.value = null;
+  iaaData.value = null;
   await loadDashboardData();
 });
 

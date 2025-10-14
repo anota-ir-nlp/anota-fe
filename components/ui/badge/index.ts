@@ -8,13 +8,13 @@ export const badgeVariants = cva(
     variants: {
       variant: {
         default:
-          "border-transparent bg-primary text-primary-foreground [a&]:hover:bg-primary/90",
+          "bg-blue-600/15 text-blue-600 border-blue-500/30",
         secondary:
-          "border-transparent bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/90",
+          "bg-slate-600/15 text-slate-600 border-slate-500/30",
         destructive:
-          "border-transparent bg-destructive text-white [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
+          "bg-red-600/15 text-red-600 border-red-500/30",
         outline:
-          "text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
+          "text-slate-900 border-slate-200 [a&]:hover:bg-slate-50 [a&]:hover:text-slate-900",
         blue: "bg-blue-600/15 text-blue-600 border-blue-500/30",
         green: "bg-green-600/15 text-green-600 border-green-500/30",
         purple: "bg-purple-600/15 text-purple-600 border-purple-500/30",

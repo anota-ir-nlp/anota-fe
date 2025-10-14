@@ -58,7 +58,7 @@ export function useReviewsApi() {
     user_id: string;
     reason?: string;
   }) =>
-    fetcher(`${BASE}/admin/reopen-review/`, {
+    fetcher(`/annotations/admin/reopen-review/`, {
       method: "POST",
       body: data,
     });

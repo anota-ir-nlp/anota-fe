@@ -8,6 +8,7 @@ import type { DocumentResponse, DocumentStatus } from "@/types/api";
 
 export function createColumns(
   getUserName: (userId: string) => string,
+  getUserFullNameFromUsername: (username: string) => string,
   handleDeleteDocument: (documentId: string) => void,
   handleReopenDocument: (document: DocumentResponse) => void
 ): ColumnDef<DocumentResponse>[] {
@@ -64,14 +65,14 @@ export function createColumns(
         return h(
           "div",
           { class: "flex flex-wrap gap-1" },
-          assignedTo.map((userName) =>
+          assignedTo.map((username) =>
             h(
               Badge,
               {
-                key: userName,
+                key: username,
                 variant: "blue",
               },
-              () => userName
+              () => getUserFullNameFromUsername(username)
             )
           )
         );
@@ -92,7 +93,6 @@ export function createColumns(
           sedang_direview: "Sedang Direview",
           sudah_direview: "Sudah Direview",
         };
-
         const statusVariants: Record<
           DocumentStatus,
           "default" | "secondary" | "destructive" | "outline"

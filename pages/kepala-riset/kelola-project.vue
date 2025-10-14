@@ -281,7 +281,7 @@
         <DialogHeader>
           <DialogTitle>Export Dokumen - {{ projectToExport?.name }}</DialogTitle>
           <DialogDescription>
-            Pilih dokumen yang sudah dianotasi untuk diexport. Hanya dokumen dengan status "Sudah Dianotasi" atau lebih yang bisa diexport.
+            Export semua dokumen yang sudah dianotasi ke file ZIP. Dokumen akan dipilih secara otomatis jika tidak ada yang dipilih. Hanya dokumen dengan status "Sudah Dianotasi" atau lebih yang bisa diexport.
           </DialogDescription>
         </DialogHeader>
 
@@ -298,19 +298,19 @@
               <label class="block text-sm font-medium mb-2">Format Export:</label>
               <div class="flex gap-4">
                 <label class="flex items-center">
-                  <input 
-                    type="radio" 
-                    v-model="exportFormat" 
-                    value="parallel" 
+                  <input
+                    type="radio"
+                    v-model="exportFormat"
+                    value="parallel"
                     class="mr-2"
                   />
                   Parallel TSV (original → corrected)
                 </label>
                 <label class="flex items-center">
-                  <input 
-                    type="radio" 
-                    v-model="exportFormat" 
-                    value="m2" 
+                  <input
+                    type="radio"
+                    v-model="exportFormat"
+                    value="m2"
                     class="mr-2"
                   />
                   M2 Format
@@ -321,18 +321,18 @@
             <!-- Document selection controls -->
             <div class="flex items-center justify-between border-b pb-4">
               <div class="flex items-center gap-4">
-                <Button 
-                  size="sm" 
-                  variant="outline" 
+                <Button
+                  size="sm"
+                  variant="outline"
                   @click="selectAllExportableDocuments"
                   :disabled="exportableDocuments.length === 0"
                 >
                   <CheckCircle class="w-4 h-4 mr-1" />
                   Pilih Semua yang Bisa Diexport
                 </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
+                <Button
+                  size="sm"
+                  variant="outline"
                   @click="deselectAllDocuments"
                   :disabled="selectedDocumentsForExport.length === 0"
                 >
@@ -352,13 +352,13 @@
                 Dokumen yang Dapat Diexport ({{ exportableDocuments.length }})
               </h4>
               <div class="space-y-2 max-h-40 overflow-y-auto border rounded p-3">
-                <label 
-                  v-for="document in exportableDocuments" 
+                <label
+                  v-for="document in exportableDocuments"
                   :key="document.id"
                   class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer"
                 >
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     :checked="selectedDocumentsForExport.some(d => d.id === document.id)"
                     @change="toggleDocumentSelection(document)"
                     class="mr-3"
@@ -384,8 +384,8 @@
                 Dokumen Belum Siap Diexport ({{ nonExportableDocuments.length }})
               </h4>
               <div class="space-y-2 max-h-32 overflow-y-auto border rounded p-3 bg-gray-50">
-                <div 
-                  v-for="document in nonExportableDocuments" 
+                <div
+                  v-for="document in nonExportableDocuments"
                   :key="document.id"
                   class="flex items-center p-2 rounded opacity-75"
                 >
@@ -416,14 +416,14 @@
           <Button variant="outline" @click="closeExportDialog">
             Batal
           </Button>
-          <Button 
-            @click="exportSelectedDocuments" 
-            :disabled="selectedDocumentsForExport.length === 0 || isExporting"
+          <Button
+            @click="exportSelectedDocuments"
+            :disabled="exportableDocuments.length === 0 || isExporting"
             class="flex items-center gap-2"
           >
             <Download v-if="!isExporting" class="w-4 h-4" />
             <Loader2 v-else class="w-4 h-4 animate-spin" />
-            {{ isExporting ? 'Mengexport...' : `Export ${selectedDocumentsForExport.length} Dokumen` }}
+            {{ isExporting ? 'Mengexport...' : 'Export ke ZIP' }}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -638,10 +638,11 @@ const {
   deleteProject: apiDeleteProject,
   assignAdmin: apiAssignAdmin,
   unassignAdmin: apiUnassignAdmin,
+  getDocumentsInProject,
 } = useProjectsApi();
 
 const { getAllUsers } = useUsersApi();
-const { getDocumentsInProject, exportDocument: exportDocumentApi } = useDocumentsApi();
+const { exportDocument: exportDocumentApi } = useDocumentsApi();
 const { selectedProject, clearSelectedProject, selectedProjectId, isAllProjects } = useProjectContext();
 
 const projects = ref<ProjectResponse[]>([]);
@@ -660,6 +661,17 @@ const documentsInProject = ref<DocumentResponse[]>([]);
 const selectedDocumentsForExport = ref<DocumentResponse[]>([]);
 const exportFormat = ref<"parallel" | "m2">("parallel");
 const isLoadingDocuments = ref(false);
+
+// Debug watcher for documentsInProject changes
+watch(documentsInProject, (newValue, oldValue) => {
+  console.log("=== documentsInProject changed ===");
+  console.log("Old value:", oldValue);
+  console.log("New value:", newValue);
+  console.log("New length:", newValue?.length || 0);
+  if (newValue && newValue.length > 0) {
+    console.log("First document in new value:", newValue[0]);
+  }
+}, { deep: true });
 
 const newProject = ref<ProjectRequest>({
   name: "",
@@ -1002,14 +1014,36 @@ function formatDate(dateString: string) {
 
 // Export functionality
 async function showExportDialog(project: ProjectResponse) {
+  console.log("=== DEBUG: showExportDialog called ===");
+  console.log("Project:", project);
+
   projectToExport.value = project;
   isLoadingDocuments.value = true;
   isExportDialogOpen.value = true;
   selectedDocumentsForExport.value = [];
 
   try {
+    console.log("Fetching documents for project ID:", project.id);
     const documents = await getDocumentsInProject(project.id);
-    documentsInProject.value = documents;
+    console.log("Raw API response:", documents);
+    console.log("Response type:", typeof documents);
+    console.log("Is array?", Array.isArray(documents));
+    console.log("Number of documents:", documents?.length || 0);
+
+    if (documents && documents.length > 0) {
+      console.log("First document structure:", documents[0]);
+      console.log("Document statuses:", documents.map((doc: any) => ({ id: doc.id, title: doc.title, status: doc.status })));
+    } else {
+      console.log("No documents found or empty array returned");
+    }
+
+    documentsInProject.value = documents || [];
+    console.log("documentsInProject.value set to:", documentsInProject.value);
+
+    // Force trigger computed property
+    console.log("Triggering exportableDocuments computation...");
+    const exportable = exportableDocuments.value;
+    console.log("exportableDocuments result:", exportable);
   } catch (error) {
     console.error("Error fetching project documents:", error);
     toast.error("Gagal memuat dokumen project");
@@ -1045,10 +1079,23 @@ function deselectAllDocuments() {
 }
 
 async function exportSelectedDocuments() {
+  console.log("=== EXPORT DEBUG START ===");
+
+  // If no documents are selected, automatically select all exportable documents
   if (selectedDocumentsForExport.value.length === 0) {
-    toast.error("Pilih setidaknya satu dokumen untuk diexport");
-    return;
+    console.log("No documents selected, auto-selecting all exportable documents");
+    if (exportableDocuments.value.length === 0) {
+      console.log("No exportable documents found");
+      toast.error("Tidak ada dokumen yang bisa diexport");
+      return;
+    }
+    selectedDocumentsForExport.value = [...exportableDocuments.value];
+    console.log(`Auto-selected ${selectedDocumentsForExport.value.length} documents`);
   }
+
+  console.log(`Starting export with ${selectedDocumentsForExport.value.length} documents`);
+  console.log("Export format:", exportFormat.value);
+  console.log("Project to export:", projectToExport.value?.name);
 
   isExporting.value = true;
   let successCount = 0;
@@ -1058,48 +1105,144 @@ async function exportSelectedDocuments() {
   try {
     await toast.promise(
       (async () => {
-        for (const document of selectedDocumentsForExport.value) {
-          try {
-            const blob = await exportDocumentApi(document.id, exportFormat.value);
+        console.log("Attempting to import JSZip...");
 
-            // Create download link
-            const url = window.URL.createObjectURL(blob);
-            const link = window.document.createElement("a");
-            link.href = url;
-            link.download = `${document.title}_${exportFormat.value}.${
-              exportFormat.value === "parallel" ? "tsv" : "m2"
-            }`;
-            window.document.body.appendChild(link);
-            link.click();
-            window.document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
+        try {
+          // Always use ZIP for consistency, even for single documents
+          // Dynamically import JSZip to avoid SSR issues
+          const JSZip = (await import('jszip')).default;
+          console.log("JSZip imported successfully");
 
-            successCount++;
-          } catch (error) {
-            console.error(`Export failed for document ${document.id}:`, error);
-            failCount++;
+          const zip = new JSZip();
+          console.log("JSZip instance created");
+
+          console.log("Starting document processing loop...");
+          console.log(selectedDocumentsForExport)
+          for (const document of selectedDocumentsForExport.value) {
+            try {
+              console.log(`Processing document ${document.id}: "${document.title}"`);
+              console.log(`API call: exportDocumentApi(${document.id}, "${exportFormat.value}")`);
+
+              const blob = await exportDocumentApi(document.id, exportFormat.value);
+              console.log(`API response received for document ${document.id}`);
+              console.log("Blob info:", {
+                size: blob?.size,
+                type: blob?.type,
+                hasBlob: !!blob
+              });
+
+              if (!blob || blob.size === 0) {
+                console.error(`Empty or invalid blob for document ${document.id}`);
+                failCount++;
+                continue;
+              }
+
+              // Get the file content as array buffer
+              console.log(`Converting blob to array buffer for document ${document.id}`);
+              const fileContent = await blob.arrayBuffer();
+              console.log(`Array buffer size: ${fileContent.byteLength} bytes`);
+
+              // Create a clean filename by sanitizing the document title
+              const cleanTitle = document.title.replace(/[^a-zA-Z0-9-_\s]/g, "").replace(/\s+/g, "_");
+              const fileName = `${cleanTitle}_${exportFormat.value}.${
+                exportFormat.value === "parallel" ? "tsv" : "m2"
+              }`;
+              console.log(`Generated filename: ${fileName}`);
+
+              zip.file(fileName, fileContent);
+              console.log(`Successfully added ${fileName} to ZIP`);
+              successCount++;
+            } catch (error) {
+              console.error(`Export failed for document ${document.id}:`, error);
+              console.error("Error details:", {
+                message: error.message,
+                stack: error.stack,
+                name: error.name
+              });
+              failCount++;
+            }
           }
-        }
 
-        return { successCount, failCount, totalDocuments };
+          console.log(`Document processing complete. Success: ${successCount}, Failed: ${failCount}`);
+
+          if (successCount === 0) {
+            console.error("No documents were successfully exported");
+            throw new Error("Tidak ada dokumen yang berhasil diexport");
+          }
+
+          // Generate zip file
+          console.log("Generating ZIP file...");
+          const zipBlob = await zip.generateAsync({ type: "blob" });
+          console.log(`ZIP file generated. Size: ${zipBlob.size} bytes`);
+
+          // Create download link for zip
+          console.log("Creating download link...");
+          const url = URL.createObjectURL(zipBlob);
+          const link = document.createElement("a");
+          link.href = url;
+
+          // Use project name if available, otherwise use generic name
+          const projectName = projectToExport.value?.name || "documents";
+          const sanitizedProjectName = projectName.replace(/[^a-zA-Z0-9-_]/g, "_");
+          const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, "-");
+          const fileName = `${sanitizedProjectName}_${exportFormat.value}_export_${timestamp}.zip`;
+
+          console.log(`Download filename: ${fileName}`);
+
+          link.download = fileName;
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+
+          // Add to DOM and trigger download
+          console.log("Triggering download...");
+          document.body.appendChild(link);
+          link.click();
+
+          // Clean up
+          console.log("Cleaning up...");
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+
+          console.log(`ZIP file "${fileName}" download triggered successfully`);
+          console.log("=== EXPORT DEBUG END (SUCCESS) ===");
+
+          return { successCount, failCount, totalDocuments };
+
+        } catch (importError) {
+          console.error("Failed to import JSZip or create ZIP:", importError);
+          throw importError;
+        }
       })(),
       {
-        loading: `Mengexport ${totalDocuments} dokumen (${exportFormat.value.toUpperCase()})...`,
+        loading: `Mengexport ${totalDocuments} dokumen ke ZIP (${exportFormat.value.toUpperCase()})...`,
         success: (result: { successCount: number; failCount: number; totalDocuments: number }) => {
           if (result.failCount === 0) {
-            return `Berhasil export semua ${result.totalDocuments} dokumen (${exportFormat.value.toUpperCase()})`;
+            // Close dialog on successful export
+            closeExportDialog();
+            return `Berhasil export ${result.totalDocuments} dokumen ke ZIP (${exportFormat.value.toUpperCase()})`;
           } else {
-            return `Export selesai: ${result.successCount} berhasil, ${result.failCount} gagal`;
+            // Close dialog even if some failed, as long as some succeeded
+            closeExportDialog();
+            return `Export ZIP selesai: ${result.successCount} berhasil, ${result.failCount} gagal`;
           }
         },
-        error: `Gagal export ${exportFormat.value.toUpperCase()}`,
+        error: (error) => {
+          console.error("Toast promise error:", error);
+          return `Gagal export ZIP ${exportFormat.value.toUpperCase()}: ${error.message || error}`;
+        },
       }
     );
 
-    // Close dialog after successful export
-    closeExportDialog();
+    // Note: closeExportDialog() is now called only in the success callback above
   } catch (error: any) {
-    console.error("Export error:", error);
+    console.error("=== EXPORT DEBUG END (ERROR) ===");
+    console.error("Main export error:", error);
+    console.error("Error details:", {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+      cause: error.cause
+    });
     toast.error(`Gagal export: ${error.message}`);
   } finally {
     isExporting.value = false;
@@ -1114,10 +1257,19 @@ watch(selectedProjectId, async () => {
 
 // Filter documents that are annotated (ready for export)
 const exportableDocuments = computed(() => {
-  return documentsInProject.value.filter((doc: DocumentResponse) => {
-    // Only documents that are annotated or reviewed can be exported
-    return ["sudah_dianotasi", "belum_direview", "sedang_direview", "sudah_direview"].includes(doc.status);
+  console.log("=== DEBUG: exportableDocuments computed ===");
+  console.log("documentsInProject.value:", documentsInProject.value);
+  console.log("documentsInProject.value.length:", documentsInProject.value.length);
+
+  const exportable = documentsInProject.value.filter((doc: DocumentResponse) => {
+    const isExportable = ["sudah_dianotasi", "belum_direview", "sedang_direview", "sudah_direview"].includes(doc.status);
+    console.log(`Document ${doc.id} (${doc.title}): status="${doc.status}", exportable=${isExportable}`);
+    return isExportable;
   });
+
+  console.log("Exportable documents:", exportable);
+  console.log("Number of exportable documents:", exportable.length);
+  return exportable;
 });
 
 const nonExportableDocuments = computed(() => {

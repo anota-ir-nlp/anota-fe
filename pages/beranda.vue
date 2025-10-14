@@ -166,7 +166,7 @@
             <Button
               variant="outline"
               size="sm"
-              @click="navigateTo('/kepala-riset/dashboard')"
+              @click="navigateTo('/kepala-riset-admin/dashboard')"
             >
               Lihat Detail
             </Button>
@@ -177,35 +177,35 @@
             class="grid grid-cols-1 lg:grid-cols-2 gap-8"
             v-if="dashboardAnalytics"
           >
-            <!-- Annotations by Error Type -->
+            <!-- Annotations by Annotator -->
             <div>
               <h4 class="text-lg font-semibold text-gray-900 mb-4">
-                Distribusi Anotasi per Tipe Error
+                Distribusi Anotasi per Anotator
               </h4>
               <div
-                v-if="dashboardAnalytics.annotations_by_error_type?.length"
+                v-if="dashboardAnalytics.per_annotator?.length"
                 class="space-y-3"
               >
                 <div
-                  v-for="item in dashboardAnalytics.annotations_by_error_type.slice(
+                  v-for="item in dashboardAnalytics.per_annotator.slice(
                     0,
                     5
                   )"
-                  :key="item.error_type"
+                  :key="item.annotator__id"
                   class="flex items-center justify-between"
                 >
                   <span class="text-sm text-gray-600">{{
-                    item.error_type
+                    item.annotator__username
                   }}</span>
                   <div class="flex items-center gap-2">
                     <div class="w-24 bg-gray-200 rounded-full h-2">
                       <div
                         class="bg-blue-600 h-2 rounded-full"
-                        :style="{ width: `${(item.count / Math.max(...dashboardAnalytics.annotations_by_error_type.map((i: any) => i.count))) * 100}%` }"
+                        :style="{ width: `${(item.num_annotations / Math.max(...dashboardAnalytics.per_annotator.map((i: any) => i.num_annotations))) * 100}%` }"
                       ></div>
                     </div>
                     <span class="text-sm font-medium text-gray-900 w-8">{{
-                      item.count
+                      item.num_annotations
                     }}</span>
                   </div>
                 </div>
@@ -215,35 +215,35 @@
               </div>
             </div>
 
-            <!-- Reviews by Error Type -->
+            <!-- Reviews by Reviewer -->
             <div>
               <h4 class="text-lg font-semibold text-gray-900 mb-4">
-                Distribusi Review per Tipe Error
+                Distribusi Review per Reviewer
               </h4>
               <div
-                v-if="dashboardAnalytics.reviews_by_error_type?.length"
+                v-if="dashboardAnalytics.per_reviewer?.length"
                 class="space-y-3"
               >
                 <div
-                  v-for="item in dashboardAnalytics.reviews_by_error_type.slice(
+                  v-for="item in dashboardAnalytics.per_reviewer.slice(
                     0,
                     5
                   )"
-                  :key="item.error_type"
+                  :key="item.reviewer__id"
                   class="flex items-center justify-between"
                 >
                   <span class="text-sm text-gray-600">{{
-                    item.error_type
+                    item.reviewer__username
                   }}</span>
                   <div class="flex items-center gap-2">
                     <div class="w-24 bg-gray-200 rounded-full h-2">
                       <div
                         class="bg-purple-600 h-2 rounded-full"
-                        :style="{ width: `${(item.count / Math.max(...dashboardAnalytics.reviews_by_error_type.map((i: any) => i.count))) * 100}%` }"
+                        :style="{ width: `${(item.num_reviews / Math.max(...dashboardAnalytics.per_reviewer.map((i: any) => i.num_reviews))) * 100}%` }"
                       ></div>
                     </div>
                     <span class="text-sm font-medium text-gray-900 w-8">{{
-                      item.count
+                      item.num_reviews
                     }}</span>
                   </div>
                 </div>
@@ -260,26 +260,20 @@
               Status Dokumen
             </h4>
             <div
-              class="grid grid-cols-1 md:grid-cols-3 gap-4"
+              class="grid grid-cols-1 md:grid-cols-2 gap-4"
               v-if="dashboardAnalytics"
             >
               <div class="text-center p-4 bg-blue-50 rounded-lg">
                 <div class="text-2xl font-bold text-blue-600">
-                  {{ dashboardAnalytics.pending_documents || 0 }}
+                  {{ dashboardAnalytics.per_document?.length || 0 }}
                 </div>
-                <div class="text-sm text-blue-600">Pending</div>
-              </div>
-              <div class="text-center p-4 bg-yellow-50 rounded-lg">
-                <div class="text-2xl font-bold text-yellow-600">
-                  {{ dashboardAnalytics.in_progress_documents || 0 }}
-                </div>
-                <div class="text-sm text-yellow-600">In Progress</div>
+                <div class="text-sm text-blue-600">Dokumen Beranotasi</div>
               </div>
               <div class="text-center p-4 bg-green-50 rounded-lg">
                 <div class="text-2xl font-bold text-green-600">
-                  {{ dashboardAnalytics.completed_documents || 0 }}
+                  {{ ((dashboardAnalytics.inter_annotator_agreement?.cohen_kappa_avg || 0) * 100).toFixed(1) }}%
                 </div>
-                <div class="text-sm text-green-600">Completed</div>
+                <div class="text-sm text-green-600">Inter-Annotator Agreement</div>
               </div>
             </div>
           </div>
@@ -628,33 +622,33 @@
 
         <!-- Charts and Analytics -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <!-- Annotations by Error Type -->
+          <!-- Annotations by Annotator -->
           <Card
             variant="glassmorphism"
             class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none"
           >
             <h3 class="text-lg font-semibold text-gray-900 mb-4">
-              Distribusi Anotasi per Tipe Error
+              Distribusi Anotasi per Anotator
             </h3>
             <div
-              v-if="dashboardAnalytics?.annotations_by_error_type?.length"
+              v-if="dashboardAnalytics?.per_annotator?.length"
               class="space-y-3"
             >
               <div
-                v-for="item in dashboardAnalytics.annotations_by_error_type"
-                :key="item.error_type"
+                v-for="item in dashboardAnalytics.per_annotator"
+                :key="item.annotator__id"
                 class="flex items-center justify-between"
               >
-                <span class="text-sm text-gray-600">{{ item.error_type }}</span>
+                <span class="text-sm text-gray-600">{{ item.annotator__username }}</span>
                 <div class="flex items-center gap-2">
                   <div class="w-24 bg-gray-200 rounded-full h-2">
                     <div
                       class="bg-blue-600 h-2 rounded-full"
-                      :style="{ width: `${(item.count / Math.max(...dashboardAnalytics.annotations_by_error_type.map((i: any) => i.count))) * 100}%` }"
+                      :style="{ width: `${(item.num_annotations / Math.max(...dashboardAnalytics.per_annotator.map((i: any) => i.num_annotations))) * 100}%` }"
                     ></div>
                   </div>
                   <span class="text-sm font-medium text-gray-900 w-8">{{
-                    item.count
+                    item.num_annotations
                   }}</span>
                 </div>
               </div>
@@ -664,33 +658,33 @@
             </div>
           </Card>
 
-          <!-- Reviews by Error Type -->
+          <!-- Reviews by Reviewer -->
           <Card
             variant="glassmorphism"
             class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none"
           >
             <h3 class="text-lg font-semibold text-gray-900 mb-4">
-              Distribusi Review per Tipe Error
+              Distribusi Review per Reviewer
             </h3>
             <div
-              v-if="dashboardAnalytics?.reviews_by_error_type?.length"
+              v-if="dashboardAnalytics?.per_reviewer?.length"
               class="space-y-3"
             >
               <div
-                v-for="item in dashboardAnalytics.reviews_by_error_type"
-                :key="item.error_type"
+                v-for="item in dashboardAnalytics.per_reviewer"
+                :key="item.reviewer__id"
                 class="flex items-center justify-between"
               >
-                <span class="text-sm text-gray-600">{{ item.error_type }}</span>
+                <span class="text-sm text-gray-600">{{ item.reviewer__username }}</span>
                 <div class="flex items-center gap-2">
                   <div class="w-24 bg-gray-200 rounded-full h-2">
                     <div
                       class="bg-purple-600 h-2 rounded-full"
-                      :style="{ width: `${(item.count / Math.max(...dashboardAnalytics.reviews_by_error_type.map((i: any) => i.count))) * 100}%` }"
+                      :style="{ width: `${(item.num_reviews / Math.max(...dashboardAnalytics.per_reviewer.map((i: any) => i.num_reviews))) * 100}%` }"
                     ></div>
                   </div>
                   <span class="text-sm font-medium text-gray-900 w-8">{{
-                    item.count
+                    item.num_reviews
                   }}</span>
                 </div>
               </div>
@@ -710,26 +704,20 @@
             Status Dokumen
           </h3>
           <div
-            class="grid grid-cols-1 md:grid-cols-3 gap-4"
+            class="grid grid-cols-1 md:grid-cols-2 gap-4"
             v-if="dashboardAnalytics"
           >
             <div class="text-center p-4 bg-blue-50 rounded-lg">
               <div class="text-2xl font-bold text-blue-600">
-                {{ dashboardAnalytics.pending_documents || 0 }}
+                {{ dashboardAnalytics.per_document?.length || 0 }}
               </div>
-              <div class="text-sm text-blue-600">Pending</div>
-            </div>
-            <div class="text-center p-4 bg-yellow-50 rounded-lg">
-              <div class="text-2xl font-bold text-yellow-600">
-                {{ dashboardAnalytics.in_progress_documents || 0 }}
-              </div>
-              <div class="text-sm text-yellow-600">In Progress</div>
+              <div class="text-sm text-blue-600">Dokumen Beranotasi</div>
             </div>
             <div class="text-center p-4 bg-green-50 rounded-lg">
               <div class="text-2xl font-bold text-green-600">
-                {{ dashboardAnalytics.completed_documents || 0 }}
+                {{ ((dashboardAnalytics.inter_annotator_agreement?.cohen_kappa_avg || 0) * 100).toFixed(1) }}%
               </div>
-              <div class="text-sm text-green-600">Completed</div>
+              <div class="text-sm text-green-600">Inter-Annotator Agreement</div>
             </div>
           </div>
         </Card>
@@ -1309,7 +1297,7 @@ const fetchDashboardData = async () => {
           label: "Dokumen Aktif",
           value:
             dashboardData.per_document?.filter(
-              (doc: any) => doc.annotations > 0 || doc.reviews > 0
+              (doc: any) => doc.annotations_count > 0
             )?.length || 0,
           icon: "user-group",
           color: "text-orange-400",

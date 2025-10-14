@@ -7,6 +7,7 @@ import type {
   AssignAdminResponse,
   UnassignAdminRequest,
   UnassignAdminResponse,
+  DocumentResponse,
 } from "~/types/api";
 
 const BASE = "/projects";
@@ -49,6 +50,9 @@ export function useProjectsApi() {
   const getAssignedUsers = (projectId: number) =>
     fetcher<any[]>(`${BASE}/${projectId}/assigned-users/`);
 
+  const getDocumentsInProject = (projectId: number) =>
+    fetcher<DocumentResponse[]>(`${BASE}/${projectId}/documents/`);
+
   return {
     getProjects,
     getProject,
@@ -58,5 +62,6 @@ export function useProjectsApi() {
     assignAdmin,
     unassignAdmin,
     getAssignedUsers,
+    getDocumentsInProject,
   };
 }

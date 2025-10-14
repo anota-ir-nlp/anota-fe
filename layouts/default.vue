@@ -143,13 +143,14 @@ function canAccessRoute(route: string): boolean {
       "/admin/kelola-dokumen",
       "/admin/kelola-error",
       "/kepala-riset-admin/kelola-pengguna",
+      "/kepala-riset-admin/dashboard",
     ],
     Annotator: ["/anotator/anotasi"],
     Reviewer: ["/reviewer/review"],
     "Kepala Riset": [
       "/kepala-riset/kelola-project",
       "/kepala-riset-admin/kelola-pengguna",
-      "/kepala-riset/dashboard",
+      "/kepala-riset-admin/dashboard",
     ],
   };
 
@@ -184,7 +185,7 @@ const menuGroups = computed<MenuGroup[]>(() => {
       items: [
         {
           label: "Dashboard Analytics",
-          path: "/kepala-riset/dashboard",
+          path: "/kepala-riset-admin/dashboard",
           icon: BarChart3,
           description: "View system analytics and performance metrics",
         },
@@ -210,6 +211,12 @@ const menuGroups = computed<MenuGroup[]>(() => {
       label: "Administrator Project",
       icon: Users,
       items: [
+        {
+          label: "Dashboard Analytics",
+          path: "/kepala-riset-admin/dashboard",
+          icon: BarChart3,
+          description: "View system analytics and performance metrics",
+        },
         {
           label: "Kelola Dokumen",
           path: "/admin/kelola-dokumen",
