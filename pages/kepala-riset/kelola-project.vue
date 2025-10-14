@@ -662,17 +662,6 @@ const selectedDocumentsForExport = ref<DocumentResponse[]>([]);
 const exportFormat = ref<"parallel" | "m2">("parallel");
 const isLoadingDocuments = ref(false);
 
-// Debug watcher for documentsInProject changes
-watch(documentsInProject, (newValue, oldValue) => {
-  console.log("=== documentsInProject changed ===");
-  console.log("Old value:", oldValue);
-  console.log("New value:", newValue);
-  console.log("New length:", newValue?.length || 0);
-  if (newValue && newValue.length > 0) {
-    console.log("First document in new value:", newValue[0]);
-  }
-}, { deep: true });
-
 const newProject = ref<ProjectRequest>({
   name: "",
   description: "",
@@ -1012,38 +1001,15 @@ function formatDate(dateString: string) {
   return new Date(dateString).toLocaleDateString("id-ID");
 }
 
-// Export functionality
 async function showExportDialog(project: ProjectResponse) {
-  console.log("=== DEBUG: showExportDialog called ===");
-  console.log("Project:", project);
-
   projectToExport.value = project;
   isLoadingDocuments.value = true;
   isExportDialogOpen.value = true;
   selectedDocumentsForExport.value = [];
 
   try {
-    console.log("Fetching documents for project ID:", project.id);
     const documents = await getDocumentsInProject(project.id);
-    console.log("Raw API response:", documents);
-    console.log("Response type:", typeof documents);
-    console.log("Is array?", Array.isArray(documents));
-    console.log("Number of documents:", documents?.length || 0);
-
-    if (documents && documents.length > 0) {
-      console.log("First document structure:", documents[0]);
-      console.log("Document statuses:", documents.map((doc: any) => ({ id: doc.id, title: doc.title, status: doc.status })));
-    } else {
-      console.log("No documents found or empty array returned");
-    }
-
     documentsInProject.value = documents || [];
-    console.log("documentsInProject.value set to:", documentsInProject.value);
-
-    // Force trigger computed property
-    console.log("Triggering exportableDocuments computation...");
-    const exportable = exportableDocuments.value;
-    console.log("exportableDocuments result:", exportable);
   } catch (error) {
     console.error("Error fetching project documents:", error);
     toast.error("Gagal memuat dokumen project");
@@ -1051,9 +1017,7 @@ async function showExportDialog(project: ProjectResponse) {
   } finally {
     isLoadingDocuments.value = false;
   }
-}
-
-function closeExportDialog() {
+}function closeExportDialog() {
   isExportDialogOpen.value = false;
   projectToExport.value = null;
   documentsInProject.value = [];
@@ -1079,170 +1043,85 @@ function deselectAllDocuments() {
 }
 
 async function exportSelectedDocuments() {
-  console.log("=== EXPORT DEBUG START ===");
-
-  // If no documents are selected, automatically select all exportable documents
   if (selectedDocumentsForExport.value.length === 0) {
-    console.log("No documents selected, auto-selecting all exportable documents");
     if (exportableDocuments.value.length === 0) {
-      console.log("No exportable documents found");
       toast.error("Tidak ada dokumen yang bisa diexport");
       return;
     }
     selectedDocumentsForExport.value = [...exportableDocuments.value];
-    console.log(`Auto-selected ${selectedDocumentsForExport.value.length} documents`);
   }
-
-  console.log(`Starting export with ${selectedDocumentsForExport.value.length} documents`);
-  console.log("Export format:", exportFormat.value);
-  console.log("Project to export:", projectToExport.value?.name);
 
   isExporting.value = true;
   let successCount = 0;
-  let failCount = 0;
   const totalDocuments = selectedDocumentsForExport.value.length;
 
   try {
     await toast.promise(
       (async () => {
-        console.log("Attempting to import JSZip...");
+        const JSZip = (await import('jszip')).default;
+        const zip = new JSZip();
 
-        try {
-          // Always use ZIP for consistency, even for single documents
-          // Dynamically import JSZip to avoid SSR issues
-          const JSZip = (await import('jszip')).default;
-          console.log("JSZip imported successfully");
+        for (const document of selectedDocumentsForExport.value) {
+          try {
+            const blob = await exportDocumentApi(document.id, exportFormat.value);
 
-          const zip = new JSZip();
-          console.log("JSZip instance created");
-
-          console.log("Starting document processing loop...");
-          console.log(selectedDocumentsForExport)
-          for (const document of selectedDocumentsForExport.value) {
-            try {
-              console.log(`Processing document ${document.id}: "${document.title}"`);
-              console.log(`API call: exportDocumentApi(${document.id}, "${exportFormat.value}")`);
-
-              const blob = await exportDocumentApi(document.id, exportFormat.value);
-              console.log(`API response received for document ${document.id}`);
-              console.log("Blob info:", {
-                size: blob?.size,
-                type: blob?.type,
-                hasBlob: !!blob
-              });
-
-              if (!blob || blob.size === 0) {
-                console.error(`Empty or invalid blob for document ${document.id}`);
-                failCount++;
-                continue;
-              }
-
-              // Get the file content as array buffer
-              console.log(`Converting blob to array buffer for document ${document.id}`);
-              const fileContent = await blob.arrayBuffer();
-              console.log(`Array buffer size: ${fileContent.byteLength} bytes`);
-
-              // Create a clean filename by sanitizing the document title
-              const cleanTitle = document.title.replace(/[^a-zA-Z0-9-_\s]/g, "").replace(/\s+/g, "_");
-              const fileName = `${cleanTitle}_${exportFormat.value}.${
-                exportFormat.value === "parallel" ? "tsv" : "m2"
-              }`;
-              console.log(`Generated filename: ${fileName}`);
-
-              zip.file(fileName, fileContent);
-              console.log(`Successfully added ${fileName} to ZIP`);
-              successCount++;
-            } catch (error) {
-              console.error(`Export failed for document ${document.id}:`, error);
-              console.error("Error details:", {
-                message: error.message,
-                stack: error.stack,
-                name: error.name
-              });
-              failCount++;
+            if (!blob) {
+              continue;
             }
+
+            const extension = exportFormat.value === "parallel" ? "txt" : "m2";
+            const fileName = `${document.title.replace(/[^a-zA-Z0-9.-]/g, '_')}.${extension}`;
+            
+            const arrayBuffer = await blob.arrayBuffer();
+            zip.file(fileName, arrayBuffer);
+            
+            successCount++;
+          } catch (docError: any) {
+            // Silent fail - continue processing other documents
           }
-
-          console.log(`Document processing complete. Success: ${successCount}, Failed: ${failCount}`);
-
-          if (successCount === 0) {
-            console.error("No documents were successfully exported");
-            throw new Error("Tidak ada dokumen yang berhasil diexport");
-          }
-
-          // Generate zip file
-          console.log("Generating ZIP file...");
-          const zipBlob = await zip.generateAsync({ type: "blob" });
-          console.log(`ZIP file generated. Size: ${zipBlob.size} bytes`);
-
-          // Create download link for zip
-          console.log("Creating download link...");
-          const url = URL.createObjectURL(zipBlob);
-          const link = document.createElement("a");
-          link.href = url;
-
-          // Use project name if available, otherwise use generic name
-          const projectName = projectToExport.value?.name || "documents";
-          const sanitizedProjectName = projectName.replace(/[^a-zA-Z0-9-_]/g, "_");
-          const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, "-");
-          const fileName = `${sanitizedProjectName}_${exportFormat.value}_export_${timestamp}.zip`;
-
-          console.log(`Download filename: ${fileName}`);
-
-          link.download = fileName;
-          link.target = "_blank";
-          link.rel = "noopener noreferrer";
-
-          // Add to DOM and trigger download
-          console.log("Triggering download...");
-          document.body.appendChild(link);
-          link.click();
-
-          // Clean up
-          console.log("Cleaning up...");
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
-
-          console.log(`ZIP file "${fileName}" download triggered successfully`);
-          console.log("=== EXPORT DEBUG END (SUCCESS) ===");
-
-          return { successCount, failCount, totalDocuments };
-
-        } catch (importError) {
-          console.error("Failed to import JSZip or create ZIP:", importError);
-          throw importError;
         }
+
+        if (successCount === 0) {
+          throw new Error("Tidak ada dokumen yang berhasil diexport");
+        }
+
+        const zipBlob = await zip.generateAsync({ 
+          type: "blob",
+          compression: "DEFLATE",
+          compressionOptions: { level: 6 }
+        });
+
+        const timestamp = new Date().toISOString().slice(0, 19).replace(/[-:]/g, '');
+        const zipFileName = `${projectToExport.value?.name || 'documents'}_export_${exportFormat.value}_${timestamp}.zip`;
+        
+        const url = URL.createObjectURL(zipBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = zipFileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        return { successCount, failCount: totalDocuments - successCount, totalDocuments };
       })(),
       {
         loading: `Mengexport ${totalDocuments} dokumen ke ZIP (${exportFormat.value.toUpperCase()})...`,
         success: (result: { successCount: number; failCount: number; totalDocuments: number }) => {
           if (result.failCount === 0) {
-            // Close dialog on successful export
             closeExportDialog();
             return `Berhasil export ${result.totalDocuments} dokumen ke ZIP (${exportFormat.value.toUpperCase()})`;
           } else {
-            // Close dialog even if some failed, as long as some succeeded
             closeExportDialog();
             return `Export ZIP selesai: ${result.successCount} berhasil, ${result.failCount} gagal`;
           }
         },
-        error: (error) => {
-          console.error("Toast promise error:", error);
+        error: (error: any) => {
           return `Gagal export ZIP ${exportFormat.value.toUpperCase()}: ${error.message || error}`;
         },
       }
     );
-
-    // Note: closeExportDialog() is now called only in the success callback above
   } catch (error: any) {
-    console.error("=== EXPORT DEBUG END (ERROR) ===");
-    console.error("Main export error:", error);
-    console.error("Error details:", {
-      message: error.message,
-      stack: error.stack,
-      name: error.name,
-      cause: error.cause
-    });
     toast.error(`Gagal export: ${error.message}`);
   } finally {
     isExporting.value = false;
@@ -1257,22 +1136,10 @@ watch(selectedProjectId, async () => {
 
 // Filter documents that are annotated (ready for export)
 const exportableDocuments = computed(() => {
-  console.log("=== DEBUG: exportableDocuments computed ===");
-  console.log("documentsInProject.value:", documentsInProject.value);
-  console.log("documentsInProject.value.length:", documentsInProject.value.length);
-
-  const exportable = documentsInProject.value.filter((doc: DocumentResponse) => {
-    const isExportable = ["sudah_dianotasi", "belum_direview", "sedang_direview", "sudah_direview"].includes(doc.status);
-    console.log(`Document ${doc.id} (${doc.title}): status="${doc.status}", exportable=${isExportable}`);
-    return isExportable;
+  return documentsInProject.value.filter((doc: DocumentResponse) => {
+    return ["sudah_dianotasi", "belum_direview", "sedang_direview", "sudah_direview"].includes(doc.status);
   });
-
-  console.log("Exportable documents:", exportable);
-  console.log("Number of exportable documents:", exportable.length);
-  return exportable;
-});
-
-const nonExportableDocuments = computed(() => {
+});const nonExportableDocuments = computed(() => {
   return documentsInProject.value.filter((doc: DocumentResponse) => {
     // Documents that are not yet annotated
     return ["belum_dianotasi", "sedang_dianotasi"].includes(doc.status);
