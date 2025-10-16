@@ -14,13 +14,6 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
-import {
   Menubar,
   MenubarContent,
   MenubarItem,
@@ -46,7 +39,6 @@ import {
 } from "lucide-vue-next";
 import { toast } from "vue-sonner";
 import type { AvailableRole, ProjectResponse } from "~/types/api";
-import type { AcceptableValue } from "reka-ui";
 
 useHead({
   title: "Anota",
@@ -99,25 +91,6 @@ async function fetchUserProjects() {
     toast.error("Gagal memuat daftar project");
   } finally {
     isLoadingProjects.value = false;
-  }
-}
-
-function handleProjectChange(value: AcceptableValue) {
-  // Only allow project changes for Kepala Riset users who are not Admin
-  if (!hasRole('Kepala Riset') || hasRole('Admin')) {
-    return;
-  }
-  
-  const projectId = value?.toString() || null;
-  if (!projectId || projectId === "all") {
-    clearSelectedProject();
-  } else {
-    const project = userProjects.value.find(
-      (p: ProjectResponse) => p.id.toString() === projectId
-    );
-    if (project) {
-      setSelectedProject(project);
-    }
   }
 }
 
@@ -517,47 +490,23 @@ const handleLogout = async () => {
                   </template>
                 </Menubar>
               </div>
-              <!-- Right: Project Selector + Profile Dropdown -->
+              <!-- Right: Project Indicator + Profile Dropdown -->
               <div class="flex items-center gap-2">
-                <!-- Project Selector for Kepala Riset (only if not Admin) -->
-                <div
-                  v-if="hasRole('Kepala Riset') && !hasRole('Admin') && userProjects.length > 0"
-                  class="flex items-center"
-                >
-                  <Select
-                    :model-value="selectedProject?.id?.toString() || 'all'"
-                    @update:model-value="handleProjectChange"
-                  >
-                    <SelectTrigger
-                      class="w-[200px] bg-white border-gray-200 text-gray-900"
-                    >
-                      <SelectValue placeholder="Pilih Project" />
-                    </SelectTrigger>
-                    <SelectContent class="bg-white border-gray-200">
-                      <SelectItem
-                        value="all"
-                        class="flex items-center space-x-2 px-3 py-3 text-slate-700 hover:text-blue-600 hover:bg-blue-100/50 transition-all duration-200 relative font-medium"
-                      >
-                        <div class="flex items-center gap-2">Semua Project</div>
-                      </SelectItem>
-                      <SelectItem
-                        v-for="project in userProjects"
-                        :key="project.id"
-                        :value="project.id.toString()"
-                        class="flex items-center space-x-2 px-3 py-3 text-slate-700 hover:text-blue-600 hover:bg-blue-100/50 transition-all duration-200 relative font-medium"
-                      >
-                        {{ project.name }}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
                 <!-- Show current project for Admin users (read-only) -->
                 <div
-                  v-if="hasRole('Admin') && selectedProject"
+                  v-if="(hasRole('Admin') || hasRole('Kepala Riset')) && selectedProject"
                   class="flex items-center px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg"
                 >
                   <Building2 class="w-4 h-4 text-blue-600 mr-2" />
                   <span class="text-sm font-medium text-blue-900">{{ selectedProject.name }}</span>
+                </div>
+                <!-- Show "Semua Project" for Kepala Riset when no project is selected -->
+                <div
+                  v-if="hasRole('Kepala Riset') && !hasRole('Admin') && !selectedProject"
+                  class="flex items-center px-3 py-2 bg-yellow-50 border border-yellow-200 rounded-lg"
+                >
+                  <Building2 class="w-4 h-4 text-yellow-600 mr-2" />
+                  <span class="text-sm font-medium text-yellow-900">Semua Project</span>
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger as-child>

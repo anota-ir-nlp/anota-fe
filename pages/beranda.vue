@@ -52,22 +52,27 @@
       </Card>
 
       <div
-        v-if="(hasRole('Admin') && selectedProject) || (hasRole('Kepala Riset') && userProjects.length > 0)"
+        v-if="hasRole('Admin') || hasRole('Kepala Riset')"
         class="mt-8 mb-8"
       >
-        <!-- Admin Role Header -->
+        <!-- Project Assignment Header -->
         <div class="flex items-center gap-4 mb-8">
           <div class="p-3 rounded-lg bg-pink-500/10 border border-pink-200">
-            <Users class="w-8 h-8 text-pink-500" />
+            <Building2 class="w-8 h-8 text-pink-500" />
           </div>
           <div>
             <h2 class="text-3xl font-bold text-gray-900">Project Assignment</h2>
-            <p class="text-gray-500 text-lg">Your assigned project</p>
+            <p class="text-gray-500 text-lg">
+              {{ hasRole('Admin') ? 'Your assigned project' : 'Manage your project context' }}
+            </p>
           </div>
         </div>
+        
+        <!-- Admin Project Display (Read-only) -->
         <Card
+          v-if="hasRole('Admin') && selectedProject"
           variant="glassmorphism"
-          class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none"
+          class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none mb-4"
         >
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-4">
@@ -90,6 +95,104 @@
                 {{ selectedProject.assigned_admins?.length || 0 }} admin(s)
               </p>
             </div>
+          </div>
+          <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p class="text-sm text-blue-800">
+              <strong>Note:</strong> As an Admin, your project assignment is managed by system administrators.
+            </p>
+          </div>
+        </Card>
+
+        <!-- Kepala Riset Project Selection -->
+        <Card
+          v-if="hasRole('Kepala Riset') && !hasRole('Admin') && userProjects.length > 0"
+          variant="glassmorphism"
+          class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none"
+        >
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold flex items-center gap-3 text-gray-900">
+              <Building2 class="w-6 h-6 text-yellow-500" />
+              Pemilihan Project
+            </h3>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Pilih Project untuk Analisis
+              </label>
+              <div class="flex items-center gap-4">
+                <div class="flex-1">
+                  <Select
+                    :model-value="selectedProject?.id?.toString() || 'all'"
+                    @update:model-value="handleProjectChange"
+                  >
+                    <SelectTrigger class="w-full bg-white border-gray-200 text-gray-900">
+                      <SelectValue placeholder="Pilih Project" />
+                    </SelectTrigger>
+                    <SelectContent class="bg-white border-gray-200">
+                      <SelectItem
+                        value="all"
+                        class="flex items-center space-x-2 px-3 py-3 text-slate-700 hover:text-blue-600 hover:bg-blue-100/50 transition-all duration-200 relative font-medium"
+                      >
+                        <div class="flex items-center gap-2">
+                          <Building2 class="w-4 h-4" />
+                          Semua Project
+                        </div>
+                      </SelectItem>
+                      <SelectItem
+                        v-for="project in userProjects"
+                        :key="project.id"
+                        :value="project.id.toString()"
+                        class="flex items-center space-x-2 px-3 py-3 text-slate-700 hover:text-blue-600 hover:bg-blue-100/50 transition-all duration-200 relative font-medium"
+                      >
+                        <div class="flex items-center gap-2">
+                          <Building2 class="w-4 h-4" />
+                          {{ project.name }}
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  variant="outline"
+                  @click="navigateTo('/kepala-riset/kelola-project')"
+                  class="flex items-center gap-2"
+                >
+                  <Building2 class="w-4 h-4" />
+                  Kelola Project
+                </Button>
+              </div>
+            </div>
+
+            <!-- Current Selection Display -->
+            <div v-if="selectedProject" class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div class="flex items-center gap-3">
+                <Building2 class="w-5 h-5 text-blue-600" />
+                <div>
+                  <p class="text-sm font-medium text-blue-800">
+                    Currently viewing: {{ selectedProject.name }}
+                  </p>
+                  <p class="text-xs text-blue-600 mt-1">
+                    Dashboard analytics are filtered for this project
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div v-else class="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+              <div class="flex items-center gap-3">
+                <Building2 class="w-5 h-5 text-gray-600" />
+                <div>
+                  <p class="text-sm font-medium text-gray-700">
+                    Currently viewing: All Projects
+                  </p>
+                  <p class="text-xs text-gray-500 mt-1">
+                    Dashboard shows combined data from all projects
+                  </p>
+                </div>
+              </div>
+            </div>
+
           </div>
         </Card>
       </div>
@@ -563,24 +666,6 @@
           </div>
         </div>
 
-        <!-- Project Context Notice -->
-        <div
-          v-if="selectedProject"
-          class="p-4 bg-blue-50 border border-blue-200 rounded-lg"
-        >
-          <p class="text-sm text-blue-800">
-            <strong>Project terpilih:</strong> {{ selectedProject.name }}
-          </p>
-          <p class="text-xs text-blue-600 mt-1">
-            Data yang ditampilkan hanya untuk project ini
-          </p>
-        </div>
-        <div v-else class="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-          <p class="text-sm text-gray-600">
-            Menampilkan data dari semua project
-          </p>
-        </div>
-
         <!-- Overview Stats -->
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
           <Card
@@ -892,6 +977,13 @@ import { Card } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "~/components/ui/avatar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 
 import { useAuth } from "~/data/auth";
 import { useDashboardApi } from "~/data/dashboard";
@@ -1367,9 +1459,9 @@ const loadReviewerPerformance = async () => {
   }
 };
 
-// Fetch projects for admin
+// Fetch projects for admin and kepala riset
 async function fetchUserProjects() {
-  if (!hasRole("Admin")) return;
+  if (!hasRole("Admin") && !hasRole("Kepala Riset")) return;
   isLoadingProjects.value = true;
   try {
     const response = await getProjects();
@@ -1383,11 +1475,11 @@ async function fetchUserProjects() {
 
 // Handle project change
 function handleProjectChange(value: string) {
-  // Only allow project changes for Kepala Riset users who are not Admin
+  // Allow project changes for Kepala Riset users (but not Admin)
   if (!hasRole('Kepala Riset') || hasRole('Admin')) {
     return;
   }
-  
+
   if (!value || value === "all") {
     clearSelectedProject();
   } else {
