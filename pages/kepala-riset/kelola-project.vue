@@ -277,154 +277,178 @@
 
     <!-- Export Documents Dialog -->
     <Dialog v-model:open="isExportDialogOpen">
-      <DialogContent class="sm:max-w-4xl max-h-[80vh]">
-        <DialogHeader>
-          <DialogTitle>Export Dokumen - {{ projectToExport?.name }}</DialogTitle>
-          <DialogDescription>
-            Export semua dokumen yang sudah dianotasi ke file ZIP. Dokumen akan dipilih secara otomatis jika tidak ada yang dipilih. Hanya dokumen dengan status "Sudah Dianotasi" atau lebih yang bisa diexport.
+      <DialogContent class="sm:max-w-4xl max-h-[85vh]">
+        <DialogHeader class="pb-4">
+          <DialogTitle class="text-xl font-semibold">Export Dokumen - {{ projectToExport?.name }}</DialogTitle>
+          <DialogDescription class="text-gray-600">
+            Export dokumen yang sudah dianotasi ke file ZIP. Hanya dokumen dengan status "Sudah Dianotasi" atau lebih yang bisa diexport.
           </DialogDescription>
         </DialogHeader>
 
-        <div class="space-y-4 max-h-[60vh] overflow-y-auto">
+        <div class="space-y-6 max-h-[55vh] overflow-y-auto">
           <!-- Loading state -->
-          <div v-if="isLoadingDocuments" class="flex items-center justify-center py-8">
+          <div v-if="isLoadingDocuments" class="flex items-center justify-center py-12">
             <Loader2 class="w-6 h-6 animate-spin mr-2" />
-            <span>Memuat dokumen...</span>
+            <span class="text-gray-600">Memuat dokumen...</span>
           </div>
 
-          <!-- Export format selection -->
-          <div v-else class="space-y-4">
-            <div class="border-b pb-4">
-              <label class="block text-sm font-medium mb-2">Format Export:</label>
-              <div class="flex gap-4">
-                <label class="flex items-center">
+          <div v-else class="space-y-6">
+            <!-- Export format selection -->
+            <div class="bg-gray-50 rounded-lg p-4">
+              <label class="block text-sm font-semibold text-gray-900 mb-3">Format Export</label>
+              <div class="flex gap-6">
+                <label class="flex items-center cursor-pointer">
                   <input
                     type="radio"
                     v-model="exportFormat"
                     value="parallel"
-                    class="mr-2"
+                    class="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
                   />
-                  Parallel TSV (original → corrected)
+                  <span class="text-sm font-medium text-gray-700">Parallel TSV (original → corrected)</span>
                 </label>
-                <label class="flex items-center">
+                <label class="flex items-center cursor-pointer">
                   <input
                     type="radio"
                     v-model="exportFormat"
                     value="m2"
-                    class="mr-2"
+                    class="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
                   />
-                  M2 Format
+                  <span class="text-sm font-medium text-gray-700">M2 Format</span>
                 </label>
               </div>
             </div>
 
-            <!-- Document selection controls -->
-            <div class="flex items-center justify-between border-b pb-4">
-              <div class="flex items-center gap-4">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  @click="selectAllExportableDocuments"
-                  :disabled="exportableDocuments.length === 0"
-                >
-                  <CheckCircle class="w-4 h-4 mr-1" />
-                  Pilih Semua yang Bisa Diexport
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  @click="deselectAllDocuments"
-                  :disabled="selectedDocumentsForExport.length === 0"
-                >
-                  <XCircle class="w-4 h-4 mr-1" />
-                  Batalkan Pilihan
-                </Button>
+            <!-- Document selection section -->
+            <div class="space-y-4">
+              <!-- Selection summary and controls -->
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    @click="selectAllExportableDocuments"
+                    :disabled="exportableDocuments.length === 0"
+                    class="flex items-center gap-2"
+                  >
+                    <CheckCircle class="w-4 h-4" />
+                    Pilih Semua
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    @click="deselectAllDocuments"
+                    :disabled="selectedDocumentsForExport.length === 0"
+                    class="flex items-center gap-2"
+                  >
+                    <XCircle class="w-4 h-4" />
+                    Batal Pilihan
+                  </Button>
+                </div>
+                <div class="text-sm text-gray-600 bg-blue-50 px-3 py-1 rounded-full">
+                  {{ selectedDocumentsForExport.length }} / {{ exportableDocuments.length }} dipilih
+                </div>
               </div>
-              <div class="text-sm text-gray-600">
-                {{ selectedDocumentsForExport.length }} dari {{ exportableDocuments.length }} dokumen dipilih
-              </div>
-            </div>
 
-            <!-- Exportable documents -->
-            <div v-if="exportableDocuments.length > 0">
-              <h4 class="font-medium text-green-700 mb-3 flex items-center">
-                <CheckCircle class="w-4 h-4 mr-2" />
-                Dokumen yang Dapat Diexport ({{ exportableDocuments.length }})
-              </h4>
-              <div class="space-y-2 max-h-40 overflow-y-auto border rounded p-3">
-                <label
-                  v-for="document in exportableDocuments"
-                  :key="document.id"
-                  class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    :checked="selectedDocumentsForExport.some(d => d.id === document.id)"
-                    @change="toggleDocumentSelection(document)"
-                    class="mr-3"
-                  />
-                  <div class="flex-1">
-                    <div class="font-medium text-sm">{{ document.title }}</div>
-                    <div class="flex items-center gap-2 text-xs text-gray-600">
-                      <span :class="getDocumentStatusInfo(document.status).color">
-                        {{ getDocumentStatusInfo(document.status).text }}
-                      </span>
-                      <span>•</span>
-                      <span>{{ document.jumlah_sentence }} kalimat</span>
-                    </div>
+              <!-- Exportable documents -->
+              <div v-if="exportableDocuments.length > 0" class="space-y-3">
+                <div class="flex items-center gap-2">
+                  <CheckCircle class="w-5 h-5 text-green-600" />
+                  <h4 class="font-semibold text-gray-900">
+                    Dokumen Siap Export ({{ exportableDocuments.length }})
+                  </h4>
+                </div>
+                <div class="bg-white border border-gray-200 rounded-lg max-h-48 overflow-y-auto">
+                  <div class="divide-y divide-gray-100">
+                    <label
+                      v-for="document in exportableDocuments"
+                      :key="document.id"
+                      class="flex items-center p-4 hover:bg-gray-50 cursor-pointer transition-colors duration-150"
+                    >
+                      <input
+                        type="checkbox"
+                        :checked="selectedDocumentsForExport.some(d => d.id === document.id)"
+                        @change="toggleDocumentSelection(document)"
+                        class="mr-4 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <div class="flex-1 min-w-0">
+                        <div class="font-medium text-gray-900 truncate">{{ document.title }}</div>
+                        <div class="flex items-center gap-3 mt-1 text-sm text-gray-600">
+                          <span :class="[getDocumentStatusInfo(document.status).color, 'font-medium']">
+                            {{ getDocumentStatusInfo(document.status).text }}
+                          </span>
+                          <span class="text-gray-400">•</span>
+                          <span>{{ document.jumlah_sentence }} kalimat</span>
+                        </div>
+                      </div>
+                    </label>
                   </div>
-                </label>
+                </div>
               </div>
-            </div>
 
-            <!-- Non-exportable documents info -->
-            <div v-if="nonExportableDocuments.length > 0">
-              <h4 class="font-medium text-gray-600 mb-3 flex items-center">
-                <XCircle class="w-4 h-4 mr-2" />
-                Dokumen Belum Siap Diexport ({{ nonExportableDocuments.length }})
-              </h4>
-              <div class="space-y-2 max-h-32 overflow-y-auto border rounded p-3 bg-gray-50">
-                <div
-                  v-for="document in nonExportableDocuments"
-                  :key="document.id"
-                  class="flex items-center p-2 rounded opacity-75"
-                >
-                  <FileText class="w-4 h-4 mr-3 text-gray-400" />
-                  <div class="flex-1">
-                    <div class="font-medium text-sm text-gray-700">{{ document.title }}</div>
-                    <div class="flex items-center gap-2 text-xs text-gray-500">
-                      <span :class="getDocumentStatusInfo(document.status).color">
-                        {{ getDocumentStatusInfo(document.status).text }}
-                      </span>
-                      <span>•</span>
-                      <span>{{ document.jumlah_sentence }} kalimat</span>
+              <!-- Non-exportable documents info -->
+              <div v-if="nonExportableDocuments.length > 0" class="space-y-3">
+                <div class="flex items-center gap-2">
+                  <XCircle class="w-5 h-5 text-gray-400" />
+                  <h4 class="font-semibold text-gray-600">
+                    Dokumen Belum Siap Export ({{ nonExportableDocuments.length }})
+                  </h4>
+                </div>
+                <div class="bg-gray-50 border border-gray-200 rounded-lg max-h-40 overflow-y-auto">
+                  <div class="divide-y divide-gray-100">
+                    <div
+                      v-for="document in nonExportableDocuments"
+                      :key="document.id"
+                      class="flex items-center p-4 opacity-60"
+                    >
+                      <FileText class="w-4 h-4 mr-4 text-gray-400" />
+                      <div class="flex-1 min-w-0">
+                        <div class="font-medium text-gray-700 truncate">{{ document.title }}</div>
+                        <div class="flex items-center gap-3 mt-1 text-sm text-gray-500">
+                          <span :class="[getDocumentStatusInfo(document.status).color, 'font-medium']">
+                            {{ getDocumentStatusInfo(document.status).text }}
+                          </span>
+                          <span class="text-gray-400">•</span>
+                          <span>{{ document.jumlah_sentence }} kalimat</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <!-- Empty state -->
-            <div v-if="documentsInProject.length === 0" class="text-center py-8 text-gray-500">
-              <FileText class="w-12 h-12 mx-auto mb-3 text-gray-300" />
-              <p>Tidak ada dokumen dalam project ini</p>
+              <!-- Empty state -->
+              <div v-if="documentsInProject.length === 0" class="text-center py-12">
+                <FileText class="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                <p class="text-gray-500 text-lg font-medium">Tidak ada dokumen dalam project ini</p>
+                <p class="text-gray-400 text-sm mt-1">Tambahkan dokumen terlebih dahulu untuk melakukan export</p>
+              </div>
             </div>
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" @click="closeExportDialog">
-            Batal
-          </Button>
-          <Button
-            @click="exportSelectedDocuments"
-            :disabled="exportableDocuments.length === 0 || isExporting"
-            class="flex items-center gap-2"
-          >
-            <Download v-if="!isExporting" class="w-4 h-4" />
-            <Loader2 v-else class="w-4 h-4 animate-spin" />
-            {{ isExporting ? 'Mengexport...' : 'Export ke ZIP' }}
-          </Button>
+        <DialogFooter class="flex items-center justify-between pt-6 border-t">
+          <div class="text-sm text-gray-600">
+            <span v-if="selectedDocumentsForExport.length > 0" class="font-medium">
+              {{ selectedDocumentsForExport.length }} dokumen akan diexport
+            </span>
+            <span v-else class="text-gray-400">
+              Pilih dokumen untuk melanjutkan export
+            </span>
+          </div>
+          <div class="flex items-center gap-3">
+            <Button variant="outline" @click="closeExportDialog" class="px-6">
+              Batal
+            </Button>
+            <Button
+              @click="exportSelectedDocuments"
+              :disabled="selectedDocumentsForExport.length === 0 || isExporting"
+              class="flex items-center gap-2 px-6"
+            >
+              <Download v-if="!isExporting" class="w-4 h-4" />
+              <Loader2 v-else class="w-4 h-4 animate-spin" />
+              {{ isExporting ? 'Mengexport...' : 'Export ke ZIP' }}
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -679,6 +703,7 @@ const openCreateAdmins = ref(false);
 const searchTermCreateAdmin = ref("");
 
 const editingProjectAdminIds = ref<string[]>([]);
+const originalProjectAdminIds = ref<string[]>([]);
 const openEditAdmins = ref(false);
 const searchTermEditAdmin = ref("");
 
@@ -893,7 +918,7 @@ async function updateProject() {
           updateData
         );
 
-        const currentAdmins = selectedProject.value?.assigned_admins || [];
+        const currentAdmins = originalProjectAdminIds.value;
         const toAdd = editingProjectAdminIds.value.filter(
           (id) => !currentAdmins.includes(id)
         );
@@ -901,25 +926,64 @@ async function updateProject() {
           (id) => !editingProjectAdminIds.value.includes(id)
         );
 
+        let assignSuccessCount = 0;
+        let unassignSuccessCount = 0;
+        let failCount = 0;
+
         for (const adminId of toAdd) {
-          await apiAssignAdmin(editingProject.value.id!, { user_id: adminId });
+          try {
+            await apiAssignAdmin(editingProject.value.id!, { user_id: adminId });
+            assignSuccessCount++;
+          } catch (error) {
+            console.error(`Error assigning admin ${adminId}:`, error);
+            failCount++;
+          }
         }
 
         for (const adminId of toRemove) {
-          await apiUnassignAdmin(editingProject.value.id!, {
-            user_id: adminId,
-          });
+          try {
+            await apiUnassignAdmin(editingProject.value.id!, {
+              user_id: adminId,
+            });
+            unassignSuccessCount++;
+          } catch (error) {
+            console.error(`Error unassigning admin ${adminId}:`, error);
+            failCount++;
+          }
         }
 
-        return projectResult;
+        return { projectResult, assignSuccessCount, unassignSuccessCount, failCount };
       })(),
       {
         loading: "Mengupdate project...",
-        success: (result: ProjectResponse) => {
+        success: (result: { 
+          projectResult: ProjectResponse; 
+          assignSuccessCount: number; 
+          unassignSuccessCount: number; 
+          failCount: number 
+        }) => {
           fetchProjects(currentPage.value);
           isEditDialogOpen.value = false;
           clearSelectedProject();
-          return `Project ${result.name} berhasil diupdate.`;
+          
+          const messages = [];
+          if (result.assignSuccessCount > 0) {
+            messages.push(`${result.assignSuccessCount} admin ditambahkan`);
+          }
+          if (result.unassignSuccessCount > 0) {
+            messages.push(`${result.unassignSuccessCount} admin dihapus`);
+          }
+
+          let successMessage = `Project ${result.projectResult.name} berhasil diupdate`;
+          if (messages.length > 0) {
+            successMessage += `. ${messages.join(", ")}`;
+          }
+
+          if (result.failCount > 0) {
+            successMessage += `. ${result.failCount} operasi admin gagal`;
+          }
+
+          return successMessage;
         },
         error: "Gagal mengupdate project",
       }
@@ -938,6 +1002,7 @@ function editProject(project: ProjectResponse) {
     description: project.description,
   };
   editingProjectAdminIds.value = [...project.assigned_admins];
+  originalProjectAdminIds.value = [...project.assigned_admins];
   isEditDialogOpen.value = true;
 }
 
@@ -947,6 +1012,7 @@ function cancelEdit() {
     description: "",
   };
   editingProjectAdminIds.value = [];
+  originalProjectAdminIds.value = [];
   isEditDialogOpen.value = false;
 }
 

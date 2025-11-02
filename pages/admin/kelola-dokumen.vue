@@ -202,6 +202,20 @@
                   class="mb-2"
                 />
 
+                <div class="grid gap-2">
+                  <label class="text-sm font-medium text-left">
+                    Institusi
+                  </label>
+                  <Input
+                    v-model="bulkDocumentInstitution"
+                    placeholder="Contoh: Universitas Indonesia"
+                    class="w-full"
+                  />
+                  <p class="text-xs text-gray-500">
+                    Institusi ini akan diterapkan ke semua dokumen yang diupload
+                  </p>
+                </div>
+
                 <div
                   v-if="isLoadingBulkPreview"
                   class="flex-1 bg-gray-50 border border-gray-200 rounded p-6 flex flex-col items-center justify-center"
@@ -876,6 +890,7 @@ const isLoadingPreview = ref(false);
 const isLoadingBulkPreview = ref(false);
 const fileError = ref("");
 const documentInstitution = ref("");
+const bulkDocumentInstitution = ref("");
 const applyToAllFiles = ref(false);
 
 interface BulkFilePreview extends DocumentPreview {
@@ -1166,6 +1181,7 @@ function resetForm(mode: "single" | "bulk") {
     ) as HTMLInputElement;
     if (fileInput) fileInput.value = "";
   } else {
+    bulkDocumentInstitution.value = "";
     resetBulkState();
     isBulkDialogOpen.value = false;
     const fileInput = document.querySelector(
@@ -1246,6 +1262,7 @@ async function bulkCreateAndAssignDocuments() {
       const documentWithProject: DocumentRequest = {
         ...doc,
         project: selectedProjectId.value!,
+        institution: bulkDocumentInstitution.value || undefined,
       };
       await apiCreateDocument(documentWithProject);
       successCount++;
@@ -1256,6 +1273,7 @@ async function bulkCreateAndAssignDocuments() {
           const documentWithProject: DocumentRequest = {
             ...doc,
             project: selectedProjectId.value!,
+            institution: bulkDocumentInstitution.value || undefined,
           };
           duplicateError.value = error.data as DuplicateDocumentError;
           pendingDocumentRequest.value = documentWithProject;
