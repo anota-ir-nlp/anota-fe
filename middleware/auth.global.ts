@@ -5,7 +5,6 @@ const roleBasedRoutes = {
     "/admin/kelola-dokumen",
     "/admin/kelola-error",
     "/kepala-riset-admin/kelola-pengguna",
-    "/kepala-riset-admin/dashboard",
   ],
   Annotator: ["/anotator/anotasi"],
   Reviewer: ["/reviewer/review"],

@@ -10,7 +10,11 @@ export function createUserColumns(
   handleEditUser: (user: UserResponse) => void,
   handleDeleteUser: (user: UserResponse) => void,
   handleResetPassword: (user: UserResponse) => void,
-  getProjectAssignment?: (userId: string, userRoles: string[]) => string | null
+  getAllUserRoles?: (userId: string) => string[],
+  options?: {
+    showProjectAssignment?: boolean;
+    getProjectAssignments?: (userId: string, userRoles: string[]) => string[];
+  }
 ): ColumnDef<UserResponse>[] {
   return [
     {
@@ -60,51 +64,67 @@ export function createUserColumns(
       },
       enableSorting: false,
     },
+    // Email column removed - not available in available-users endpoint
     {
-      accessorKey: "email",
-      header: "Email",
-      cell: ({ row }) => {
-        const email = row.getValue("email") as string;
-        return h("span", { class: "text-gray-700 text-left" }, email || "N/A");
-      },
-      enableSorting: false,
-    },
-    {
-      accessorKey: "institution",
+      accessorKey: "institusi",
       header: "Institusi",
       cell: ({ row }) => {
-        const institution = row.getValue("institution") as string;
+        const institusi = (row.getValue("institusi") as string) || (row.original.institution as string);
         return h(
           "span",
           { class: "text-gray-700 text-left" },
-          institution || "-"
+          institusi || "-"
         );
       },
       enableSorting: false,
     },
     {
       accessorKey: "roles",
-      header: "Roles",
+      header: "Roles (Project)",
       cell: ({ row }) => {
-        const roles = (row.getValue("roles") as string[]) || [];
+        const user = row.original;
+        
+        // Show Kepala Riset badge if user is kepala riset
+        if (user.is_kepala_riset) {
+          return h(
+            Badge,
+            {
+              variant: "purple",
+              class: "font-semibold",
+            },
+            () => "Kepala Riset"
+          );
+        }
+
+        // Get aggregated roles from all projects if function is available
+        let roles = (row.getValue("roles") as string[]) || [];
+        if (getAllUserRoles && roles.length === 0) {
+          roles = getAllUserRoles(user.id);
+        }
 
         if (!roles.length) {
           return h(
             "span",
-            { class: "text-gray-400 text-sm" },
-            "Tidak ada role"
+            { class: "text-gray-400 text-sm italic" },
+            "Belum ada role"
           );
         }
+
+        // Sort roles for consistent display: Admin, Annotator, Reviewer
+        const sortedRoles = [...roles].sort((a, b) => {
+          const order = { Admin: 1, Annotator: 2, Reviewer: 3 };
+          return (order[a as keyof typeof order] || 99) - (order[b as keyof typeof order] || 99);
+        });
 
         return h(
           "div",
           { class: "flex flex-wrap gap-1" },
-          roles.map((role) =>
+          sortedRoles.map((role) =>
             h(
               Badge,
               {
                 key: role,
-                variant: "blue",
+                variant: role === "Admin" ? "blue" : role === "Annotator" ? "green" : "yellow",
                 class: "font-semibold",
               },
               () => role
@@ -114,10 +134,11 @@ export function createUserColumns(
       },
       enableSorting: false,
     },
-    {
+    // Conditionally include Project Assignment column only for Kepala Riset
+    ...(options?.showProjectAssignment && options?.getProjectAssignments ? [{
       id: 'project_assignment',
       header: 'Project Assignment',
-      cell: ({ row }) => {
+      cell: ({ row }: { row: any }) => {
         const user = row.original
         
         // Show project assignment for Admin, Annotator, and Reviewer users
@@ -125,36 +146,34 @@ export function createUserColumns(
           return h('span', { class: 'text-gray-400 text-sm' }, '-')
         }
 
-        if (!getProjectAssignment) {
-          return h('span', { class: 'text-gray-400 text-sm' }, '-')
-        }
-
-        const projectName = getProjectAssignment(user.id, user.roles)
+        const projectNames = options.getProjectAssignments!(user.id, user.roles)
         
-        if (!projectName) {
+        if (!projectNames || projectNames.length === 0) {
           return h('span', { class: 'text-gray-500 text-sm italic' }, 'Belum ditugaskan')
         }
 
-        return h(Badge, {
-          variant: 'outline',
-          class: 'text-xs'
-        }, () => projectName)
+        // If only one project, show as single badge
+        if (projectNames.length === 1) {
+          return h(Badge, {
+            variant: 'outline',
+            class: 'text-xs'
+          }, () => projectNames[0])
+        }
+
+        // If multiple projects, show as multiple badges
+        return h('div', { class: 'flex flex-wrap gap-1' }, 
+          projectNames.map((projectName: string) =>
+            h(Badge, {
+              key: projectName,
+              variant: 'outline',
+              class: 'text-xs'
+            }, () => projectName)
+          )
+        )
       },
       enableSorting: false,
-    },
-    {
-      accessorKey: 'date_joined',
-      header: 'Tanggal Bergabung',
-      cell: ({ row }) => {
-        const date = new Date(row.getValue("date_joined") as string);
-        return h(
-          "span",
-          { class: "text-gray-700 text-left" },
-          date.toLocaleDateString("id-ID")
-        );
-      },
-      enableSorting: false,
-    },
+    }] : []),
+    // Tanggal Bergabung column removed - not available in available-users endpoint
     {
       id: "actions",
       header: "",

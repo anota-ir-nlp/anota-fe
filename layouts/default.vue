@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useAuth } from "~/data/auth";
 import { useProjectsApi } from "~/data/projects";
+import { useUsersApi } from "~/data/users";
 import { useProjectContext } from "~/composables/project-context";
 import { onMounted, ref, computed, onBeforeUnmount, watch } from "vue";
 import { navigateTo, useRoute } from "#app";
@@ -35,7 +36,7 @@ import {
   Building2,
   Menu as MenuIcon,
   X as CloseIcon,
-  Key, // <-- make sure Key is imported from lucide-vue-next
+  Key,
 } from "lucide-vue-next";
 import { toast } from "vue-sonner";
 import type { AvailableRole, ProjectResponse } from "~/types/api";
@@ -47,9 +48,12 @@ useHead({
 
 const { user, isAuthenticated, userRoles, logout, initializeAuth } = useAuth();
 const { getProjects } = useProjectsApi();
+const { getMyProjects } = useUsersApi();
+const route = useRoute();
+
+// Admin still uses project context, but Kepala Riset does not
 const { selectedProject, setSelectedProject, clearSelectedProject } =
   useProjectContext();
-const route = useRoute();
 
 const userAvatar = computed(
   () =>
@@ -66,25 +70,21 @@ const userProjects = ref<ProjectResponse[]>([]);
 const isLoadingProjects = ref(false);
 
 async function fetchUserProjects() {
-  if (!hasRole("Kepala Riset") && !hasRole("Admin")) return;
+  if (!hasRole("Admin")) return; // Only Admin needs project context
 
   isLoadingProjects.value = true;
   try {
-    const response = await getProjects();
+    // Admin uses /users/me/projects/ to get their assigned projects
+    const response = await getMyProjects();
     userProjects.value = response.results;
 
     // If user is Admin, automatically set project context to their assigned project
-    // (This takes precedence even if they also have Kepala Riset role)
-    if (hasRole("Admin") && user.value?.id) {
-      const adminProject = userProjects.value.find((project: ProjectResponse) => 
-        project.assigned_admins.includes(user.value.id)
-      );
-      if (adminProject) {
-        setSelectedProject(adminProject);
-      } else {
-        // Admin not assigned to any project yet, clear selection
-        clearSelectedProject();
-      }
+    if (hasRole("Admin") && userProjects.value.length > 0) {
+      // Admin should only be assigned to one project, so take the first one
+      setSelectedProject(userProjects.value[0]);
+    } else {
+      // Admin not assigned to any project yet, clear selection
+      clearSelectedProject();
     }
   } catch (error) {
     console.error("Error fetching projects:", error);
@@ -116,7 +116,6 @@ function canAccessRoute(route: string): boolean {
       "/admin/kelola-dokumen",
       "/admin/kelola-error",
       "/kepala-riset-admin/kelola-pengguna",
-      "/kepala-riset-admin/dashboard",
     ],
     Annotator: ["/anotator/anotasi"],
     Reviewer: ["/reviewer/review"],
@@ -184,12 +183,6 @@ const menuGroups = computed<MenuGroup[]>(() => {
       label: "Administrator Project",
       icon: Users,
       items: [
-        {
-          label: "Dashboard Analytics",
-          path: "/kepala-riset-admin/dashboard",
-          icon: BarChart3,
-          description: "View system analytics and performance metrics",
-        },
         {
           label: "Kelola Dokumen",
           path: "/admin/kelola-dokumen",
@@ -451,7 +444,7 @@ const handleLogout = async () => {
                         <!-- indicator removed -->
                       </MenubarTrigger>
                       <MenubarContent
-                        class="bg-white border border-gray-200 shadow-lg"
+                        class="bg-white border border-gray-200 shadow-lg flex gap-1 p-1 flex-col"
                       >
                         <MenubarItem
                           v-for="item in group.items"
@@ -492,21 +485,13 @@ const handleLogout = async () => {
               </div>
               <!-- Right: Project Indicator + Profile Dropdown -->
               <div class="flex items-center gap-2">
-                <!-- Show current project for Admin users (read-only) -->
+                <!-- Show current project for Admin users only (read-only) -->
                 <div
-                  v-if="(hasRole('Admin') || hasRole('Kepala Riset')) && selectedProject"
+                  v-if="hasRole('Admin') && selectedProject"
                   class="flex items-center px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg"
                 >
                   <Building2 class="w-4 h-4 text-blue-600 mr-2" />
                   <span class="text-sm font-medium text-blue-900">{{ selectedProject.name }}</span>
-                </div>
-                <!-- Show "Semua Project" for Kepala Riset when no project is selected -->
-                <div
-                  v-if="hasRole('Kepala Riset') && !hasRole('Admin') && !selectedProject"
-                  class="flex items-center px-3 py-2 bg-yellow-50 border border-yellow-200 rounded-lg"
-                >
-                  <Building2 class="w-4 h-4 text-yellow-600 mr-2" />
-                  <span class="text-sm font-medium text-yellow-900">Semua Project</span>
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger as-child>

@@ -6,19 +6,6 @@
         <p class="text-gray-600">
           Buat dan kelola project penelitian untuk proses anotasi
         </p>
-        <div v-if="selectedProject" class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <p class="text-sm text-blue-800">
-            <strong>Project terpilih:</strong> {{ selectedProject.name }}
-          </p>
-          <p class="text-xs text-blue-600 mt-1">
-            Menampilkan project yang dipilih dalam konteks
-          </p>
-        </div>
-        <div v-else class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-          <p class="text-sm text-gray-600">
-            Menampilkan semua project
-          </p>
-        </div>
       </div>
 
       <div class="mb-6">
@@ -275,7 +262,6 @@
       </DialogContent>
     </Dialog>
 
-    <!-- Export Documents Dialog -->
     <Dialog v-model:open="isExportDialogOpen">
       <DialogContent class="sm:max-w-4xl max-h-[85vh]">
         <DialogHeader class="pb-4">
@@ -591,7 +577,6 @@ import { ref, onMounted, computed, watch } from "vue";
 import { useProjectsApi } from "~/data/projects";
 import { useUsersApi } from "~/data/users";
 import { useDocumentsApi } from "~/data/documents";
-import { useProjectContext } from "~/composables/project-context";
 import type { ProjectResponse, ProjectRequest, UserResponse, DocumentResponse } from "~/types/api";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
@@ -665,9 +650,8 @@ const {
   getDocumentsInProject,
 } = useProjectsApi();
 
-const { getAllUsers } = useUsersApi();
+const { getAvailableUsersInProject, getUsersInProject, manageUserRoleInProject } = useUsersApi();
 const { exportDocument: exportDocumentApi } = useDocumentsApi();
-const { selectedProject, clearSelectedProject, selectedProjectId, isAllProjects } = useProjectContext();
 
 const projects = ref<ProjectResponse[]>([]);
 const adminUsers = ref<UserResponse[]>([]);
@@ -711,16 +695,11 @@ const currentPage = ref(1);
 const totalPages = ref(1);
 
 const availableAdmins = computed(() => {
-  return adminUsers.value.filter((user) => user.roles.includes("Admin"));
+  return adminUsers.value
 });
 
-// Filtered projects based on project context
+// Show all projects for Kepala Riset
 const filteredProjects = computed(() => {
-  if (isAllProjects.value) {
-    return projects.value;
-  } else if (selectedProjectId.value) {
-    return projects.value.filter((project: ProjectResponse) => project.id === selectedProjectId.value);
-  }
   return projects.value;
 });
 
@@ -768,14 +747,6 @@ const availableAdminsForEditingProject = computed(() => {
         !assignedAdminIds.has(admin.id) // Exclude admins already assigned to other projects
     );
 });
-
-// Helper to get project name for an admin
-const getAdminProjectAssignment = (adminId: string): string | null => {
-  const assignedProject = projects.value.find(project =>
-    project.assigned_admins.includes(adminId)
-  );
-  return assignedProject ? assignedProject.name : null;
-};
 
 // Helper to get admin assignment statistics
 const adminAssignmentStats = computed(() => {
@@ -834,8 +805,46 @@ function removeAdminFromEditingProject(adminId: string) {
 
 async function fetchAdminUsers() {
   try {
-    const response = await getAllUsers();
-    adminUsers.value = response;
+    if (projects.value.length === 0) {
+      adminUsers.value = [];
+      return;
+    }
+
+    const response = await getAvailableUsersInProject(projects.value[0].id);
+
+    const allUsersMap = new Map<string, UserResponse>();
+
+    for (const project of projects.value) {
+      try {
+        const projectUsersResponse = await getUsersInProject(project.id);
+        projectUsersResponse.results.forEach((user: UserResponse) => {
+          if (!allUsersMap.has(user.id)) {
+            allUsersMap.set(user.id, user);
+          }
+        });
+      } catch (error) {
+        console.error(`Error fetching users for project ${project.id}:`, error);
+      }
+    }
+
+    response.users.forEach((availableUser: { id: string; username: string; full_name: string; is_in_project: boolean; roles_in_project: string[] }) => {
+      if (!allUsersMap.has(availableUser.id)) {
+        allUsersMap.set(availableUser.id, {
+          id: availableUser.id,
+          username: availableUser.username,
+          full_name: availableUser.full_name,
+          email: `${availableUser.username}@example.com`,
+          roles: ['Admin'],
+          is_kepala_riset: false,
+          date_joined: '',
+          is_deleted: false,
+          deleted_at: null,
+          institusi: null,
+        } as UserResponse);
+      }
+    });
+
+    adminUsers.value = Array.from(allUsersMap.values());
   } catch (error) {
     console.error("Error fetching admin users:", error);
     toast.error("Gagal memuat daftar admin");
@@ -849,15 +858,15 @@ async function fetchProjects(page = 1) {
     projects.value = response.results;
     currentPage.value = page;
     totalPages.value = Math.max(1, Math.ceil(response.count / 20));
+
+    await fetchAdminUsers();
   } catch (error) {
     console.error("Error fetching projects:", error);
     toast.error("Gagal memuat data project");
   } finally {
     isLoading.value = false;
   }
-}
-
-async function createProject() {
+}async function createProject() {
   if (!newProject.value.name.trim()) {
     toast.error("Nama project harus diisi");
     return;
@@ -870,6 +879,12 @@ async function createProject() {
         const projectResult = await apiCreateProject(newProject.value);
 
         for (const adminId of newProjectAdminIds.value) {
+          await manageUserRoleInProject(projectResult.id, {
+            user_id: adminId,
+            role: "Admin",
+            action: "add"
+          });
+
           await apiAssignAdmin(projectResult.id, { user_id: adminId });
         }
 
@@ -930,8 +945,35 @@ async function updateProject() {
         let unassignSuccessCount = 0;
         let failCount = 0;
 
+        for (const adminId of toRemove) {
+          try {
+            await apiUnassignAdmin(editingProject.value.id!, {
+              user_id: adminId,
+            });
+
+            await manageUserRoleInProject(editingProject.value.id!, {
+              user_id: adminId,
+              role: "Admin",
+              action: "remove"
+            });
+
+            unassignSuccessCount++;
+          } catch (error) {
+            console.error(`Error unassigning admin ${adminId}:`, error);
+            failCount++;
+          }
+        }
+
         for (const adminId of toAdd) {
           try {
+            // First, add Admin role to the user for this project
+            await manageUserRoleInProject(editingProject.value.id!, {
+              user_id: adminId,
+              role: "Admin",
+              action: "add"
+            });
+
+            // Then assign the admin to the project
             await apiAssignAdmin(editingProject.value.id!, { user_id: adminId });
             assignSuccessCount++;
           } catch (error) {
@@ -940,32 +982,19 @@ async function updateProject() {
           }
         }
 
-        for (const adminId of toRemove) {
-          try {
-            await apiUnassignAdmin(editingProject.value.id!, {
-              user_id: adminId,
-            });
-            unassignSuccessCount++;
-          } catch (error) {
-            console.error(`Error unassigning admin ${adminId}:`, error);
-            failCount++;
-          }
-        }
-
         return { projectResult, assignSuccessCount, unassignSuccessCount, failCount };
       })(),
       {
         loading: "Mengupdate project...",
-        success: (result: { 
-          projectResult: ProjectResponse; 
-          assignSuccessCount: number; 
-          unassignSuccessCount: number; 
-          failCount: number 
+        success: (result: {
+          projectResult: ProjectResponse;
+          assignSuccessCount: number;
+          unassignSuccessCount: number;
+          failCount: number
         }) => {
           fetchProjects(currentPage.value);
           isEditDialogOpen.value = false;
-          clearSelectedProject();
-          
+
           const messages = [];
           if (result.assignSuccessCount > 0) {
             messages.push(`${result.assignSuccessCount} admin ditambahkan`);
@@ -1137,10 +1166,10 @@ async function exportSelectedDocuments() {
 
             const extension = exportFormat.value === "parallel" ? "txt" : "m2";
             const fileName = `${document.title.replace(/[^a-zA-Z0-9.-]/g, '_')}.${extension}`;
-            
+
             const arrayBuffer = await blob.arrayBuffer();
             zip.file(fileName, arrayBuffer);
-            
+
             successCount++;
           } catch (docError: any) {
             // Silent fail - continue processing other documents
@@ -1151,7 +1180,7 @@ async function exportSelectedDocuments() {
           throw new Error("Tidak ada dokumen yang berhasil diexport");
         }
 
-        const zipBlob = await zip.generateAsync({ 
+        const zipBlob = await zip.generateAsync({
           type: "blob",
           compression: "DEFLATE",
           compressionOptions: { level: 6 }
@@ -1159,7 +1188,7 @@ async function exportSelectedDocuments() {
 
         const timestamp = new Date().toISOString().slice(0, 19).replace(/[-:]/g, '');
         const zipFileName = `${projectToExport.value?.name || 'documents'}_export_${exportFormat.value}_${timestamp}.zip`;
-        
+
         const url = URL.createObjectURL(zipBlob);
         const a = document.createElement('a');
         a.href = url;
@@ -1168,7 +1197,7 @@ async function exportSelectedDocuments() {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        
+
         return { successCount, failCount: totalDocuments - successCount, totalDocuments };
       })(),
       {
@@ -1194,11 +1223,7 @@ async function exportSelectedDocuments() {
   }
 }
 
-// Watch for project context changes
-watch(selectedProjectId, async () => {
-  // No need to refetch projects, just let the computed filteredProjects handle the filtering
-  currentPage.value = 1; // Reset to first page when context changes
-}, { immediate: false });
+// Removed project context watching for Kepala Riset
 
 // Filter documents that are annotated (ready for export)
 const exportableDocuments = computed(() => {
@@ -1225,19 +1250,15 @@ function getDocumentStatusInfo(status: string) {
   return statusMap[status] || { text: status, color: "text-gray-500" };
 }
 
-// Dynamic page title based on project context
-const pageTitle = computed(() => {
-  if (selectedProject.value) {/* Lines 836-837 omitted */}
-  return "Kelola Project - Semua Project";
-});
+// Page title for Kepala Riset
+const pageTitle = "Kelola Project - Semua Project";
 
 onMounted(async () => {
-  await fetchAdminUsers();
   await fetchProjects(currentPage.value);
 });
 
 useHead({
-  title: pageTitle.value + " - ANOTA",
+  title: pageTitle + " - ANOTA",
   meta: [
     { name: "description", content: "Halaman kelola project aplikasi ANOTA." },
   ],

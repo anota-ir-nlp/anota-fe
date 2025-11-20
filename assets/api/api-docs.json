@@ -4,7 +4,7 @@
     "title": "Anota API - Annotation Management System",
     "version": "v1"
   },
-  "host": "localhost:8000",
+  "host": "43.157.230.11",
   "schemes": [
     "http"
   ],
@@ -1453,6 +1453,10 @@
                 "notes": {
                   "description": "Optional notes untuk assignment ini",
                   "type": "string"
+                },
+                "deadline": {
+                  "description": "Deadline untuk penyelesaian anotasi/review (format YYYY-MM-DD)",
+                  "type": "date-time"
                 }
               }
             }
@@ -1878,6 +1882,10 @@
                 "notes": {
                   "description": "Optional notes untuk assignment ini",
                   "type": "string"
+                },
+                "deadline": {
+                  "description": "Deadline untuk penyelesaian anotasi/review (format YYYY-MM-DD)",
+                  "type": "date-time"
                 }
               }
             }
@@ -2335,7 +2343,7 @@
       "get": {
         "operationId": "projects_list",
         "summary": "List Projects",
-        "description": "",
+        "description": "Kepala Riset dapat melihat semua project. Admin hanya dapat melihat project yang mereka kelola.",
         "parameters": [
           {
             "name": "page",
@@ -2392,7 +2400,7 @@
       "post": {
         "operationId": "projects_create",
         "summary": "Create Project",
-        "description": "Hanya Admin dan Kepala Riset yang dapat membuat project",
+        "description": "Hanya Kepala Riset yang dapat membuat project baru",
         "parameters": [
           {
             "name": "data",
@@ -2571,7 +2579,18 @@
         "operationId": "projects_assigned_users",
         "summary": "List Assigned Users in Project",
         "description": "Mengembalikan daftar user yang di-assign pada dokumen dalam project tertentu.\nUser yang ditampilkan merupakan gabungan unik dari semua assignment dokumen di project.",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "role",
+            "in": "query",
+            "description": "Filter users berdasarkan role mereka (Annotator atau Reviewer)",
+            "type": "string",
+            "enum": [
+              "Annotator",
+              "Reviewer"
+            ]
+          }
+        ],
         "responses": {
           "200": {
             "description": "Daftar user yang di-assign pada project"
@@ -2716,123 +2735,6 @@
       },
       "parameters": []
     },
-    "/users/": {
-      "get": {
-        "operationId": "users_list",
-        "summary": "List All Users",
-        "description": "Mendapatkan daftar semua user dengan pagination",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "description": "A page number within the paginated result set.",
-            "required": false,
-            "type": "integer"
-          },
-          {
-            "name": "page_size",
-            "in": "query",
-            "description": "Number of results to return per page.",
-            "required": false,
-            "type": "integer"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Daftar users berhasil ditemukan",
-            "examples": {
-              "application/json": {
-                "count": 10,
-                "next": "http://localhost:8000/api/v1/users/?page=2",
-                "previous": null,
-                "results": [
-                  {
-                    "id": "550e8400-e29b-41d4-a716-446655440000",
-                    "username": "admin1",
-                    "email": "admin1@example.com",
-                    "full_name": "Admin Pertama",
-                    "roles": [
-                      "Admin"
-                    ],
-                    "date_joined": "2024-01-01T00:00:00Z"
-                  }
-                ]
-              }
-            }
-          }
-        },
-        "tags": [
-          "👥 User Management"
-        ]
-      },
-      "parameters": []
-    },
-    "/users/admin-password-reset/": {
-      "post": {
-        "operationId": "users_admin-password-reset_create",
-        "summary": "Admin Reset User Password",
-        "description": "\nAdmin dapat reset password user lain dan mengirim email notifikasi dengan password baru.\n\n**Use Case:**\n- User lupa password dan membutuhkan bantuan admin (disarankan gunakan alur OTP terlebih dahulu)\n- Admin maintenance untuk reset password user\n- Recovery akses untuk user yang bermasalah\n\n**Features:**\n- Generate password baru secara otomatis (12 karakter aman)\n- Kirim email notifikasi dengan password baru\n- Hanya admin atau kepala riset yang dapat menggunakan\n\nCatatan: Sistem kini menggunakan OTP untuk reset password mandiri oleh user. Endpoint ini untuk tindakan administratif.\n",
-        "parameters": [
-          {
-            "name": "data",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "required": [
-                "user_id"
-              ],
-              "type": "object",
-              "properties": {
-                "user_id": {
-                  "description": "ID user yang akan direset passwordnya",
-                  "type": "string"
-                },
-                "send_email": {
-                  "description": "Kirim email password baru ke pengguna (default: true)",
-                  "type": "boolean",
-                  "default": true
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Password berhasil direset",
-            "examples": {
-              "application/json": {
-                "message": "Password berhasil direset untuk pengguna testuser_bodhi",
-                "user_id": "1e80d41d-0002-4d52-bf6c-72e32b80bf76",
-                "username": "testuser_bodhi",
-                "new_password": "aB3dF7kL9m2q",
-                "email_status": "sent",
-                "email_message": "Email password baru berhasil dikirim"
-              }
-            }
-          },
-          "404": {
-            "description": "Pengguna tidak ditemukan",
-            "examples": {
-              "application/json": {
-                "error": "Pengguna tidak ditemukan"
-              }
-            }
-          },
-          "400": {
-            "description": "Data input tidak valid",
-            "examples": {
-              "application/json": {
-                "error": "user_id harus diisi"
-              }
-            }
-          }
-        },
-        "tags": [
-          "🔐 Authentication"
-        ]
-      },
-      "parameters": []
-    },
     "/users/available-roles/": {
       "get": {
         "operationId": "users_available-roles_list",
@@ -2856,153 +2758,6 @@
         },
         "tags": [
           "🔧 Role Management"
-        ]
-      },
-      "parameters": []
-    },
-    "/users/create/": {
-      "post": {
-        "operationId": "users_create_create",
-        "summary": "Registrasi User Baru",
-        "description": "\nMembuat user baru dengan password yang di-generate secara otomatis menggunakan algoritma secure random.\n\n**Auto-Generated Features:**\n- Password dibuat secara random dengan kombinasi huruf, angka, dan simbol (12 karakter)\n- Tidak perlu input password saat membuat user\n\n**Email Features:**\n- Secara otomatis mengirim email kredensial ke pengguna baru\n- Dapat dimatikan dengan mengatur send_email=false\n- Dapat menyertakan login_url dalam email\n\nCatatan: Sistem kini menggunakan OTP email untuk proses reset password. Tidak ada lagi backup key.\n\n**Input yang Diperlukan:**\n- username: Username unik untuk login\n- email: Email address pengguna\n- full_name: Nama lengkap pengguna\n- institusi: Institusi/lembaga asal pengguna (optional)\n- send_email: Kirim email kredensial (default: true)\n- login_url: URL login untuk disertakan dalam email (optional)\n\n**Output:**\n- Password sementara dikembalikan dalam response\n- Status pengiriman email akan disertakan dalam response\n",
-        "parameters": [
-          {
-            "name": "data",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "required": [
-                "username",
-                "email",
-                "full_name"
-              ],
-              "type": "object",
-              "properties": {
-                "username": {
-                  "description": "Username unik untuk login",
-                  "type": "string"
-                },
-                "email": {
-                  "description": "Email address pengguna",
-                  "type": "string",
-                  "format": "email"
-                },
-                "full_name": {
-                  "description": "Nama lengkap pengguna",
-                  "type": "string"
-                },
-                "institusi": {
-                  "description": "Institusi/lembaga asal pengguna (optional)",
-                  "type": "string"
-                },
-                "send_email": {
-                  "description": "Kirim email kredensial ke pengguna (default: true)",
-                  "type": "boolean",
-                  "default": true
-                },
-                "login_url": {
-                  "description": "URL login untuk disertakan dalam email (optional)",
-                  "type": "string",
-                  "format": "uri"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Pengguna berhasil dibuat",
-            "examples": {
-              "application/json": {
-                "message": "Pengguna berhasil dibuat",
-                "data": {
-                  "id": "550e8400-e29b-41d4-a716-446655440000",
-                  "username": "dodit",
-                  "email": "dodit@example.com",
-                  "full_name": "Dodit Sukma Maulana",
-                  "institusi": "Universitas Gadjah Mada",
-                  "password": "aB3dF7kL9m2q",
-                  "email_status": "sent",
-                  "email_message": "Email kredensial berhasil dikirim"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Data input tidak valid",
-            "examples": {
-              "application/json": {
-                "full_name": [
-                  "Nama lengkap harus diisi."
-                ],
-                "username": [
-                  "Username sudah digunakan"
-                ],
-                "email": [
-                  "Email sudah terdaftar"
-                ]
-              }
-            }
-          }
-        },
-        "tags": [
-          "👥 User Management"
-        ]
-      },
-      "parameters": []
-    },
-    "/users/deleted/": {
-      "get": {
-        "operationId": "users_deleted_list",
-        "summary": "List Soft Deleted Users",
-        "description": "\nMendapatkan daftar semua user yang sudah di-soft delete.\n\n**Features:**\n- Hanya menampilkan user yang sudah di-soft delete\n- Pagination dengan default 20 items per page\n- Hanya admin yang dapat mengakses endpoint ini\n- Berguna untuk audit dan monitoring user yang sudah dihapus\n",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "description": "A page number within the paginated result set.",
-            "required": false,
-            "type": "integer"
-          },
-          {
-            "name": "page_size",
-            "in": "query",
-            "description": "Number of results to return per page.",
-            "required": false,
-            "type": "integer"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Daftar deleted users berhasil ditemukan",
-            "examples": {
-              "application/json": {
-                "count": 5,
-                "next": null,
-                "previous": null,
-                "results": [
-                  {
-                    "id": "550e8400-e29b-41d4-a716-446655440000",
-                    "username": "deleted_user",
-                    "email": "deleted@example.com",
-                    "full_name": "Deleted User",
-                    "roles": [
-                      "Annotators"
-                    ],
-                    "date_joined": "2024-01-01T00:00:00Z",
-                    "is_deleted": true,
-                    "deleted_at": "2024-01-02T12:00:00Z"
-                  }
-                ]
-              }
-            }
-          },
-          "403": {
-            "description": "Hanya admin yang dapat mengakses"
-          }
-        },
-        "tags": [
-          "👥 User Management"
         ]
       },
       "parameters": []
@@ -3137,6 +2892,37 @@
       },
       "parameters": []
     },
+    "/users/me/projects/": {
+      "get": {
+        "operationId": "users_me_projects_list",
+        "summary": "Get My Projects",
+        "description": "\nMendapatkan daftar project yang melibatkan current user (minimal info).\n\n**Permission:**\n- Semua authenticated user\n\n**Response:**\n- Kepala Riset: Semua project\n- User biasa: Hanya project dimana mereka memiliki role\n\n**Response Fields:**\n- `id`: ID project\n- `name`: Nama project\n\n**Use Case:**\n- Navigation menu untuk memilih project\n- Project selector di UI\n- Quick project list tanpa detail lengkap\n\n**Notes:**\n- Endpoint ini ringan dan cepat karena hanya return id + name\n- Untuk detail lengkap project, gunakan endpoint project detail\n",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List projects berhasil ditemukan",
+            "examples": {
+              "application/json": {
+                "projects": [
+                  {
+                    "id": 1,
+                    "name": "Proyek Anotasi 1"
+                  },
+                  {
+                    "id": 2,
+                    "name": "Proyek Anotasi 2"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "tags": [
+          "📁 Projects"
+        ]
+      },
+      "parameters": []
+    },
     "/users/password-reset/request/": {
       "post": {
         "operationId": "users_password-reset_request_create",
@@ -3261,100 +3047,53 @@
       },
       "parameters": []
     },
-    "/users/role-management/": {
-      "post": {
-        "operationId": "users_role-management_create",
-        "summary": "Manage User Roles",
-        "description": "\nMenambahkan atau menghapus role dari user.\n\n**Actions:**\n- `add`: Menambahkan role ke user\n- `remove`: Menghapus role dari user\n\n**Available Roles:**\n- Admin\n- Annotator\n- Reviewer\n- Kepala Riset\n\n**Constraints:**\n- Kepala Riset tidak dapat menghapus role Kepala Riset dari diri sendiri\n- Admin hanya bisa assign role Annotator dan Reviewer\n",
+    "/users/projects/{project_id}/available-users/": {
+      "get": {
+        "operationId": "users_projects_available-users_list",
+        "summary": "Get Available Users for Project",
+        "description": "\nMendapatkan daftar semua user aktif dengan indikator membership dalam project.\n\n**Permission:**\n- Admin (dalam project yang ditentukan) atau Kepala Riset\n\n**Response Fields:**\n- `id`: UUID user\n- `username`: Username user\n- `full_name`: Nama lengkap user\n- `is_in_project`: Boolean apakah user sudah ada dalam project\n- `roles_in_project`: List role yang dimiliki user dalam project (jika sudah ada)\n\n**Use Case:**\n- Memilih user saat menambahkan anggota ke project\n- Melihat user mana yang sudah/belum ada dalam project\n- Filter user berdasarkan membership status\n\n**Notes:**\n- Kepala Riset tidak muncul dalam list (tidak bisa di-assign ke project)\n- Hanya menampilkan user dengan is_active=True\n",
         "parameters": [
           {
-            "name": "data",
-            "in": "body",
+            "name": "project_id",
+            "in": "path",
+            "description": "ID project",
             "required": true,
-            "schema": {
-              "$ref": "#/definitions/UserRoleManagement"
-            }
+            "type": "integer"
           }
         ],
         "responses": {
           "200": {
-            "description": "Role berhasil diupdate",
+            "description": "List users berhasil ditemukan",
             "examples": {
               "application/json": {
-                "message": "Role \"Annotators\" berhasil ditambahkan ke pengguna dodit.",
-                "user_id": "550e8400-e29b-41d4-a716-446655440000",
-                "username": "dodit",
-                "current_roles": [
-                  "Reviewers",
-                  "Annotators"
-                ]
-              }
-            }
-          },
-          "400": {
-            "description": "Input tidak valid atau pelanggaran constraint",
-            "examples": {
-              "application/json": {
-                "user_id": [
-                  "Pengguna tidak ditemukan"
-                ],
-                "role": [
-                  "Role tidak valid. Role tersedia: Admin, Annotators, Reviewers, Researcher, Kepala Riset"
-                ],
-                "action": [
-                  "Anda tidak dapat menghapus role Admin dari diri sendiri",
-                  "Sistem harus memiliki minimal 2 admin"
+                "project_id": 1,
+                "project_name": "Proyek Anotasi 1",
+                "users": [
+                  {
+                    "id": "550e8400-e29b-41d4-a716-446655440000",
+                    "username": "annotator1",
+                    "full_name": "John Doe",
+                    "is_in_project": true,
+                    "roles_in_project": [
+                      "Annotator"
+                    ]
+                  },
+                  {
+                    "id": "650e8400-e29b-41d4-a716-446655440001",
+                    "username": "reviewer1",
+                    "full_name": "Jane Smith",
+                    "is_in_project": false,
+                    "roles_in_project": []
+                  }
                 ]
               }
             }
           },
           "404": {
-            "description": "Pengguna tidak ditemukan",
-            "examples": {
-              "application/json": {
-                "error": "Pengguna tidak ditemukan"
-              }
-            }
-          }
-        },
-        "tags": [
-          "🔧 Role Management"
-        ]
-      },
-      "parameters": []
-    },
-    "/users/{id}/delete/": {
-      "delete": {
-        "operationId": "users_delete_delete",
-        "summary": "Soft Delete User",
-        "description": "\nMelakukan soft delete user berdasarkan ID.\n\n**Soft Delete Features:**\n- User tidak benar-benar dihapus dari database\n- User hanya ditandai sebagai deleted dan di-deactivate\n- Data annotations dan aktivitas user tetap tersimpan\n- User yang sudah di-soft delete tidak dapat login lagi\n\n**Note:** User yang sudah di-soft delete tidak akan muncul di daftar user aktif.\n",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Pengguna berhasil dihapus sementara",
-            "examples": {
-              "application/json": {
-                "message": "Pengguna berhasil dihapus sementara",
-                "username": "dodit",
-                "deleted_at": "2024-01-01T12:00:00Z"
-              }
-            }
+            "description": "Project tidak ditemukan"
           },
-          "404": {
-            "description": "Pengguna tidak ditemukan",
-            "examples": {
-              "application/json": {
-                "error": "Pengguna tidak ditemukan"
-              }
-            }
-          },
-          "400": {
-            "description": "Pengguna sudah dalam status dihapus",
-            "examples": {
-              "application/json": {
-                "error": "Pengguna sudah dalam status dihapus"
-              }
-            }
+          "403": {
+            "description": "Hanya Admin project atau Kepala Riset yang dapat mengakses"
           }
         },
         "tags": [
@@ -3363,16 +3102,502 @@
       },
       "parameters": [
         {
-          "name": "id",
+          "name": "project_id",
           "in": "path",
           "required": true,
           "type": "string"
         }
       ]
     },
-    "/users/{id}/update/": {
+    "/users/projects/{project_id}/role-management/": {
+      "post": {
+        "operationId": "users_projects_role-management_create",
+        "summary": "Manage User Roles in Project",
+        "description": "\nMengelola role user dalam konteks project tertentu.\n\n**Permission:**\n- Hanya Admin untuk project ini atau Kepala Riset yang dapat mengakses\n\n**Actions:**\n- `add`: Menambahkan role untuk user di project ini\n- `remove`: Menghapus role user dari project ini\n\n**Available Roles:**\n- Admin: Dapat mengelola user dan dokumen dalam project\n- Annotator: Dapat melakukan anotasi dokumen\n- Reviewer: Dapat melakukan review anotasi\n\n**Use Case:**\n- Admin project menambahkan annotator baru ke project\n- Admin project mengubah role user dalam project\n- Admin project menghapus user dari project\n",
+        "parameters": [
+          {
+            "name": "data",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "required": [
+                "user_id",
+                "role",
+                "action"
+              ],
+              "type": "object",
+              "properties": {
+                "user_id": {
+                  "description": "UUID user yang akan dikelola rolenya",
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "role": {
+                  "description": "Role yang akan ditambahkan atau dihapus",
+                  "type": "string",
+                  "enum": [
+                    "Admin",
+                    "Annotator",
+                    "Reviewer"
+                  ]
+                },
+                "action": {
+                  "description": "Aksi: add (tambah role) atau remove (hapus role)",
+                  "type": "string",
+                  "enum": [
+                    "add",
+                    "remove"
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "description": "UUID project",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Role berhasil dikelola",
+            "examples": {
+              "application/json": {
+                "message": "Role Annotator berhasil ditambahkan untuk user dodit di project Proyek Anotasi 1",
+                "user_id": "550e8400-e29b-41d4-a716-446655440000",
+                "username": "dodit",
+                "project_id": "650e8400-e29b-41d4-a716-446655440000",
+                "project_name": "Proyek Anotasi 1",
+                "role": "Annotator",
+                "action": "add"
+              }
+            }
+          },
+          "400": {
+            "description": "Data input tidak valid",
+            "examples": {
+              "application/json": {
+                "user_id": [
+                  "Pengguna tidak ditemukan."
+                ],
+                "role": [
+                  "Role harus salah satu dari: Admin, Annotator, Reviewer"
+                ]
+              }
+            }
+          },
+          "404": {
+            "description": "Project tidak ditemukan",
+            "examples": {
+              "application/json": {
+                "error": "Project tidak ditemukan"
+              }
+            }
+          },
+          "403": {
+            "description": "Hanya Admin project atau Kepala Riset yang dapat mengakses"
+          }
+        },
+        "tags": [
+          "🔧 Role Management"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "project_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ]
+    },
+    "/users/projects/{project_id}/users/": {
+      "get": {
+        "operationId": "users_projects_users_list",
+        "summary": "List Users in Project",
+        "description": "\nMendapatkan daftar users yang terkait dengan project tertentu.\n\n**Permission:**\n- Kepala Riset: dapat melihat semua users\n- Admin: hanya dapat melihat users yang terkait dengan project mereka\n\n**Project Context:**\n- Endpoint ini harus diakses dengan project_id di URL\n- Hanya menampilkan users yang memiliki role di project tersebut\n\n**Use Case:**\n- Melihat daftar anggota tim dalam project\n- Monitoring users yang terdaftar di project\n- Admin management untuk project tertentu\n",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "A page number within the paginated result set.",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "Number of results to return per page.",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "description": "UUID project",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar users berhasil ditemukan",
+            "examples": {
+              "application/json": {
+                "count": 10,
+                "next": "http://localhost:8000/api/v1/projects/{project_id}/users/?page=2",
+                "previous": null,
+                "results": [
+                  {
+                    "id": "550e8400-e29b-41d4-a716-446655440000",
+                    "username": "admin1",
+                    "email": "admin1@example.com",
+                    "full_name": "Admin Pertama",
+                    "roles": [
+                      "Admin"
+                    ],
+                    "is_kepala_riset": false,
+                    "date_joined": "2024-01-01T00:00:00Z",
+                    "is_deleted": false,
+                    "deleted_at": null,
+                    "institusi": "Universitas Indonesia"
+                  }
+                ]
+              }
+            }
+          },
+          "403": {
+            "description": "Hanya Admin project atau Kepala Riset yang dapat mengakses"
+          },
+          "404": {
+            "description": "Project tidak ditemukan"
+          }
+        },
+        "tags": [
+          "👥 User Management"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "project_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ]
+    },
+    "/users/projects/{project_id}/users/create/": {
+      "post": {
+        "operationId": "users_projects_users_create_create",
+        "summary": "Registrasi User Baru",
+        "description": "\nMembuat user baru dengan password yang di-generate secara otomatis.\n\n**Workflow:**\n- User dibuat tanpa terikat ke project tertentu\n- Hanya Admin atau Kepala Riset yang dapat membuat user\n- Setelah dibuat, user dapat di-assign ke project dengan role tertentu menggunakan endpoint role management\n\n**Auto-Generated Features:**\n- Password dibuat secara random dengan kombinasi huruf, angka, dan simbol (12 karakter)\n- Tidak perlu input password saat membuat user\n\n**Email Features:**\n- Secara otomatis mengirim email kredensial ke pengguna baru\n- Dapat dimatikan dengan mengatur send_email=false\n- Dapat menyertakan login_url dalam email\n\nCatatan: Sistem kini menggunakan OTP email untuk proses reset password. Tidak ada lagi backup key.\n\n**Input yang Diperlukan:**\n- username: Username unik untuk login\n- email: Email address pengguna\n- full_name: Nama lengkap pengguna\n- institusi: Institusi/lembaga asal pengguna (optional)\n- send_email: Kirim email kredensial (default: true)\n- login_url: URL login untuk disertakan dalam email (optional)\n\n**Output:**\n- Password sementara dikembalikan dalam response\n- Status pengiriman email akan disertakan dalam response\n\n**Next Steps:**\n- Gunakan endpoint role management untuk assign user ke project dengan role tertentu:\n  POST /api/v1/users/projects/\u003Cproject_id\u003E/role-management/\n  Payload: {\"user_id\": \"\u003Cuser_id\u003E\", \"role\": \"\u003Crole\u003E\"}\n",
+        "parameters": [
+          {
+            "name": "data",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "required": [
+                "username",
+                "email",
+                "full_name"
+              ],
+              "type": "object",
+              "properties": {
+                "username": {
+                  "description": "Username unik untuk login",
+                  "type": "string"
+                },
+                "email": {
+                  "description": "Email address pengguna",
+                  "type": "string",
+                  "format": "email"
+                },
+                "full_name": {
+                  "description": "Nama lengkap pengguna",
+                  "type": "string"
+                },
+                "institusi": {
+                  "description": "Institusi/lembaga asal pengguna (optional)",
+                  "type": "string"
+                },
+                "send_email": {
+                  "description": "Kirim email kredensial ke pengguna (default: true)",
+                  "type": "boolean",
+                  "default": true
+                },
+                "login_url": {
+                  "description": "URL login untuk disertakan dalam email (optional)",
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Pengguna berhasil dibuat",
+            "examples": {
+              "application/json": {
+                "message": "Pengguna berhasil dibuat. Gunakan endpoint role management untuk assign ke project.",
+                "data": {
+                  "id": "550e8400-e29b-41d4-a716-446655440000",
+                  "username": "dodit",
+                  "email": "dodit@example.com",
+                  "full_name": "Dodit Sukma Maulana",
+                  "institusi": "Universitas Gadjah Mada",
+                  "password": "aB3dF7kL9m2q",
+                  "email_status": "sent",
+                  "email_message": "Email kredensial berhasil dikirim"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Data input tidak valid",
+            "examples": {
+              "application/json": {
+                "full_name": [
+                  "Nama lengkap harus diisi."
+                ],
+                "username": [
+                  "Username sudah digunakan"
+                ],
+                "email": [
+                  "Email sudah terdaftar"
+                ]
+              }
+            }
+          },
+          "403": {
+            "description": "Hanya Admin atau Kepala Riset yang dapat mengakses"
+          }
+        },
+        "tags": [
+          "👥 User Management"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "project_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ]
+    },
+    "/users/projects/{project_id}/users/{user_id}/assigned-documents/": {
+      "get": {
+        "operationId": "users_projects_users_assigned-documents_list",
+        "summary": "Get User's Assigned Documents in Project",
+        "description": "\nMendapatkan daftar semua dokumen yang di-assign kepada user tertentu dalam project tertentu.\n\n**Permission:**\n- Admin (dalam project yang ditentukan) atau Kepala Riset\n\n**Features:**\n- Pagination dengan default 20 items per page\n- Diurutkan berdasarkan created_at (terbaru di atas)\n- Error handling jika user atau project tidak ditemukan\n- Hanya menampilkan dokumen dalam project yang spesifik\n\n**Use Case:**\n- Monitoring assignment oleh admin project\n- Dashboard management untuk melihat workload user dalam project\n- Audit trail untuk document assignment dalam project\n",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "A page number within the paginated result set.",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "Number of results to return per page.",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "description": "ID project",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "user_id",
+            "in": "path",
+            "description": "UUID user yang ingin dilihat assigned documents-nya",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar assigned documents berhasil ditemukan",
+            "examples": {
+              "application/json": {
+                "count": 5,
+                "next": "http://localhost:8000/api/v1/projects/1/users/uuid-123/assigned-documents/?page=2",
+                "previous": null,
+                "results": [
+                  {
+                    "id": 1,
+                    "title": "Dokumen Anotasi 1",
+                    "text": "Ini adalah teks dokumen untuk diannotasi...",
+                    "created_at": "2024-01-01T10:00:00Z",
+                    "updated_at": "2024-01-01T10:00:00Z",
+                    "project": 1,
+                    "assigned_to": [
+                      "uuid-user1",
+                      "uuid-user2"
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          "404": {
+            "description": "User atau project tidak ditemukan",
+            "examples": {
+              "application/json": {
+                "error": "User atau project tidak ditemukan"
+              }
+            }
+          },
+          "403": {
+            "description": "Hanya Admin project atau Kepala Riset yang dapat mengakses"
+          }
+        },
+        "tags": [
+          "📋 User Documents"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "project_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        },
+        {
+          "name": "user_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ]
+    },
+    "/users/projects/{project_id}/users/{user_id}/remove/": {
+      "delete": {
+        "operationId": "users_projects_users_remove_delete",
+        "summary": "Remove User from Project",
+        "description": "\nMenghapus user dari project tertentu. Jika user tidak memiliki project lain, akan di-soft delete.\n\n**Aturan:**\n- Admin hanya dapat menghapus user dari project yang mereka kelola\n- Kepala Riset dapat menghapus user dari project manapun\n- Jika user tidak memiliki project lain setelah dihapus, akan di-soft delete otomatis\n\n**Soft Delete Features:**\n- User tidak benar-benar dihapus dari database\n- User hanya ditandai sebagai deleted dan di-deactivate\n- Data annotations dan aktivitas user tetap tersimpan\n",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "User berhasil dihapus dari project",
+            "examples": {
+              "application/json": {
+                "message": "User john_doe berhasil dihapus dari project Thesis Project",
+                "soft_deleted": false
+              }
+            }
+          },
+          "403": {
+            "description": "Tidak memiliki akses untuk mengelola user di project ini"
+          },
+          "404": {
+            "description": "User atau project tidak ditemukan"
+          }
+        },
+        "tags": [
+          "👥 User Management"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "project_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        },
+        {
+          "name": "user_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ]
+    },
+    "/users/projects/{project_id}/users/{user_id}/reset-password/": {
+      "post": {
+        "operationId": "users_projects_users_reset-password_create",
+        "summary": "Project Admin Reset User Password",
+        "description": "\nAdmin dapat reset password user dalam project yang mereka kelola.\n\n**Aturan:**\n- Admin hanya dapat reset password user di project yang mereka kelola\n- Kepala Riset dapat reset password user di project manapun\n- Generate password baru secara otomatis dan kirim email notifikasi\n\n**Use Case:**\n- User lupa password dan membutuhkan bantuan admin (disarankan gunakan alur OTP terlebih dahulu)\n- Admin maintenance untuk reset password user\n- Recovery akses untuk user yang bermasalah\n\nCatatan: Sistem kini menggunakan OTP untuk reset password mandiri oleh user. Endpoint ini untuk tindakan administratif.\n",
+        "parameters": [
+          {
+            "name": "data",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "required": [
+                "user_id"
+              ],
+              "type": "object",
+              "properties": {
+                "user_id": {
+                  "description": "ID user yang akan direset passwordnya",
+                  "type": "string"
+                },
+                "send_email": {
+                  "description": "Kirim email password baru ke pengguna (default: true)",
+                  "type": "boolean",
+                  "default": true
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Password berhasil direset",
+            "examples": {
+              "application/json": {
+                "message": "Password berhasil direset untuk pengguna testuser_bodhi",
+                "user_id": "1e80d41d-0002-4d52-bf6c-72e32b80bf76",
+                "username": "testuser_bodhi",
+                "new_password": "aB3dF7kL9m2q",
+                "email_status": "sent"
+              }
+            }
+          },
+          "403": {
+            "description": "Tidak memiliki akses untuk mengelola user di project ini"
+          },
+          "404": {
+            "description": "User atau project tidak ditemukan"
+          },
+          "400": {
+            "description": "Data input tidak valid"
+          }
+        },
+        "tags": [
+          "🔐 Authentication"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "project_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        },
+        {
+          "name": "user_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ]
+    },
+    "/users/projects/{project_id}/users/{user_id}/update/": {
       "put": {
-        "operationId": "users_update_update",
+        "operationId": "users_projects_users_update_update",
         "summary": "Update User",
         "description": "\nUpdate user data. Field yang dapat diubah: `username`, `email`, dan `full_name`.\n\n**Admin Access:**\n- Hanya admin yang dapat mengakses endpoint ini\n- Admin dapat mengubah semua field yang tersedia\n",
         "parameters": [
@@ -3434,7 +3659,7 @@
         ]
       },
       "patch": {
-        "operationId": "users_update_partial_update",
+        "operationId": "users_projects_users_update_partial_update",
         "summary": "Partial Update User",
         "description": "Partial update user data. Field yang dapat diubah: `username`, `email`, dan `full_name`.",
         "parameters": [
@@ -3464,81 +3689,44 @@
       },
       "parameters": [
         {
-          "name": "id",
+          "name": "project_id",
           "in": "path",
-          "description": "A UUID string identifying this user.",
           "required": true,
-          "type": "string",
-          "format": "uuid"
+          "type": "string"
+        },
+        {
+          "name": "user_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
         }
       ]
     },
-    "/users/{user_id}/assigned-documents/": {
-      "get": {
-        "operationId": "users_assigned-documents_list",
-        "summary": "Get User's Assigned Documents",
-        "description": "\nMendapatkan daftar semua dokumen yang di-assign kepada user tertentu.\n\n**Permission:**\n- Hanya Admin atau Kepala Riset yang dapat mengakses\n- Admin hanya dapat melihat user dengan role Annotator/Reviewer\n- Kepala Riset dapat melihat semua user\n\n**Features:**\n- Pagination dengan default 20 items per page\n- Diurutkan berdasarkan created_at (terbaru di atas)\n- Error handling jika user tidak ditemukan\n\n**Use Case:**\n- Monitoring assignment oleh admin\n- Dashboard management untuk melihat workload user\n- Audit trail untuk document assignment\n",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "description": "A page number within the paginated result set.",
-            "required": false,
-            "type": "integer"
-          },
-          {
-            "name": "page_size",
-            "in": "query",
-            "description": "Number of results to return per page.",
-            "required": false,
-            "type": "integer"
-          },
-          {
-            "name": "user_id",
-            "in": "path",
-            "description": "UUID user yang ingin dilihat assigned documents-nya",
-            "required": true,
-            "type": "string"
-          }
-        ],
+    "/users/{user_id}/delete/": {
+      "delete": {
+        "operationId": "users_delete_delete",
+        "summary": "Global Delete User (Kepala Riset Only)",
+        "description": "\nMenghapus user secara global dari semua project dan system. Hanya Kepala Riset yang dapat melakukan ini.\n\n**Aturan:**\n- Hanya Kepala Riset yang dapat menggunakan endpoint ini\n- User akan dihapus dari semua project\n- User akan di-soft delete dari system\n\n**Use Case:**\n- User meninggalkan organisasi\n- User bermasalah dan harus dihapus dari system\n- Maintenance dan cleanup user tidak aktif\n",
+        "parameters": [],
         "responses": {
           "200": {
-            "description": "Daftar assigned documents berhasil ditemukan",
+            "description": "User berhasil dihapus secara global",
             "examples": {
               "application/json": {
-                "count": 5,
-                "next": "http://localhost:8000/api/v1/users/uuid-123/assigned-documents/?page=2",
-                "previous": null,
-                "results": [
-                  {
-                    "id": 1,
-                    "title": "Dokumen Anotasi 1",
-                    "text": "Ini adalah teks dokumen untuk diannotasi...",
-                    "created_at": "2024-01-01T10:00:00Z",
-                    "updated_at": "2024-01-01T10:00:00Z",
-                    "assigned_to": [
-                      "uuid-user1",
-                      "uuid-user2"
-                    ]
-                  }
-                ]
-              }
-            }
-          },
-          "404": {
-            "description": "User tidak ditemukan",
-            "examples": {
-              "application/json": {
-                "error": "User tidak ditemukan"
+                "message": "User john_doe berhasil dihapus dari 3 project dan di-soft delete",
+                "removed_from_projects": 3
               }
             }
           },
           "403": {
-            "description": "Hanya Admin atau Kepala Riset yang dapat mengakses"
+            "description": "Hanya Kepala Riset yang dapat melakukan operasi ini"
+          },
+          "404": {
+            "description": "User tidak ditemukan"
           }
         },
         "tags": [
-          "📋 User Documents"
+          "👥 User Management"
         ]
       },
       "parameters": [
@@ -3550,37 +3738,51 @@
         }
       ]
     },
-    "/users/{user_id}/roles/": {
+    "/users/{user_id}/projects/{project_id}/roles/": {
       "get": {
-        "operationId": "users_roles_list",
-        "summary": "Get User Roles",
-        "description": "Mendapatkan daftar roles yang dimiliki user tertentu",
+        "operationId": "users_projects_roles_list",
+        "summary": "Get User Roles in Specific Project",
+        "description": "\nMendapatkan daftar roles yang dimiliki user tertentu dalam project tertentu.\n\n**Use Case:**\n- Melihat role user dalam project tertentu\n- Validasi permission user dalam project\n- Display user role badge dalam project\n",
         "parameters": [
           {
             "name": "user_id",
             "in": "path",
-            "description": "ID user yang ingin dilihat roles-nya",
+            "description": "UUID user",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "format": "uuid"
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "description": "UUID project",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
           }
         ],
         "responses": {
           "200": {
-            "description": "Roles user berhasil ditemukan",
+            "description": "Roles user dalam project berhasil ditemukan",
             "examples": {
               "application/json": {
                 "user_id": "550e8400-e29b-41d4-a716-446655440000",
-                "username": "dodit",
-                "full_name": "Dodit Sukma Maulana",
+                "project_id": "650e8400-e29b-41d4-a716-446655440000",
+                "project_name": "Proyek Anotasi 1",
                 "roles": [
-                  "Reviewers",
-                  "Annotators"
+                  "Annotator",
+                  "Reviewer"
                 ]
               }
             }
           },
           "404": {
-            "description": "Pengguna tidak ditemukan"
+            "description": "User atau project tidak ditemukan",
+            "examples": {
+              "application/json": {
+                "error": "User tidak ditemukan"
+              }
+            }
           }
         },
         "tags": [
@@ -3590,6 +3792,12 @@
       "parameters": [
         {
           "name": "user_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        },
+        {
+          "name": "project_id",
           "in": "path",
           "required": true,
           "type": "string"
@@ -3792,34 +4000,6 @@
             "format": "uuid"
           },
           "uniqueItems": true
-        }
-      }
-    },
-    "UserRoleManagement": {
-      "required": [
-        "user_id",
-        "role",
-        "action"
-      ],
-      "type": "object",
-      "properties": {
-        "user_id": {
-          "title": "User id",
-          "type": "string",
-          "format": "uuid"
-        },
-        "role": {
-          "title": "Role",
-          "type": "string",
-          "minLength": 1
-        },
-        "action": {
-          "title": "Action",
-          "type": "string",
-          "enum": [
-            "add",
-            "remove"
-          ]
         }
       }
     },

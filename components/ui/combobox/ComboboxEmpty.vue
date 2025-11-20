@@ -17,7 +17,7 @@ const delegatedProps = reactiveOmit(props, "class");
     data-slot="combobox-empty"
     v-bind="delegatedProps"
     :class="
-      cn('px-3 py-6 text-center text-sm text-muted-foreground', props.class)
+      cn('px-3 pt-6 pb-4 text-center text-sm text-muted-foreground bg-white/60 backdrop-blur-sm', props.class)
     "
   >
     <slot />

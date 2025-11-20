@@ -21,7 +21,7 @@ import 'vue-sonner/style.css';
 </script>
 <template>
   <Toaster :toastOptions="{
-    class: 'py-2',
+    class: 'py-2 z-[200]',
   }" />
   <div>
     <NuxtLayout>

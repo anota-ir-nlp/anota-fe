@@ -411,6 +411,32 @@
             <div class="grid gap-4 py-4">
               <div class="grid gap-2">
                 <label class="text-sm font-medium text-left"
+                  >Deadline Assignment</label
+                >
+                <Popover>
+                  <PopoverTrigger as-child>
+                    <Button
+                      variant="outline"
+                      :class="[
+                        'w-full justify-start text-left font-normal',
+                        !assignmentDeadline && 'text-muted-foreground',
+                      ]"
+                    >
+                      <CalendarIcon class="mr-2 h-4 w-4" />
+                      {{ formattedDeadline }}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent class="w-auto p-0">
+                    <Calendar
+                      v-model="assignmentDeadline"
+                      :initial-focus="true"
+                      layout="month-and-year"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div class="grid gap-2">
+                <label class="text-sm font-medium text-left"
                   >User yang Ditugaskan</label
                 >
                 <Combobox
@@ -773,6 +799,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from "vue";
+import { DateFormatter } from '@internationalized/date';
 
 import { useAuth } from "~/data/auth";
 import { useDocumentsApi } from "~/data/documents";
@@ -827,6 +854,12 @@ import {
   ComboboxList,
 } from "@/components/ui/combobox";
 import { Progress } from "~/components/ui/progress";
+import { Calendar } from "~/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/components/ui/popover";
 
 import {
   Plus,
@@ -839,6 +872,7 @@ import {
   Trash,
   AlertTriangle,
   X,
+  CalendarIcon,
 } from "lucide-vue-next";
 
 import { toast } from "vue-sonner";
@@ -860,7 +894,7 @@ const {
   previewDocumentSentences,
 } = useDocumentsApi();
 const { getDocumentsInProject } = useProjectsApi();
-const { getAllUsers } = useUsersApi();
+const { getAllUsersInProject } = useUsersApi();
 const {
   assignDocument: apiAssignDocument,
   unassignDocument: apiUnassignDocument,
@@ -907,6 +941,27 @@ const assignedUserIds = ref<string[]>([]);
 const originalAssignedUsers = ref<string[]>([]);
 const openUsers = ref(false);
 const searchTerm = ref("");
+const assignmentDeadline = ref<Date>();
+
+const formattedDeadline = computed(() => {
+  if (!assignmentDeadline.value) return "Pilih tanggal deadline";
+  
+  try {
+    // If it's a CalendarDate object from @internationalized/date
+    if (assignmentDeadline.value && typeof assignmentDeadline.value === 'object' && 'toDate' in assignmentDeadline.value) {
+      const jsDate = (assignmentDeadline.value as any).toDate('Asia/Jakarta');
+      return jsDate.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+    // If it's already a JavaScript Date
+    if (assignmentDeadline.value instanceof Date) {
+      return assignmentDeadline.value.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+  } catch (e) {
+    console.error('Error formatting date:', e);
+  }
+  
+  return "Pilih tanggal deadline";
+});
 
 const isReopenDialogOpen = ref(false);
 const isReopening = ref(false);
@@ -1298,6 +1353,7 @@ async function bulkCreateAndAssignDocuments() {
 async function openAssignmentDialog() {
   assignedUserIds.value = [];
   searchTerm.value = "";
+  assignmentDeadline.value = undefined;
 
   try {
     const documentDetails = await Promise.all(
@@ -1330,6 +1386,7 @@ function closeAssignmentDialog() {
   assignedUserIds.value = [];
   originalAssignedUsers.value = [];
   searchTerm.value = "";
+  assignmentDeadline.value = undefined;
   isAssignmentDialogOpen.value = false;
 }
 
@@ -1405,10 +1462,32 @@ async function saveBulkAssignmentChanges() {
 
           for (const userId of usersToAssign) {
             try {
-              await apiAssignDocument({
+              const assignmentData: any = {
                 document_id: doc.id,
                 user_id: userId
-              });
+              };
+              
+              if (assignmentDeadline.value) {
+                let year, month, day;
+                
+                // Handle @internationalized/date CalendarDate format
+                if (typeof assignmentDeadline.value === 'object' && 'year' in assignmentDeadline.value) {
+                  year = (assignmentDeadline.value as any).year;
+                  month = String((assignmentDeadline.value as any).month).padStart(2, '0');
+                  day = String((assignmentDeadline.value as any).day).padStart(2, '0');
+                } else if (assignmentDeadline.value instanceof Date) {
+                  // Handle JavaScript Date format
+                  year = assignmentDeadline.value.getFullYear();
+                  month = String(assignmentDeadline.value.getMonth() + 1).padStart(2, '0');
+                  day = String(assignmentDeadline.value.getDate()).padStart(2, '0');
+                }
+                
+                if (year && month && day) {
+                  assignmentData.deadline = `${year}-${month}-${day}`;
+                }
+              }
+              
+              await apiAssignDocument(assignmentData);
               assignSuccessCount++;
             } catch (error) {
               failCount++;
@@ -1621,8 +1700,15 @@ async function fetchDocuments(page = 1) {
 
 async function fetchUsers() {
   try {
-    const response = await getAllUsers();
-    users.value = response || [];
+    // Admin users must have a selected project to fetch users
+    if (selectedProjectId.value) {
+      const response = await getAllUsersInProject(selectedProjectId.value);
+      users.value = response || [];
+    } else {
+      // No project selected - cannot fetch users
+      users.value = [];
+      toast.error("Pilih project terlebih dahulu untuk melihat pengguna");
+    }
   } catch (error) {
     console.error("Error fetching users:", error);
     toast.error("Gagal memuat daftar user");
@@ -1714,10 +1800,12 @@ watch(
   selectedProjectId,
   async () => {
     if (selectedProjectId.value) {
+      await fetchUsers(); // Refetch users with project-specific roles
       await fetchDocuments(1);
       currentPage.value = 1;
     } else {
       documents.value = [];
+      users.value = [];
       totalPages.value = 1;
       currentPage.value = 1;
     }

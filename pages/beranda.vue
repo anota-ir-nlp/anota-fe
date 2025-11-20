@@ -52,7 +52,7 @@
       </Card>
 
       <div
-        v-if="hasRole('Admin') || hasRole('Kepala Riset')"
+        v-if="!isKepalaRiset"
         class="mt-8 mb-8"
       >
         <!-- Project Assignment Header -->
@@ -62,144 +62,84 @@
           </div>
           <div>
             <h2 class="text-3xl font-bold text-gray-900">Project Assignment</h2>
-            <p class="text-gray-500 text-lg">
-              {{ hasRole('Admin') ? 'Your assigned project' : 'Manage your project context' }}
-            </p>
+            <p class="text-gray-500 text-lg">Your assigned project</p>
           </div>
         </div>
-        
-        <!-- Admin Project Display (Read-only) -->
+
+        <!-- Project Selection and Display -->
         <Card
-          v-if="hasRole('Admin') && selectedProject"
           variant="glassmorphism"
           class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none mb-4"
         >
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
-              <div class="p-3 rounded-lg bg-blue-500/10 border border-blue-200">
-                <Building2 class="w-6 h-6 text-blue-600" />
-              </div>
-              <div>
-                <h3 class="text-xl font-semibold text-gray-900">{{ selectedProject.name }}</h3>
-                <p class="text-gray-600">{{ selectedProject.description || 'No description available' }}</p>
-                <p class="text-sm text-gray-500 mt-1">
-                  Created: {{ formatDate(selectedProject.created_at) }}
-                </p>
-              </div>
-            </div>
-            <div class="text-right">
-              <span class="inline-block px-4 py-2 rounded-lg bg-green-100 text-green-700 text-sm font-semibold">
-                Active
-              </span>
-              <p class="text-xs text-gray-500 mt-1">
-                {{ selectedProject.assigned_admins?.length || 0 }} admin(s)
-              </p>
-            </div>
-          </div>
-        </Card>
-
-        <!-- Kepala Riset Project Selection -->
-        <Card
-          v-if="hasRole('Kepala Riset') && !hasRole('Admin') && userProjects.length > 0"
-          variant="glassmorphism"
-          class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none"
-        >
-          <div class="flex items-center justify-between mb-6">
-            <h3 class="text-xl font-bold flex items-center gap-3 text-gray-900">
-              <Building2 class="w-6 h-6 text-yellow-500" />
-              Pemilihan Project
-            </h3>
+          <div v-if="isLoadingProjects" class="flex items-center justify-center py-8">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
           </div>
 
-          <div class="space-y-4">
+          <div v-else-if="userProjects.length === 0" class="text-center py-8">
+            <Building2 class="w-12 h-12 text-gray-400 mx-auto mb-3" />
+            <p class="text-gray-500">You are not assigned to any project yet.</p>
+          </div>
+
+          <div v-else class="space-y-4">
+            <!-- Project Selector -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
-                Pilih Project untuk Analisis
+                Select Your Working Project
               </label>
-              <div class="flex items-center gap-4">
-                <div class="flex-1">
-                  <Select
-                    :model-value="selectedProject?.id?.toString() || 'all'"
-                    @update:model-value="handleProjectChange"
+              <Select v-model="selectedProjectIdLocal" @update:model-value="onProjectChange">
+                <SelectTrigger class="w-full">
+                  <SelectValue placeholder="Choose a project..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem
+                    v-for="project in userProjects"
+                    :key="project.id"
+                    :value="project.id.toString()"
                   >
-                    <SelectTrigger class="w-full bg-white border-gray-200 text-gray-900">
-                      <SelectValue placeholder="Pilih Project" />
-                    </SelectTrigger>
-                    <SelectContent class="bg-white border-gray-200">
-                      <SelectItem
-                        value="all"
-                        class="flex items-center space-x-2 px-3 py-3 text-slate-700 hover:text-blue-600 hover:bg-blue-100/50 transition-all duration-200 relative font-medium"
-                      >
-                        <div class="flex items-center gap-2">
-                          <Building2 class="w-4 h-4" />
-                          Semua Project
-                        </div>
-                      </SelectItem>
-                      <SelectItem
-                        v-for="project in userProjects"
-                        :key="project.id"
-                        :value="project.id.toString()"
-                        class="flex items-center space-x-2 px-3 py-3 text-slate-700 hover:text-blue-600 hover:bg-blue-100/50 transition-all duration-200 relative font-medium"
-                      >
-                        <div class="flex items-center gap-2">
-                          <Building2 class="w-4 h-4" />
-                          {{ project.name }}
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Button
-                  variant="outline"
-                  @click="navigateTo('/kepala-riset/kelola-project')"
-                  class="flex items-center gap-2"
-                >
-                  <Building2 class="w-4 h-4" />
-                  Kelola Project
-                </Button>
-              </div>
+                    {{ project.name }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            <!-- Current Selection Display -->
-            <div v-if="selectedProject" class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <div class="flex items-center gap-3">
-                <Building2 class="w-5 h-5 text-blue-600" />
-                <div>
-                  <p class="text-sm font-medium text-blue-800">
-                    Currently viewing: {{ selectedProject.name }}
-                  </p>
-                  <p class="text-xs text-blue-600 mt-1">
-                    Dashboard analytics are filtered for this project
-                  </p>
+            <!-- Selected Project Details -->
+            <div v-if="currentSelectedProject" class="mt-6 p-4 bg-blue-50/50 rounded-lg border border-blue-200">
+              <div class="flex items-start gap-4">
+                <div class="p-2 rounded-lg bg-blue-500/10 border border-blue-200">
+                  <Building2 class="w-5 h-5 text-blue-600" />
                 </div>
-              </div>
-            </div>
-            <div v-else class="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-              <div class="flex items-center gap-3">
-                <Building2 class="w-5 h-5 text-gray-600" />
-                <div>
-                  <p class="text-sm font-medium text-gray-700">
-                    Currently viewing: All Projects
-                  </p>
-                  <p class="text-xs text-gray-500 mt-1">
-                    Dashboard shows combined data from all projects
-                  </p>
-                </div>
-              </div>
-            </div>
+                <div class="flex-1">
+                  <h3 class="text-lg font-semibold text-gray-900">{{ currentSelectedProject.name }}</h3>
 
+                  <!-- Display user's roles in this project -->
+                  <div v-if="userRolesInProject.length > 0" class="mt-3">
+                    <p class="text-xs font-medium text-gray-700 mb-2">Your roles in this project:</p>
+                    <div class="flex flex-wrap gap-2">
+                      <Badge
+                        v-for="role in userRolesInProject"
+                        :key="role"
+                        variant="blue"
+                        class="text-xs"
+                      >
+                        {{ role }}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div v-else-if="isLoadingRoles" class="mt-3">
+                    <p class="text-xs text-gray-500">Loading roles...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </Card>
       </div>
     </section>
 
-    <!-- Role-specific Content -->
-    <section
+        <section
       class="w-full max-w-[95vw] mx-auto px-2 sm:px-4 pb-12 flex-col space-y-20"
     >
-      <!-- Admin Dashboard -->
       <div v-if="hasRole('Admin')" class="space-y-8">
-        <!-- Admin Role Header -->
         <div class="flex items-center gap-4 mb-8">
           <div class="p-3 rounded-lg bg-blue-500/10 border border-blue-200">
             <Users class="w-8 h-8 text-blue-500" />
@@ -210,7 +150,6 @@
           </div>
         </div>
 
-        <!-- Stats Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
           <Card
             v-if="pending"
@@ -248,139 +187,9 @@
             </p>
           </Card>
         </div>
-
-        <!-- Analytics Dashboard -->
-        <Card
-          variant="glassmorphism"
-          class="p-8 bg-white/90 border border-gray-200 w-full !shadow-none"
-        >
-          <div class="flex items-center justify-between mb-6">
-            <h3
-              class="text-2xl font-bold flex items-center gap-3 text-gray-900"
-            >
-              <BarChart3 class="w-7 h-7 text-purple-500" />
-              Analytics Dashboard
-            </h3>
-            <Button
-              variant="outline"
-              size="sm"
-              @click="navigateTo('/kepala-riset-admin/dashboard')"
-            >
-              Lihat Detail
-            </Button>
-          </div>
-
-          <!-- Charts and Analytics -->
-          <div
-            class="grid grid-cols-1 lg:grid-cols-2 gap-8"
-            v-if="dashboardAnalytics"
-          >
-            <!-- Annotations by Annotator -->
-            <div>
-              <h4 class="text-lg font-semibold text-gray-900 mb-4">
-                Distribusi Anotasi per Anotator
-              </h4>
-              <div
-                v-if="dashboardAnalytics.per_annotator?.length"
-                class="space-y-3"
-              >
-                <div
-                  v-for="item in dashboardAnalytics.per_annotator.slice(
-                    0,
-                    5
-                  )"
-                  :key="item.annotator__id"
-                  class="flex items-center justify-between"
-                >
-                  <span class="text-sm text-gray-600">{{
-                    item.annotator__username
-                  }}</span>
-                  <div class="flex items-center gap-2">
-                    <div class="w-24 bg-gray-200 rounded-full h-2">
-                      <div
-                        class="bg-blue-600 h-2 rounded-full"
-                        :style="{ width: `${(item.num_annotations / Math.max(...dashboardAnalytics.per_annotator.map((i: any) => i.num_annotations))) * 100}%` }"
-                      ></div>
-                    </div>
-                    <span class="text-sm font-medium text-gray-900 w-8">{{
-                      item.num_annotations
-                    }}</span>
-                  </div>
-                </div>
-              </div>
-              <div v-else class="text-gray-500 text-center py-8">
-                Tidak ada data anotasi
-              </div>
-            </div>
-
-            <!-- Reviews by Reviewer -->
-            <div>
-              <h4 class="text-lg font-semibold text-gray-900 mb-4">
-                Distribusi Review per Reviewer
-              </h4>
-              <div
-                v-if="dashboardAnalytics.per_reviewer?.length"
-                class="space-y-3"
-              >
-                <div
-                  v-for="item in dashboardAnalytics.per_reviewer.slice(
-                    0,
-                    5
-                  )"
-                  :key="item.reviewer__id"
-                  class="flex items-center justify-between"
-                >
-                  <span class="text-sm text-gray-600">{{
-                    item.reviewer__username
-                  }}</span>
-                  <div class="flex items-center gap-2">
-                    <div class="w-24 bg-gray-200 rounded-full h-2">
-                      <div
-                        class="bg-purple-600 h-2 rounded-full"
-                        :style="{ width: `${(item.num_reviews / Math.max(...dashboardAnalytics.per_reviewer.map((i: any) => i.num_reviews))) * 100}%` }"
-                      ></div>
-                    </div>
-                    <span class="text-sm font-medium text-gray-900 w-8">{{
-                      item.num_reviews
-                    }}</span>
-                  </div>
-                </div>
-              </div>
-              <div v-else class="text-gray-500 text-center py-8">
-                Tidak ada data review
-              </div>
-            </div>
-          </div>
-
-          <!-- Document Status Overview -->
-          <div class="mt-8 pt-6 border-t border-gray-200">
-            <h4 class="text-lg font-semibold text-gray-900 mb-4">
-              Status Dokumen
-            </h4>
-            <div
-              class="grid grid-cols-1 md:grid-cols-2 gap-4"
-              v-if="dashboardAnalytics"
-            >
-              <div class="text-center p-4 bg-blue-50 rounded-lg">
-                <div class="text-2xl font-bold text-blue-600">
-                  {{ dashboardAnalytics.per_document?.length || 0 }}
-                </div>
-                <div class="text-sm text-blue-600">Dokumen Beranotasi</div>
-              </div>
-              <div class="text-center p-4 bg-green-50 rounded-lg">
-                <div class="text-2xl font-bold text-green-600">
-                  {{ ((dashboardAnalytics.inter_annotator_agreement?.cohen_kappa_avg || 0) * 100).toFixed(1) }}%
-                </div>
-                <div class="text-sm text-green-600">Inter-Annotator Agreement</div>
-              </div>
-            </div>
-          </div>
-        </Card>
       </div>
 
-      <!-- Annotator Dashboard -->
       <div v-if="hasRole('Annotator')" class="space-y-8">
-        <!-- Annotator Role Header -->
         <div class="flex items-center gap-4 mb-8">
           <div class="p-3 rounded-lg bg-green-500/10 border border-green-200">
             <Pencil class="w-8 h-8 text-green-500" />
@@ -391,7 +200,6 @@
           </div>
         </div>
 
-        <!-- Progress Overview -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card
             variant="glassmorphism"
@@ -448,7 +256,6 @@
           </Card>
         </div>
 
-        <!-- Recent Assignments -->
         <Card
           variant="glassmorphism"
           class="p-8 bg-white/90 border border-gray-200 w-full !shadow-none"
@@ -511,9 +318,7 @@
         </Card>
       </div>
 
-      <!-- Reviewer Dashboard -->
       <div v-if="hasRole('Reviewer')" class="space-y-8">
-        <!-- Reviewer Role Header -->
         <div class="flex items-center gap-4 mb-8">
           <div class="p-3 rounded-lg bg-purple-500/10 border border-purple-200">
             <Eye class="w-8 h-8 text-purple-500" />
@@ -524,7 +329,6 @@
           </div>
         </div>
 
-        <!-- Progress Overview (same as annotator, but for reviewer) -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card
             variant="glassmorphism"
@@ -581,7 +385,6 @@
           </Card>
         </div>
 
-        <!-- Recent Assignments (same as annotator, but for reviewer) -->
         <Card
           variant="glassmorphism"
           class="p-8 bg-white/90 border border-gray-200 w-full !shadow-none"
@@ -644,9 +447,7 @@
         </Card>
       </div>
 
-      <!-- Kepala Riset Dashboard -->
       <div v-if="hasRole('Kepala Riset')" class="space-y-8">
-        <!-- Research Head Role Header -->
         <div class="flex items-center gap-4 mb-8">
           <div class="p-3 rounded-lg bg-yellow-500/10 border border-yellow-200">
             <BarChart3 class="w-8 h-8 text-yellow-500" />
@@ -661,7 +462,6 @@
           </div>
         </div>
 
-        <!-- Overview Stats -->
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
           <Card
             v-if="pending"
@@ -700,9 +500,7 @@
           </Card>
         </div>
 
-        <!-- Charts and Analytics -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <!-- Annotations by Annotator -->
           <Card
             variant="glassmorphism"
             class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none"
@@ -738,7 +536,6 @@
             </div>
           </Card>
 
-          <!-- Reviews by Reviewer -->
           <Card
             variant="glassmorphism"
             class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none"
@@ -775,7 +572,6 @@
           </Card>
         </div>
 
-        <!-- Document Status Overview -->
         <Card
           variant="glassmorphism"
           class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none"
@@ -802,12 +598,10 @@
           </div>
         </Card>
 
-        <!-- User Performance Section -->
         <div
           v-if="showPerformanceSection"
           class="grid grid-cols-1 lg:grid-cols-2 gap-8"
         >
-          <!-- Annotator Performance -->
           <Card
             variant="glassmorphism"
             class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none"
@@ -885,7 +679,6 @@
             </div>
           </Card>
 
-          <!-- Reviewer Performance -->
           <Card
             variant="glassmorphism"
             class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none"
@@ -985,7 +778,6 @@ import { useDashboardApi } from "~/data/dashboard";
 import { useUsersApi } from "~/data/users";
 
 import { useUserDocumentsApi } from "~/data/user-documents";
-import { useAssignmentsApi } from "~/data/document-assignments";
 import { useProjectsApi } from "~/data/projects";
 import { useProjectContext } from "~/composables/project-context";
 import type { DocumentStatus } from "~/types/api";
@@ -993,17 +785,24 @@ import type { DocumentStatus } from "~/types/api";
 const { user } = useAuth();
 const { getDashboardSummary, getAnnotatorPerformance, getReviewerPerformance } =
   useDashboardApi();
-const { getUsers, getAllUsers } = useUsersApi();
+const { getAvailableUsersInProject, getMyProjects, getUserRolesInProject } = useUsersApi();
 const { getAssignedDocuments } = useUserDocumentsApi();
 const { getProjects } = useProjectsApi();
-const {
-  selectedProject,
-  setSelectedProject,
-  clearSelectedProject,
-  selectedProjectId,
-} = useProjectContext();
+
+// For project context (used by all users except Kepala Riset)
+const { selectedProject, setSelectedProject, clearSelectedProject } = useProjectContext();
 
 const pending = ref(false);
+
+const selectedProjectIdLocal = ref<string>("");
+const currentSelectedProject = computed(() => {
+  if (!selectedProjectIdLocal.value) return null;
+  return userProjects.value.find(p => p.id.toString() === selectedProjectIdLocal.value) || null;
+});
+const userRolesInProject = ref<string[]>([]);
+const isLoadingRoles = ref(false);
+
+const isKepalaRiset = computed(() => hasRole("Kepala Riset"));
 
 const dashboardAnalytics = ref<any>(null);
 
@@ -1047,6 +846,37 @@ const userData = computed(() => ({
 }));
 
 const hasRole = (role: string) => user.value?.roles?.includes(role) || false;
+
+// Handle project change
+const onProjectChange = async (projectId: string) => {
+  if (!projectId) {
+    clearSelectedProject();
+    userRolesInProject.value = [];
+    return;
+  }
+
+  const project = userProjects.value.find(p => p.id.toString() === projectId);
+  if (project) {
+    setSelectedProject(project);
+    await loadUserRolesInProject(projectId);
+  }
+};
+
+// Load user's roles in the selected project
+const loadUserRolesInProject = async (projectId: string) => {
+  if (!user.value?.id) return;
+
+  isLoadingRoles.value = true;
+  try {
+    const response = await getUserRolesInProject(user.value.id, parseInt(projectId));
+    userRolesInProject.value = response.roles || [];
+  } catch (error) {
+    console.error("Error loading user roles in project:", error);
+    userRolesInProject.value = [];
+  } finally {
+    isLoadingRoles.value = false;
+  }
+};
 
 const adminStats = ref([
   {
@@ -1134,14 +964,6 @@ interface Task {
 
 const recentTasks = ref<Task[]>([]);
 
-const reviewQueue = ref<
-  Array<{
-    id: string;
-    title: string;
-    annotator: string;
-    priority: string;
-  }>
->([]);
 
 const recentReviewedDocs = ref<any[]>([]);
 
@@ -1159,14 +981,6 @@ const annotators = ref<any[]>([]);
 const reviewers = ref<any[]>([]);
 const annotatorPerformance = ref<any>(null);
 const reviewerPerformance = ref<any>(null);
-
-// Reviewer stats summary
-const reviewerStatsSummary = computed(() => ({
-  reviewed: reviewerStats.value?.completedReviews ?? 0,
-  todayReviewed: reviewerStats.value?.todayReviewed ?? 0,
-  accuracy: reviewerStats.value?.accuracy ?? 0,
-  total: reviewerStats.value?.pendingReviews ?? 0,
-}));
 
 // Helper functions
 const getTaskStatusColor = (status: DocumentStatus | string) => {
@@ -1231,66 +1045,61 @@ onMounted(async () => {
   }
 });
 
-// Watch for project context changes
-watch(selectedProjectId, async () => {
-  if (hasRole("Kepala Riset")) {
-    await fetchDashboardData();
-  }
-});
-
 const fetchDashboardData = async () => {
   try {
-    // Get dashboard summary data for all roles with project context
-    const params: any = {};
-    if (selectedProjectId.value) {
-      params.project_id = selectedProjectId.value;
+    // Admin: Use project-specific data only, no dashboard API
+    if (hasRole("Admin")) {
+      try {
+        const assignedDocs = await getAssignedDocuments();
+        adminStats.value = [
+          {
+            label: "Dokumen Ditugaskan",
+            value: assignedDocs.count || 0,
+            icon: "document-text",
+            color: "text-blue-400",
+            description: "Dokumen dalam project Anda",
+          },
+          {
+            label: "Dokumen Upload",
+            value: assignedDocs.results?.length || 0,
+            icon: "document-text",
+            color: "text-green-400",
+            description: "Dokumen yang telah diupload",
+          },
+          {
+            label: "Tugas Aktif",
+            value: assignedDocs.results?.filter((doc: any) =>
+              doc.status === "sedang_dianotasi" || doc.status === "sedang_direview"
+            ).length || 0,
+            icon: "clipboard-document-list",
+            color: "text-orange-400",
+            description: "Tugas sedang dikerjakan",
+          },
+          {
+            label: "Total Selesai",
+            value: assignedDocs.results?.filter((doc: any) =>
+              doc.status === "sudah_direview"
+            ).length || 0,
+            icon: "check-circle",
+            color: "text-green-400",
+            description: "Dokumen yang telah selesai",
+          },
+        ];
+      } catch (error) {
+        console.error("Error fetching admin stats:", error);
+      }
+      return; // Exit early for Admin
     }
+
+    // For other roles (Kepala Riset, Annotator, Reviewer), fetch dashboard data
+    const params: any = {};
     const dashboardData = await getDashboardSummary(params);
 
-    // Store analytics data for admin dashboard
     dashboardAnalytics.value = dashboardData;
 
-    if (hasRole("Admin")) {
-      // Get user count for admin
-      const usersData = await getUsers();
-
-      adminStats.value = [
-        {
-          label: "Total Pengguna",
-          value: usersData.count || 0,
-          icon: "users",
-          color: "text-blue-400",
-          description: "Pengguna aktif sistem",
-        },
-        {
-          label: "Dokumen Upload",
-          value: dashboardData.per_document?.length || 0,
-          icon: "document-text",
-          color: "text-green-400",
-          description: "Dokumen dalam sistem",
-        },
-        {
-          label: "Total Anotasi",
-          value: dashboardData.totals?.annotations || 0,
-          icon: "clipboard-document-list",
-          color: "text-orange-400",
-          description: "Anotasi yang telah dibuat",
-        },
-        {
-          label: "Total Review",
-          value: dashboardData.totals?.reviews || 0,
-          icon: "exclamation-triangle",
-          color: "text-red-400",
-          description: "Review yang telah dilakukan",
-        },
-      ];
-    }
-
     if (hasRole("Annotator") && user.value?.id) {
-      // Get annotator-specific performance data
       const assignedDocs = await getAssignedDocuments();
 
-      // Calculate stats based on document status
       const docResults = assignedDocs.results || [];
       const completedDocs = docResults.filter(
         (doc: any) =>
@@ -1307,7 +1116,6 @@ const fetchDashboardData = async () => {
         inProgressDocuments: inProgressDocs.length,
       };
 
-      // Map assigned documents to recent tasks format
       recentTasks.value =
         assignedDocs.results?.slice(0, 3).map((doc: any, index: number) => ({
           id: doc.id.toString(),
@@ -1349,7 +1157,6 @@ const fetchDashboardData = async () => {
     }
 
     if (hasRole("Kepala Riset")) {
-      // Get projects data for additional statistics
       let projectsCount = 0;
       try {
         const projectsData = await getProjects();
@@ -1397,10 +1204,20 @@ const fetchDashboardData = async () => {
   }
 };
 
-// Load users for performance tracking
 const loadUsersForPerformance = async () => {
   try {
-    const allUsers = await getAllUsers();
+    const allUsersMap = new Map<string, any>();
+
+    for (const project of userProjects.value) {
+      try {
+        const projectUsers = await getAvailableUsersInProject(project.id);
+        projectUsers.forEach((user: any) => allUsersMap.set(user.email, user));
+      } catch (error) {
+        console.error(`Error fetching users for project ${project.id}:`, error);
+      }
+    }
+
+    const allUsers = Array.from(allUsersMap.values());
 
     annotators.value = allUsers.filter((user: any) =>
       user.roles?.includes("Annotator")
@@ -1423,9 +1240,6 @@ const loadAnnotatorPerformance = async () => {
   loadingAnnotator.value = true;
   try {
     const params: any = { user_id: selectedAnnotator.value };
-    if (selectedProjectId.value) {
-      params.project_id = selectedProjectId.value;
-    }
 
     annotatorPerformance.value = await getAnnotatorPerformance(params);
   } catch (error) {
@@ -1435,16 +1249,12 @@ const loadAnnotatorPerformance = async () => {
   }
 };
 
-// Load reviewer performance
 const loadReviewerPerformance = async () => {
   if (!selectedReviewer.value) return;
 
   loadingReviewer.value = true;
   try {
     const params: any = { user_id: selectedReviewer.value };
-    if (selectedProjectId.value) {
-      params.project_id = selectedProjectId.value;
-    }
 
     reviewerPerformance.value = await getReviewerPerformance(params);
   } catch (error) {
@@ -1454,39 +1264,33 @@ const loadReviewerPerformance = async () => {
   }
 };
 
-// Fetch projects for admin and kepala riset
 async function fetchUserProjects() {
-  if (!hasRole("Admin") && !hasRole("Kepala Riset")) return;
   isLoadingProjects.value = true;
   try {
-    const response = await getProjects();
-    userProjects.value = response.results || [];
+    if (hasRole("Kepala Riset")) {
+      const response = await getProjects();
+      userProjects.value = response.results || [];
+    } else {
+      const response = await getMyProjects();
+      userProjects.value = response.projects || [];
+
+      if (userProjects.value.length > 0) {
+        if (selectedProject.value) {
+          selectedProjectIdLocal.value = selectedProject.value.id.toString();
+          await loadUserRolesInProject(selectedProject.value.id.toString());
+        } else {
+          const firstProject = userProjects.value[0];
+          selectedProjectIdLocal.value = firstProject.id.toString();
+          setSelectedProject(firstProject);
+          await loadUserRolesInProject(firstProject.id.toString());
+        }
+      }
+    }
   } catch (error) {
     console.error("Error fetching projects:", error);
   } finally {
     isLoadingProjects.value = false;
   }
-}
-
-// Handle project change
-function handleProjectChange(value: string) {
-  // Allow project changes for Kepala Riset users (but not Admin)
-  if (!hasRole('Kepala Riset') || hasRole('Admin')) {
-    return;
-  }
-
-  if (!value || value === "all") {
-    clearSelectedProject();
-  } else {
-    const project = userProjects.value.find(
-      (p: any) => p.id.toString() === value
-    );
-    if (project) {
-      setSelectedProject(project);
-    }
-  }
-  // Refresh dashboard data
-  fetchDashboardData();
 }
 
 onMounted(async () => {

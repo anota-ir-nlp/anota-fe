@@ -21,7 +21,7 @@ const delegatedProps = reactiveOmit(props, "class");
     v-bind="delegatedProps"
     :class="
       cn(
-        'overflow-hidden rounded-md border border-default bg-white/60 p-1 text-foreground backdrop-blur-sm',
+        'overflow-hidden rounded-md bg-white/60 p-1 text-foreground backdrop-blur-sm',
         props.class
       )
     "

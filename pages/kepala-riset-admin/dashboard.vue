@@ -6,38 +6,69 @@
         <p class="text-gray-600">
           Monitor performance metrics, inter-annotator agreement, dan statistik sistem
         </p>
-        <div v-if="selectedProject" class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <p class="text-sm text-blue-800">
-            <strong>Project terpilih:</strong> {{ selectedProject.name }}
-          </p>
-          <p class="text-xs text-blue-600 mt-1">
-            Data yang ditampilkan hanya untuk project ini
-          </p>
-        </div>
-        <div v-else class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-          <p class="text-sm text-gray-600">
-            Menampilkan data dari semua project
-          </p>
-        </div>
       </div>
 
       <!-- Filters -->
       <Card class="mb-8 p-6">
         <h2 class="text-lg font-semibold text-gray-900 mb-4">Filter Data</h2>
         <div class="space-y-6">
+          <!-- Project Selection (Kepala Riset Only) -->
+          <div v-if="isKepalaRiset">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              <Building2 class="w-4 h-4 inline mr-1" />
+              Pilih Project Context
+            </label>
+            <Select :model-value="localSelectedProject?.id?.toString() || ''" @update:model-value="handleProjectChange">
+              <SelectTrigger class="w-full">
+                <SelectValue placeholder="Pilih project" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem
+                  v-for="project in projects"
+                  :key="project.id"
+                  :value="project.id.toString()"
+                >
+                  {{ project.name }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            <p class="text-xs text-gray-500 mt-2">
+              Pilih project untuk memfilter data dashboard.
+            </p>
+          </div>
+
+          <!-- Project Indicator (Admin Only) -->
+          <div v-if="isAdmin && globalSelectedProject" class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p class="text-sm text-blue-800">
+              <Building2 class="w-4 h-4 inline mr-1" />
+              <strong>Project Context:</strong>
+              <span class="text-blue-600">{{ globalSelectedProject.name }}</span>
+            </p>
+            <p class="text-xs text-gray-500 mt-1">
+              Data dashboard menampilkan informasi dari project Anda.
+            </p>
+          </div>
+
+          <!-- Warning when Kepala Riset has no project selected -->
+          <div v-if="isKepalaRiset && !localSelectedProject" class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p class="text-sm text-yellow-800 font-medium">
+              ⚠️ Silakan pilih project terlebih dahulu untuk melihat data dashboard.
+            </p>
+          </div>
+
           <!-- Document Selection DataTable -->
-          <div>
+          <div v-if="(isKepalaRiset && localSelectedProject) || (isAdmin && globalSelectedProject)">
             <label class="block text-sm font-medium text-gray-700 mb-2">
               Pilih Dokumen untuk Analisis
             </label>
-            
+
             <!-- Selection Summary -->
             <div v-if="selectedDocumentDetails" class="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
               <p class="text-sm text-blue-800">
                 <strong>Dokumen dipilih:</strong>
                 <span class="text-blue-600">{{ selectedDocumentDetails.title }}</span>
               </p>
-              <button 
+              <button
                 @click="clearDocumentSelection"
                 class="text-xs text-blue-600 hover:text-blue-800 underline mt-1"
               >
@@ -49,19 +80,14 @@
                 Tidak ada dokumen dipilih - menampilkan data dari semua dokumen
               </p>
             </div>
-            
+
             <div class="border rounded-lg p-4 bg-white">
               <div v-if="loadingDocuments" class="flex justify-center items-center py-8">
                 <div class="text-gray-500">Memuat dokumen...</div>
               </div>
               <div v-else-if="documents.length === 0" class="text-center py-8">
                 <div class="text-gray-500">
-                  <template v-if="!isKepalaRiset && !selectedProjectId">
-                    Pilih project terlebih dahulu untuk melihat dokumen
-                  </template>
-                  <template v-else>
-                    Tidak ada dokumen tersedia
-                  </template>
+                  Tidak ada dokumen tersedia
                 </div>
               </div>
               <DataTable
@@ -75,7 +101,7 @@
             </p>
           </div>
         </div>
-        <div class="mt-4">
+        <div class="mt-4" v-if="(isKepalaRiset && localSelectedProject) || (isAdmin && globalSelectedProject)">
           <Button @click="loadDashboardData" :loading="loading">
             Refresh Data
           </Button>
@@ -83,7 +109,7 @@
       </Card>
 
       <!-- Summary Stats -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div v-if="(isKepalaRiset && localSelectedProject) || (isAdmin && globalSelectedProject)" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <Card class="p-6">
           <div class="flex items-center justify-between">
             <div>
@@ -145,23 +171,23 @@
       </div>
 
       <!-- Charts and Analytics -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <div v-if="(isKepalaRiset && localSelectedProject) || (isAdmin && globalSelectedProject)" class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         <!-- Annotations by Annotator -->
         <Card class="p-6">
           <h3 class="text-lg font-semibold text-gray-900 mb-4">
             Distribusi Anotasi per Anotator
           </h3>
           <div v-if="dashboardData?.per_annotator?.length" class="space-y-3">
-            <div 
-              v-for="item in dashboardData.per_annotator" 
+            <div
+              v-for="item in dashboardData.per_annotator"
               :key="item.annotator__id"
               class="flex items-center justify-between"
             >
               <span class="text-sm text-gray-600">{{ item.annotator__username }}</span>
               <div class="flex items-center gap-2">
                 <div class="w-24 bg-gray-200 rounded-full h-2">
-                  <div 
-                    class="bg-blue-600 h-2 rounded-full" 
+                  <div
+                    class="bg-blue-600 h-2 rounded-full"
                     :style="{ width: `${(item.num_annotations / Math.max(...dashboardData.per_annotator.map(i => i.num_annotations))) * 100}%` }"
                   ></div>
                 </div>
@@ -180,16 +206,16 @@
             Distribusi Review per Reviewer
           </h3>
           <div v-if="dashboardData?.per_reviewer?.length" class="space-y-3">
-            <div 
-              v-for="item in dashboardData.per_reviewer" 
+            <div
+              v-for="item in dashboardData.per_reviewer"
               :key="item.reviewer__id"
               class="flex items-center justify-between"
             >
               <span class="text-sm text-gray-600">{{ item.reviewer__username }}</span>
               <div class="flex items-center gap-2">
                 <div class="w-24 bg-gray-200 rounded-full h-2">
-                  <div 
-                    class="bg-purple-600 h-2 rounded-full" 
+                  <div
+                    class="bg-purple-600 h-2 rounded-full"
                     :style="{ width: `${(item.num_reviews / Math.max(...dashboardData.per_reviewer.map(i => i.num_reviews))) * 100}%` }"
                   ></div>
                 </div>
@@ -204,7 +230,7 @@
       </div>
 
       <!-- User Performance Section -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <div v-if="(isKepalaRiset && localSelectedProject) || (isAdmin && globalSelectedProject)" class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         <!-- Annotator Performance -->
         <Card class="p-6">
           <h3 class="text-lg font-semibold text-gray-900 mb-4">
@@ -220,9 +246,9 @@
                   <SelectValue placeholder="Pilih anotator..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem 
-                    v-for="user in annotators" 
-                    :key="user.id" 
+                  <SelectItem
+                    v-for="user in annotators"
+                    :key="user.id"
                     :value="user.id"
                   >
                     {{ user.full_name }}
@@ -230,8 +256,8 @@
                 </SelectContent>
               </Select>
             </div>
-            <Button 
-              @click="loadAnnotatorPerformance" 
+            <Button
+              @click="loadAnnotatorPerformance"
               :loading="loadingAnnotator"
               :disabled="!selectedAnnotator"
             >
@@ -249,8 +275,8 @@
               <div v-if="annotatorPerformance.per_document.length > 0" class="mt-4">
                 <h4 class="text-sm font-medium text-gray-700 mb-2">Per Dokumen:</h4>
                 <div class="space-y-2 max-h-32 overflow-y-auto">
-                  <div 
-                    v-for="doc in annotatorPerformance.per_document" 
+                  <div
+                    v-for="doc in annotatorPerformance.per_document"
                     :key="doc.document__id"
                     class="flex justify-between text-sm p-2 bg-gray-50 rounded"
                   >
@@ -278,9 +304,9 @@
                   <SelectValue placeholder="Pilih reviewer..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem 
-                    v-for="user in reviewers" 
-                    :key="user.id" 
+                  <SelectItem
+                    v-for="user in reviewers"
+                    :key="user.id"
                     :value="user.id"
                   >
                     {{ user.full_name }}
@@ -288,8 +314,8 @@
                 </SelectContent>
               </Select>
             </div>
-            <Button 
-              @click="loadReviewerPerformance" 
+            <Button
+              @click="loadReviewerPerformance"
               :loading="loadingReviewer"
               :disabled="!selectedReviewer"
             >
@@ -307,8 +333,8 @@
               <div v-if="reviewerPerformance.per_document.length > 0" class="mt-4">
                 <h4 class="text-sm font-medium text-gray-700 mb-2">Per Dokumen:</h4>
                 <div class="space-y-2 max-h-32 overflow-y-auto">
-                  <div 
-                    v-for="doc in reviewerPerformance.per_document" 
+                  <div
+                    v-for="doc in reviewerPerformance.per_document"
                     :key="doc.document_id"
                     class="flex justify-between text-sm p-2 bg-gray-50 rounded"
                   >
@@ -323,7 +349,7 @@
       </div>
 
       <!-- Inter-Annotator Agreement -->
-      <Card class="p-6">
+      <Card v-if="(isKepalaRiset && localSelectedProject) || (isAdmin && globalSelectedProject)" class="p-6">
         <h3 class="text-lg font-semibold text-gray-900 mb-4">
           Inter-Annotator Agreement (IAA)
         </h3>
@@ -337,9 +363,9 @@
                 <SelectValue placeholder="Pilih anotator..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem 
-                  v-for="user in annotators" 
-                  :key="user.id" 
+                <SelectItem
+                  v-for="user in annotators"
+                  :key="user.id"
                   :value="user.id"
                 >
                   {{ user.full_name }}
@@ -356,9 +382,9 @@
                 <SelectValue placeholder="Pilih reviewer..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem 
-                  v-for="user in reviewers" 
-                  :key="user.id" 
+                <SelectItem
+                  v-for="user in reviewers"
+                  :key="user.id"
                   :value="user.id"
                 >
                   {{ user.full_name }}
@@ -367,26 +393,26 @@
             </Select>
           </div>
         </div>
-        <Button 
-          @click="loadIAA" 
+        <Button
+          @click="loadIAA"
           :loading="loadingIAA"
           :disabled="!iaaAnnotator || !iaaReviewer"
         >
           Calculate IAA
         </Button>
-        
-        <div v-if="iaaData" class="mt-6 space-y-4">
+
+        <div v-if="iaaData && iaaData.participants && iaaData.results" class="mt-6 space-y-4">
           <!-- Participants Info -->
           <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <h4 class="font-medium text-blue-900 mb-2">Participants</h4>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
-                <p class="text-blue-700"><strong>Annotator:</strong> {{ iaaData.participants.annotator_name }}</p>
-                <p class="text-blue-600 text-xs">{{ iaaData.participants.annotator_id }}</p>
+                <p class="text-blue-700"><strong>Annotator:</strong> {{ iaaData.participants?.annotator_name || 'N/A' }}</p>
+                <p class="text-blue-600 text-xs">{{ iaaData.participants?.annotator_id || 'N/A' }}</p>
               </div>
               <div>
-                <p class="text-blue-700"><strong>Reviewer:</strong> {{ iaaData.participants.reviewer_name }}</p>
-                <p class="text-blue-600 text-xs">{{ iaaData.participants.reviewer_id }}</p>
+                <p class="text-blue-700"><strong>Reviewer:</strong> {{ iaaData.participants?.reviewer_name || 'N/A' }}</p>
+                <p class="text-blue-600 text-xs">{{ iaaData.participants?.reviewer_id || 'N/A' }}</p>
               </div>
             </div>
           </div>
@@ -396,25 +422,25 @@
             <div class="text-center p-4 bg-blue-50 rounded-lg">
               <p class="text-sm text-gray-600">Cohen's Kappa</p>
               <p class="text-2xl font-bold text-blue-600">
-                {{ (iaaData.results.cohen_kappa * 100).toFixed(1) }}%
+                {{ ((iaaData.results?.cohen_kappa || 0) * 100).toFixed(1) }}%
               </p>
             </div>
             <div class="text-center p-4 bg-green-50 rounded-lg">
               <p class="text-sm text-gray-600">Accuracy</p>
               <p class="text-2xl font-bold text-green-600">
-                {{ (iaaData.results.accuracy * 100).toFixed(1) }}%
+                {{ ((iaaData.results?.accuracy || 0) * 100).toFixed(1) }}%
               </p>
             </div>
             <div class="text-center p-4 bg-purple-50 rounded-lg">
               <p class="text-sm text-gray-600">Span Agreement</p>
               <p class="text-2xl font-bold text-purple-600">
-                {{ (iaaData.results.span_agreement_ratio * 100).toFixed(1) }}%
+                {{ ((iaaData.results?.span_agreement_ratio || 0) * 100).toFixed(1) }}%
               </p>
             </div>
             <div class="text-center p-4 bg-orange-50 rounded-lg">
               <p class="text-sm text-gray-600">Total Items</p>
               <p class="text-2xl font-bold text-orange-600">
-                {{ iaaData.results.total_items }}
+                {{ iaaData.results?.total_items || 0 }}
               </p>
             </div>
           </div>
@@ -423,75 +449,75 @@
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="text-center p-4 bg-gray-50 rounded-lg">
               <p class="text-sm text-gray-600">Correct Items</p>
-              <p class="text-xl font-bold text-gray-700">{{ iaaData.results.correct_items }}</p>
+              <p class="text-xl font-bold text-gray-700">{{ iaaData.results?.correct_items || 0 }}</p>
             </div>
             <div class="text-center p-4 bg-indigo-50 rounded-lg">
               <p class="text-sm text-gray-600">Total Unique Spans</p>
-              <p class="text-xl font-bold text-indigo-600">{{ iaaData.results.total_unique_spans }}</p>
+              <p class="text-xl font-bold text-indigo-600">{{ iaaData.results?.total_unique_spans || 0 }}</p>
             </div>
             <div class="text-center p-4 bg-emerald-50 rounded-lg">
               <p class="text-sm text-gray-600">Matching Spans</p>
-              <p class="text-xl font-bold text-emerald-600">{{ iaaData.results.matching_spans }}</p>
+              <p class="text-xl font-bold text-emerald-600">{{ iaaData.results?.matching_spans || 0 }}</p>
             </div>
           </div>
 
           <!-- Detailed Analysis -->
           <div class="mt-6">
             <h4 class="font-medium text-gray-900 mb-4">Detailed Analysis</h4>
-            
+
             <!-- Confusion Matrix -->
-            <div class="mb-4">
+            <div v-if="iaaData.detailed_analysis?.confusion_like" class="mb-4">
               <h5 class="text-sm font-medium text-gray-700 mb-2">Agreement Breakdown</h5>
               <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
                 <div class="text-center p-3 bg-gray-50 rounded">
                   <p class="text-xs text-gray-600">Agree No Annotation</p>
-                  <p class="text-lg font-bold text-gray-900">{{ iaaData.detailed_analysis.confusion_like.agree_no_annotation }}</p>
+                  <p class="text-lg font-bold text-gray-900">{{ iaaData.detailed_analysis?.confusion_like?.agree_no_annotation || 0 }}</p>
                 </div>
                 <div class="text-center p-3 bg-green-50 rounded">
                   <p class="text-xs text-gray-600">Agree Error Type</p>
-                  <p class="text-lg font-bold text-green-600">{{ iaaData.detailed_analysis.confusion_like.agree_error_type }}</p>
+                  <p class="text-lg font-bold text-green-600">{{ iaaData.detailed_analysis?.confusion_like?.agree_error_type || 0 }}</p>
                 </div>
                 <div class="text-center p-3 bg-yellow-50 rounded">
                   <p class="text-xs text-gray-600">Disagree Presence</p>
-                  <p class="text-lg font-bold text-yellow-600">{{ iaaData.detailed_analysis.confusion_like.disagree_presence }}</p>
+                  <p class="text-lg font-bold text-yellow-600">{{ iaaData.detailed_analysis?.confusion_like?.disagree_presence || 0 }}</p>
                 </div>
                 <div class="text-center p-3 bg-red-50 rounded">
                   <p class="text-xs text-gray-600">Disagree Error Type</p>
-                  <p class="text-lg font-bold text-red-600">{{ iaaData.detailed_analysis.confusion_like.disagree_error_type }}</p>
+                  <p class="text-lg font-bold text-red-600">{{ iaaData.detailed_analysis?.confusion_like?.disagree_error_type || 0 }}</p>
                 </div>
               </div>
             </div>
 
             <!-- Span Analysis -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div v-if="iaaData.detailed_analysis" class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div class="p-4 border rounded-lg">
                 <h6 class="text-sm font-medium text-gray-700 mb-2">Perfect Agreement Spans</h6>
-                <p class="text-2xl font-bold text-green-600">{{ iaaData.detailed_analysis.perfect_agreement_spans.length }}</p>
+                <p class="text-2xl font-bold text-green-600">{{ iaaData.detailed_analysis?.perfect_agreement_spans?.length || 0 }}</p>
                 <p class="text-xs text-gray-500">Both annotated same spans</p>
               </div>
               <div class="p-4 border rounded-lg">
                 <h6 class="text-sm font-medium text-gray-700 mb-2">Annotator Only Spans</h6>
-                <p class="text-2xl font-bold text-blue-600">{{ iaaData.detailed_analysis.annotator_only_spans.length }}</p>
+                <p class="text-2xl font-bold text-blue-600">{{ iaaData.detailed_analysis?.annotator_only_spans?.length || 0 }}</p>
                 <p class="text-xs text-gray-500">Only annotator marked</p>
               </div>
               <div class="p-4 border rounded-lg">
                 <h6 class="text-sm font-medium text-gray-700 mb-2">Reviewer Only Spans</h6>
-                <p class="text-2xl font-bold text-purple-600">{{ iaaData.detailed_analysis.reviewer_only_spans.length }}</p>
+                <p class="text-2xl font-bold text-purple-600">{{ iaaData.detailed_analysis?.reviewer_only_spans?.length || 0 }}</p>
                 <p class="text-xs text-gray-500">Only reviewer marked</p>
               </div>
             </div>
 
             <!-- Metadata -->
-            <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+            <div v-if="iaaData.metadata" class="mt-4 p-4 bg-gray-50 rounded-lg">
               <h6 class="text-sm font-medium text-gray-700 mb-2">Calculation Metadata</h6>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
                   <span class="text-gray-600">Execution Time:</span>
-                  <span class="font-medium ml-2">{{ (iaaData.metadata.execution_time * 1000).toFixed(2) }}ms</span>
+                  <span class="font-medium ml-2">{{ ((iaaData.metadata?.execution_time || 0) * 1000).toFixed(2) }}ms</span>
                 </div>
                 <div>
                   <span class="text-gray-600">Data Size:</span>
-                  <span class="font-medium ml-2">{{ iaaData.metadata.data_size }} items</span>
+                  <span class="font-medium ml-2">{{ iaaData.metadata?.data_size || 0 }} items</span>
                 </div>
               </div>
             </div>
@@ -507,20 +533,20 @@ import { ref, onMounted, computed, watch } from "vue";
 import { Card } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
-import { FileText, Pencil, BarChart3, ClipboardList } from "lucide-vue-next";
+import { FileText, Pencil, BarChart3, ClipboardList, Building2 } from "lucide-vue-next";
 import DataTable from "~/components/ui/data-table/data-table.vue";
 import { createDocumentColumns } from "~/components/dashboard/columns";
 import { useDashboardApi } from "~/data/dashboard";
 import { useProjectsApi } from "~/data/projects";
 import { useDocumentsApi } from "~/data/documents";
 import { useUsersApi } from "~/data/users";
-import { useProjectContext } from "~/composables/project-context";
 import { useAuth } from "~/data/auth";
+import { useProjectContext } from "~/composables/project-context";
 import { toast } from "vue-sonner";
 import type {
   DashboardSummaryResponse,
   AnnotatorPerformanceResponse,
-  ReviewerPerformanceResponse, 
+  ReviewerPerformanceResponse,
   IAAResponse
 } from "~/data/dashboard";
 import type { ProjectResponse, DocumentResponse, UserResponse, DocumentStatus } from "~/types/api";
@@ -528,9 +554,15 @@ import type { ProjectResponse, DocumentResponse, UserResponse, DocumentStatus } 
 const { getDashboardSummary, getAnnotatorPerformance, getReviewerPerformance, getInterAnnotatorAgreement } = useDashboardApi();
 const { getProjects, getDocumentsInProject } = useProjectsApi();
 const { getDocuments } = useDocumentsApi();
-const { getAllUsers } = useUsersApi();
-const { selectedProject, selectedProjectId } = useProjectContext();
+const { getAvailableUsersInProject, getMyProjects } = useUsersApi();
 const { userRoles } = useAuth();
+
+// For Kepala Riset: local project context (dashboard-only)
+const localSelectedProject = ref<ProjectResponse | null>(null);
+const localSelectedProjectId = computed(() => localSelectedProject.value?.id || null);
+
+// For Admin: use global project context
+const { selectedProject: globalSelectedProject, selectedProjectId: globalSelectedProjectId } = useProjectContext();
 
 const loading = ref(false);
 const loadingAnnotator = ref(false);
@@ -553,49 +585,53 @@ const annotatorPerformance = ref<AnnotatorPerformanceResponse | null>(null);
 const reviewerPerformance = ref<ReviewerPerformanceResponse | null>(null);
 const iaaData = ref<IAAResponse | null>(null);
 
-// Computed
-const annotators = computed(() => users.value.filter(u => u.roles.includes("Annotator")));
-const reviewers = computed(() => users.value.filter(u => u.roles.includes("Reviewer")));
+const annotators = computed(() => users.value.filter((u: UserResponse) => u.roles.includes("Annotator")));
+const reviewers = computed(() => users.value.filter((u: UserResponse) => u.roles.includes("Reviewer")));
 
-// Role-based computed property
 const isKepalaRiset = computed(() => userRoles.value.includes("Kepala Riset"));
+const isAdmin = computed(() => userRoles.value.includes("Admin"));
 
-// Document columns for DataTable with single selection
-const documentColumns = computed(() => 
+const activeProjectId = computed(() => {
+  if (isKepalaRiset.value) {
+    return localSelectedProjectId.value;
+  } else if (isAdmin.value) {
+    return globalSelectedProjectId.value;
+  }
+  return null;
+});
+
+const documentColumns = computed(() =>
   createDocumentColumns(selectedDocument.value, handleDocumentSelect)
 );
 
-// Single document selection handler
 function handleDocumentSelect(documentId: string) {
   selectedDocument.value = documentId;
-  // Automatically refresh data when selection changes
   loadDashboardData();
 }
 
-// Clear selection handler
 function clearDocumentSelection() {
   selectedDocument.value = "all";
   loadDashboardData();
 }
 
-// Get selected document details
 const selectedDocumentDetails = computed(() => {
   if (selectedDocument.value === "all") return null;
-  return documents.value.find(doc => doc.id.toString() === selectedDocument.value) || null;
+  return documents.value.find((doc: DocumentResponse) => doc.id.toString() === selectedDocument.value) || null;
 });
 
-// Methods
 async function loadDashboardData() {
   loading.value = true;
   try {
     const params: any = {};
-    if (selectedProjectId.value) {
-      params.project_id = selectedProjectId.value;
+
+    if (activeProjectId.value) {
+      params.project_id = activeProjectId.value;
     }
+
     if (selectedDocument.value !== "all") {
       params.document_id = parseInt(selectedDocument.value);
     }
-    
+
     dashboardData.value = await getDashboardSummary(params);
   } catch (error) {
     toast.error("Gagal memuat data dashboard");
@@ -607,17 +643,19 @@ async function loadDashboardData() {
 
 async function loadAnnotatorPerformance() {
   if (!selectedAnnotator.value) return;
-  
+
   loadingAnnotator.value = true;
   try {
     const params: any = { user_id: selectedAnnotator.value };
-    if (selectedProjectId.value) {
-      params.project_id = selectedProjectId.value;
+
+    if (activeProjectId.value) {
+      params.project_id = activeProjectId.value;
     }
+
     if (selectedDocument.value !== "all") {
       params.document_id = parseInt(selectedDocument.value);
     }
-    
+
     annotatorPerformance.value = await getAnnotatorPerformance(params);
   } catch (error) {
     toast.error("Gagal memuat performance anotator");
@@ -629,17 +667,19 @@ async function loadAnnotatorPerformance() {
 
 async function loadReviewerPerformance() {
   if (!selectedReviewer.value) return;
-  
+
   loadingReviewer.value = true;
   try {
     const params: any = { user_id: selectedReviewer.value };
-    if (selectedProjectId.value) {
-      params.project_id = selectedProjectId.value;
+
+    if (activeProjectId.value) {
+      params.project_id = activeProjectId.value;
     }
+
     if (selectedDocument.value !== "all") {
       params.document_id = parseInt(selectedDocument.value);
     }
-    
+
     reviewerPerformance.value = await getReviewerPerformance(params);
   } catch (error) {
     toast.error("Gagal memuat performance reviewer");
@@ -651,24 +691,36 @@ async function loadReviewerPerformance() {
 
 async function loadIAA() {
   if (!iaaAnnotator.value || !iaaReviewer.value) return;
-  
+
   loadingIAA.value = true;
+  iaaData.value = null;
+
   try {
     const params: any = {
       annotator_id: iaaAnnotator.value,
       reviewer_id: iaaReviewer.value
     };
-    if (selectedProjectId.value) {
-      params.project_id = selectedProjectId.value;
+
+    if (activeProjectId.value) {
+      params.project_id = activeProjectId.value;
     }
+
     if (selectedDocument.value !== "all") {
       params.document_id = parseInt(selectedDocument.value);
     }
-    
+
     iaaData.value = await getInterAnnotatorAgreement(params);
-  } catch (error) {
-    toast.error("Gagal menghitung Inter-Annotator Agreement");
-    console.error(error);
+
+    if (iaaData?.value?.error_code === "NO_DATA_AVAILABLE" || iaaData?.value?.detail?.includes("Tidak ada data")) {
+      toast.warning("Tidak ada data anotasi atau review untuk perbandingan antara anotator dan reviewer yang dipilih.", {
+        duration: 5000,
+      });
+    } else {
+      toast.success("Inter-Annotator Agreement berhasil dihitung");
+    }
+  } catch (error: any) {
+    console.error("IAA Error:", error);
+    console.error("IAA Error Response:", error?.response || error?.data);
   } finally {
     loadingIAA.value = false;
   }
@@ -676,17 +728,20 @@ async function loadIAA() {
 
 async function loadInitialData() {
   try {
-    const [projectsRes, usersRes] = await Promise.all([
-      getProjects(),
-      getAllUsers()
-    ]);
-    
-    projects.value = projectsRes.results || [];
-    users.value = usersRes || [];
-    
-    // Fetch documents based on role and project context (similar to kelola-dokumen)
+    if (isKepalaRiset.value) {
+      const projectsRes = await getProjects();
+      projects.value = projectsRes.results || [];
+
+      if (projects.value.length > 0) {
+        localSelectedProject.value = projects.value[0];
+      }
+    } else if (isAdmin.value) {
+      const myProjectsRes = await getMyProjects();
+      projects.value = myProjectsRes.results || [];
+    }
     await fetchDocuments();
-    
+    await fetchUsers();
+
     await loadDashboardData();
   } catch (error) {
     toast.error("Gagal memuat data awal");
@@ -694,21 +749,67 @@ async function loadInitialData() {
   }
 }
 
-// Document fetching logic that respects project context
+async function fetchUsers() {
+  try {
+    const allUsers: UserResponse[] = [];
+
+    if (isKepalaRiset.value && localSelectedProject.value) {
+      // Kepala Riset with project selected: fetch users from that project
+      const projectUsers = await getAvailableUsersInProject(localSelectedProject.value.id);
+      // Map the users to include roles from roles_in_project
+      projectUsers.users.forEach((user: any) => {
+        if (user.is_in_project) {
+          allUsers.push({
+            id: user.id,
+            username: user.username,
+            email: user.email || `${user.username}@example.com`, // fallback email
+            full_name: user.full_name,
+            roles: user.roles_in_project || [],
+            is_active: true,
+            date_joined: '',
+            last_login: null,
+          } as UserResponse);
+        }
+      });
+    } else if (isAdmin.value && globalSelectedProject.value) {
+      // Admin: fetch users from their assigned project
+      const projectUsers = await getAvailableUsersInProject(globalSelectedProject.value.id);
+      // Map the users to include roles from roles_in_project
+      projectUsers.users.forEach((user: any) => {
+        if (user.is_in_project) {
+          allUsers.push({
+            id: user.id,
+            username: user.username,
+            email: user.email || `${user.username}@example.com`, // fallback email
+            full_name: user.full_name,
+            roles: user.roles_in_project || [],
+            is_active: true,
+            date_joined: '',
+            last_login: null,
+          } as UserResponse);
+        }
+      });
+    }
+
+    users.value = allUsers;
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    toast.error("Gagal memuat data pengguna");
+  }
+}
+
+// Document fetching logic based on role and project context
 async function fetchDocuments() {
   loadingDocuments.value = true;
   try {
-    if (selectedProjectId.value) {
-      // When a project is selected, fetch documents from that project only
-      const projectDocuments = await getDocumentsInProject(selectedProjectId.value);
-      documents.value = projectDocuments || [];
-    } else if (isKepalaRiset.value) {
-      // Kepala Riset can see all documents when no specific project is selected
-      const response = await getDocuments();
+    if (isKepalaRiset.value && localSelectedProject.value) {
+      // Kepala Riset with project selected: fetch documents from that project
+      const response = await getDocumentsInProject(localSelectedProject.value.id);
       documents.value = response.results || [];
-    } else {
-      // Other roles need project selection
-      documents.value = [];
+    } else if (isAdmin.value && globalSelectedProject.value) {
+      // Admin: fetch documents from their assigned project
+      const response = await getDocumentsInProject(globalSelectedProject.value.id);
+      documents.value = response.results || [];
     }
   } catch (error) {
     console.error("Error fetching documents:", error);
@@ -719,25 +820,46 @@ async function fetchDocuments() {
   }
 }
 
-onMounted(() => {
-  loadInitialData();
-});
+// Handle local project selection for Kepala Riset
+async function handleProjectChange(projectId: string) {
+  const project = projects.value.find((p: ProjectResponse) => p.id.toString() === projectId);
+  localSelectedProject.value = project || null;
 
-// Watch for project context changes
-watch(selectedProjectId, async () => {
-  // Refresh documents when project changes for all users
-  await fetchDocuments();
-  // Reset all selections when project changes
-  selectedDocument.value = "all";
+  // Clear selected users and performance data when project changes
   selectedAnnotator.value = "";
   selectedReviewer.value = "";
   iaaAnnotator.value = "";
   iaaReviewer.value = "";
-  // Clear previous performance data
   annotatorPerformance.value = null;
   reviewerPerformance.value = null;
   iaaData.value = null;
+
+  // Reload data when project changes
+  await fetchDocuments();
+  await fetchUsers();
   await loadDashboardData();
+}
+
+onMounted(() => {
+  loadInitialData();
+});
+
+// Watch for project context changes (only for Admin using global context)
+watch(globalSelectedProject, async () => {
+  if (isAdmin.value) {
+    // Clear selected users and performance data when project changes
+    selectedAnnotator.value = "";
+    selectedReviewer.value = "";
+    iaaAnnotator.value = "";
+    iaaReviewer.value = "";
+    annotatorPerformance.value = null;
+    reviewerPerformance.value = null;
+    iaaData.value = null;
+
+    await fetchDocuments();
+    await fetchUsers();
+    await loadDashboardData();
+  }
 });
 
 // Define layout
