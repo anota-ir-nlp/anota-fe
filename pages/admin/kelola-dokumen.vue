@@ -945,7 +945,7 @@ const assignmentDeadline = ref<Date>();
 
 const formattedDeadline = computed(() => {
   if (!assignmentDeadline.value) return "Pilih tanggal deadline";
-  
+
   try {
     // If it's a CalendarDate object from @internationalized/date
     if (assignmentDeadline.value && typeof assignmentDeadline.value === 'object' && 'toDate' in assignmentDeadline.value) {
@@ -959,7 +959,7 @@ const formattedDeadline = computed(() => {
   } catch (e) {
     console.error('Error formatting date:', e);
   }
-  
+
   return "Pilih tanggal deadline";
 });
 
@@ -1450,6 +1450,7 @@ async function saveBulkAssignmentChanges() {
       let assignSuccessCount = 0;
       let unassignSuccessCount = 0;
       let failCount = 0;
+      let lastError: any = null;
 
       for (const doc of selectedDocuments.value) {
         try {
@@ -1466,31 +1467,34 @@ async function saveBulkAssignmentChanges() {
                 document_id: doc.id,
                 user_id: userId
               };
-              
+
               if (assignmentDeadline.value) {
                 let year, month, day;
-                
-                // Handle @internationalized/date CalendarDate format
+
                 if (typeof assignmentDeadline.value === 'object' && 'year' in assignmentDeadline.value) {
                   year = (assignmentDeadline.value as any).year;
                   month = String((assignmentDeadline.value as any).month).padStart(2, '0');
                   day = String((assignmentDeadline.value as any).day).padStart(2, '0');
                 } else if (assignmentDeadline.value instanceof Date) {
-                  // Handle JavaScript Date format
                   year = assignmentDeadline.value.getFullYear();
                   month = String(assignmentDeadline.value.getMonth() + 1).padStart(2, '0');
                   day = String(assignmentDeadline.value.getDate()).padStart(2, '0');
                 }
-                
+
                 if (year && month && day) {
+                  console.log(`Setting deadline for user ${userId} on document ${doc.id} to ${year}-${month}-${day}`);
                   assignmentData.deadline = `${year}-${month}-${day}`;
+                } else {
+                  throw new Error("Tanggal deadline tidak valid");
                 }
               }
-              
+
               await apiAssignDocument(assignmentData);
               assignSuccessCount++;
-            } catch (error) {
+            } catch (error: any) {
+              console.error(`Error assigning user ${userId} to document ${doc.id}:`, error);
               failCount++;
+              lastError = error;
             }
           }
 
@@ -1501,14 +1505,26 @@ async function saveBulkAssignmentChanges() {
                 user_id: userId
               });
               unassignSuccessCount++;
-            } catch (error) {
+            } catch (error: any) {
+              console.error(`Error unassigning user ${userId} from document ${doc.id}:`, error);
               failCount++;
+              lastError = error;
             }
           }
-        } catch (error) {
+        } catch (error: any) {
           console.error(`Error processing document ${doc.id}:`, error);
           failCount++;
+          lastError = error;
         }
+      }
+
+      if (failCount > 0) {
+        const errorMessage = lastError?.data?.error || lastError?.message || "Terjadi kesalahan";
+        const error = new Error(errorMessage);
+        (error as any).assignSuccessCount = assignSuccessCount;
+        (error as any).unassignSuccessCount = unassignSuccessCount;
+        (error as any).failCount = failCount;
+        throw error;
       }
 
       return { assignSuccessCount, unassignSuccessCount, failCount };
@@ -1533,13 +1549,18 @@ async function saveBulkAssignmentChanges() {
           successMessage += `: ${messages.join(", ")}`;
         }
 
-        if (result.failCount > 0) {
-          successMessage += `. ${result.failCount} operasi gagal`;
-        }
-
         return successMessage;
       },
-      error: "Gagal menyimpan bulk assignment",
+      error: (error: any) => {
+        const successCount = (error.assignSuccessCount || 0) + (error.unassignSuccessCount || 0);
+        if (successCount > 0) {
+          fetchDocuments(currentPage.value);
+          selectedDocuments.value = [];
+          closeAssignmentDialog();
+          return `${error.message}. ${successCount} operasi berhasil, ${error.failCount} operasi gagal`;
+        }
+        return error.message || "Gagal menyimpan bulk assignment";
+      },
     }
   );
 }
@@ -1623,9 +1644,9 @@ async function submitReopen() {
         };
 
         if (reopenMode.value === "annotator") {
-          await adminReopenAnnotator(requestData);
+          await adminReopenAnnotator(selectedProjectId.value!, requestData);
         } else {
-          await adminReopenReview(requestData);
+          await adminReopenReview(selectedProjectId.value!, requestData);
         }
         successCount++;
       } catch (error: any) {

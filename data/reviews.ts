@@ -53,12 +53,12 @@ export function useReviewsApi() {
     return fetcher(url);
   };
 
-  const adminReopenReview = (data: {
+  const adminReopenReview = (projectId: number, data: {
     document: number;
     user_id: string;
     reason?: string;
   }) =>
-    fetcher(`/annotations/admin/reopen-review/`, {
+    fetcher(`/annotations/admin/projects/${projectId}/reopen-review/`, {
       method: "POST",
       body: data,
     });

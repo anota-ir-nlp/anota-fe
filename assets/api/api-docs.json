@@ -186,9 +186,9 @@
       },
       "parameters": []
     },
-    "/annotations/admin/reopen-annotator/": {
+    "/annotations/admin/projects/{project_id}/reopen-annotator/": {
       "post": {
-        "operationId": "annotations_admin_reopen-annotator_create",
+        "operationId": "annotations_admin_projects_reopen-annotator_create",
         "summary": "Admin Reopen Anotasi Dokumen",
         "description": "Admin/Kepala Riset membuka kembali pekerjaan anotator pada dokumen tertentu.",
         "parameters": [
@@ -231,11 +231,18 @@
           "🛠 Admin Tools"
         ]
       },
-      "parameters": []
+      "parameters": [
+        {
+          "name": "project_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ]
     },
-    "/annotations/admin/reopen-review/": {
+    "/annotations/admin/projects/{project_id}/reopen-review/": {
       "post": {
-        "operationId": "annotations_admin_reopen-review_create",
+        "operationId": "annotations_admin_projects_reopen-review_create",
         "summary": "Admin Reopen Review Dokumen",
         "description": "Admin/Kepala Riset membuka kembali pekerjaan reviewer pada dokumen tertentu.",
         "parameters": [
@@ -278,7 +285,14 @@
           "🛠 Admin Tools"
         ]
       },
-      "parameters": []
+      "parameters": [
+        {
+          "name": "project_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ]
     },
     "/annotations/error-types/": {
       "get": {
