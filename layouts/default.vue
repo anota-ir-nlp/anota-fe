@@ -70,20 +70,26 @@ const userProjects = ref<ProjectResponse[]>([]);
 const isLoadingProjects = ref(false);
 
 async function fetchUserProjects() {
-  if (!hasRole("Admin")) return; // Only Admin needs project context
+  if (!hasRole("Admin")) return;
 
   isLoadingProjects.value = true;
   try {
-    // Admin uses /users/me/projects/ to get their assigned projects
     const response = await getMyProjects();
     userProjects.value = response.results;
 
-    // If user is Admin, automatically set project context to their assigned project
-    if (hasRole("Admin") && userProjects.value.length > 0) {
-      // Admin should only be assigned to one project, so take the first one
-      setSelectedProject(userProjects.value[0]);
+    if (hasRole("Admin") && userProjects.value?.length > 0) {
+      if (!selectedProject.value) {
+        setSelectedProject(userProjects.value[0]);
+      } else {
+        const storedProjectStillExists = userProjects.value.some(
+          (p) => p.id === selectedProject.value?.id
+        );
+
+        if (!storedProjectStillExists) {
+          setSelectedProject(userProjects.value[0]);
+        }
+      }
     } else {
-      // Admin not assigned to any project yet, clear selection
       clearSelectedProject();
     }
   } catch (error) {

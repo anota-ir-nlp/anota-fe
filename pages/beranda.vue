@@ -1210,8 +1210,9 @@ const loadUsersForPerformance = async () => {
 
     for (const project of userProjects.value) {
       try {
-        const projectUsers = await getAvailableUsersInProject(project.id);
-        projectUsers.forEach((user: any) => allUsersMap.set(user.email, user));
+        const response = await getAvailableUsersInProject(project.id);
+        const projectUsers = response.users || [];
+        projectUsers.forEach((user: any) => allUsersMap.set(user.username, user));
       } catch (error) {
         console.error(`Error fetching users for project ${project.id}:`, error);
       }
@@ -1220,10 +1221,10 @@ const loadUsersForPerformance = async () => {
     const allUsers = Array.from(allUsersMap.values());
 
     annotators.value = allUsers.filter((user: any) =>
-      user.roles?.includes("Annotator")
+      user.roles_in_project?.includes("Annotator")
     );
     reviewers.value = allUsers.filter((user: any) =>
-      user.roles?.includes("Reviewer")
+      user.roles_in_project?.includes("Reviewer")
     );
   } catch (error) {
     console.error("Error loading users:", error);

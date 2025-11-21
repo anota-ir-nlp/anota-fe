@@ -1,7 +1,7 @@
 import { useProtectedFetcher } from "~/composables/protected-fetcher";
 import type { AssignDocumentRequest } from "~/types/api";
 
-const BASE = "/assignments";
+const BASE = "/documents/assignment";
 
 export function useAssignmentsApi() {
   const { fetcher } = useProtectedFetcher();

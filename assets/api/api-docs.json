@@ -234,62 +234,6 @@
       "parameters": []
     },
     "/annotations/admin/reopen-review/": {
-      "get": {
-        "operationId": "annotations_admin_reopen-review_list",
-        "summary": "Get Review Detail",
-        "description": "\nMendapatkan detail lengkap dari review berdasarkan ID.\n\n**Access Control:**\n- Hanya reviewer yang membuat review ini yang dapat mengakses\n- Memastikan data privacy antar reviewer\n",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "description": "A page number within the paginated result set.",
-            "required": false,
-            "type": "integer"
-          },
-          {
-            "name": "page_size",
-            "in": "query",
-            "description": "Number of results to return per page.",
-            "required": false,
-            "type": "integer"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Detail review berhasil ditemukan",
-            "examples": {
-              "application/json": {
-                "id": 1,
-                "start_index": 0,
-                "end_index": 4,
-                "correction": "Teks",
-                "is_required": true,
-                "comments": "Setuju dengan koreksi annotator",
-                "is_submitted": true,
-                "created_at": "2024-01-01T11:00:00Z",
-                "updated_at": "2024-01-01T11:00:00Z",
-                "reviewer": "uuid-reviewer",
-                "document": 1,
-                "sentence": 5,
-                "annotation": 1,
-                "error_type": 1
-              }
-            }
-          },
-          "404": {
-            "description": "Review tidak ditemukan"
-          },
-          "403": {
-            "description": "Hanya owner review yang dapat mengakses"
-          },
-          "401": {
-            "description": "Authentication required"
-          }
-        },
-        "tags": [
-          "📋 Reviews"
-        ]
-      },
       "post": {
         "operationId": "annotations_admin_reopen-review_create",
         "summary": "Admin Reopen Review Dokumen",
@@ -332,159 +276,6 @@
         },
         "tags": [
           "🛠 Admin Tools"
-        ]
-      },
-      "put": {
-        "operationId": "annotations_admin_reopen-review_update",
-        "summary": "Update Review",
-        "description": "\nUpdate review yang sudah ada.\n\n**Business Rules:**\n- Hanya reviewer yang membuat review ini yang dapat mengupdate\n- Semua validation rules untuk create juga berlaku untuk update\n- Annotation reference harus konsisten dengan document/sentence\n",
-        "parameters": [
-          {
-            "name": "data",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {
-                "annotation": {
-                  "description": "ID annotation",
-                  "type": "integer"
-                },
-                "document": {
-                  "description": "ID dokumen",
-                  "type": "integer"
-                },
-                "sentence": {
-                  "description": "ID sentence",
-                  "type": "integer"
-                },
-                "start_index": {
-                  "description": "Posisi awal error",
-                  "type": "integer"
-                },
-                "end_index": {
-                  "description": "Posisi akhir error",
-                  "type": "integer"
-                },
-                "error_type": {
-                  "description": "ID tipe error",
-                  "type": "integer"
-                },
-                "correction": {
-                  "description": "Teks koreksi review",
-                  "type": "string"
-                },
-                "is_required": {
-                  "description": "Wajib atau opsional",
-                  "type": "boolean"
-                },
-                "comments": {
-                  "description": "Komentar reviewer",
-                  "type": "string"
-                },
-                "is_submitted": {
-                  "description": "Status submission",
-                  "type": "boolean"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Review berhasil diupdate"
-          },
-          "400": {
-            "description": "Data input tidak valid atau business rule violation"
-          },
-          "404": {
-            "description": "Review tidak ditemukan"
-          },
-          "403": {
-            "description": "Hanya owner review yang dapat mengupdate"
-          },
-          "401": {
-            "description": "Authentication required"
-          }
-        },
-        "tags": [
-          "📋 Reviews"
-        ]
-      },
-      "patch": {
-        "operationId": "annotations_admin_reopen-review_partial_update",
-        "summary": "Partial Update Review",
-        "description": "Update sebagian field dari review",
-        "parameters": [
-          {
-            "name": "data",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {
-                "correction": {
-                  "description": "Teks koreksi",
-                  "type": "string"
-                },
-                "comments": {
-                  "description": "Komentar reviewer",
-                  "type": "string"
-                },
-                "is_required": {
-                  "description": "Status requirement",
-                  "type": "boolean"
-                },
-                "is_submitted": {
-                  "description": "Status submission",
-                  "type": "boolean"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Review berhasil diupdate"
-          },
-          "400": {
-            "description": "Data input tidak valid"
-          },
-          "404": {
-            "description": "Review tidak ditemukan"
-          },
-          "403": {
-            "description": "Hanya owner review yang dapat mengupdate"
-          },
-          "401": {
-            "description": "Authentication required"
-          }
-        },
-        "tags": [
-          "📋 Reviews"
-        ]
-      },
-      "delete": {
-        "operationId": "annotations_admin_reopen-review_delete",
-        "summary": "Delete Review",
-        "description": "\nMenghapus review dari sistem.\n\n**Access Control:**\n- Hanya reviewer yang membuat review ini yang dapat menghapus\n\n**⚠️ PERINGATAN:**\n- Action ini tidak dapat di-undo\n- Menghapus review dapat mempengaruhi inter-annotator agreement calculations\n",
-        "parameters": [],
-        "responses": {
-          "204": {
-            "description": "Review berhasil dihapus"
-          },
-          "404": {
-            "description": "Review tidak ditemukan"
-          },
-          "403": {
-            "description": "Hanya owner review yang dapat menghapus"
-          },
-          "401": {
-            "description": "Authentication required"
-          }
-        },
-        "tags": [
-          "📋 Reviews"
         ]
       },
       "parameters": []
@@ -1096,81 +887,196 @@
     "/annotations/reviews/{id}/": {
       "get": {
         "operationId": "annotations_reviews_read",
-        "description": "",
+        "summary": "Get Review Detail",
+        "description": "\nMendapatkan detail lengkap dari review berdasarkan ID.\n\n**Access Control:**\n- Hanya reviewer yang membuat review ini yang dapat mengakses\n- Memastikan data privacy antar reviewer\n",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "",
-            "schema": {
-              "$ref": "#/definitions/Review"
+            "description": "Detail review berhasil ditemukan",
+            "examples": {
+              "application/json": {
+                "id": 1,
+                "start_index": 0,
+                "end_index": 4,
+                "correction": "Teks",
+                "is_required": true,
+                "comments": "Setuju dengan koreksi annotator",
+                "is_submitted": true,
+                "created_at": "2024-01-01T11:00:00Z",
+                "updated_at": "2024-01-01T11:00:00Z",
+                "reviewer": "uuid-reviewer",
+                "document": 1,
+                "sentence": 5,
+                "annotation": 1,
+                "error_type": 1
+              }
             }
+          },
+          "404": {
+            "description": "Review tidak ditemukan"
+          },
+          "403": {
+            "description": "Hanya owner review yang dapat mengakses"
+          },
+          "401": {
+            "description": "Authentication required"
           }
         },
         "tags": [
-          "annotations"
+          "📋 Reviews"
         ]
       },
       "put": {
         "operationId": "annotations_reviews_update",
-        "description": "",
+        "summary": "Update Review",
+        "description": "\nUpdate review yang sudah ada.\n\n**Business Rules:**\n- Hanya reviewer yang membuat review ini yang dapat mengupdate\n- Semua validation rules untuk create juga berlaku untuk update\n- Annotation reference harus konsisten dengan document/sentence\n",
         "parameters": [
           {
             "name": "data",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/Review"
+              "type": "object",
+              "properties": {
+                "annotation": {
+                  "description": "ID annotation",
+                  "type": "integer"
+                },
+                "document": {
+                  "description": "ID dokumen",
+                  "type": "integer"
+                },
+                "sentence": {
+                  "description": "ID sentence",
+                  "type": "integer"
+                },
+                "start_index": {
+                  "description": "Posisi awal error",
+                  "type": "integer"
+                },
+                "end_index": {
+                  "description": "Posisi akhir error",
+                  "type": "integer"
+                },
+                "error_type": {
+                  "description": "ID tipe error",
+                  "type": "integer"
+                },
+                "correction": {
+                  "description": "Teks koreksi review",
+                  "type": "string"
+                },
+                "is_required": {
+                  "description": "Wajib atau opsional",
+                  "type": "boolean"
+                },
+                "comments": {
+                  "description": "Komentar reviewer",
+                  "type": "string"
+                },
+                "is_submitted": {
+                  "description": "Status submission",
+                  "type": "boolean"
+                }
+              }
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "",
-            "schema": {
-              "$ref": "#/definitions/Review"
-            }
+            "description": "Review berhasil diupdate"
+          },
+          "400": {
+            "description": "Data input tidak valid atau business rule violation"
+          },
+          "404": {
+            "description": "Review tidak ditemukan"
+          },
+          "403": {
+            "description": "Hanya owner review yang dapat mengupdate"
+          },
+          "401": {
+            "description": "Authentication required"
           }
         },
         "tags": [
-          "annotations"
+          "📋 Reviews"
         ]
       },
       "patch": {
         "operationId": "annotations_reviews_partial_update",
-        "description": "",
+        "summary": "Partial Update Review",
+        "description": "Update sebagian field dari review",
         "parameters": [
           {
             "name": "data",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/Review"
+              "type": "object",
+              "properties": {
+                "correction": {
+                  "description": "Teks koreksi",
+                  "type": "string"
+                },
+                "comments": {
+                  "description": "Komentar reviewer",
+                  "type": "string"
+                },
+                "is_required": {
+                  "description": "Status requirement",
+                  "type": "boolean"
+                },
+                "is_submitted": {
+                  "description": "Status submission",
+                  "type": "boolean"
+                }
+              }
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "",
-            "schema": {
-              "$ref": "#/definitions/Review"
-            }
+            "description": "Review berhasil diupdate"
+          },
+          "400": {
+            "description": "Data input tidak valid"
+          },
+          "404": {
+            "description": "Review tidak ditemukan"
+          },
+          "403": {
+            "description": "Hanya owner review yang dapat mengupdate"
+          },
+          "401": {
+            "description": "Authentication required"
           }
         },
         "tags": [
-          "annotations"
+          "📋 Reviews"
         ]
       },
       "delete": {
         "operationId": "annotations_reviews_delete",
-        "description": "",
+        "summary": "Delete Review",
+        "description": "\nMenghapus review dari sistem.\n\n**Access Control:**\n- Hanya reviewer yang membuat review ini yang dapat menghapus\n\n**⚠️ PERINGATAN:**\n- Action ini tidak dapat di-undo\n- Menghapus review dapat mempengaruhi inter-annotator agreement calculations\n",
         "parameters": [],
         "responses": {
           "204": {
-            "description": ""
+            "description": "Review berhasil dihapus"
+          },
+          "404": {
+            "description": "Review tidak ditemukan"
+          },
+          "403": {
+            "description": "Hanya owner review yang dapat menghapus"
+          },
+          "401": {
+            "description": "Authentication required"
           }
         },
         "tags": [
-          "annotations"
+          "📋 Reviews"
         ]
       },
       "parameters": [
@@ -1423,120 +1329,6 @@
           "type": "integer"
         }
       ]
-    },
-    "/assignments/": {
-      "post": {
-        "operationId": "assignments_create",
-        "summary": "Assign Document to User",
-        "description": "\nAssign dokumen kepada user tertentu untuk proses anotasi atau review.\n\n**Constraints:**\n- Hanya user dengan role Annotators atau Reviewers yang dapat di-assign\n- Satu dokumen dapat di-assign ke multiple users (Annotator bisa lebih dari satu; Reviewer maksimal 1 aktif per dokumen)\n- Hanya admin yang dapat melakukan assignment\n",
-        "parameters": [
-          {
-            "name": "data",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "required": [
-                "document_id",
-                "user_id"
-              ],
-              "type": "object",
-              "properties": {
-                "document_id": {
-                  "description": "ID dokumen yang akan di-assign",
-                  "type": "integer"
-                },
-                "user_id": {
-                  "description": "ID user yang akan menerima assignment",
-                  "type": "string",
-                  "format": "uuid"
-                },
-                "notes": {
-                  "description": "Optional notes untuk assignment ini",
-                  "type": "string"
-                },
-                "deadline": {
-                  "description": "Deadline untuk penyelesaian anotasi/review (format YYYY-MM-DD)",
-                  "type": "date-time"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Assignment berhasil dengan tracking lengkap",
-            "examples": {
-              "application/json": {
-                "message": "Dokumen berhasil ditugaskan",
-                "assignment_record": {
-                  "id": 1,
-                  "assigned_user": "annotator1",
-                  "assigned_by": "admin1",
-                  "assigned_at": "2024-01-01T10:00:00Z",
-                  "notes": "Initial assignment for annotation task",
-                  "is_active": true
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "User tidak memiliki role yang sesuai"
-          },
-          "404": {
-            "description": "Dokumen atau user tidak ditemukan"
-          }
-        },
-        "tags": [
-          "📋 Document Assignment"
-        ]
-      },
-      "delete": {
-        "operationId": "assignments_delete",
-        "summary": "Unassign Document from User",
-        "description": "\nMenghapus assignment dokumen dari user tertentu.\n\n**Note:**\n- Tidak menghapus annotations yang sudah dibuat\n- User tidak akan bisa mengakses dokumen untuk anotasi baru\n- Hanya admin yang dapat melakukan unassignment\n",
-        "parameters": [
-          {
-            "name": "data",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "required": [
-                "document_id",
-                "user_id"
-              ],
-              "type": "object",
-              "properties": {
-                "document_id": {
-                  "description": "ID dokumen yang akan di-unassign",
-                  "type": "integer"
-                },
-                "user_id": {
-                  "description": "ID user yang akan di-unassign",
-                  "type": "string",
-                  "format": "uuid"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Unassignment berhasil",
-            "examples": {
-              "application/json": {
-                "message": "Tugas dokumen berhasil dihapus"
-              }
-            }
-          },
-          "404": {
-            "description": "Dokumen atau user tidak ditemukan"
-          }
-        },
-        "tags": [
-          "📋 Document Assignment"
-        ]
-      },
-      "parameters": []
     },
     "/dashboard/": {
       "get": {
@@ -3237,10 +3029,10 @@
           {
             "name": "project_id",
             "in": "path",
-            "description": "UUID project",
+            "description": "ID project",
             "required": true,
             "type": "string",
-            "format": "uuid"
+            "format": "integer"
           }
         ],
         "responses": {
@@ -3385,6 +3177,77 @@
       "parameters": [
         {
           "name": "project_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ]
+    },
+    "/users/projects/{project_id}/users/{user_id}/": {
+      "get": {
+        "operationId": "users_projects_users_read",
+        "summary": "Get User Detail",
+        "description": "\nMendapatkan detail informasi user tertentu dalam konteks project.\n\n**Permission:**\n- Admin dapat melihat detail user dalam project yang mereka kelola\n- Kepala Riset dapat melihat detail user manapun\n\n**Response Fields:**\n- `id`: UUID user\n- `username`: Username user\n- `email`: Email address\n- `full_name`: Nama lengkap\n- `roles`: List roles dalam project yang ditentukan\n- `is_kepala_riset`: Boolean\n- `date_joined`: Tanggal bergabung\n- `institusi`: Institusi/lembaga asal\n\n**Use Case:**\n- Melihat detail lengkap user sebelum melakukan update\n- Verifikasi informasi user\n- Display user profile dalam project\n",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "description": "ID project",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "user_id",
+            "in": "path",
+            "description": "UUID user",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detail user berhasil ditemukan",
+            "examples": {
+              "application/json": {
+                "id": "550e8400-e29b-41d4-a716-446655440000",
+                "username": "annotator1",
+                "email": "annotator1@example.com",
+                "full_name": "John Doe Annotator",
+                "roles": [
+                  "Annotator"
+                ],
+                "is_kepala_riset": false,
+                "date_joined": "2024-01-01T00:00:00Z",
+                "institusi": "Universitas Indonesia"
+              }
+            }
+          },
+          "404": {
+            "description": "User tidak ditemukan",
+            "examples": {
+              "application/json": {
+                "detail": "Not found."
+              }
+            }
+          },
+          "403": {
+            "description": "Tidak memiliki akses untuk melihat user ini"
+          }
+        },
+        "tags": [
+          "👥 User Management"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "project_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        },
+        {
+          "name": "user_id",
           "in": "path",
           "required": true,
           "type": "string"
@@ -3806,160 +3669,6 @@
     }
   },
   "definitions": {
-    "ErrorType": {
-      "required": [
-        "error_code",
-        "description"
-      ],
-      "type": "object",
-      "properties": {
-        "id": {
-          "title": "ID",
-          "type": "integer",
-          "readOnly": true
-        },
-        "error_code": {
-          "title": "Error code",
-          "type": "string",
-          "maxLength": 255,
-          "minLength": 1
-        },
-        "description": {
-          "title": "Description",
-          "type": "string",
-          "minLength": 1
-        },
-        "project": {
-          "title": "Project",
-          "description": "Jika null, error type ini berlaku untuk semua project (default)",
-          "type": "integer",
-          "x-nullable": true
-        },
-        "project_name": {
-          "title": "Project name",
-          "type": "string",
-          "readOnly": true,
-          "minLength": 1
-        },
-        "is_default": {
-          "title": "Is default",
-          "description": "Error type default yang akan tersedia di semua project baru",
-          "type": "boolean"
-        },
-        "created_by": {
-          "title": "Created by",
-          "description": "User yang membuat error type ini",
-          "type": "string",
-          "format": "uuid",
-          "readOnly": true,
-          "x-nullable": true
-        },
-        "created_by_username": {
-          "title": "Created by username",
-          "type": "string",
-          "readOnly": true,
-          "minLength": 1
-        },
-        "created_at": {
-          "title": "Created at",
-          "type": "string",
-          "format": "date-time",
-          "readOnly": true
-        },
-        "updated_at": {
-          "title": "Updated at",
-          "type": "string",
-          "format": "date-time",
-          "readOnly": true
-        }
-      }
-    },
-    "Review": {
-      "required": [
-        "start_index",
-        "end_index",
-        "correction",
-        "document",
-        "sentence",
-        "error_type"
-      ],
-      "type": "object",
-      "properties": {
-        "id": {
-          "title": "ID",
-          "type": "integer",
-          "readOnly": true
-        },
-        "error_type_details": {
-          "$ref": "#/definitions/ErrorType"
-        },
-        "start_index": {
-          "title": "Start index",
-          "type": "integer",
-          "maximum": 2147483647,
-          "minimum": 0
-        },
-        "end_index": {
-          "title": "End index",
-          "type": "integer",
-          "maximum": 2147483647,
-          "minimum": 0
-        },
-        "correction": {
-          "title": "Correction",
-          "type": "string",
-          "minLength": 1
-        },
-        "is_required": {
-          "title": "Is required",
-          "type": "boolean"
-        },
-        "comments": {
-          "title": "Comments",
-          "type": "string",
-          "minLength": 1,
-          "x-nullable": true
-        },
-        "is_submitted": {
-          "title": "Is submitted",
-          "type": "boolean"
-        },
-        "created_at": {
-          "title": "Created at",
-          "type": "string",
-          "format": "date-time"
-        },
-        "updated_at": {
-          "title": "Updated at",
-          "type": "string",
-          "format": "date-time",
-          "readOnly": true
-        },
-        "reviewer": {
-          "title": "Reviewer",
-          "type": "string",
-          "format": "uuid",
-          "readOnly": true
-        },
-        "document": {
-          "title": "Document",
-          "type": "integer"
-        },
-        "annotation": {
-          "title": "Annotation",
-          "type": "integer",
-          "x-nullable": true
-        },
-        "sentence": {
-          "title": "Sentence",
-          "type": "integer"
-        },
-        "error_type": {
-          "title": "Error type",
-          "type": "integer"
-        }
-      }
-    },
     "Project": {
       "required": [
         "name"
