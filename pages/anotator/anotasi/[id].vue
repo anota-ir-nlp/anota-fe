@@ -273,7 +273,7 @@
         <div
           v-if="showCombinedHistory && selectedSentence"
           :style="popupStyle"
-          class="fixed z-50 bg-white border border-gray-300 rounded-2xl p-6 shadow-xl min-w-[320px] max-w-[90vw] max-h-[80vh] overflow-y-auto cursor-move"
+          class="fixed z-50 bg-white border border-gray-300 rounded-2xl p-6 shadow-xl min-w-[320px] max-w-[90vw] max-h-[80vh] my-4 overflow-y-auto cursor-move"
           @mousedown="startDrag"
         >
           <div class="flex items-center justify-between mb-4">
@@ -621,8 +621,7 @@
           <div class="flex gap-2 pt-4">
             <UButton
               label="Simpan"
-              class="rounded-2xl px-4 py-2 bg-blue-100 text-blue-700 border border-blue-700 hover:bg-blue-200 focus:ring-2 focus:ring-blue-700 shadow-none 
-              anotasi-btn flex items-center gap-2"
+              class="rounded-2xl px-4 py-2 bg-blue-100 text-blue-700 border border-blue-700 hover:bg-blue-200 focus:ring-2 focus:ring-blue-700 shadow-none anotasi-btn flex items-center gap-2"
               @click="saveAnnotation"
               :disabled="
                 !correctionInput ||

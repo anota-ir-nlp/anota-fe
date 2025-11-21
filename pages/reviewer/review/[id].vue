@@ -273,7 +273,7 @@
         <div
           v-if="showCombinedHistory && selectedSentence"
           :style="popupStyle"
-          class="fixed z-50 bg-white border border-gray-300 rounded-2xl p-6 shadow-xl min-w-[320px] max-w-[90vw] max-h-[80vh] overflow-y-auto cursor-move"
+          class="fixed z-50 bg-white border border-gray-300 rounded-2xl p-6 shadow-xl min-w-[320px] max-w-[90vw] max-h-[80vh] my-4 overflow-y-auto cursor-move"
           @mousedown="startDrag"
         >
           <div class="flex items-center justify-between mb-4">
@@ -1284,21 +1284,28 @@ async function syncReviewQueue() {
     const queue: ReviewQueueResponse = await getReviewQueue(docId);
     const existingReviews = await getReviews();
     console.log(existingReviews);
-    const reviewedAnnotationIds = new Set(
+
+    // Create a Set of unique keys for existing reviews: "document-annotation-sentence"
+    const existingReviewKeys = new Set(
       Array.isArray(existingReviews.results)
         ? existingReviews.results
             .filter((r) => r.document === docId)
-            .map((r) => r.annotation)
+            .map((r) => `${r.document}-${r.annotation}-${r.sentence}`)
         : []
     );
+
     console.log(
       "Queue annotation ids:",
       queue.sentences.flatMap((s) => s.annotations.map((a) => a.id))
     );
-    console.log("Reviewed annotation ids:", Array.from(reviewedAnnotationIds));
+    console.log("Existing review keys:", Array.from(existingReviewKeys));
+
     for (const sentence of queue.sentences) {
       for (const annotation of sentence.annotations) {
-        if (!reviewedAnnotationIds.has(annotation.id)) {
+        const reviewKey = `${queue.document_id}-${annotation.id}-${sentence.sentence_id}`;
+
+        // Only create if this combination doesn't exist yet
+        if (!existingReviewKeys.has(reviewKey)) {
           await createReview({
             document: queue.document_id,
             annotation: annotation.id,
