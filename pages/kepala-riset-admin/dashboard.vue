@@ -805,11 +805,11 @@ async function fetchDocuments() {
     if (isKepalaRiset.value && localSelectedProject.value) {
       // Kepala Riset with project selected: fetch documents from that project
       const response = await getDocumentsInProject(localSelectedProject.value.id);
-      documents.value = response.results || [];
+      documents.value = response || [];
     } else if (isAdmin.value && globalSelectedProject.value) {
       // Admin: fetch documents from their assigned project
       const response = await getDocumentsInProject(globalSelectedProject.value.id);
-      documents.value = response.results || [];
+      documents.value = response || [];
     }
   } catch (error) {
     console.error("Error fetching documents:", error);
