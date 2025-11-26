@@ -335,11 +335,11 @@
                 <div class="space-y-2 max-h-32 overflow-y-auto">
                   <div
                     v-for="doc in reviewerPerformance.per_document"
-                    :key="doc.document_id"
+                    :key="doc.document__id"
                     class="flex justify-between text-sm p-2 bg-gray-50 rounded"
                   >
-                    <span class="text-gray-600">{{ doc.document_title }}</span>
-                    <span class="font-medium text-green-600">{{ doc.reviews }} review</span>
+                    <span class="text-gray-600">{{ doc.document__title }}</span>
+                    <span class="font-medium text-green-600">{{ doc.reviews_count }} review</span>
                   </div>
                 </div>
               </div>
