@@ -1,4 +1,6 @@
-image: mcr.microsoft.com/dotnet/sdk:7.0
+image: 
+    name: sonarsource/sonar-scanner-cli:11
+    entrypoint: [""]
 
 variables:
   SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
@@ -20,11 +22,7 @@ build-sonar:
       - sonar-scanner/
       
   script: 
-      - "dotnet tool install --global dotnet-sonarscanner"
-      - "export PATH=\"$PATH:$HOME/.dotnet/tools\""
-      - "dotnet sonarscanner begin /k:\"Anota-Fe\" /d:sonar.token=\"$SONAR_TOKEN\" /d:\"sonar.host.url=$SONAR_HOST_URL\" "
-      - "dotnet build"
-      - "dotnet sonarscanner end /d:sonar.token=\"$SONAR_TOKEN\""
+    - sonar-scanner -Dsonar.host.url="${SONAR_HOST_URL}"
   allow_failure: true
   rules:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
