@@ -76,7 +76,7 @@
                 >
                   <div class="font-semibold text-blue-600 mb-3">Preview:</div>
                   <div
-                    class="flex-1 text-left space-y-3 flex flex-col overflow-hidden"
+                    class="flex-1 text-left space-y-3 flex flex-col overflow-y-auto min-h-0"
                   >
                     <div class="font-medium text-lg text-gray-900">
                       {{ singleFilePreview.title }}
@@ -132,7 +132,7 @@
                       </div>
                     </div>
 
-                    <div class="flex gap-2 mt-4 pt-4 border-t border-gray-200">
+                    <div class="flex gap-2 mt-4 pt-4 border-t border-gray-200 flex-shrink-0">
                       <Button
                         @click="confirmFile('single')"
                         variant="default"
@@ -261,14 +261,14 @@
                     v-if="currentBulkFile"
                     class="flex-1 bg-gray-50 border border-gray-200 rounded p-6 flex flex-col overflow-hidden"
                   >
-                    <div class="space-y-4 flex-1 flex flex-col overflow-hidden">
-                      <div class="font-medium text-blue-600 text-lg">
+                    <div class="space-y-4 flex-1 flex flex-col overflow-y-auto min-h-0">
+                      <div class="font-medium text-blue-600 text-lg flex-shrink-0">
                         {{ currentBulkFile.title }}
                       </div>
 
                       <div
                         v-if="currentBulkFile.sentence_count !== undefined"
-                        class="bg-blue-50 border border-blue-200 rounded p-3"
+                        class="bg-blue-50 border border-blue-200 rounded p-3 flex-shrink-0"
                       >
                         <div class="text-blue-800 font-medium">
                           Informasi Kalimat
@@ -279,7 +279,7 @@
                       </div>
 
                       <div
-                        class="flex-1 text-gray-700 p-4 bg-white border border-gray-200 rounded overflow-y-auto whitespace-pre-wrap text-sm"
+                        class="flex-1 text-gray-700 p-4 bg-white border border-gray-200 rounded overflow-y-auto whitespace-pre-wrap text-sm min-h-0"
                       >
                         {{ currentBulkFile.text }}
                       </div>
@@ -289,7 +289,7 @@
                           currentBulkFile.sentences &&
                           currentBulkFile.sentences.length > 0
                         "
-                        class="bg-green-50 border border-green-200 rounded p-3"
+                        class="bg-green-50 border border-green-200 rounded p-3 flex-shrink-0"
                       >
                         <div class="text-green-800 font-medium mb-2">
                           Preview Kalimat
@@ -316,7 +316,7 @@
                         </div>
                       </div>
 
-                      <div class="flex gap-2 pt-4 border-t border-gray-200">
+                      <div class="flex gap-2 pt-4 border-t border-gray-200 flex-shrink-0">
                         <Button
                           @click="confirmFile('bulk')"
                           variant="default"
