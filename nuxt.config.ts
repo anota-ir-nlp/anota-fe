@@ -4,6 +4,9 @@ const backendBaseUrl = (
   process.env.NUXT_BACKEND_URL ||
   "https://anota.cs.ui.ac.id/server/api/v1"
 ).replace(/\/$/, "");
+const publicApiBaseUrl = (
+  process.env.NUXT_PUBLIC_API_BASE_URL || "/api/proxy"
+).replace(/\/$/, "");
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -51,7 +54,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || "/api/proxy",
+      apiBaseUrl: publicApiBaseUrl,
     },
   },
 
