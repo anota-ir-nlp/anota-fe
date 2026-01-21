@@ -58,8 +58,9 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
-            docker rmi $(docker images -a)
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/anota-frontend:latest
+            IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/anota-frontend:latest"
+            echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin || true
+            docker pull "$IMAGE"
             docker stop anota-frontend || true
             docker rm anota-frontend || true
             docker compose up -d
