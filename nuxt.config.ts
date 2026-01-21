@@ -1,9 +1,6 @@
 import tailwindcss from "@tailwindcss/vite";
 
-const backendBaseUrl = (
-  process.env.NUXT_BACKEND_URL ||
-  "https://anota.cs.ui.ac.id/server/api/v1"
-).replace(/\/$/, "");
+const defaultBackendUrl = "https://anota.cs.ui.ac.id/server/api/v1";
 const publicApiBaseUrl = (
   process.env.NUXT_PUBLIC_API_BASE_URL || "/api/proxy"
 ).replace(/\/$/, "");
@@ -12,12 +9,6 @@ const publicApiBaseUrl = (
 export default defineNuxtConfig({
   ssr: false,
   compatibilityDate: "2025-05-15",
-
-  routeRules: {
-    "/api/proxy/**": {
-      proxy: `${backendBaseUrl}/**`,
-    },
-  },
 
   modules: [
     "@nuxt/devtools",
@@ -53,6 +44,7 @@ export default defineNuxtConfig({
   plugins: ["~/plugins/vuetify.ts"],
 
   runtimeConfig: {
+    backendUrl: process.env.NUXT_BACKEND_URL || defaultBackendUrl,
     public: {
       apiBaseUrl: publicApiBaseUrl,
     },
