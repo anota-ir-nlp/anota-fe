@@ -19,5 +19,14 @@ export default defineEventHandler(async (event) => {
     : `/${proxiedPath}`;
   const target = `${backendUrl}${normalizedPath}${url.search}`;
 
-  return proxyRequest(event, target);
+  const backendHost = "anota.cs.ui.ac.id";
+
+  // Force Host header to satisfy backend ALLOWED_HOSTS checks.
+  event.node.req.headers.host = backendHost;
+
+  return proxyRequest(event, target, {
+    headers: {
+      host: backendHost,
+    },
+  });
 });
