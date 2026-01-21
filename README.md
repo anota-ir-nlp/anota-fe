@@ -1,75 +1,33 @@
-# Nuxt Minimal Starter Test2
+# Anota Frontend
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Nuxt 3 SPA for Anota, built with Vite + Tailwind and packaged as a Docker image for deployment on a self-managed VM.
 
-## Setup
+## Environment
 
-Make sure to install dependencies:
+Create a `.env` (or set vars in your deployment stack) using `.env.example` as a template. Key values:
+
+- `AUTH_ORIGIN=http://localhost:3000`
+- `AUTH_SECRET=your-secret-key-here`
+- `NUXT_PUBLIC_API_BASE_URL=/api/proxy`
+- `NUXT_BACKEND_URL=https://anota.cs.ui.ac.id/server/api/v1/`
+- `HOST=0.0.0.0`, `PORT=3030` (override as needed)
+
+API requests from the client hit `/api/proxy/*` and are forwarded to `NUXT_BACKEND_URL`.
+
+## Local Development
 
 ```bash
-# npm
-npm install
-
-# pnpm
 pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`:
-
-```bash
-# npm
-npm run dev
-
-# pnpm
 pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
 ```
 
-## Production
-
-Build the application for production:
+## Build & Preview
 
 ```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
+pnpm build       # create production build
+pnpm preview     # serve the build locally
 ```
 
-Locally preview production build:
+## Deployment
 
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+The GitHub Action (`.github/workflows/deploy.yml`) builds the Docker image, pushes it to Docker Hub, and pulls it onto the target VM over SSH. Configure the required secrets and environment variables (AUTH_ORIGIN, AUTH_SECRET, NUXT_PUBLIC_API_BASE_URL, NUXT_BACKEND_URL, Docker Hub + VPN/SSH credentials) in your repository settings before running the workflow. The container is started via `docker compose up -d` on the VM.
