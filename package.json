@@ -33,7 +33,7 @@
     "officeparser": "^5.2.0",
     "papaparse": "^5.5.3",
     "postcss": "^8.5.6",
-    "reka-ui": "^2.8.0",
+    "reka-ui": "^2.4.1",
     "shadcn-nuxt": "^2.2.0",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.1.11",
@@ -42,7 +42,7 @@
     "vite": "^6.3.5",
     "vue": "^3.5.17",
     "vue-router": "^4.5.1",
-    "vue-sonner": "2.0.2",
+    "vue-sonner": "^2.0.2",
     "vuetify": "^3.8.12",
     "zod": "^3.25.74"
   },

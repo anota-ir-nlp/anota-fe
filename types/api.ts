@@ -145,7 +145,6 @@ export interface AssignmentResponse {
   document: DocumentResponse;
   created_at: string;
 }
-
 export interface AssignDocumentRequest {
   document_id: number;
   user_id: string;

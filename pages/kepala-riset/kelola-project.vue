@@ -817,7 +817,7 @@ async function fetchAdminUsers() {
     for (const project of projects.value) {
       try {
         const projectUsersResponse = await getUsersInProject(project.id);
-        projectUsersResponse.results.forEach((user: UserResponse) => {
+        projectUsersResponse?.results?.forEach((user: UserResponse) => {
           if (!allUsersMap.has(user.id)) {
             allUsersMap.set(user.id, user);
           }
@@ -827,7 +827,7 @@ async function fetchAdminUsers() {
       }
     }
 
-    response.users.forEach((availableUser: { id: string; username: string; full_name: string; is_in_project: boolean; roles_in_project: string[] }) => {
+    response?.users?.forEach((availableUser: { id: string; username: string; full_name: string; is_in_project: boolean; roles_in_project: string[] }) => {
       if (!allUsersMap.has(availableUser.id)) {
         allUsersMap.set(availableUser.id, {
           id: availableUser.id,
@@ -855,9 +855,9 @@ async function fetchProjects(page = 1) {
   isLoading.value = true;
   try {
     const response = await getProjects(page);
-    projects.value = response.results;
+    projects.value = response?.results || [];
     currentPage.value = page;
-    totalPages.value = Math.max(1, Math.ceil(response.count / 20));
+    totalPages.value = Math.max(1, Math.ceil((response?.count || 0) / 20));
 
     await fetchAdminUsers();
   } catch (error) {
@@ -1067,7 +1067,7 @@ async function confirmDelete() {
     });
 
     const response = await getProjects(currentPage.value);
-    if (response.results.length === 0 && currentPage.value > 1) {
+    if ((response?.results?.length || 0) === 0 && currentPage.value > 1) {
       await fetchProjects(currentPage.value - 1);
     } else {
       await fetchProjects(currentPage.value);
