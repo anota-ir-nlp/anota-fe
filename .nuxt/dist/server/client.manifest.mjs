@@ -1,0 +1,18 @@
+export default {
+  "@vite/client": {
+    "prefetch": true,
+    "isEntry": true,
+    "file": "@vite/client",
+    "css": [],
+    "module": true,
+    "resourceType": "script"
+  },
+  "C:/Users/FERNANDO VALENTINO S/Documents/Term 8/anota-fe/node_modules/.pnpm/nuxt@3.17.6_@parcel+watcher_daf8d3ebc5a0cd5ed58f3c3ddddc14c4/node_modules/nuxt/dist/app/entry.js": {
+    "resourceType": "script",
+    "module": true,
+    "prefetch": true,
+    "preload": true,
+    "isEntry": true,
+    "file": "C:/Users/FERNANDO VALENTINO S/Documents/Term 8/anota-fe/node_modules/.pnpm/nuxt@3.17.6_@parcel+watcher_daf8d3ebc5a0cd5ed58f3c3ddddc14c4/node_modules/nuxt/dist/app/entry.js"
+  }
+}

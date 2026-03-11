@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/vue-table";
 import { h } from "vue";
-import { Trash2, RotateCcw } from "lucide-vue-next";
+import { Trash2, RotateCcw, UserPlus } from "lucide-vue-next";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +10,8 @@ export function createColumns(
   getUserName: (userId: string) => string,
   getUserFullNameFromUsername: (username: string) => string,
   handleDeleteDocument: (documentId: string) => void,
-  handleReopenDocument: (document: DocumentResponse) => void
+  handleReopenDocument: (document: DocumentResponse) => void,
+  handleSingleAssignment: (document: DocumentResponse) => void
 ): ColumnDef<DocumentResponse>[] {
   return [
     {
@@ -142,7 +143,17 @@ export function createColumns(
             {
               size: "sm",
               variant: "outline",
-              class: "px-4 py-1 font-semibold",
+              class: "px-3 py-1 font-semibold",
+              onClick: () => handleSingleAssignment(document),
+            },
+            () => [h(UserPlus, { class: "w-4 h-4 mr-1" }), "Assign"]
+          ),
+          h(
+            Button,
+            {
+              size: "sm",
+              variant: "outline",
+              class: "px-3 py-1 font-semibold",
               onClick: () => handleReopenDocument(document),
             },
             () => [h(RotateCcw, { class: "w-4 h-4 mr-1" }), "Reopen"]
@@ -152,7 +163,7 @@ export function createColumns(
             {
               size: "sm",
               variant: "destructive",
-              class: "px-4 py-1 font-semibold",
+              class: "px-3 py-1 font-semibold",
               onClick: () => handleDeleteDocument(document.id.toString()),
             },
             () => [h(Trash2, { class: "w-4 h-4 mr-1" }), "Hapus"]

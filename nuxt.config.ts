@@ -10,6 +10,15 @@ export default defineNuxtConfig({
   ssr: false,
   compatibilityDate: "2025-05-15",
 
+  nitro: {
+    devProxy: {
+      "/proxy": {
+        target: "http://localhost:8000/api/v1",
+        changeOrigin: true,
+      },
+    },
+  },
+
   modules: [
     "@nuxt/devtools",
     "@pinia/nuxt",
