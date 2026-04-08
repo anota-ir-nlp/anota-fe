@@ -206,35 +206,38 @@
                 </span>
               </div>
             </div>
-            <!-- Paragraph rendering, highlight selected sentence, others are disabled -->
-            <div
-              class="text-black leading-relaxed whitespace-pre-wrap paragraph-annotasi"
-            >
-              <template
-                v-if="document?.sentences && document.sentences.length > 0"
-              >
-                <template
-                  v-for="(sentence, idx) in document.sentences"
-                  :key="sentence.id"
-                >
-                  <div
-                    v-if="
-                      selectedSentence && selectedSentence.id === sentence.id
-                    "
+            <!-- Paragraph rendering -->
+            <div class="text-black leading-relaxed paragraph-annotasi">
+              <template v-if="document?.sentences && document.sentences.length > 0">
+                <template v-for="(sentence, idx) in document.sentences" :key="sentence.id">
+                  
+                  <!-- Kalimat aktif/terpilih -->
+                  <span
+                    v-if="selectedSentence && selectedSentence.id === sentence.id"
                     ref="combinedEditableArea"
                     :class="[
                       'sentence-in-paragraph px-1 py-0.5 rounded transition-colors active-sentence bg-blue-100 cursor-text',
-                      hasAnnotations(sentence.id)
-                        ? 'annotated-sentence-indicator'
-                        : '',
+                      hasAnnotations(sentence.id) ? 'annotated-sentence-indicator' : '',
                     ]"
                     @mouseup="handleTextSelection"
-                    style="user-select: auto; display: inline-block"
+                    style="user-select: auto; display: inline;"
                     tabindex="0"
-                    :aria-disabled="false"
                   >
-                    {{ sentence.text }}
-                  </div>
+                    <template
+                      v-for="(seg, i) in buildSegmentsForSentence(sentence.id)"
+                      :key="i"
+                    >
+                      <!-- Segmen beranotasi: koreksi di atas, teks asli di bawah -->
+                      <span v-if="seg.type === 'annotated'" class="inline-annotated-word">
+                        <span class="annotated-correction">{{ seg.correction }}</span>
+                        <span class="annotated-original">{{ seg.text }}</span>
+                      </span>
+                      <!-- Segmen biasa -->
+                      <span v-else>{{ seg.text }}</span>
+                    </template>
+                  </span>
+
+                  <!-- Kalimat tidak aktif -->
                   <span
                     v-else
                     :class="[
@@ -242,19 +245,24 @@
                       selectedSentence
                         ? 'disabled-sentence bg-gray-100 text-gray-400 cursor-not-allowed'
                         : 'hover:bg-blue-50 cursor-pointer',
-                      hasAnnotations(sentence.id)
-                        ? 'annotated-sentence-indicator'
-                        : '',
+                      hasAnnotations(sentence.id) ? 'annotated-sentence-indicator' : '',
                     ]"
                     @click="!selectedSentence && selectSentence(sentence.id)"
                     :tabindex="selectedSentence ? -1 : 0"
-                    :aria-disabled="
-                      selectedSentence && selectedSentence.id !== sentence.id
-                    "
-                    style="user-select: none"
+                    style="user-select: none; display: inline;"
                   >
-                    {{ sentence.text }}
+                    <template
+                      v-for="(seg, i) in buildSegmentsForSentence(sentence.id)"
+                      :key="i"
+                    >
+                      <span v-if="seg.type === 'annotated'" class="inline-annotated-word">
+                        <span class="annotated-correction">{{ seg.correction }}</span>
+                        <span class="annotated-original">{{ seg.text }}</span>
+                      </span>
+                      <span v-else>{{ seg.text }}</span>
+                    </template>
                   </span>
+
                   <span v-if="idx < document.sentences.length - 1"> </span>
                 </template>
               </template>
@@ -946,6 +954,50 @@ async function fetchAssignedDocumentIds() {
   }
 }
 
+// Build segments untuk satu kalimat berdasarkan semua anotasi aktif
+function buildSegmentsForSentence(sentenceId: number) {
+  const text = getOriginalSentenceText(sentenceId);
+  const annotations = getApiAnnotationsForSentence(sentenceId);
+
+  if (!annotations.length) {
+    return [{ type: 'text', text }];
+  }
+
+  // Sort anotasi berdasarkan start_index, hindari overlap
+  const sorted = [...annotations]
+    .filter(a => a.start_index >= 0 && a.end_index <= text.length && a.start_index < a.end_index)
+    .sort((a, b) => a.start_index - b.start_index);
+
+  const segments: { type: string; text: string; correction?: string }[] = [];
+  let cursor = 0;
+
+  for (const ann of sorted) {
+    // Skip jika overlap dengan segmen sebelumnya
+    if (ann.start_index < cursor) continue;
+
+    // Teks sebelum anotasi
+    if (ann.start_index > cursor) {
+      segments.push({ type: 'text', text: text.slice(cursor, ann.start_index) });
+    }
+
+    // Segmen beranotasi
+    segments.push({
+      type: 'annotated',
+      text: text.slice(ann.start_index, ann.end_index),
+      correction: ann.correction,
+    });
+
+    cursor = ann.end_index;
+  }
+
+  // Sisa teks setelah anotasi terakhir
+  if (cursor < text.length) {
+    segments.push({ type: 'text', text: text.slice(cursor) });
+  }
+
+  return segments;
+}
+
 onMounted(async () => {
   await fetchDocument();
   await fetchErrorTypes();
@@ -1414,5 +1466,36 @@ function hasAnnotations(sentenceId: number) {
   border-bottom: 2px dashed #93c5fd !important; /* blue-300 */
   /* Optionally, add a little padding for visibility */
   padding-bottom: 2px;
+}
+
+/* Wrapper kata beranotasi */
+.inline-annotated-word {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  vertical-align: bottom;
+  line-height: 1.2;
+  margin: 0 1px;
+}
+
+/* Koreksi di atas — warna hijau, ukuran sama */
+.annotated-correction {
+  font-size: 1em; /* sama dengan teks kalimat */
+  color: #16a34a; /* green-600 */
+  font-weight: 600;
+  background: #dcfce7; /* green-100 */
+  border-radius: 4px;
+  padding: 0 4px;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+/* Teks asli di bawah — dicoret */
+.annotated-original {
+  font-size: 1em;
+  color: #6b7280; /* gray-500 */
+  text-decoration: line-through;
+  line-height: 1.4;
+  white-space: nowrap;
 }
 </style>
