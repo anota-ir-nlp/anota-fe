@@ -805,44 +805,53 @@ function removeAdminFromEditingProject(adminId: string) {
 
 async function fetchAdminUsers() {
   try {
-    if (projects.value.length === 0) {
+    if (!projects.value || projects.value.length === 0) {
       adminUsers.value = [];
       return;
     }
 
-    const response = await getAvailableUsersInProject(projects.value[0].id);
-
     const allUsersMap = new Map<string, UserResponse>();
 
+    // Fetch available users from the first project
+    try {
+      const response = await getAvailableUsersInProject(projects.value[0].id);
+      if (response?.users && Array.isArray(response.users)) {
+        response.users.forEach((availableUser: { id: string; username: string; full_name: string; is_in_project?: boolean; roles_in_project?: string[] }) => {
+          if (!allUsersMap.has(availableUser.id)) {
+            allUsersMap.set(availableUser.id, {
+              id: availableUser.id,
+              username: availableUser.username,
+              full_name: availableUser.full_name,
+              email: `${availableUser.username}@example.com`,
+              roles: ['Admin'],
+              is_kepala_riset: false,
+              date_joined: '',
+              is_deleted: false,
+              deleted_at: null,
+              institusi: null,
+            } as UserResponse);
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching available users:", error);
+    }
+
+    // Fetch users from all projects
     for (const project of projects.value) {
       try {
         const projectUsersResponse = await getUsersInProject(project.id);
-        projectUsersResponse?.results?.forEach((user: UserResponse) => {
-          if (!allUsersMap.has(user.id)) {
-            allUsersMap.set(user.id, user);
-          }
-        });
+        if (projectUsersResponse?.results && Array.isArray(projectUsersResponse.results)) {
+          projectUsersResponse.results.forEach((user: UserResponse) => {
+            if (!allUsersMap.has(user.id)) {
+              allUsersMap.set(user.id, user);
+            }
+          });
+        }
       } catch (error) {
         console.error(`Error fetching users for project ${project.id}:`, error);
       }
     }
-
-    response?.users?.forEach((availableUser: { id: string; username: string; full_name: string; is_in_project: boolean; roles_in_project: string[] }) => {
-      if (!allUsersMap.has(availableUser.id)) {
-        allUsersMap.set(availableUser.id, {
-          id: availableUser.id,
-          username: availableUser.username,
-          full_name: availableUser.full_name,
-          email: `${availableUser.username}@example.com`,
-          roles: ['Admin'],
-          is_kepala_riset: false,
-          date_joined: '',
-          is_deleted: false,
-          deleted_at: null,
-          institusi: null,
-        } as UserResponse);
-      }
-    });
 
     adminUsers.value = Array.from(allUsersMap.values());
   } catch (error) {
