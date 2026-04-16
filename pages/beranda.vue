@@ -462,6 +462,65 @@
           </div>
         </div>
 
+        <div class="flex gap-6">
+          <aside class="w-[260px] bg-white/90 border border-gray-200 rounded-lg !shadow-none p-4 flex-shrink-0">
+            <h3 class="text-sm font-semibold text-gray-700 mb-3">Pilih Proyek untuk Analisis</h3>
+            <div class="space-y-2 overflow-auto max-h-[calc(100vh-280px)]">
+              <button
+                v-for="project in pagedProjects"
+                :key="project.id"
+                @click="onProjectChange(project.id.toString())"
+                :class="{
+                  'w-full text-left p-3 rounded-lg border transition-all duration-200 flex items-center gap-3 hover:shadow-md':
+                    true,
+                  'bg-blue-50 border-blue-200 text-blue-700 shadow-sm': selectedProjectIdLocal === project.id.toString(),
+                  'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100': selectedProjectIdLocal !== project.id.toString(),
+                }"
+              >
+                <div class="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center">
+                  <Building2 class="w-4 h-4 text-blue-600" />
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="font-medium truncate">{{ project.name }}</div>
+                  <div class="text-xs text-gray-500 truncate">{{ project.description || 'Belum ada deskripsi' }}</div>
+                </div>
+              </button>
+            </div>
+
+            <div class="mt-4 flex items-center justify-between">
+              <Button
+                size="sm"
+                variant="outline"
+                :disabled="!canPreviousPage"
+                @click="goToPreviousPage"
+              >
+                <ArrowLeft class="w-4 h-4" />
+              </Button>
+              <span class="text-sm text-gray-600">
+                {{ projectPage + 1 }} / {{ totalProjectPages }}
+              </span>
+              <Button
+                size="sm"
+                variant="outline"
+                :disabled="!canNextPage"
+                @click="goToNextPage"
+              >
+                <ArrowRight class="w-4 h-4" />
+              </Button>
+            </div>
+          </aside>
+
+          <main class="flex-1 bg-white/90 border border-gray-200 rounded-lg !shadow-none p-4">
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Project terpilih</h3>
+            <p class="text-sm text-gray-600 mb-4">{{ currentSelectedProject?.name || 'Pilih project dari sidebar sebelah kiri' }}</p>
+            <div v-if="currentSelectedProject" class="space-y-2">
+              <p><span class="font-semibold">Created:</span> {{ currentSelectedProject.created_at ? new Date(currentSelectedProject.created_at).toLocaleDateString('id-ID') : '-' }}</p>
+              <p><span class="font-semibold">Status:</span> {{ projectStatus }}</p>
+            </div>
+            <div v-else class="text-sm text-gray-500">Tidak ada proyek terpilih.</div>
+          </main>
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
           <Card
             v-if="pending"
@@ -580,27 +639,36 @@
             Status Dokumen
           </h3>
           <div
-            class="grid grid-cols-1 md:grid-cols-2 gap-4"
+            class="grid grid-cols-1 md:grid-cols-3 gap-4"
             v-if="dashboardAnalytics"
           >
             <div class="text-center p-4 bg-blue-50 rounded-lg">
               <div class="text-2xl font-bold text-blue-600">
-                {{ dashboardAnalytics.per_document?.length || 0 }}
+                {{ totalProjectDocuments || 0 }}
               </div>
-              <div class="text-sm text-blue-600">Dokumen Beranotasi</div>
+              <div class="text-sm text-blue-600">Total Dokumen Proyek</div>
             </div>
             <div class="text-center p-4 bg-green-50 rounded-lg">
               <div class="text-2xl font-bold text-green-600">
-                {{ ((dashboardAnalytics.inter_annotator_agreement?.cohen_kappa_avg || 0) * 100).toFixed(1) }}%
+                {{ completionPercentage || 0 }}%
               </div>
-              <div class="text-sm text-green-600">Inter-Annotator Agreement</div>
+              <div class="text-sm text-green-600">Persentase Penyelesaian</div>
+            </div>
+            <div class="text-center p-4 bg-yellow-50 rounded-lg">
+              <div class="text-2xl font-bold text-yellow-600">
+                {{ cohenKappaPercentage || '0.0' }}%
+              </div>
+              <div class="text-sm text-yellow-600">Inter-Annotator Agreement</div>
+              <div class="text-xs text-gray-500 mt-2">
+                Matched {{ agreementSpans.matching || 0 }} / {{ agreementSpans.total || 0 }} span
+              </div>
             </div>
           </div>
         </Card>
 
         <div
-          v-if="showPerformanceSection"
-          class="grid grid-cols-1 lg:grid-cols-2 gap-8"
+          v-if="dashboardAnalytics"
+          class="grid grid-cols-1 lg:grid-cols-3 gap-8"
         >
           <Card
             variant="glassmorphism"
@@ -729,6 +797,93 @@
               </div>
             </div>
           </Card>
+
+          <Card
+            variant="glassmorphism"
+            class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none"
+          >
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">
+              Inter-Annotator Agreement
+            </h3>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Pilih Annotator
+                </label>
+                <Select v-model="selectedAnnotator">
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih anotator..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem
+                      v-for="user in annotators"
+                      :key="user.id"
+                      :value="user.id"
+                    >
+                      {{ user.full_name }}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Pilih Reviewer
+                </label>
+                <Select v-model="selectedReviewer">
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih reviewer..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem
+                      v-for="user in reviewers"
+                      :key="user.id"
+                      :value="user.id"
+                    >
+                      {{ user.full_name }}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button
+                @click="loadIAA"
+                :loading="loadingIAA"
+                :disabled="!selectedAnnotator || !selectedReviewer"
+              >
+                Hitung IAA
+              </Button>
+              <div v-if="iaaError" class="text-sm text-red-600 pt-4 border-t">
+                {{ iaaError }}
+              </div>
+              <div v-else-if="iaaResult?.results" class="space-y-2 pt-4 border-t">
+                <div class="flex justify-between">
+                  <span class="text-sm text-gray-600">Cohen Kappa:</span>
+                  <span class="font-medium">{{
+                    ((iaaResult.results.cohen_kappa ?? 0) * 100).toFixed(1)
+                  }}%</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-sm text-gray-600">Akurasi:</span>
+                  <span class="font-medium">{{
+                    ((iaaResult.results.accuracy ?? 0) * 100).toFixed(1)
+                  }}%</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-sm text-gray-600">Span yang cocok:</span>
+                  <span class="font-medium">{{
+                    iaaResult.results.matching_spans ?? 0
+                  }}/{{ iaaResult.results.total_unique_spans ?? 0 }}
+                  </span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-sm text-gray-600">Total item:</span>
+                  <span class="font-medium">{{ iaaResult.results.total_items ?? 0 }}</span>
+                </div>
+              </div>
+              <div v-else class="text-sm text-gray-500 pt-4 border-t">
+                Pilih Annotator dan Reviewer lalu klik "Hitung IAA" untuk melihat nilai. Jika hasilnya nol, akan ditampilkan sebagai 0.
+              </div>
+            </div>
+          </Card>
         </div>
       </div>
     </section>
@@ -783,7 +938,7 @@ import { useProjectContext } from "~/composables/project-context";
 import type { DocumentStatus } from "~/types/api";
 
 const { user } = useAuth();
-const { getDashboardSummary, getAnnotatorPerformance, getReviewerPerformance } =
+const { getDashboardSummary, getAnnotatorPerformance, getReviewerPerformance, getInterAnnotatorAgreement } =
   useDashboardApi();
 const { getAvailableUsersInProject, getMyProjects, getUserRolesInProject } = useUsersApi();
 const { getAssignedDocuments } = useUserDocumentsApi();
@@ -803,6 +958,93 @@ const userRolesInProject = ref<string[]>([]);
 const isLoadingRoles = ref(false);
 
 const isKepalaRiset = computed(() => hasRole("Kepala Riset"));
+
+const kepalaRisetMetrics = computed(() => dashboardAnalytics.value?.kepala_riset_metrics || null);
+
+const totalProjectDocuments = computed(() =>
+  kepalaRisetMetrics.value?.total_documents ??
+  (dashboardAnalytics.value?.totals?.documents ?? dashboardAnalytics.value?.per_document?.length ?? 0)
+);
+
+const annotatedDocumentsCount = computed(() =>
+  kepalaRisetMetrics.value?.annotated_documents ??
+  (dashboardAnalytics.value?.per_document || []).filter(
+    (doc: any) => doc.annotations_count > 0
+  ).length
+);
+
+const reviewedDocumentsCount = computed(() =>
+  kepalaRisetMetrics.value?.total_reviewed_annotations ??
+  (dashboardAnalytics.value?.per_document || []).filter(
+    (doc: any) => (doc as any).reviews_count > 0
+  ).length
+);
+
+const completionPercentage = computed(() =>
+  kepalaRisetMetrics.value?.completion_percentage ??
+  (totalProjectDocuments.value > 0
+    ? Math.round((reviewedDocumentsCount.value / totalProjectDocuments.value) * 100)
+    : 0)
+);
+
+const annotationPercent = computed(() =>
+  totalProjectDocuments.value > 0
+    ? Math.round((annotatedDocumentsCount.value / totalProjectDocuments.value) * 100)
+    : 0
+);
+
+const reviewPercent = computed(() =>
+  totalProjectDocuments.value > 0
+    ? Math.round((reviewedDocumentsCount.value / totalProjectDocuments.value) * 100)
+    : 0
+);
+
+const cohenKappaPercentage = computed(() =>
+  dashboardAnalytics.value?.inter_annotator_agreement?.cohen_kappa_avg != null
+    ? ((dashboardAnalytics.value.inter_annotator_agreement.cohen_kappa_avg || 0) * 100).toFixed(1)
+    : "0.0"
+);
+
+const agreementSpans = computed(() => ({
+  matching: dashboardAnalytics.value?.inter_annotator_agreement?.matching_unique_span_count ?? 0,
+  total: dashboardAnalytics.value?.inter_annotator_agreement?.total_unique_span_count ?? 0,
+}));
+
+const projectStatus = computed(() => {
+  if (totalProjectDocuments.value === 0) return "Belum dikerjakan";
+  if (completionPercentage.value === 100) return "Selesai";
+  return "Masih dalam pengerjaan";
+});
+
+const PROJECT_PAGE_SIZE = 3;
+const projectPage = ref(0);
+
+const totalProjectPages = computed(() =>
+  Math.max(1, Math.ceil((userProjects.value?.length || 0) / PROJECT_PAGE_SIZE))
+);
+
+const pagedProjects = computed(() => {
+  if (!userProjects.value) return [];
+  const start = projectPage.value * PROJECT_PAGE_SIZE;
+  return userProjects.value.slice(start, start + PROJECT_PAGE_SIZE);
+});
+
+const canPreviousPage = computed(() => projectPage.value > 0);
+const canNextPage = computed(
+  () => projectPage.value + 1 < totalProjectPages.value
+);
+
+const goToPreviousPage = () => {
+  if (canPreviousPage.value) {
+    projectPage.value -= 1;
+  }
+};
+
+const goToNextPage = () => {
+  if (canNextPage.value) {
+    projectPage.value += 1;
+  }
+};
 
 const dashboardAnalytics = ref<any>(null);
 
@@ -858,7 +1100,19 @@ const onProjectChange = async (projectId: string) => {
   const project = userProjects.value.find(p => p.id.toString() === projectId);
   if (project) {
     setSelectedProject(project);
-    await loadUserRolesInProject(projectId);
+
+    if (hasRole("Kepala Riset")) {
+      selectedProjectIdLocal.value = projectId;
+      // Keep selected project visible in paginated sidebar
+      const selectedIndex = userProjects.value.findIndex((p: any) => p.id === project.id);
+      if (selectedIndex >= 0) {
+        projectPage.value = Math.floor(selectedIndex / PROJECT_PAGE_SIZE);
+      }
+      await fetchDashboardData();
+      await loadUsersForPerformance();
+    } else {
+      await loadUserRolesInProject(projectId);
+    }
   }
 };
 
@@ -977,10 +1231,13 @@ const selectedAnnotator = ref<string>("");
 const selectedReviewer = ref<string>("");
 const loadingAnnotator = ref(false);
 const loadingReviewer = ref(false);
+const loadingIAA = ref(false);
 const annotators = ref<any[]>([]);
 const reviewers = ref<any[]>([]);
 const annotatorPerformance = ref<any>(null);
 const reviewerPerformance = ref<any>(null);
+const iaaResult = ref<any>(null);
+const iaaError = ref<string>("");
 
 // Helper functions
 const getTaskStatusColor = (status: DocumentStatus | string) => {
@@ -1093,6 +1350,9 @@ const fetchDashboardData = async () => {
 
     // For other roles (Kepala Riset, Annotator, Reviewer), fetch dashboard data
     const params: any = {};
+    if (hasRole("Kepala Riset") && selectedProjectIdLocal.value) {
+      params.project_id = selectedProjectIdLocal.value;
+    }
     const dashboardData = await getDashboardSummary(params);
 
     dashboardAnalytics.value = dashboardData;
@@ -1157,45 +1417,34 @@ const fetchDashboardData = async () => {
     }
 
     if (hasRole("Kepala Riset")) {
-      let projectsCount = 0;
-      try {
-        const projectsData = await getProjects();
-        projectsCount = projectsData.count || 0;
-      } catch (error) {
-        console.error("Error fetching projects:", error);
-      }
-
       researchStats.value = [
         {
-          label: "Total Anotasi",
-          value: dashboardData.totals?.annotations || 0,
+          label: "Dokumen Anotasi Selesai",
+          value: annotatedDocumentsCount.value,
           icon: "pencil",
           color: "text-blue-400",
-          description: "Anotasi yang telah dibuat",
+          description: `(${annotationPercent.value}% dari ${totalProjectDocuments.value})`,
         },
         {
-          label: "Review Selesai",
-          value: dashboardData.totals?.reviews || 0,
+          label: "Dokumen Review Selesai",
+          value: reviewedDocumentsCount.value,
           icon: "check-circle",
           color: "text-green-400",
-          description: "Review yang telah selesai",
+          description: `(${reviewPercent.value}% dari ${totalProjectDocuments.value})`,
         },
         {
-          label: "Total Proyek",
-          value: projectsCount,
+          label: "Total Dokumen Proyek",
+          value: totalProjectDocuments.value,
           icon: "arrow-down-tray",
           color: "text-purple-400",
-          description: "Proyek yang dikelola",
+          description: "Jumlah dokumen dalam proyek",
         },
         {
-          label: "Dokumen Aktif",
-          value:
-            dashboardData.per_document?.filter(
-              (doc: any) => doc.annotations_count > 0
-            )?.length || 0,
+          label: "Tingkat Penyelesaian",
+          value: `${completionPercentage.value}%`,
           icon: "user-group",
           color: "text-orange-400",
-          description: "Dokumen dalam progress",
+          description: "Persentase penyelesaian proyek saat ini",
         },
       ];
     }
@@ -1265,12 +1514,49 @@ const loadReviewerPerformance = async () => {
   }
 };
 
+const loadIAA = async () => {
+  if (!selectedAnnotator.value || !selectedReviewer.value) return;
+
+  loadingIAA.value = true;
+  iaaResult.value = null;
+  iaaError.value = "";
+
+  try {
+    const params: any = {
+      annotator_id: selectedAnnotator.value,
+      reviewer_id: selectedReviewer.value,
+    };
+
+    if (selectedProjectIdLocal.value) {
+      params.project_id = parseInt(selectedProjectIdLocal.value);
+    }
+
+    iaaResult.value = await getInterAnnotatorAgreement(params);
+  } catch (error: any) {
+    console.error("Error loading IAA:", error);
+    iaaResult.value = null;
+    iaaError.value =
+      error?.error_code === "NO_DATA_AVAILABLE"
+        ? error.detail || "Tidak ada data anotasi atau review untuk perbandingan ini."
+        : error?.detail || error?.message || "Gagal memuat data IAA.";
+  } finally {
+    loadingIAA.value = false;
+  }
+};
+
 async function fetchUserProjects() {
   isLoadingProjects.value = true;
   try {
     if (hasRole("Kepala Riset")) {
       const response = await getProjects();
       userProjects.value = response.results || [];
+
+      if (userProjects.value.length > 0) {
+        projectPage.value = 0;
+        const activeProject = userProjects.value[0];
+        setSelectedProject(activeProject);
+        selectedProjectIdLocal.value = activeProject.id.toString();
+      }
     } else {
       const response = await getMyProjects();
       userProjects.value = response.projects || [];
