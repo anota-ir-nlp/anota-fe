@@ -404,11 +404,11 @@
         </div>
 
         <div v-else class="overflow-x-auto rounded-lg">
-          <table class="min-w-full text-sm table-auto">
+          <table class="min-w-full table-fixed w-full text-sm">
             <thead>
               <tr class="bg-black text-white sticky top-0 z-10">
-                <th class="px-4 py-3 text-left">No</th>
-                <th class="px-4 py-3 text-left">
+                <th class="px-4 py-3 text-left w-[5%]">No</th>
+                <th class="px-4 py-3 text-left w-[35%]">
                   <button
                     class="flex items-center gap-1 hover:text-blue-200 transition"
                     @click="setSort('title')"
@@ -417,28 +417,7 @@
                     <UIcon :name="sortIcon('title')" class="w-4 h-4" />
                   </button>
                 </th>
-                <th class="px-4 py-3 text-left">
-                  <button
-                    class="flex items-center gap-1 hover:text-blue-200 transition"
-                    @click="setSort('institusi')"
-                  >
-                    Lembaga Asal
-                    <UIcon :name="sortIcon('institusi')" class="w-4 h-4" />
-                  </button>
-                </th>
-                <th class="px-4 py-3 text-left">
-                  <button
-                    class="flex items-center gap-1 hover:text-blue-200 transition"
-                    @click="setSort('assigned_by_name')"
-                  >
-                    Assigned By
-                    <UIcon
-                      :name="sortIcon('assigned_by_name')"
-                      class="w-4 h-4"
-                    />
-                  </button>
-                </th>
-                <th class="px-4 py-3 text-left">
+                <th class="px-4 py-3 text-left w-1/5">
                   <button
                     class="flex items-center gap-1 hover:text-blue-200 transition"
                     @click="setSort('status')"
@@ -456,18 +435,6 @@
                     <UIcon :name="sortIcon('created_at')" class="w-4 h-4" />
                   </button>
                 </th>
-                <th class="px-4 py-3 text-left">
-                  <button
-                    class="flex items-center gap-1 hover:text-blue-200 transition"
-                    @click="setSort('jumlah_sentence')"
-                  >
-                    Sentences
-                    <UIcon
-                      :name="sortIcon('jumlah_sentence')"
-                      class="w-4 h-4"
-                    />
-                  </button>
-                </th>
                 <th class="px-4 py-3 text-left">Aksi</th>
               </tr>
             </thead>
@@ -479,10 +446,6 @@
               >
                 <td class="px-4 py-3 font-semibold">{{ index + 1 }}</td>
                 <td class="px-4 py-3 font-semibold">{{ doc.title }}</td>
-                <td class="px-4 py-3">{{ doc.institusi }}</td>
-                <td class="px-4 py-3">
-                  {{ doc.assigned_by?.full_name || "-" }}
-                </td>
                 <td class="px-4 py-3">
                   <span
                     :class="getStatusClass(doc.status)"
@@ -492,7 +455,6 @@
                   </span>
                 </td>
                 <td class="px-4 py-3">{{ formatDate(doc.created_at) }}</td>
-                <td class="px-4 py-3">{{ doc.jumlah_sentence }}</td>
                 <td class="px-4 py-3">
                   <Button
                     variant="outline"
@@ -522,7 +484,7 @@
                 </td>
               </tr>
               <tr v-if="filteredDocs.length === 0">
-                <td colspan="8" class="py-10">
+                <td colspan="5" class="py-10">
                   <div class="flex flex-col items-center gap-3 text-gray-400">
                     <UIcon
                       name="i-heroicons-document-magnifying-glass"
