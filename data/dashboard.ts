@@ -33,25 +33,27 @@ export interface DashboardSummaryResponse {
     reviews: number;
   };
   per_annotator: Array<{
-    annotator_id: string;
-    annotator_name: string;
-    annotations: number;
+    annotator__id: string;
+    annotator__username: string;
+    num_annotations: number;
+    num_documents: number;
   }>;
   per_reviewer: Array<{
-    reviewer_id: string;
-    reviewer_name: string;
-    reviews: number;
+    reviewer__id: string;
+    reviewer__username: string;
+    num_reviews: number;
+    num_documents: number;
   }>;
   per_document: Array<{
-    document_id: number;
-    document_title: string;
-    annotations: number;
-    reviews: number;
+    document__id: number;
+    document__title: string;
+    annotations_count: number;
   }>;
   inter_annotator_agreement: {
     cohen_kappa_avg: number;
     approx_ratio: number;
-    matching_annotation_occurrences: number;
+    matching_unique_span_count: number;
+    total_unique_span_count: number;
   };
 }
 

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useAuth } from "~/data/auth";
 import { useProjectsApi } from "~/data/projects";
+import { useUsersApi } from "~/data/users";
 import { useProjectContext } from "~/composables/project-context";
 import { onMounted, ref, computed, onBeforeUnmount, watch } from "vue";
 import { navigateTo, useRoute } from "#app";
@@ -13,13 +14,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
 import {
   Menubar,
   MenubarContent,
@@ -42,11 +36,10 @@ import {
   Building2,
   Menu as MenuIcon,
   X as CloseIcon,
-  Key, // <-- make sure Key is imported from lucide-vue-next
+  Key,
 } from "lucide-vue-next";
 import { toast } from "vue-sonner";
 import type { AvailableRole, ProjectResponse } from "~/types/api";
-import type { AcceptableValue } from "reka-ui";
 
 useHead({
   title: "Anota",
@@ -55,9 +48,12 @@ useHead({
 
 const { user, isAuthenticated, userRoles, logout, initializeAuth } = useAuth();
 const { getProjects } = useProjectsApi();
+const { getMyProjects } = useUsersApi();
+const route = useRoute();
+
+// Admin still uses project context, but Kepala Riset does not
 const { selectedProject, setSelectedProject, clearSelectedProject } =
   useProjectContext();
-const route = useRoute();
 
 const userAvatar = computed(
   () =>
@@ -74,31 +70,33 @@ const userProjects = ref<ProjectResponse[]>([]);
 const isLoadingProjects = ref(false);
 
 async function fetchUserProjects() {
-  if (!hasRole("Kepala Riset")) return;
+  if (!hasRole("Admin")) return;
 
   isLoadingProjects.value = true;
   try {
-    const response = await getProjects();
+    const response = await getMyProjects();
     userProjects.value = response.results;
+
+    if (hasRole("Admin") && userProjects.value?.length > 0) {
+      if (!selectedProject.value) {
+        setSelectedProject(userProjects.value[0]);
+      } else {
+        const storedProjectStillExists = userProjects.value.some(
+          (p) => p.id === selectedProject.value?.id
+        );
+
+        if (!storedProjectStillExists) {
+          setSelectedProject(userProjects.value[0]);
+        }
+      }
+    } else {
+      clearSelectedProject();
+    }
   } catch (error) {
     console.error("Error fetching projects:", error);
     toast.error("Gagal memuat daftar project");
   } finally {
     isLoadingProjects.value = false;
-  }
-}
-
-function handleProjectChange(value: AcceptableValue) {
-  const projectId = value?.toString() || null;
-  if (!projectId || projectId === "all") {
-    clearSelectedProject();
-  } else {
-    const project = userProjects.value.find(
-      (p) => p.id.toString() === projectId
-    );
-    if (project) {
-      setSelectedProject(project);
-    }
   }
 }
 
@@ -121,7 +119,7 @@ function canAccessRoute(route: string): boolean {
 
   const roleBasedRoutes = {
     Admin: [
-      "/kepala-riset-admin/kelola-dokumen",
+      "/admin/kelola-dokumen",
       "/admin/kelola-error",
       "/kepala-riset-admin/kelola-pengguna",
     ],
@@ -130,8 +128,7 @@ function canAccessRoute(route: string): boolean {
     "Kepala Riset": [
       "/kepala-riset/kelola-project",
       "/kepala-riset-admin/kelola-pengguna",
-      "/kepala-riset-admin/kelola-dokumen",
-      "/admin/kelola-error",
+      "/kepala-riset-admin/dashboard",
     ],
   };
 
@@ -166,7 +163,7 @@ const menuGroups = computed<MenuGroup[]>(() => {
       items: [
         {
           label: "Dashboard Analytics",
-          path: "/admin/dashboard",
+          path: "/kepala-riset-admin/dashboard",
           icon: BarChart3,
           description: "View system analytics and performance metrics",
         },
@@ -193,20 +190,8 @@ const menuGroups = computed<MenuGroup[]>(() => {
       icon: Users,
       items: [
         {
-          label: "Dashboard Analytics",
-          path: "/admin/dashboard",
-          icon: BarChart3,
-          description: "View system analytics and performance metrics",
-        },
-        {
-          label: "Kelola Pengguna",
-          path: "/kepala-riset-admin/kelola-pengguna",
-          icon: Users,
-          description: "Manage system users and reset passwords",
-        },
-        {
           label: "Kelola Dokumen",
-          path: "/kepala-riset-admin/kelola-dokumen",
+          path: "/admin/kelola-dokumen",
           icon: FileText,
           description: "Manage and export documents",
         },
@@ -217,10 +202,10 @@ const menuGroups = computed<MenuGroup[]>(() => {
           description: "Manage system errors",
         },
         {
-          label: "Reopen Dokumen",
-          path: "/admin/reopen",
-          icon: AlertTriangle,
-          description: "Admin buka kembali anotasi/review dokumen",
+          label: "Kelola Pengguna",
+          path: "/kepala-riset-admin/kelola-pengguna",
+          icon: Users,
+          description: "Manage system users and reset passwords",
         },
       ],
     });
@@ -296,6 +281,17 @@ watch(
   async () => {
     if (isAuthenticated.value) {
       await fetchUserProjects();
+    }
+  },
+  { immediate: false }
+);
+
+// Watch for user changes to update admin project context
+watch(
+  user,
+  async () => {
+    if (isAuthenticated.value && hasRole("Admin")) {
+      await fetchUserProjects(); // This will auto-set the admin's project
     }
   },
   { immediate: false }
@@ -454,7 +450,7 @@ const handleLogout = async () => {
                         <!-- indicator removed -->
                       </MenubarTrigger>
                       <MenubarContent
-                        class="bg-white border border-gray-200 shadow-lg"
+                        class="bg-white border border-gray-200 shadow-lg flex gap-1 p-1 flex-col"
                       >
                         <MenubarItem
                           v-for="item in group.items"
@@ -493,38 +489,15 @@ const handleLogout = async () => {
                   </template>
                 </Menubar>
               </div>
-              <!-- Right: Project Selector + Profile Dropdown -->
+              <!-- Right: Project Indicator + Profile Dropdown -->
               <div class="flex items-center gap-2">
+                <!-- Show current project for Admin users only (read-only) -->
                 <div
-                  v-if="hasRole('Kepala Riset') && userProjects.length > 0"
-                  class="flex items-center"
+                  v-if="hasRole('Admin') && selectedProject"
+                  class="flex items-center px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg"
                 >
-                  <Select
-                    :model-value="selectedProject?.id?.toString() || 'all'"
-                    @update:model-value="handleProjectChange"
-                  >
-                    <SelectTrigger
-                      class="w-[200px] bg-white border-gray-200 text-gray-900"
-                    >
-                      <SelectValue placeholder="Pilih Project" />
-                    </SelectTrigger>
-                    <SelectContent class="bg-white border-gray-200">
-                      <SelectItem
-                        value="all"
-                        class="flex items-center space-x-2 px-3 py-3 text-slate-700 hover:text-blue-600 hover:bg-blue-100/50 transition-all duration-200 relative font-medium"
-                      >
-                        <div class="flex items-center gap-2">Semua Project</div>
-                      </SelectItem>
-                      <SelectItem
-                        v-for="project in userProjects"
-                        :key="project.id"
-                        :value="project.id.toString()"
-                        class="flex items-center space-x-2 px-3 py-3 text-slate-700 hover:text-blue-600 hover:bg-blue-100/50 transition-all duration-200 relative font-medium"
-                      >
-                        {{ project.name }}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Building2 class="w-4 h-4 text-blue-600 mr-2" />
+                  <span class="text-sm font-medium text-blue-900">{{ selectedProject.name }}</span>
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger as-child>

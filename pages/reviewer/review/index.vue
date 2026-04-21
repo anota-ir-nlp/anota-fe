@@ -1,7 +1,6 @@
 <template>
   <div class="min-h-screen px-2 sm:px-4 py-10 font-inter">
     <div class="w-full max-w-[95vw] mx-auto px-2 sm:px-4 pb-16">
-      <!-- Header & Lanjutkan Anotasi -->
       <div
         class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8"
       >
@@ -30,7 +29,6 @@
         </div>
       </div>
 
-      <!-- Stats Cards -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
         <Card
           class="p-6 bg-white border border-gray-200 rounded-xl group cursor-pointer"
@@ -136,9 +134,7 @@
         </Card>
       </div>
 
-      <!-- 2 Column Layout: Statistik Anotasi Mingguan & Aksi Cepat (same height) -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-        <!-- Statistik Anotasi Mingguan -->
         <Card
           class="p-6 bg-white border border-gray-200 rounded-xl flex flex-col h-full lg:col-span-2"
         >
@@ -148,7 +144,6 @@
             <span
               class="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-gray-200 bg-gray-100"
             >
-              <!-- Use BarChart3 icon from lucide-vue-next or fallback to a simple bar icon -->
               <svg
                 class="w-6 h-6 text-black"
                 fill="none"
@@ -191,7 +186,6 @@
             >
           </div>
         </Card>
-        <!-- Aksi Cepat -->
         <Card
           class="p-6 bg-white border border-gray-200 rounded-xl flex flex-col h-full justify-between"
         >
@@ -286,7 +280,6 @@
         </Card>
       </div>
 
-      <!-- Daftar Dokumen (full row) -->
       <Card class="p-6 bg-white border border-gray-200 rounded-xl mb-10">
         <div
           class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6"
@@ -295,7 +288,6 @@
             <span
               class="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-gray-200 bg-blue-50"
             >
-              <!-- Use FileText icon from lucide-vue-next or fallback to a simple doc icon -->
               <svg
                 class="w-6 h-6 text-blue-500"
                 fill="none"
@@ -327,7 +319,6 @@
               />
             </div>
 
-            <!-- Status Filter -->
             <div class="relative">
               <select
                 v-model="filter.status"
@@ -345,7 +336,6 @@
               />
             </div>
 
-            <!-- Date Filter -->
             <div class="relative">
               <select
                 v-model="dateFilterType"
@@ -365,7 +355,6 @@
               />
             </div>
 
-            <!-- Custom Date Range -->
             <div
               v-if="dateFilterType === 'custom'"
               class="flex gap-2 items-center"
@@ -393,7 +382,6 @@
               </div>
             </div>
 
-            <!-- Clear Filters Button -->
             <button
               @click="resetFilters"
               class="px-4 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-700 hover:bg-blue-100 hover:text-blue-700 transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 flex items-center gap-2"
@@ -554,7 +542,6 @@
           </table>
         </div>
       </Card>
-      <!-- Reopen Document Modal -->
       <div
         v-if="showReopenModal"
         class="fixed inset-0 bg-black/40 flex items-center justify-center z-50"

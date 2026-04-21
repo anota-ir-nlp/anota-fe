@@ -1,24 +1,15 @@
 import type { ColumnDef } from "@tanstack/vue-table";
 import { h } from "vue";
-import { Trash2, Download, RotateCcw } from "lucide-vue-next";
+import { Trash2, RotateCcw } from "lucide-vue-next";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import type { DocumentResponse, DocumentStatus } from "@/types/api";
 
 export function createColumns(
   getUserName: (userId: string) => string,
+  getUserFullNameFromUsername: (username: string) => string,
   handleDeleteDocument: (documentId: string) => void,
-  handleExportDocument: (
-    document: DocumentResponse,
-    format: "parallel" | "m2"
-  ) => void,
   handleReopenDocument: (document: DocumentResponse) => void
 ): ColumnDef<DocumentResponse>[] {
   return [
@@ -74,14 +65,14 @@ export function createColumns(
         return h(
           "div",
           { class: "flex flex-wrap gap-1" },
-          assignedTo.map((userName) =>
+          assignedTo.map((username) =>
             h(
               Badge,
               {
-                key: userName,
+                key: username,
                 variant: "blue",
               },
-              () => userName
+              () => getUserFullNameFromUsername(username)
             )
           )
         );
@@ -102,7 +93,6 @@ export function createColumns(
           sedang_direview: "Sedang Direview",
           sudah_direview: "Sudah Direview",
         };
-
         const statusVariants: Record<
           DocumentStatus,
           "default" | "secondary" | "destructive" | "outline"
@@ -147,41 +137,12 @@ export function createColumns(
         const document = row.original;
 
         return h("div", { class: "flex gap-2 justify-end" }, [
-          h(DropdownMenu, {}, () => [
-            h(DropdownMenuTrigger, { asChild: true }, () =>
-              h(
-                Button,
-                {
-                  size: "sm",
-                  variant: "outline",
-                  class: "rounded-full px-4 py-1 font-semibold",
-                },
-                () => [h(Download, { class: "w-4 h-4 mr-1" }), "Export"]
-              )
-            ),
-            h(DropdownMenuContent, { align: "end" }, () => [
-              h(
-                DropdownMenuItem,
-                {
-                  onClick: () => handleExportDocument(document, "parallel"),
-                },
-                () => "Export Parallel TSV"
-              ),
-              h(
-                DropdownMenuItem,
-                {
-                  onClick: () => handleExportDocument(document, "m2"),
-                },
-                () => "Export M2 Format"
-              ),
-            ]),
-          ]),
           h(
             Button,
             {
               size: "sm",
               variant: "outline",
-              class: "rounded-full px-4 py-1 font-semibold",
+              class: "px-4 py-1 font-semibold",
               onClick: () => handleReopenDocument(document),
             },
             () => [h(RotateCcw, { class: "w-4 h-4 mr-1" }), "Reopen"]
@@ -191,7 +152,7 @@ export function createColumns(
             {
               size: "sm",
               variant: "destructive",
-              class: "rounded-full px-4 py-1 font-semibold",
+              class: "px-4 py-1 font-semibold",
               onClick: () => handleDeleteDocument(document.id.toString()),
             },
             () => [h(Trash2, { class: "w-4 h-4 mr-1" }), "Hapus"]

@@ -9,7 +9,6 @@ export interface ErrorResponse {
   }>;
 }
 
-// Document status type
 export type DocumentStatus = 
   | "belum_dianotasi" 
   | "sedang_dianotasi" 
@@ -42,8 +41,12 @@ export interface UserResponse {
   email: string;
   full_name: string;
   institution?: string;
-  roles: string[];
+  institusi?: string;
+  roles: string[]; // Project-specific roles when fetched from project context
   date_joined: string;
+  is_kepala_riset?: boolean;
+  is_deleted?: boolean;
+  deleted_at?: string | null;
 }
 
 export interface UsersListResponse {
@@ -145,6 +148,8 @@ export interface AssignmentResponse {
 export interface AssignDocumentRequest {
   document_id: number;
   user_id: string;
+  notes?: string;
+  deadline?: string;
 }
 
 export interface DocumentResponse {
@@ -299,13 +304,22 @@ export interface DocumentRequest {
   title: string;
   text: string;
   project: number;
+  institution?: string;
+  allow_duplicate?: boolean;
+}
+
+export interface DuplicateDocumentError {
+  error: string;
+  existing_document: DocumentResponse;
 }
 
 export interface UserRegistrationRequest {
   username: string;
-  email?: string;
-  full_name?: string;
-  institution?: string;
+  email: string;
+  full_name: string;
+  institusi?: string;
+  send_email?: boolean;
+  login_url?: string;
 }
 
 export interface UserRegistrationResponse {
@@ -315,8 +329,10 @@ export interface UserRegistrationResponse {
     username: string;
     email: string;
     full_name: string;
+    institusi?: string;
     password: string;
-    backup_key: string;
+    email_status?: string;
+    email_message?: string;
   };
 }
 
@@ -329,6 +345,29 @@ export interface UserRoleManagementRequest {
   user_id: string;
   role: string;
   action: "add" | "remove";
+}
+
+export interface ProjectUserRoleManagementRequest {
+  user_id: string;
+  role: "Admin" | "Annotator" | "Reviewer";
+  action: "add" | "remove";
+}
+
+export interface ProjectUserRoleManagementResponse {
+  message: string;
+  user_id: string;
+  username: string;
+  project_id: string;
+  project_name: string;
+  role: string;
+  action: string;
+}
+
+export interface UserRolesInProjectResponse {
+  user_id: string;
+  project_id: string;
+  project_name: string;
+  roles: string[];
 }
 
 export interface UserUpdateRequest {

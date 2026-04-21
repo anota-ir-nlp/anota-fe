@@ -51,8 +51,8 @@ export function useAnnotationsApi() {
   const submitAnnotation = (data: SubmitAnnotationRequest) =>
     fetcher<SubmitResponse>(`${BASE}/submit/`, { method: "POST", body: data });
   
-  const adminReopenAnnotator = (data: AdminReopenAnnotatorRequest) =>
-    fetcher<AdminReopenResponse>(`${BASE}/admin/reopen-annotator/`, {
+  const adminReopenAnnotator = (projectId: number, data: AdminReopenAnnotatorRequest) =>
+    fetcher<AdminReopenResponse>(`${BASE}/admin/projects/${projectId}/reopen-annotator/`, {
       method: "POST",
       body: data,
     });

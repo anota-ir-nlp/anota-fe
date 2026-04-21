@@ -30,9 +30,6 @@ export function useDocumentsApi() {
   const deleteDocument = (id: number) =>
     fetcher(`${BASE}/${id}/`, { method: "DELETE" });
 
-  const getDocumentsInProject = (projectId: number) =>
-    fetcher<DocumentResponse[]>(`/projects/${projectId}/documents/`);
-
   const assignDocumentToUser = (data: {
     document_id: number;
     user_id: string;
@@ -77,7 +74,6 @@ export function useDocumentsApi() {
     createDocument,
     updateDocument,
     deleteDocument,
-    getDocumentsInProject,
     assignDocumentToUser,
     unassignDocumentFromUser,
     getMyAssignedDocument,
