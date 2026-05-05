@@ -211,8 +211,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
-import { navigateTo } from "#app";
 import { Button } from "~/components/ui/button";
 import { useUserDocumentsApi } from "~/data/user-documents";
 import { useAnnotationsApi } from "~/data/annotations";
