@@ -1,9 +1,7 @@
 <template>
-  <div class="min-h-screen px-2 sm:px-4 py-10 font-inter">
+  <div class="min-h-screen px-2 sm:px-4 py-10 font-inter text-gray-900">
     <div class="w-full max-w-[95vw] mx-auto px-2 sm:px-4 pb-16">
-      <div
-        class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8"
-      >
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div>
           <h1 class="text-2xl font-bold text-black mb-1">Anotator</h1>
           <p class="text-gray-700">
@@ -12,16 +10,10 @@
         </div>
         <div v-if="firstInProgressDoc">
           <Button
-            class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold px-6 py-2 rounded-lg transition-all flex items-center gap-2"
+            class="bg-black hover:bg-gray-800 text-white font-semibold px-6 py-2 rounded-lg transition-all flex items-center gap-2"
             @click="goToDetail(firstInProgressDoc.id)"
           >
-            <svg
-              class="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-            >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path d="M5 3v18l15-9L5 3z"></path>
             </svg>
             Lanjutkan Anotasi
@@ -29,272 +21,33 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-        <Card
-          class="p-6 bg-white border border-gray-200 rounded-xl group cursor-pointer"
-        >
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm text-gray-500 mb-1">Total Anotasi</p>
-              <p class="text-2xl font-bold text-black">
-                {{ stats.annotated }}
-              </p>
-            </div>
-            <div
-              class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center group-hover:scale-105 transition"
-            >
-              <svg
-                class="w-6 h-6 text-white"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M4 19.5A2.5 2.5 0 0 0 6.5 22h11a2.5 2.5 0 0 0 2.5-2.5v-15A2.5 2.5 0 0 0 17.5 2h-11A2.5 2.5 0 0 0 4 4.5v15ZM8 6h8M8 10h8m-8 4h6"
-                />
-              </svg>
+      <Card class="p-6 bg-white border border-gray-200 rounded-xl mb-10">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <p class="text-sm text-gray-500 mb-1">Progres Anotasi</p>
+            <div class="flex items-end gap-2">
+              <span class="text-3xl font-bold text-black">{{ stats.annotated }}</span>
+              <span class="text-gray-400 mb-1">/ {{ stats.total }} Dokumen</span>
             </div>
           </div>
-        </Card>
-        <Card
-          class="p-6 bg-white border border-gray-200 rounded-xl group cursor-pointer"
-        >
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm text-gray-500 mb-1">Hari Ini</p>
-              <p class="text-2xl font-bold text-black">
-                {{ todayAnnotated }}
-              </p>
-            </div>
-            <div
-              class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center group-hover:scale-105 transition"
-            >
-              <svg
-                class="w-6 h-6 text-white"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-              >
-                <path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-              </svg>
-            </div>
+          <div class="text-right">
+            <p class="text-sm text-gray-500 mb-1">Persentase Selesai</p>
+            <p class="text-3xl font-bold text-blue-600">{{ accuracy }}%</p>
           </div>
-        </Card>
-        <Card
-          class="p-6 bg-white border border-gray-200 rounded-xl group cursor-pointer"
-        >
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm text-gray-500 mb-1">Persentase Selesai</p>
-              <p class="text-2xl font-bold text-black">{{ accuracy }}%</p>
-            </div>
-            <div
-              class="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center group-hover:scale-105 transition"
-            >
-              <svg
-                class="w-6 h-6 text-white"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M12 17.75 18.2 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
-                />
-              </svg>
-            </div>
-          </div>
-        </Card>
-        <Card
-          class="p-6 bg-white border border-gray-200 rounded-xl group cursor-pointer"
-        >
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm text-gray-500 mb-1">Total Dokumen</p>
-              <p class="text-2xl font-bold text-black">{{ stats.total }}</p>
-            </div>
-            <div
-              class="w-12 h-12 bg-gray-700 rounded-xl flex items-center justify-center group-hover:scale-105 transition"
-            >
-              <svg
-                class="w-6 h-6 text-white"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M4 19.5A2.5 2.5 0 0 0 6.5 22h11a2.5 2.5 0 0 0 2.5-2.5v-15A2.5 2.5 0 0 0 17.5 2h-11A2.5 2.5 0 0 0 4 4.5v15Z"
-                />
-              </svg>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-        <Card
-          class="p-6 bg-white border border-gray-200 rounded-xl flex flex-col h-full lg:col-span-2"
-        >
-          <h3
-            class="text-lg font-semibold mb-6 flex items-center gap-3 text-black"
-          >
-            <span
-              class="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-gray-200 bg-gray-100"
-            >
-              <svg
-                class="w-6 h-6 text-black"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-              >
-                <rect x="3" y="10" width="4" height="11" rx="1" />
-                <rect x="9" y="3" width="4" height="18" rx="1" />
-                <rect x="15" y="6" width="4" height="15" rx="1" />
-              </svg>
-            </span>
-            Statistik Anotasi Mingguan
-          </h3>
-          <div class="flex items-end gap-4 h-52">
-            <div
-              v-for="(val, i) in weeklyStats"
-              :key="i"
-              class="flex flex-col items-center flex-1"
-            >
-              <div class="relative w-full group">
-                <div
-                  class="bg-black rounded-t transition-all duration-300 group-hover:bg-gray-800"
-                  :style="{ height: `${getBarHeight(val.count)}px` }"
-                ></div>
-                <div
-                  class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  {{ val.count }} dokumen
-                </div>
-              </div>
-              <span class="text-sm text-gray-700 mt-3 font-medium">{{
-                val.label
-              }}</span>
-            </div>
-          </div>
-          <div class="mt-4 text-center">
-            <span class="text-sm text-gray-500"
-              >Total minggu ini: {{ weeklyTotal }} dokumen</span
-            >
-          </div>
-        </Card>
-        <Card
-          class="p-6 bg-white border border-gray-200 rounded-xl flex flex-col h-full justify-between"
-        >
-          <h3 class="text-lg text-black mb-4 font-semibold">Aksi Cepat</h3>
-          <div class="space-y-3 flex-1">
-            <Button
-              class="w-full justify-start bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800 font-medium transition"
-              @click="
-                () =>
-                  toast.info(
-                    'Laporan harian: Anda telah mengerjakan ' +
-                      todayAnnotated +
-                      ' dokumen hari ini.'
-                  )
-              "
-            >
-              <svg
-                class="w-4 h-4 mr-2 shadow-0"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M4 19.5A2.5 2.5 0 0 0 6.5 22h11a2.5 2.5 0 0 0 2.5-2.5v-15A2.5 2.5 0 0 0 17.5 2h-11A2.5 2.5 0 0 0 4 4.5v15Z"
-                />
-              </svg>
-              Laporan Harian
-            </Button>
-            <Button
-              class="w-full justify-start bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800 font-medium transition"
-              @click="
-                () =>
-                  toast.success(
-                    'Target Mingguan: Total dokumen minggu ini ' +
-                      weeklyTotal +
-                      '.'
-                  )
-              "
-            >
-              <svg
-                class="w-4 h-4 mr-2"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-              >
-                <path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-              </svg>
-              Target Mingguan
-            </Button>
-            <Button
-              class="w-full justify-start bg-purple-50 text-purple-700 hover:bg-purple-100 hover:text-purple-800 font-medium transition"
-              @click="
-                () =>
-                  toast.info(
-                    'Skor Kualitas: Persentase selesai ' + accuracy + '%'
-                  )
-              "
-            >
-              <svg
-                class="w-4 h-4 mr-2"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M12 17.75 18.2 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
-                />
-              </svg>
-              Skor Kualitas
-            </Button>
-            <Button
-              class="w-full justify-start bg-yellow-50 text-yellow-700 hover:bg-yellow-100 hover:text-yellow-800 font-medium transition"
-              @click="
-                () => toast.info('Riwayat Kerja: Total dokumen ' + stats.total)
-              "
-            >
-              <svg
-                class="w-4 h-4 mr-2"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-              >
-                <path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-              </svg>
-              Riwayat Kerja
-            </Button>
-          </div>
-        </Card>
-      </div>
+        </div>
+        <div class="w-full bg-gray-100 h-2 rounded-full mt-4 overflow-hidden">
+          <div 
+            class="bg-blue-600 h-full transition-all duration-500" 
+            :style="{ width: `${accuracy}%` }"
+          ></div>
+        </div>
+      </Card>
 
       <Card class="p-6 bg-white border border-gray-200 rounded-xl mb-10">
-        <div
-          class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6"
-        >
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <h2 class="text-xl font-bold flex items-center gap-3 text-black">
-            <span
-              class="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-gray-200 bg-blue-50"
-            >
-              <svg
-                class="w-6 h-6 text-blue-500"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-              >
+            <span class="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-gray-200 bg-gray-50">
+              <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <rect x="4" y="4" width="16" height="16" rx="2" />
                 <line x1="8" y1="8" x2="16" y2="8" />
                 <line x1="8" y1="12" x2="16" y2="12" />
@@ -303,244 +56,130 @@
             </span>
             Daftar Dokumen
           </h2>
-          <!-- Filters -->
           <div class="flex flex-wrap gap-3 items-center">
-            <!-- Search -->
             <div class="relative">
               <input
                 v-model="search"
                 type="text"
                 placeholder="Cari dokumen..."
-                class="w-48 md:w-64 px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
+                class="w-48 md:w-64 px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all"
               />
-              <UIcon
-                name="i-heroicons-magnifying-glass"
-                class="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
-              />
+              <UIcon name="i-heroicons-magnifying-glass" class="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
             </div>
 
-            <div class="relative">
-              <select
-                v-model="filter.status"
-                class="w-40 px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all appearance-none cursor-pointer"
-              >
-                <option value="">Semua Status</option>
-                <option value="belum_dianotasi">Belum Dianotasi</option>
-                <option value="sedang_dianotasi">Sedang Dianotasi</option>
-                <option value="sudah_dianotasi">Sudah Dianotasi</option>
-                <option value="sudah_direview">Sudah Direview</option>
-              </select>
-              <UIcon
-                name="i-heroicons-chevron-down"
-                class="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
-              />
-            </div>
-
-            <div class="relative">
-              <select
-                v-model="dateFilterType"
-                @change="handleDateFilterChange"
-                class="w-48 px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all appearance-none cursor-pointer"
-              >
-                <option value="">Semua Tanggal</option>
-                <option value="today">Hari Ini</option>
-                <option value="week">Minggu Ini</option>
-                <option value="month">Bulan Ini</option>
-                <option value="last_month">Bulan Lalu</option>
-                <option value="custom">Rentang Kustom</option>
-              </select>
-              <UIcon
-                name="i-heroicons-chevron-down"
-                class="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
-              />
-            </div>
-
-            <div
-              v-if="dateFilterType === 'custom'"
-              class="flex gap-2 items-center"
+            <select
+              v-model="filter.status"
+              class="w-40 px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all cursor-pointer"
             >
-              <div class="relative">
-                <input
-                  v-model="filter.dateFrom"
-                  type="date"
-                  class="w-36 px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
-                />
-                <span class="absolute -bottom-6 left-0 text-xs text-gray-400"
-                  >Dari</span
-                >
-              </div>
-              <span class="text-gray-400 text-sm">s/d</span>
-              <div class="relative">
-                <input
-                  v-model="filter.dateTo"
-                  type="date"
-                  class="w-36 px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
-                />
-                <span class="absolute -bottom-6 left-0 text-xs text-gray-400"
-                  >Sampai</span
-                >
-              </div>
+              <option value="">Semua Status</option>
+              <option value="belum_dianotasi">Belum Dianotasi</option>
+              <option value="sedang_dianotasi">Sedang Dianotasi</option>
+              <option value="sudah_dianotasi">Sudah Dianotasi</option>
+            </select>
+
+            <select
+              v-model="dateFilterType"
+              @change="handleDateFilterChange"
+              class="w-48 px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all cursor-pointer"
+            >
+              <option value="">Semua Tanggal</option>
+              <option value="today">Hari Ini</option>
+              <option value="week">Minggu Ini</option>
+              <option value="month">Bulan Ini</option>
+              <option value="custom">Rentang Kustom</option>
+            </select>
+
+            <div v-if="dateFilterType === 'custom'" class="flex gap-2 items-center">
+              <input
+                v-model="filter.dateFrom"
+                type="date"
+                class="w-36 px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all"
+              />
+              <span class="text-gray-400">s/d</span>
+              <input
+                v-model="filter.dateTo"
+                type="date"
+                class="w-36 px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all"
+              />
             </div>
 
             <button
               @click="resetFilters"
-              class="px-4 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-700 hover:bg-blue-100 hover:text-blue-700 transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 flex items-center gap-2"
-              title="Clear Filters"
+              class="p-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-200 transition-all"
             >
-              <UIcon name="i-heroicons-arrow-path" class="w-4 h-4" />
+              <UIcon name="i-heroicons-arrow-path" class="w-5 h-5" />
             </button>
           </div>
         </div>
 
         <div v-if="isLoading" class="py-4">
-          <div class="animate-pulse">
-            <div class="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
-            <div class="space-y-2">
-              <div class="h-10 bg-gray-100 rounded"></div>
-              <div class="h-10 bg-gray-100 rounded"></div>
-              <div class="h-10 bg-gray-100 rounded"></div>
-            </div>
+          <div class="animate-pulse space-y-4">
+            <div class="h-10 bg-gray-100 rounded w-full"></div>
+            <div class="h-10 bg-gray-100 rounded w-full"></div>
+            <div class="h-10 bg-gray-100 rounded w-full"></div>
           </div>
         </div>
 
         <div v-else class="overflow-x-auto rounded-lg">
-          <table class="min-w-full text-sm table-auto">
+          <table class="min-w-full table-fixed w-full text-sm">
             <thead>
-              <tr class="bg-black text-white sticky top-0 z-10">
-                <th class="px-4 py-3 text-left">No</th>
-                <th class="px-4 py-3 text-left">
-                  <button
-                    class="flex items-center gap-1 hover:text-blue-200 transition"
-                    @click="setSort('title')"
-                  >
+              <tr class="bg-black text-white">
+                <th class="px-4 py-3 text-left w-[5%]">No</th>
+                <th class="px-4 py-3 text-left w-[40%]">
+                  <button class="flex items-center gap-1" @click="setSort('title')">
                     Judul
                     <UIcon :name="sortIcon('title')" class="w-4 h-4" />
                   </button>
                 </th>
                 <th class="px-4 py-3 text-left">
-                  <button
-                    class="flex items-center gap-1 hover:text-blue-200 transition"
-                    @click="setSort('institusi')"
-                  >
-                    Lembaga Asal
-                    <UIcon :name="sortIcon('institusi')" class="w-4 h-4" />
-                  </button>
-                </th>
-                <th class="px-4 py-3 text-left">
-                  <button
-                    class="flex items-center gap-1 hover:text-blue-200 transition"
-                    @click="setSort('assigned_by_name')"
-                  >
-                    Assigned By
-                    <UIcon
-                      :name="sortIcon('assigned_by_name')"
-                      class="w-4 h-4"
-                    />
-                  </button>
-                </th>
-                <th class="px-4 py-3 text-left">
-                  <button
-                    class="flex items-center gap-1 hover:text-blue-200 transition"
-                    @click="setSort('status')"
-                  >
+                  <button class="flex items-center gap-1" @click="setSort('status')">
                     Status
                     <UIcon :name="sortIcon('status')" class="w-4 h-4" />
                   </button>
                 </th>
                 <th class="px-4 py-3 text-left">
-                  <button
-                    class="flex items-center gap-1 hover:text-blue-200 transition"
-                    @click="setSort('created_at')"
-                  >
+                  <button class="flex items-center gap-1" @click="setSort('created_at')">
                     Tanggal
                     <UIcon :name="sortIcon('created_at')" class="w-4 h-4" />
-                  </button>
-                </th>
-                <th class="px-4 py-3 text-left">
-                  <button
-                    class="flex items-center gap-1 hover:text-blue-200 transition"
-                    @click="setSort('jumlah_sentence')"
-                  >
-                    Sentences
-                    <UIcon
-                      :name="sortIcon('jumlah_sentence')"
-                      class="w-4 h-4"
-                    />
                   </button>
                 </th>
                 <th class="px-4 py-3 text-left">Aksi</th>
               </tr>
             </thead>
-            <tbody class="text-black-900">
-              <tr
-                v-for="(doc, index) in filteredDocs"
-                :key="doc.id"
-                class="border-b border-gray-200 hover:bg-blue-50 text-gray-900 transition-colors"
-              >
-                <td class="px-4 py-3 font-semibold">{{ index + 1 }}</td>
-                <td class="px-4 py-3 font-semibold">{{ doc.title }}</td>
-                <td class="px-4 py-3">{{ doc.institusi }}</td>
-                <td class="px-4 py-3">
-                  {{ doc.assigned_by?.full_name || "-" }}
-                </td>
-                <td class="px-4 py-3">
-                  <span
-                    :class="getStatusClass(doc.status)"
-                    class="px-3 py-1 rounded-full text-xs font-medium"
-                  >
+            <tbody>
+              <tr v-for="(doc, index) in filteredDocs" :key="doc.id" class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                <td class="px-4 py-4">{{ index + 1 }}</td>
+                <td class="px-4 py-4 font-semibold">{{ doc.title }}</td>
+                <td class="px-4 py-4">
+                  <span :class="getStatusClass(doc.status)" class="px-3 py-1 rounded-full text-xs font-medium">
                     {{ getStatusText(doc.status) }}
                   </span>
                 </td>
-                <td class="px-4 py-3">{{ formatDate(doc.created_at) }}</td>
-                <td class="px-4 py-3">{{ doc.jumlah_sentence }}</td>
-                <td class="px-4 py-3">
+                <td class="px-4 py-4 text-gray-500">{{ formatDate(doc.created_at) }}</td>
+                <td class="px-4 py-4 flex gap-2">
                   <Button
                     variant="outline"
                     size="sm"
-                    :disabled="
-                      !(
-                        doc.status === 'belum_dianotasi' ||
-                        doc.status === 'sedang_dianotasi'
-                      )
-                    "
                     @click="goToDetail(doc.id)"
-                    class="bg-blue-500 hover:bg-blue-600 text-white hover:scale-105 transition-all duration-150"
+                    :disabled="!(doc.status === 'belum_dianotasi' || doc.status === 'sedang_dianotasi')"
+                    class="bg-blue-600 hover:bg-blue-700 text-white border-none"
                   >
-                    <UIcon name="i-heroicons-pencil-square" class="w-4 h-4" />
                     Anotasi
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    :disabled="
-                      !(
-                        doc.status === 'sudah_dianotasi' ||
-                        doc.status === 'belum_direview'
-                      )
-                    "
+                    :disabled="doc.status !== 'sudah_dianotasi'"
                     @click="handleReopen(doc)"
-                    class="ml-2 bg-purple-500 hover:bg-purple-600 text-white hover:scale-105 transition-all duration-150"
+                    class="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
                   >
-                    <UIcon name="i-heroicons-arrow-path" class="w-4 h-4" />
                     Reopen
                   </Button>
                 </td>
               </tr>
               <tr v-if="filteredDocs.length === 0">
-                <td colspan="8" class="py-10">
-                  <div class="flex flex-col items-center gap-3 text-gray-400">
-                    <UIcon
-                      name="i-heroicons-document-magnifying-glass"
-                      class="w-10 h-10"
-                    />
-                    <div>Tidak ada dokumen ditemukan.</div>
-                    <button
-                      @click="resetFilters"
-                      class="px-3 py-1.5 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-700 text-xs transition"
-                    >
-                      Reset Filter
-                    </button>
-                  </div>
+                <td colspan="5" class="py-20 text-center text-gray-400">
+                  Tidak ada dokumen ditemukan.
                 </td>
               </tr>
             </tbody>
@@ -548,52 +187,23 @@
         </div>
       </Card>
 
-      <div
-        v-if="showReopenModal"
-        class="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
-      >
-        <div
-          class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md mx-4"
-          @click.stop
-        >
-          <h3
-            class="text-lg font-semibold mb-4 text-black flex items-center gap-2"
-          >
-            <UIcon
-              name="i-heroicons-arrow-path"
-              class="w-5 h-5 text-purple-500"
-            />
-            Reopen Dokumen
-          </h3>
+      <div v-if="showReopenModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md mx-4">
+          <h3 class="text-lg font-semibold mb-4 text-black">Reopen Dokumen</h3>
           <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Alasan Reopen (opsional)</label
-            >
+            <label class="block text-sm font-medium text-gray-700 mb-2">Alasan Reopen (opsional)</label>
             <textarea
               v-model="reopenReason"
               rows="3"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none"
-              placeholder="Tulis alasan mengapa dokumen perlu dibuka kembali..."
-              style="color: #222"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none text-black"
+              placeholder="Tulis alasan..."
             ></textarea>
           </div>
           <div class="flex justify-end gap-2 mt-6">
-            <Button
-              variant="outline"
-              @click="closeReopenModal"
-              class="bg-gray-100 text-gray-700"
-              >Batal</Button
-            >
-            <Button
-              :loading="reopenLoading"
-              @click="submitReopen"
-              class="bg-purple-500 text-white hover:bg-purple-600"
-              >Kirim</Button
-            >
+            <Button variant="outline" @click="closeReopenModal" class="bg-gray-100 text-gray-700">Batal</Button>
+            <Button :loading="reopenLoading" @click="submitReopen" class="bg-black text-white">Kirim</Button>
           </div>
-          <div v-if="reopenError" class="mt-3 text-red-500 text-sm">
-            {{ reopenError }}
-          </div>
+          <div v-if="reopenError" class="mt-3 text-red-500 text-sm">{{ reopenError }}</div>
         </div>
       </div>
     </div>
@@ -601,182 +211,88 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
-import { navigateTo } from "#app";
 import { Button } from "~/components/ui/button";
 import { useUserDocumentsApi } from "~/data/user-documents";
 import { useAnnotationsApi } from "~/data/annotations";
-import type {
-  DocumentResponse,
-  AnnotationResponse,
-  DocumentStatus,
-} from "~/types/api";
-import { toast } from "vue-sonner";
+import type { DocumentResponse, DocumentStatus } from "~/types/api";
+
+const ANNOTATION_STATUSES: DocumentStatus[] = ["belum_dianotasi", "sedang_dianotasi", "sudah_dianotasi"];
 
 const { getAssignedDocuments } = useUserDocumentsApi();
 const { reopenAnnotation } = useAnnotationsApi();
 
-// State
 const docs = ref<DocumentResponse[]>([]);
-const annotations = ref<AnnotationResponse[]>([]);
 const isLoading = ref(false);
 
-// Statistics computed from real data
+const search = ref("");
+const filter = ref({ status: "", dateFrom: "", dateTo: "" });
+const dateFilterType = ref("");
+const sort = ref<{ key: string; dir: "asc" | "desc" }>({ key: "created_at", dir: "desc" });
+
 const stats = computed(() => ({
-  annotated: docs.value.filter((doc) => doc.status === "sudah_dianotasi")
-    .length,
+  annotated: docs.value.filter((doc) => doc.status === "sudah_dianotasi").length,
   total: docs.value.length,
 }));
 
-const todayAnnotated = computed(() => {
-  const todayStr = new Date().toISOString().split("T")[0];
-  return docs.value.filter((doc) => doc.created_at.startsWith(todayStr)).length;
-});
-
 const accuracy = computed(() => {
-  if (!docs.value.length) return 0;
-  return stats.value.annotated
-    ? ((stats.value.annotated / docs.value.length) * 100).toFixed(1)
-    : "0.0";
+  if (!docs.value.length) return "0";
+  return ((stats.value.annotated / docs.value.length) * 100).toFixed(0);
 });
 
-// Weekly stats: count of docs created per day for last 7 days
-const weeklyStats = computed(() => {
-  const today = new Date();
-  const days = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
-  const statsArr = [];
-  for (let i = 6; i >= 0; i--) {
-    const date = new Date(today);
-    date.setDate(today.getDate() - i);
-    const dateStr = date.toISOString().split("T")[0];
-    const count = docs.value.filter((doc) =>
-      doc.created_at.startsWith(dateStr)
-    ).length;
-    statsArr.push({
-      label: days[date.getDay()],
-      count,
-      date: dateStr,
-    });
-  }
-  return statsArr;
-});
-
-const weeklyTotal = computed(() =>
-  weeklyStats.value.reduce((sum, day) => sum + day.count, 0)
-);
-
-// Filter/search state
-const search = ref("");
-const filter = ref({
-  status: "",
-  dateFrom: "",
-  dateTo: "",
-});
-const dateFilterType = ref("");
-const sort = ref<{ key: string; dir: "asc" | "desc" }>({
-  key: "created_at",
-  dir: "desc",
-});
-
-// Filtering logic
 const filteredDocs = computed(() => {
   const base = docs.value.filter((doc) => {
-    // Search filter
-    const matchSearch =
-      !search.value ||
-      doc.title.toLowerCase().includes(search.value.toLowerCase()) ||
-      doc.text.toLowerCase().includes(search.value.toLowerCase());
-
-    // Status filter
-    const matchStatus =
-      !filter.value.status || doc.status === filter.value.status;
-
-    // Date filter
+    const matchSearch = !search.value || doc.title.toLowerCase().includes(search.value.toLowerCase());
+    const matchStatus = !filter.value.status || doc.status === filter.value.status;
     const docDate = new Date(doc.created_at);
     let matchDate = true;
 
     if (dateFilterType.value && dateFilterType.value !== "custom") {
       const today = new Date();
       const todayStr = today.toISOString().split("T")[0];
-
       switch (dateFilterType.value) {
         case "today":
           matchDate = doc.created_at.startsWith(todayStr);
           break;
-        case "week":
+        case "week": {
           const weekAgo = new Date(today);
           weekAgo.setDate(today.getDate() - 7);
           matchDate = docDate >= weekAgo;
           break;
-        case "month":
+        }
+        case "month": {
           const monthAgo = new Date(today);
           monthAgo.setMonth(today.getMonth() - 1);
           matchDate = docDate >= monthAgo;
           break;
-        case "last_month":
-          const twoMonthsAgo = new Date(today);
-          twoMonthsAgo.setMonth(today.getMonth() - 2);
-          const lastMonth = new Date(today);
-          lastMonth.setMonth(today.getMonth() - 1);
-          matchDate = docDate >= twoMonthsAgo && docDate < lastMonth;
-          break;
+        }
       }
     } else if (filter.value.dateFrom && filter.value.dateTo) {
-      const fromDate = new Date(filter.value.dateFrom);
-      const toDate = new Date(filter.value.dateTo);
-      matchDate = docDate >= fromDate && docDate <= toDate;
+      matchDate = docDate >= new Date(filter.value.dateFrom) && docDate <= new Date(filter.value.dateTo);
     }
 
     return matchSearch && matchStatus && matchDate;
   });
 
-  // sort
-  const sorted = [...base].sort((a, b) => {
+  return [...base].sort((a, b) => {
     const dir = sort.value.dir === "asc" ? 1 : -1;
-    const key = sort.value.key;
-    if (key === "title" || key === "institusi") {
-      const av = (a as any)[key] || "";
-      const bv = (b as any)[key] || "";
-      return av.localeCompare(bv) * dir;
-    }
-    if (key === "assigned_by_name") {
-      const av = a.assigned_by?.full_name || "";
-      const bv = b.assigned_by?.full_name || "";
-      return av.localeCompare(bv) * dir;
-    }
-    if (key === "status") {
-      const av = a.status;
-      const bv = b.status;
-      return av.localeCompare(bv) * dir;
-    }
-    if (key === "jumlah_sentence") {
-      const av = a.jumlah_sentence || 0;
-      const bv = b.jumlah_sentence || 0;
-      return (av - bv) * dir;
-    }
-    // default by created_at
-    return (
-      (new Date(a.created_at).getTime() - new Date(b.created_at).getTime()) *
-      dir
-    );
+    const key = sort.value.key as keyof DocumentResponse;
+    if (key === "title") return a.title.localeCompare(b.title) * dir;
+    if (key === "status") return a.status.localeCompare(b.status) * dir;
+    return (new Date(a.created_at).getTime() - new Date(b.created_at).getTime()) * dir;
   });
-
-  return sorted;
 });
 
-// Methods
+const firstInProgressDoc = computed(() =>
+  docs.value.find((doc) => doc.status === "belum_dianotasi" || doc.status === "sedang_dianotasi")
+);
+
 function resetFilters() {
   search.value = "";
-  filter.value = {
-    status: "",
-    dateFrom: "",
-    dateTo: "",
-  };
+  filter.value = { status: "", dateFrom: "", dateTo: "" };
   dateFilterType.value = "";
 }
 
 function handleDateFilterChange() {
-  // Clear custom date inputs when switching to presets
   if (dateFilterType.value !== "custom") {
     filter.value.dateFrom = "";
     filter.value.dateTo = "";
@@ -794,12 +310,8 @@ function setSort(key: string) {
 
 function sortIcon(key: string) {
   if (sort.value.key !== key) return "i-heroicons-arrows-up-down";
-  return sort.value.dir === "asc"
-    ? "i-heroicons-arrow-up"
-    : "i-heroicons-arrow-down";
+  return sort.value.dir === "asc" ? "i-heroicons-arrow-up" : "i-heroicons-arrow-down";
 }
-
-// removed quick status chips
 
 function goToDetail(id: number) {
   navigateTo(`/anotator/anotasi/${id}`);
@@ -810,89 +322,28 @@ function formatDate(dateString: string) {
 }
 
 function getStatusText(status: DocumentStatus) {
-  const statusMap: Record<DocumentStatus, string> = {
+  const statusMap: Record<string, string> = {
     belum_dianotasi: "Belum Dianotasi",
     sedang_dianotasi: "Sedang Dianotasi",
     sudah_dianotasi: "Sudah Dianotasi",
-    belum_direview: "Belum Direview",
-    sedang_direview: "Sedang Direview",
-    sudah_direview: "Sudah Direview",
   };
   return statusMap[status] || status;
 }
 
 function getStatusClass(status: DocumentStatus) {
-  const classMap: Record<DocumentStatus, string> = {
-    belum_dianotasi: "bg-gray-200 text-gray-700",
-    sedang_dianotasi: "bg-yellow-100 text-yellow-700",
-    sudah_dianotasi: "bg-blue-100 text-blue-700",
-    belum_direview: "bg-purple-100 text-purple-700",
-    sedang_direview: "bg-orange-100 text-orange-700",
-    sudah_direview: "bg-green-100 text-green-700",
+  const classMap: Record<string, string> = {
+    belum_dianotasi: "bg-gray-100 text-gray-700",
+    sedang_dianotasi: "bg-yellow-50 text-yellow-700",
+    sudah_dianotasi: "bg-blue-50 text-blue-700",
   };
-  return classMap[status] || "bg-gray-200 text-gray-700";
+  return classMap[status] || "bg-gray-50 text-gray-700";
 }
 
-// Find first in-progress doc for "Lanjutkan Anotasi"
-const firstInProgressDoc = computed(() =>
-  filteredDocs.value.find(
-    (doc) =>
-      doc.status === "sedang_dianotasi" || doc.status === "sudah_dianotasi"
-  )
-);
-
-// Today annotated count
-
-// Helper functions for generating realistic data
-function getInstitutionName(id: number): string {
-  const institutions = [
-    "Universitas Indonesia",
-    "Institut Teknologi Bandung",
-    "Universitas Gadjah Mada",
-    "Universitas Padjadjaran",
-    "Universitas Diponegoro",
-    "Universitas Airlangga",
-    "Universitas Brawijaya",
-    "Universitas Hasanuddin",
-  ];
-  return institutions[id % institutions.length];
-}
-
-function getAdminName(id: number): string {
-  const admins = [
-    "Dr. Ahmad Supriyadi",
-    "Prof. Siti Nurhaliza",
-    "Dr. Bambang Sutejo",
-    "Prof. Rina Marlina",
-    "Dr. Hendra Gunawan",
-    "Prof. Dewi Sartika",
-    "Dr. Agus Setiawan",
-    "Prof. Maya Indah",
-  ];
-  return admins[id % admins.length];
-}
-
-// Fetch data on mount
 async function fetchData() {
   isLoading.value = true;
   try {
     const response = await getAssignedDocuments();
-    docs.value =
-      response?.results
-        ?.sort((a: any, b: any) => b.id - a.id) // Sort by id ascending
-        .map((doc: any) => ({
-          ...doc,
-          // fallback for missing fields if needed
-          assigned_by: doc.assigned_by || {
-            id: null,
-            username: "Unknown",
-            full_name: "Unknown",
-            institusi: "Unknown",
-          },
-          institusi: doc.institusi || "-",
-          jumlah_sentence:
-            doc.jumlah_sentence ?? (doc.sentences ? doc.sentences.length : 0),
-        })) || [];
+    docs.value = response?.results?.filter((doc: any) => ANNOTATION_STATUSES.includes(doc.status)) || [];
   } catch (e) {
     docs.value = [];
   }
@@ -901,7 +352,6 @@ async function fetchData() {
 
 onMounted(fetchData);
 
-// Reopen document modal state
 const showReopenModal = ref(false);
 const reopenReason = ref("");
 const reopenDocId = ref<number | null>(null);
@@ -914,42 +364,23 @@ function handleReopen(doc: any) {
   reopenError.value = "";
   showReopenModal.value = true;
 }
+
 function closeReopenModal() {
   showReopenModal.value = false;
   reopenDocId.value = null;
-  reopenReason.value = "";
-  reopenError.value = "";
 }
+
 async function submitReopen() {
   if (!reopenDocId.value) return;
   reopenLoading.value = true;
-  reopenError.value = "";
   try {
-    await reopenAnnotation({
-      document: reopenDocId.value,
-      reason: reopenReason.value,
-    });
+    await reopenAnnotation({ document: reopenDocId.value, reason: reopenReason.value });
     closeReopenModal();
     fetchData();
   } catch (e: any) {
-    reopenError.value = e?.message || "Gagal melakukan reopen dokumen.";
+    reopenError.value = e?.message || "Gagal melakukan reopen.";
   } finally {
     reopenLoading.value = false;
   }
 }
-
-// Bar chart height calculation
-function getBarHeight(count: number) {
-  const max = Math.max(...weeklyStats.value.map((d) => d.count), 1);
-  // Scale so the tallest bar is 120px, others proportional
-  return max ? Math.max((count / max) * 120, 20) : 20;
-}
 </script>
-
-<style scoped>
-/* Remove dark theme, use light theme defaults */
-select option {
-  background-color: #fff;
-  color: #222;
-}
-</style>

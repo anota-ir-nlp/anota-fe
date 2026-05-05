@@ -42,134 +42,137 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-        <div class="space-y-6 lg:sticky lg:top-10">
-          <div class="bg-white border border-gray-200 rounded-3xl p-6 shadow-sm">
-            <div class="flex items-center justify-between mb-4">
-              <div class="flex items-center gap-4">
-                <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 bg-blue-50">
-                  <UIcon name="i-heroicons-document-text" class="w-5 h-5 text-blue-500" />
+      <div class="flex flex-col gap-6">
+        <div class="bg-white border border-gray-200 rounded-3xl p-6 shadow-sm w-full">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-4">
+              <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 bg-blue-50">
+                <UIcon name="i-heroicons-document-text" class="w-5 h-5 text-blue-500" />
+              </span>
+              <div class="text-lg font-semibold text-black">Raw Dokumen (Acuan)</div>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="flex items-center gap-1 mr-2">
+                <UKbd>Shift</UKbd>
+                <UKbd>Enter</UKbd>
+              </div>
+              <UButton
+                icon="i-heroicons-clock"
+                size="sm"
+                class="rounded-2xl bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200"
+                :disabled="!selectedSentence"
+                @click="showCombinedHistory = true"
+                variant="ghost"
+                label="Riwayat"
+              />
+              <div class="flex items-center gap-1 ml-2 mr-1">
+                <UKbd>Shift</UKbd>
+                <UKbd>X</UKbd>
+              </div>
+              <UButton
+                icon="i-heroicons-x-mark"
+                size="sm"
+                class="rounded-2xl bg-red-100 text-red-700 border border-red-200 hover:bg-red-200"
+                :disabled="!selectedSentence"
+                @click="clearSelection"
+                variant="ghost"
+              />
+            </div>
+          </div>
+          
+          <hr class="my-4 border-gray-200" />
+
+          <div class="text-black leading-relaxed whitespace-pre-wrap max-h-[35vh] overflow-y-auto text-lg p-2">
+            <template v-if="document?.sentences">
+              <template v-for="(sentence, idx) in document.sentences" :key="sentence.id">
+                <span
+                  class="px-1 py-0.5 rounded transition-colors cursor-pointer inline"
+                  :class="[
+                    selectedSentence?.id === sentence.id ? 'bg-blue-100 ring-2 ring-blue-400' : 'hover:bg-blue-50',
+                    hasReviewerAnnotations(sentence.id) ? 'border-b-2 border-dashed border-blue-500' : '',
+                    selectedSentence && selectedSentence.id !== sentence.id ? 'opacity-40 pointer-events-none' : ''
+                  ]"
+                  @click="selectSentence(sentence.id)"
+                >
+                  {{ sentence.text }}
                 </span>
-                <div class="text-lg font-semibold text-black">Raw Dokumen</div>
-              </div>
-              <div class="flex items-center gap-2">
-                <div class="flex items-center gap-1 mr-2">
-                  <UKbd>Shift</UKbd>
-                  <UKbd>Enter</UKbd>
-                </div>
-                <UButton
-                  icon="i-heroicons-clock"
-                  size="sm"
-                  class="rounded-2xl bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200"
-                  :disabled="!selectedSentence"
-                  @click="showCombinedHistory = true"
-                  variant="ghost"
-                  label="Riwayat"
-                />
-                <div class="flex items-center gap-1 ml-2 mr-1">
-                  <UKbd>Shift</UKbd>
-                  <UKbd>X</UKbd>
-                </div>
-                <UButton
-                  icon="i-heroicons-x-mark"
-                  size="sm"
-                  class="rounded-2xl bg-red-100 text-red-700 border border-red-200 hover:bg-red-200"
-                  :disabled="!selectedSentence"
-                  @click="clearSelection"
-                  variant="ghost"
-                />
-              </div>
-            </div>
-            
-            <hr class="my-4 border-gray-200" />
-
-            <div class="text-black leading-relaxed whitespace-pre-wrap min-h-[300px] max-h-[50vh] overflow-y-auto text-lg p-2">
-              <template v-if="document?.sentences">
-                <template v-for="(sentence, idx) in document.sentences" :key="sentence.id">
-                  <span
-                    class="px-1 py-0.5 rounded transition-colors cursor-pointer inline"
-                    :class="[
-                      selectedSentence?.id === sentence.id ? 'bg-blue-100 ring-2 ring-blue-400' : 'hover:bg-blue-50',
-                      hasReviewerAnnotations(sentence.id) ? 'border-b-2 border-dashed border-blue-500' : '',
-                      selectedSentence && selectedSentence.id !== sentence.id ? 'opacity-40 pointer-events-none' : ''
-                    ]"
-                    @click="selectSentence(sentence.id)"
-                  >
-                    {{ sentence.text }}
-                  </span>
-                  <span v-if="idx as number < (document?.sentences?.length || 0) - 1"> </span>
-                </template>
+                <span v-if="idx as number < (document?.sentences?.length || 0) - 1"> </span>
               </template>
+            </template>
+          </div>
+
+          <div v-if="selectedSentence" class="mt-6 pt-4 border-t border-gray-200 animate-fade-in bg-gray-50 -mx-6 -mb-6 p-6 rounded-b-3xl">
+            <div class="flex items-center justify-between mb-4">
+              <h4 class="text-base font-bold text-gray-800 flex items-center gap-2">
+                <UIcon name="i-heroicons-check-badge" class="w-6 h-6 text-green-500" />
+                Validasi Kalimat #{{ selectedSentence.id }}
+              </h4>
             </div>
 
-            <div v-if="selectedSentence" class="mt-6 pt-4 border-t border-gray-200 animate-fade-in">
-              <div class="flex items-center justify-between mb-3">
-                <h4 class="text-sm font-bold text-gray-700 flex items-center gap-2">
-                  <UIcon name="i-heroicons-check-badge" class="w-5 h-5 text-green-500" />
-                  Validasi Kalimat #{{ selectedSentence.id }}
-                </h4>
-              </div>
+            <div v-if="getAnnotatorAnnotationsForSentence(selectedSentence.id).length === 0" class="text-center py-6 bg-white rounded-xl border border-gray-200">
+              <p class="text-gray-500 text-sm italic">Kalimat ini tidak dianotasi oleh siapapun.</p>
+            </div>
 
-              <div v-if="getAnnotatorAnnotationsForSentence(selectedSentence.id).length === 0" class="text-center py-6 bg-gray-50 rounded-xl border border-gray-100">
-                <p class="text-gray-500 text-sm italic">Kalimat ini tidak dianotasi oleh annotator.</p>
-              </div>
-
-              <div v-else class="space-y-3 max-h-[35vh] overflow-y-auto pr-2">
-                <div v-for="ann in getAnnotatorAnnotationsForSentence(selectedSentence.id)" :key="ann.id" class="p-4 bg-white border rounded-2xl shadow-sm transition-all" :class="isAnnotationAccepted(ann) ? 'border-green-400 bg-green-50' : 'border-gray-200'">
-                  <div class="flex flex-col gap-3">
-                    <div class="flex items-start justify-between">
-                      <div class="flex-1">
-                        <div class="text-xs font-bold text-gray-400 uppercase mb-1">Koreksi Annotator:</div>
-                        <div class="flex items-center gap-2 flex-wrap">
-                          <span class="text-sm line-through text-red-400">{{ getOriginalTextFromRange(ann) }}</span>
-                          <UIcon name="i-heroicons-arrow-long-right" class="text-gray-400" />
-                          <span class="text-sm font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded">{{ ann.correction }}</span>
-                        </div>
+            <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[35vh] overflow-y-auto">
+              <div v-for="ann in getAnnotatorAnnotationsForSentence(selectedSentence.id)" :key="ann.id" class="p-4 bg-white border rounded-2xl shadow-sm transition-all flex flex-col justify-between" :class="isAnnotationAccepted(ann) ? 'border-green-400 bg-green-50' : 'border-gray-200'">
+                <div class="flex flex-col gap-3 mb-4">
+                  <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                      <div class="text-xs font-bold text-blue-600 uppercase mb-2 flex items-center gap-1">
+                        <UIcon name="i-heroicons-user" class="w-3 h-3" />
+                        {{ getAnnotatorName(ann) }}
                       </div>
-                      <span class="text-[10px] text-orange-600 font-mono bg-orange-50 px-2 py-0.5 rounded border border-orange-100">
-                        {{ ann.error_type_details?.error_code }}
-                      </span>
-                    </div>
-                    <div class="flex gap-2">
-                      <UButton
-                        v-if="!isAnnotationAccepted(ann)"
-                        icon="i-heroicons-check"
-                        label="Terima"
-                        class="flex-1 justify-center bg-blue-600 text-white hover:bg-blue-700 rounded-xl font-bold"
-                        @click="toggleAcceptAnnotation(ann)"
-                        :loading="actionLoading === ann.id"
-                      />
-                      <UButton
-                        v-else
-                        icon="i-heroicons-x-mark"
-                        label="Batalkan"
-                        class="flex-1 justify-center bg-red-100 text-red-700 hover:bg-red-200 border border-red-200 rounded-xl font-bold"
-                        @click="toggleAcceptAnnotation(ann)"
-                        :loading="actionLoading === ann.id"
-                      />
+                      <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-sm line-through text-red-400">{{ getOriginalTextFromRange(ann) }}</span>
+                        <UIcon name="i-heroicons-arrow-long-right" class="text-gray-400" />
+                        <span class="text-sm font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded">{{ ann.correction }}</span>
+                      </div>
                     </div>
                   </div>
+                  <div>
+                    <span class="text-[10px] text-orange-600 font-mono bg-orange-50 px-2 py-0.5 rounded border border-orange-100">
+                      {{ ann.error_type_details?.error_code }}
+                    </span>
+                  </div>
+                </div>
+                <div class="flex gap-2">
+                  <UButton
+                    v-if="!isAnnotationAccepted(ann)"
+                    icon="i-heroicons-check"
+                    label="Terima"
+                    class="flex-1 justify-center bg-blue-600 text-white hover:bg-blue-700 rounded-xl font-bold"
+                    @click="toggleAcceptAnnotation(ann)"
+                    :loading="actionLoading === ann.id"
+                  />
+                  <UButton
+                    v-else
+                    icon="i-heroicons-x-mark"
+                    label="Batalkan"
+                    class="flex-1 justify-center bg-red-100 text-red-700 hover:bg-red-200 border border-red-200 rounded-xl font-bold"
+                    @click="toggleAcceptAnnotation(ann)"
+                    :loading="actionLoading === ann.id"
+                  />
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="space-y-6">
-          <div class="bg-gray-50 border border-gray-200 rounded-3xl p-6 shadow-sm min-h-[560px]">
+        <div :class="['grid gap-6 items-start', annotators.length > 1 ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1']">
+          <div v-for="(annotator, index) in annotators" :key="annotator.id" class="bg-gray-50 border border-gray-200 rounded-3xl p-6 shadow-sm flex flex-col h-full">
             <div class="flex items-center gap-4 mb-4">
               <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-orange-200 bg-orange-50">
-                <UIcon name="i-heroicons-user-group" class="w-5 h-5 text-orange-500" />
+                <UIcon name="i-heroicons-user" class="w-5 h-5 text-orange-500" />
               </span>
-              <div class="text-lg font-semibold text-black">Hasil Anotasi Annotator</div>
+              <div class="text-lg font-semibold text-black">Hasil Anotasi - {{ annotator.name }}</div>
             </div>
             <hr class="my-4 border-gray-200" />
 
-            <div class="rounded-2xl p-6 min-h-[560px] max-h-[75vh] overflow-y-auto text-lg text-black bg-white border border-gray-100 shadow-inner leading-relaxed">
+            <div class="rounded-2xl p-6 flex-1 max-h-[50vh] overflow-y-auto text-lg text-black bg-white border border-gray-100 shadow-inner leading-relaxed">
               <template v-if="document?.sentences">
-                <template v-for="(sentence, idx) in document.sentences" :key="'preview-' + sentence.id">
+                <template v-for="(sentence, idx) in document.sentences" :key="'preview-' + annotator.id + '-' + sentence.id">
                   <span class="inline">
-                    <template v-for="(seg, i) in buildSegmentsForAnnotator(sentence.id)" :key="i">
+                    <template v-for="(seg, i) in buildSegmentsForAnnotator(sentence.id, annotator.id)" :key="i">
                       <span v-if="seg.type === 'annotation'" class="inline-flex flex-col-reverse items-center align-baseline leading-snug mx-px">
                         <span class="text-[1em] text-green-600 font-semibold bg-green-100 rounded px-1 leading-snug whitespace-nowrap">
                           {{ seg.correction }}
@@ -185,6 +188,11 @@
                 </template>
               </template>
             </div>
+          </div>
+
+          <div v-if="annotators.length === 0" class="bg-gray-50 border border-gray-200 rounded-3xl p-10 shadow-sm text-center flex flex-col items-center justify-center">
+            <UIcon name="i-heroicons-document-magnifying-glass" class="w-12 h-12 text-gray-300 mb-3" />
+            <p class="text-gray-500 font-medium">Belum ada anotasi dari annotator pada dokumen ini.</p>
           </div>
         </div>
       </div>
@@ -257,6 +265,26 @@ const selectedSentence = ref<any>(null);
 const showCombinedHistory = ref(false);
 const actionLoading = ref<number | null>(null);
 
+const annotators = computed(() => {
+  const map = new Map();
+  annotatorInitialData.value.forEach(a => {
+    const id = a.annotator?.id || a.annotator_id || a.created_by?.id || 1;
+    const name = a.annotator?.full_name || a.annotator?.username || a.created_by?.full_name || `Annotator ${id}`;
+    if (!map.has(id)) {
+      map.set(id, { id, name });
+    }
+  });
+  
+  const list = Array.from(map.values());
+
+  while (list.length < 2) {
+    const fallbackId = list.length + 1;
+    list.push({ id: fallbackId, name: `Annotator ${fallbackId}` });
+  }
+
+  return list;
+});
+
 async function fetchDocument() {
   const result = await getAssignedDocument(Number(route.params.id));
   document.value = result;
@@ -272,9 +300,13 @@ async function fetchApiAnnotations() {
 async function fetchAnnotatorQueue() {
   const docId = Number(route.params.id);
   const queue: any = await getReviewQueue(docId);
-  annotatorInitialData.value = queue.sentences.flatMap((s: any) => 
-    s.annotations.map((a: any) => ({ ...a, sentence: s.sentence_id }))
-  );
+  if (queue?.sentences) {
+    annotatorInitialData.value = queue.sentences.flatMap((s: any) => 
+      s.annotations.map((a: any) => ({ ...a, sentence: s.sentence_id }))
+    );
+  } else {
+    annotatorInitialData.value = [];
+  }
 }
 
 function selectSentence(sentenceId: number) {
@@ -294,6 +326,12 @@ function isAnnotationAccepted(ann: any) {
     Number(a.start_index) === Number(ann.start_index) && 
     Number(a.end_index) === Number(ann.end_index)
   );
+}
+
+function getAnnotatorName(ann: any) {
+  const id = ann.annotator?.id || ann.annotator_id || ann.created_by?.id || 1;
+  const name = ann.annotator?.full_name || ann.annotator?.username || ann.created_by?.full_name || `Annotator ${id}`;
+  return name;
 }
 
 async function toggleAcceptAnnotation(ann: any) {
@@ -329,12 +367,16 @@ async function toggleAcceptAnnotation(ann: any) {
   }
 }
 
-function buildSegmentsForAnnotator(sentenceId: number): any[] {
+function buildSegmentsForAnnotator(sentenceId: number, annotatorId: number): any[] {
   const sentence = document.value?.sentences.find((s: any) => s.id === sentenceId);
   if (!sentence) return [];
   const text = sentence.text;
+  
   const annotations = annotatorInitialData.value
-    .filter((a) => a.sentence === sentenceId)
+    .filter((a) => {
+      const aId = a.annotator?.id || a.annotator_id || a.created_by?.id || 1;
+      return a.sentence === sentenceId && aId === annotatorId;
+    })
     .sort((a, b) => a.start_index - b.start_index);
 
   if (!annotations.length) return [{ type: 'text', text }];
