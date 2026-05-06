@@ -139,55 +139,6 @@
         <section
       class="w-full max-w-[95vw] mx-auto px-2 sm:px-4 pb-12 flex-col space-y-20"
     >
-      <div v-if="hasRole('Admin')" class="space-y-8">
-        <div class="flex items-center gap-4 mb-8">
-          <div class="p-3 rounded-lg bg-blue-500/10 border border-blue-200">
-            <Users class="w-8 h-8 text-blue-500" />
-          </div>
-          <div>
-            <h2 class="text-3xl font-bold text-gray-900">Dashboard Admin</h2>
-            <p class="text-gray-500 text-lg">Kelola sistem dan pengguna</p>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-          <Card
-            v-if="pending"
-            v-for="i in 4"
-            :key="i"
-            variant="glassmorphism"
-            class="p-6 animate-pulse bg-white/80 border border-gray-200 w-full !shadow-none"
-          >
-            <div class="w-12 h-12 bg-gray-200 rounded-lg mb-4"></div>
-            <div class="w-16 h-8 bg-gray-200 rounded mb-3"></div>
-            <div class="w-28 h-4 bg-gray-200 rounded"></div>
-          </Card>
-
-          <Card
-            v-else
-            v-for="stat in adminStats"
-            :key="stat.label"
-            variant="glassmorphism"
-            class="p-6 hover:border-gray-400 transition-all duration-300 group bg-white/80 border border-gray-200 w-full !shadow-none"
-          >
-            <div class="flex items-center justify-between mb-6">
-              <component
-                :is="getIcon(stat.icon)"
-                :class="`w-12 h-12 ${stat.color} transition-transform duration-300`"
-              />
-              <span class="text-3xl font-bold text-gray-900">{{
-                stat.value
-              }}</span>
-            </div>
-            <h3 class="text-gray-800 font-semibold text-lg mb-2">
-              {{ stat.label }}
-            </h3>
-            <p class="text-sm text-gray-500 leading-relaxed">
-              {{ stat.description }}
-            </p>
-          </Card>
-        </div>
-      </div>
 
       <div v-if="hasRole('Annotator')" class="space-y-8">
         <div class="flex items-center gap-4 mb-8">
@@ -521,116 +472,6 @@
           </main>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-          <Card
-            v-if="pending"
-            v-for="i in 4"
-            :key="i"
-            variant="glassmorphism"
-            class="p-6 animate-pulse bg-white/80 border border-gray-200 w-full !shadow-none"
-          >
-            <div class="w-12 h-12 bg-gray-200 rounded-lg mb-4"></div>
-            <div class="w-16 h-8 bg-gray-200 rounded mb-3"></div>
-            <div class="w-28 h-4 bg-gray-200 rounded"></div>
-          </Card>
-
-          <Card
-            v-else
-            v-for="stat in researchStats"
-            :key="stat.label"
-            variant="glassmorphism"
-            class="p-6 hover:border-gray-400 transition-all duration-300 bg-white/80 border border-gray-200 w-full !shadow-none"
-          >
-            <div class="flex items-center justify-between mb-6">
-              <component
-                :is="getIcon(stat.icon)"
-                :class="`w-12 h-12 ${stat.color}`"
-              />
-              <span class="text-3xl font-bold text-gray-900">{{
-                stat.value
-              }}</span>
-            </div>
-            <h3 class="text-gray-800 font-semibold text-lg mb-2">
-              {{ stat.label }}
-            </h3>
-            <p class="text-sm text-gray-500 leading-relaxed">
-              {{ stat.description }}
-            </p>
-          </Card>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <Card
-            variant="glassmorphism"
-            class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none"
-          >
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">
-              Distribusi Anotasi per Anotator
-            </h3>
-            <div
-              v-if="dashboardAnalytics?.per_annotator?.length"
-              class="space-y-3"
-            >
-              <div
-                v-for="item in dashboardAnalytics.per_annotator"
-                :key="item.annotator__id"
-                class="flex items-center justify-between"
-              >
-                <span class="text-sm text-gray-600">{{ item.annotator__username }}</span>
-                <div class="flex items-center gap-2">
-                  <div class="w-24 bg-gray-200 rounded-full h-2">
-                    <div
-                      class="bg-blue-600 h-2 rounded-full"
-                      :style="{ width: `${(item.num_annotations / Math.max(...dashboardAnalytics.per_annotator.map((i: any) => i.num_annotations))) * 100}%` }"
-                    ></div>
-                  </div>
-                  <span class="text-sm font-medium text-gray-900 w-8">{{
-                    item.num_annotations
-                  }}</span>
-                </div>
-              </div>
-            </div>
-            <div v-else class="text-gray-500 text-center py-8">
-              Tidak ada data anotasi
-            </div>
-          </Card>
-
-          <Card
-            variant="glassmorphism"
-            class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none"
-          >
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">
-              Distribusi Review per Reviewer
-            </h3>
-            <div
-              v-if="dashboardAnalytics?.per_reviewer?.length"
-              class="space-y-3"
-            >
-              <div
-                v-for="item in dashboardAnalytics.per_reviewer"
-                :key="item.reviewer__id"
-                class="flex items-center justify-between"
-              >
-                <span class="text-sm text-gray-600">{{ item.reviewer__username }}</span>
-                <div class="flex items-center gap-2">
-                  <div class="w-24 bg-gray-200 rounded-full h-2">
-                    <div
-                      class="bg-purple-600 h-2 rounded-full"
-                      :style="{ width: `${(item.num_reviews / Math.max(...dashboardAnalytics.per_reviewer.map((i: any) => i.num_reviews))) * 100}%` }"
-                    ></div>
-                  </div>
-                  <span class="text-sm font-medium text-gray-900 w-8">{{
-                    item.num_reviews
-                  }}</span>
-                </div>
-              </div>
-            </div>
-            <div v-else class="text-gray-500 text-center py-8">
-              Tidak ada data review
-            </div>
-          </Card>
-        </div>
-
         <Card
           variant="glassmorphism"
           class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none"
@@ -639,7 +480,7 @@
             Status Dokumen
           </h3>
           <div
-            class="grid grid-cols-1 md:grid-cols-3 gap-4"
+            class="grid grid-cols-1 md:grid-cols-2 gap-4"
             v-if="dashboardAnalytics"
           >
             <div class="text-center p-4 bg-blue-50 rounded-lg">
@@ -652,238 +493,80 @@
               <div class="text-2xl font-bold text-green-600">
                 {{ completionPercentage || 0 }}%
               </div>
-              <div class="text-sm text-green-600">Persentase Penyelesaian</div>
-            </div>
-            <div class="text-center p-4 bg-yellow-50 rounded-lg">
-              <div class="text-2xl font-bold text-yellow-600">
-                {{ cohenKappaPercentage || '0.0' }}%
-              </div>
-              <div class="text-sm text-yellow-600">Inter-Annotator Agreement</div>
-              <div class="text-xs text-gray-500 mt-2">
-                Matched {{ agreementSpans.matching || 0 }} / {{ agreementSpans.total || 0 }} span
-              </div>
+              <div class="text-sm text-green-600">Persentase Dokumen telah Dianotasi</div>
             </div>
           </div>
         </Card>
 
-        <div
-          v-if="dashboardAnalytics"
-          class="grid grid-cols-1 lg:grid-cols-3 gap-8"
-        >
-          <Card
-            variant="glassmorphism"
-            class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none"
-          >
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">
-              Performance Anotator
-            </h3>
-            <div class="space-y-4">
+        <div v-if="dashboardAnalytics" class="grid grid-cols-1 gap-8">
+          <!-- Tabel List Performance & IAA -->
+          <Card variant="glassmorphism" class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none">
+            <div class="flex items-center justify-between mb-6">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Pilih Anotator
-                </label>
-                <Select v-model="selectedAnnotator">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih anotator..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem
-                      v-for="user in annotators"
-                      :key="user.id"
-                      :value="user.id"
-                    >
-                      {{ user.full_name }}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                <h3 class="text-xl font-bold text-gray-900">Statistik Performa & IAA per Person</h3>
+                <p class="text-sm text-gray-500">Ringkasan aktivitas dan kesepakatan nilai Kappa setiap anggota tim.</p>
               </div>
-              <Button
-                @click="loadAnnotatorPerformance"
-                :loading="loadingAnnotator"
-                :disabled="!selectedAnnotator"
-              >
-                Load Performance
+              <Button variant="outline" size="sm" @click="fetchDashboardData" :loading="loadingIAASummary">
+                Refresh Data
               </Button>
-              <div v-if="annotatorPerformance" class="space-y-2 pt-4 border-t">
-                <div class="flex justify-between">
-                  <span class="text-sm text-gray-600">Total Anotasi:</span>
-                  <span class="font-medium">{{
-                    annotatorPerformance.totals.annotations
-                  }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-sm text-gray-600">Dokumen Dikerjakan:</span>
-                  <span class="font-medium">{{
-                    annotatorPerformance.per_document.length
-                  }}</span>
-                </div>
-                <div
-                  v-if="annotatorPerformance.per_document.length > 0"
-                  class="mt-2"
-                >
-                  <span class="text-xs text-gray-500">Per Dokumen:</span>
-                  <div class="max-h-20 overflow-y-auto mt-1">
-                    <div
-                      v-for="doc in annotatorPerformance.per_document.slice(
-                        0,
-                        3
-                      )"
-                      :key="doc.document__id"
-                      class="text-xs text-gray-600 truncate"
-                    >
-                      {{ doc.document__title }}:
-                      {{ doc.annotations_count }} anotasi
-                    </div>
-                    <div
-                      v-if="annotatorPerformance.per_document.length > 3"
-                      class="text-xs text-gray-400"
-                    >
-                      +{{ annotatorPerformance.per_document.length - 3 }}
-                      dokumen lainnya
-                    </div>
-                  </div>
-                </div>
-              </div>
+            </div>
+
+            <div class="overflow-x-auto border rounded-lg bg-white">
+              <table class="w-full text-sm text-left text-gray-500">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50 border-b">
+                  <tr>
+                    <th class="px-6 py-3">Nama Anggota</th>
+                    <th class="px-6 py-3 text-center">Progress</th>
+                    <th class="px-6 py-3 text-center">IAA VS REVIEWER</th>
+                    <th class="px-6 py-3 text-center">IAA VS PEERS (AVG)</th>
+                    <th class="px-6 py-3 text-center">STATUS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-if="loadingIAASummary">
+                    <td colspan="5" class="px-6 py-10 text-center">Memuat data...</td>
+                  </tr>
+                  <tr v-else-if="iaaPersonSummary.length === 0">
+                    <td colspan="5" class="px-6 py-10 text-center text-gray-400">Tidak ada data tersedia</td>
+                  </tr>
+                  <tr v-for="person in iaaPersonSummary" :key="person.annotator_id" class="border-b hover:bg-gray-50">
+                    <td class="px-6 py-4">
+                      <div class="font-medium text-gray-900">{{ person.annotator_name }}</div>
+                      <div class="text-[10px] text-gray-400 uppercase tracking-tighter">Annotator</div>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        <template v-if="person.completion_percentage !== null">
+                          {{ person.completion_percentage.toFixed(1) }}%
+                        </template>
+                        <template v-else>
+                          N/A
+                        </template>
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                      <span v-if="person.iaa_vs_reviewer !== null" :class="person.iaa_vs_reviewer < 0 ? 'text-red-500' : 'text-green-600'" class="font-bold">
+                        {{ (person.iaa_vs_reviewer * 100).toFixed(1) }}%
+                      </span>
+                      <span v-else class="text-gray-400">N/A</span>
+                    </td>
+                    <td class="px-6 py-4 text-center text-blue-600 font-bold">
+                      <span v-if="person.iaa_vs_peers_avg !== null">
+                        {{ (person.iaa_vs_peers_avg * 100).toFixed(1) }}%
+                      </span>
+                      <span v-else class="text-gray-400">N/A</span>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                      <Badge :variant="person.status === 'Sudah Direview' ? 'green' : 'gray'" class="text-[10px] uppercase font-bold">
+                        {{ person.status }}
+                      </Badge>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </Card>
 
-          <Card
-            variant="glassmorphism"
-            class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none"
-          >
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">
-              Performance Reviewer
-            </h3>
-            <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Pilih Reviewer
-                </label>
-                <Select v-model="selectedReviewer">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih reviewer..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem
-                      v-for="user in reviewers"
-                      :key="user.id"
-                      :value="user.id"
-                    >
-                      {{ user.full_name }}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button
-                @click="loadReviewerPerformance"
-                :loading="loadingReviewer"
-                :disabled="!selectedReviewer"
-              >
-                Load Performance
-              </Button>
-              <div v-if="reviewerPerformance" class="space-y-2 pt-4 border-t">
-                <div class="flex justify-between">
-                  <span class="text-sm text-gray-600">Total Review:</span>
-                  <span class="font-medium">{{
-                    reviewerPerformance.totals.reviews
-                  }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-sm text-gray-600">Dokumen Dikerjakan:</span>
-                  <span class="font-medium">{{
-                    reviewerPerformance.per_document.length
-                  }}</span>
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          <Card
-            variant="glassmorphism"
-            class="p-6 bg-white/90 border border-gray-200 w-full !shadow-none"
-          >
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">
-              Inter-Annotator Agreement
-            </h3>
-            <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Pilih Annotator
-                </label>
-                <Select v-model="selectedAnnotator">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih anotator..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem
-                      v-for="user in annotators"
-                      :key="user.id"
-                      :value="user.id"
-                    >
-                      {{ user.full_name }}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Pilih Reviewer
-                </label>
-                <Select v-model="selectedReviewer">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih reviewer..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem
-                      v-for="user in reviewers"
-                      :key="user.id"
-                      :value="user.id"
-                    >
-                      {{ user.full_name }}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button
-                @click="loadIAA"
-                :loading="loadingIAA"
-                :disabled="!selectedAnnotator || !selectedReviewer"
-              >
-                Hitung IAA
-              </Button>
-              <div v-if="iaaError" class="text-sm text-red-600 pt-4 border-t">
-                {{ iaaError }}
-              </div>
-              <div v-else-if="iaaResult?.results" class="space-y-2 pt-4 border-t">
-                <div class="flex justify-between">
-                  <span class="text-sm text-gray-600">Cohen Kappa:</span>
-                  <span class="font-medium">{{
-                    ((iaaResult.results.cohen_kappa ?? 0) * 100).toFixed(1)
-                  }}%</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-sm text-gray-600">Akurasi:</span>
-                  <span class="font-medium">{{
-                    ((iaaResult.results.accuracy ?? 0) * 100).toFixed(1)
-                  }}%</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-sm text-gray-600">Span yang cocok:</span>
-                  <span class="font-medium">{{
-                    iaaResult.results.matching_spans ?? 0
-                  }}/{{ iaaResult.results.total_unique_spans ?? 0 }}
-                  </span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-sm text-gray-600">Total item:</span>
-                  <span class="font-medium">{{ iaaResult.results.total_items ?? 0 }}</span>
-                </div>
-              </div>
-              <div v-else class="text-sm text-gray-500 pt-4 border-t">
-                Pilih Annotator dan Reviewer lalu klik "Hitung IAA" untuk melihat nilai. Jika hasilnya nol, akan ditampilkan sebagai 0.
-              </div>
-            </div>
-          </Card>
         </div>
       </div>
     </section>
@@ -938,7 +621,7 @@ import { useProjectContext } from "~/composables/project-context";
 import type { DocumentStatus } from "~/types/api";
 
 const { user } = useAuth();
-const { getDashboardSummary, getAnnotatorPerformance, getReviewerPerformance, getInterAnnotatorAgreement } =
+const { getDashboardSummary, getAnnotatorPerformance, getReviewerPerformance, getInterAnnotatorAgreement, getIAAPersonSummary } =
   useDashboardApi();
 const { getAvailableUsersInProject, getMyProjects, getUserRolesInProject } = useUsersApi();
 const { getAssignedDocuments } = useUserDocumentsApi();
@@ -948,6 +631,9 @@ const { getProjects } = useProjectsApi();
 const { selectedProject, setSelectedProject, clearSelectedProject } = useProjectContext();
 
 const pending = ref(false);
+
+const iaaPersonSummary = ref<any[]>([]);
+const loadingIAASummary = ref(false);
 
 const selectedProjectIdLocal = ref<string>("");
 const currentSelectedProject = computed(() => {
@@ -1015,6 +701,22 @@ const projectStatus = computed(() => {
   if (completionPercentage.value === 100) return "Selesai";
   return "Masih dalam pengerjaan";
 });
+
+const fetchIAAPersonSummary = async () => {
+  loadingIAASummary.value = true;
+  try {
+    const params: any = {};
+    if (selectedProjectIdLocal.value) {
+      params.project_id = selectedProjectIdLocal.value;
+    }
+    const res = await getIAAPersonSummary(params);
+    iaaPersonSummary.value = res.summary || [];
+  } catch (error) {
+    console.error("Gagal memuat ringkasan IAA:", error);
+  } finally {
+    loadingIAASummary.value = false;
+  }
+};
 
 const PROJECT_PAGE_SIZE = 3;
 const projectPage = ref(0);
@@ -1110,6 +812,7 @@ const onProjectChange = async (projectId: string) => {
       }
       await fetchDashboardData();
       await loadUsersForPerformance();
+      await fetchIAAPersonSummary();
     } else {
       await loadUserRolesInProject(projectId);
     }
@@ -1269,6 +972,14 @@ const formatStatus = (status: DocumentStatus | string) => {
   return statusMap[status.toLowerCase()] || status;
 };
 
+const getContribution = (userId: string) => {
+  if (!dashboardAnalytics.value?.per_annotator) return 0;
+  const found = dashboardAnalytics.value.per_annotator.find(
+    (a: any) => a.annotator__id === userId
+  );
+  return found ? found.num_annotations : 0;
+};
+
 // Date formatting function
 const formatDate = (dateStr: string) => {
   if (!dateStr) return "-";
@@ -1344,8 +1055,11 @@ const fetchDashboardData = async () => {
         ];
       } catch (error) {
         console.error("Error fetching admin stats:", error);
-      }
-      return; // Exit early for Admin
+      };
+    if (hasRole("Kepala Riset")) {
+      await fetchIAAPersonSummary();
+    }
+    return;
     }
 
     // For other roles (Kepala Riset, Annotator, Reviewer), fetch dashboard data
@@ -1480,69 +1194,6 @@ const loadUsersForPerformance = async () => {
   }
 };
 
-const togglePerformanceSection = () => {
-  showPerformanceSection.value = !showPerformanceSection.value;
-};
-
-const loadAnnotatorPerformance = async () => {
-  if (!selectedAnnotator.value) return;
-
-  loadingAnnotator.value = true;
-  try {
-    const params: any = { user_id: selectedAnnotator.value };
-
-    annotatorPerformance.value = await getAnnotatorPerformance(params);
-  } catch (error) {
-    console.error("Error loading annotator performance:", error);
-  } finally {
-    loadingAnnotator.value = false;
-  }
-};
-
-const loadReviewerPerformance = async () => {
-  if (!selectedReviewer.value) return;
-
-  loadingReviewer.value = true;
-  try {
-    const params: any = { user_id: selectedReviewer.value };
-
-    reviewerPerformance.value = await getReviewerPerformance(params);
-  } catch (error) {
-    console.error("Error loading reviewer performance:", error);
-  } finally {
-    loadingReviewer.value = false;
-  }
-};
-
-const loadIAA = async () => {
-  if (!selectedAnnotator.value || !selectedReviewer.value) return;
-
-  loadingIAA.value = true;
-  iaaResult.value = null;
-  iaaError.value = "";
-
-  try {
-    const params: any = {
-      annotator_id: selectedAnnotator.value,
-      reviewer_id: selectedReviewer.value,
-    };
-
-    if (selectedProjectIdLocal.value) {
-      params.project_id = parseInt(selectedProjectIdLocal.value);
-    }
-
-    iaaResult.value = await getInterAnnotatorAgreement(params);
-  } catch (error: any) {
-    console.error("Error loading IAA:", error);
-    iaaResult.value = null;
-    iaaError.value =
-      error?.error_code === "NO_DATA_AVAILABLE"
-        ? error.detail || "Tidak ada data anotasi atau review untuk perbandingan ini."
-        : error?.detail || error?.message || "Gagal memuat data IAA.";
-  } finally {
-    loadingIAA.value = false;
-  }
-};
 
 async function fetchUserProjects() {
   isLoadingProjects.value = true;

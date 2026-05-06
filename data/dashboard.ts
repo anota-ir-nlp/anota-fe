@@ -328,6 +328,24 @@ export interface IAAResponse {
   };
 }
 
+// Tambahkan interface ini di data/dashboard.ts
+export interface IAAPersonSummary {
+  annotator_id: string;
+  annotator_name: string;
+  iaa_vs_reviewer: number | null;
+  iaa_vs_peers_avg: number | null;
+  status: string;
+  completion_percentage: number | null;
+}
+
+export interface IAAPersonSummaryResponse {
+  summary: IAAPersonSummary[];
+  metadata: {
+    execution_time: number;
+    total_annotators: number;
+  };
+}
+
 export function useDashboardApi() {
   const { fetcher } = useProtectedFetcher();
 
@@ -377,10 +395,20 @@ export function useDashboardApi() {
     return fetcher<IAAResponse>(url);
   };
 
+  const getIAAPersonSummary = (params: DashboardSummaryParams) => {
+    let url = `${BASE}/iaa/person-summary/`;
+    const searchParams = new URLSearchParams();
+    if (params.project_id) searchParams.append("project_id", params.project_id.toString());
+    if (params.document_id) searchParams.append("document_id", params.document_id.toString());
+    if (searchParams.toString()) url += `?${searchParams.toString()}`;
+    return fetcher<IAAPersonSummaryResponse>(url);
+  };
+
   return {
     getDashboardSummary,
     getAnnotatorPerformance,
     getReviewerPerformance,
     getInterAnnotatorAgreement,
+    getIAAPersonSummary,
   };
 }
