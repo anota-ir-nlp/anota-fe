@@ -45,7 +45,7 @@
                 label="Simpan"
                 class="rounded-2xl px-4 py-2 bg-blue-100 text-blue-700 border border-blue-700 hover:bg-blue-200"
                 @click="handleSave"
-                :disabled="!localCorrection || localErrorTypes.length === 0 || loading"
+                :disabled="localErrorTypes.length === 0 || loading"
                 :loading="loading"
               />
               <UButton label="Batal" color="neutral" variant="ghost" @click="isOpen = false" />

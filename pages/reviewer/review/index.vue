@@ -148,7 +148,7 @@
             </thead>
             <tbody>
               <tr v-for="(doc, index) in filteredDocs" :key="doc.id" class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                <td class="px-4 py-4">{{ index + 1 }}</td>
+                <td class="px-4 py-4">{{ (page - 1) * pageCount + index + 1 }}</td>
                 <td class="px-4 py-4 font-semibold">{{ doc.title }}</td>
                 <td class="px-4 py-4">
                   <span :class="getStatusClass(doc.status)" class="px-3 py-1 rounded-full text-xs font-medium">
@@ -184,6 +184,15 @@
               </tr>
             </tbody>
           </table>
+
+          <div v-if="totalItems > 0" class="flex justify-center mt-6">
+            <UPagination
+              v-model:page="page"
+              :page-count="pageCount"
+              :total="totalItems"
+              @update:page="fetchData"
+            />
+          </div>
         </div>
       </Card>
 
@@ -199,7 +208,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { navigateTo } from "#app";
 import { Button } from "~/components/ui/button";
 import { useUserDocumentsApi } from "~/data/user-documents";
@@ -219,14 +228,18 @@ const filter = ref({ status: "", dateFrom: "", dateTo: "" });
 const dateFilterType = ref("");
 const sort = ref<{ key: string; dir: "asc" | "desc" }>({ key: "created_at", dir: "desc" });
 
+const page = ref(1);
+const pageCount = ref(10);
+const totalItems = ref(0);
+
 const stats = computed(() => ({
   reviewed: docs.value.filter((doc) => doc.status === "sudah_direview").length,
-  total: docs.value.length,
+  total: totalItems.value,
 }));
 
 const accuracy = computed(() => {
-  if (!docs.value.length) return "0";
-  return ((stats.value.reviewed / docs.value.length) * 100).toFixed(0);
+  if (!totalItems.value) return "0";
+  return ((stats.value.reviewed / totalItems.value) * 100).toFixed(0);
 });
 
 const filteredDocs = computed(() => {
@@ -280,6 +293,8 @@ function resetFilters() {
   search.value = "";
   filter.value = { status: "", dateFrom: "", dateTo: "" };
   dateFilterType.value = "";
+  page.value = 1;
+  fetchData();
 }
 
 function handleDateFilterChange() {
@@ -287,7 +302,13 @@ function handleDateFilterChange() {
     filter.value.dateFrom = "";
     filter.value.dateTo = "";
   }
+  page.value = 1;
+  fetchData();
 }
+
+watch([search, () => filter.value.status], () => {
+  page.value = 1;
+});
 
 function setSort(key: string) {
   if (sort.value.key === key) {
@@ -332,10 +353,12 @@ function getStatusClass(status: DocumentStatus) {
 async function fetchData() {
   isLoading.value = true;
   try {
-    const response = await getAssignedDocuments();
+    const response = await getAssignedDocuments(page.value);
     docs.value = response?.results?.filter((doc: any) => REVIEW_STATUSES.includes(doc.status)) || [];
+    totalItems.value = response?.count || 0;
   } catch (e) {
     docs.value = [];
+    totalItems.value = 0;
   }
   isLoading.value = false;
 }

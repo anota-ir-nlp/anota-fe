@@ -131,7 +131,7 @@
                   </div>
                   <div>
                     <span class="text-[10px] text-orange-600 font-mono bg-orange-50 px-2 py-0.5 rounded border border-orange-100">
-                      {{ ann.error_type_details?.error_code }}
+                      {{ ann.error_type_code }}
                     </span>
                   </div>
                 </div>
@@ -173,8 +173,8 @@
                 <template v-for="(sentence, idx) in document.sentences" :key="'preview-' + annotator.id + '-' + sentence.id">
                   <span class="inline">
                     <template v-for="(seg, i) in buildSegmentsForAnnotator(sentence.id, annotator.id)" :key="i">
-                      <span v-if="seg.type === 'annotation'" class="inline-flex flex-col-reverse items-center align-baseline leading-snug mx-px">
-                        <span class="text-[1em] text-green-600 font-semibold bg-green-100 rounded px-1 leading-snug whitespace-nowrap">
+                      <span v-if="seg.type === 'annotation'" class="inline-flex flex-col items-center align-bottom leading-snug mx-px">
+                        <span class="text-[0.85em] text-green-600 font-semibold bg-green-100 rounded px-1 leading-snug whitespace-nowrap">
                           {{ seg.correction }}
                         </span>
                         <span class="text-[1em] text-gray-500 line-through leading-snug whitespace-nowrap">
@@ -192,7 +192,7 @@
 
           <div v-if="annotators.length === 0" class="bg-gray-50 border border-gray-200 rounded-3xl p-10 shadow-sm text-center flex flex-col items-center justify-center">
             <UIcon name="i-heroicons-document-magnifying-glass" class="w-12 h-12 text-gray-300 mb-3" />
-            <p class="text-gray-500 font-medium">Belum ada anotasi dari annotator pada dokumen ini.</p>
+            <p class="text-gray-500 font-medium">Belum ada anotasi pada dokumen ini.</p>
           </div>
         </div>
       </div>
@@ -212,34 +212,6 @@
         </div>
       </div>
     </div>
-
-    <teleport to="body">
-      <div
-        v-if="showCombinedHistory"
-        :style="popupStyle"
-        class="fixed z-50 bg-white border border-gray-300 rounded-2xl p-6 shadow-xl min-w-[360px] max-w-[90vw] max-h-[80vh] my-4 overflow-y-auto cursor-move"
-        @mousedown="startDrag"
-      >
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-semibold flex items-center gap-2 text-black">
-            <UIcon name="i-heroicons-clock" class="w-5 h-5 text-blue-500" />
-            Ringkasan Review
-          </h3>
-          <UButton icon="i-heroicons-x-mark" color="neutral" variant="ghost" @click="showCombinedHistory = false" class="bg-black text-white" />
-        </div>
-        <div class="space-y-3">
-          <div v-if="apiAnnotations.length === 0" class="text-center py-8">
-            <p class="text-gray-500 italic">Belum ada review yang disimpan</p>
-          </div>
-          <div v-for="ann in apiAnnotations" :key="ann.id" class="p-3 bg-blue-50 rounded-lg border border-blue-100">
-             <div class="flex items-center justify-between mb-2 text-xs">
-                <span class="font-bold text-blue-800">Kalimat #{{ ann.sentence }}</span>
-             </div>
-             <div class="text-sm text-black px-2 py-1 bg-white rounded border">{{ ann.correction }}</div>
-          </div>
-        </div>
-      </div>
-    </teleport>
   </div>
 </template>
 
@@ -268,21 +240,12 @@ const actionLoading = ref<number | null>(null);
 const annotators = computed(() => {
   const map = new Map();
   annotatorInitialData.value.forEach(a => {
-    const id = a.annotator?.id || a.annotator_id || a.created_by?.id || 1;
-    const name = a.annotator?.full_name || a.annotator?.username || a.created_by?.full_name || `Annotator ${id}`;
-    if (!map.has(id)) {
-      map.set(id, { id, name });
+    const id = a.annotator;
+    if (id && !map.has(id)) {
+      map.set(id, { id, name: `Annotator ${map.size + 1}` });
     }
   });
-  
-  const list = Array.from(map.values());
-
-  while (list.length < 2) {
-    const fallbackId = list.length + 1;
-    list.push({ id: fallbackId, name: `Annotator ${fallbackId}` });
-  }
-
-  return list;
+  return Array.from(map.values());
 });
 
 async function fetchDocument() {
@@ -329,9 +292,8 @@ function isAnnotationAccepted(ann: any) {
 }
 
 function getAnnotatorName(ann: any) {
-  const id = ann.annotator?.id || ann.annotator_id || ann.created_by?.id || 1;
-  const name = ann.annotator?.full_name || ann.annotator?.username || ann.created_by?.full_name || `Annotator ${id}`;
-  return name;
+  const found = annotators.value.find(at => at.id === ann.annotator);
+  return found ? found.name : 'Unknown';
 }
 
 async function toggleAcceptAnnotation(ann: any) {
@@ -352,7 +314,7 @@ async function toggleAcceptAnnotation(ann: any) {
         sentence: Number(ann.sentence),
         start_index: Number(ann.start_index),
         end_index: Number(ann.end_index),
-        error_type: Number(ann.error_type || ann.error_type_details?.id),
+        error_type: Number(ann.error_type),
         correction: ann.correction,
         is_required: true,
         annotation: ann.id
@@ -367,16 +329,13 @@ async function toggleAcceptAnnotation(ann: any) {
   }
 }
 
-function buildSegmentsForAnnotator(sentenceId: number, annotatorId: number): any[] {
+function buildSegmentsForAnnotator(sentenceId: number, annotatorId: string): any[] {
   const sentence = document.value?.sentences.find((s: any) => s.id === sentenceId);
   if (!sentence) return [];
   const text = sentence.text;
   
   const annotations = annotatorInitialData.value
-    .filter((a) => {
-      const aId = a.annotator?.id || a.annotator_id || a.created_by?.id || 1;
-      return a.sentence === sentenceId && aId === annotatorId;
-    })
+    .filter((a) => a.sentence === sentenceId && a.annotator === annotatorId)
     .sort((a, b) => a.start_index - b.start_index);
 
   if (!annotations.length) return [{ type: 'text', text }];
@@ -434,28 +393,6 @@ const handleKeyboard = (e: KeyboardEvent) => {
     clearSelection();
   }
 };
-
-const popupPosition = ref({ x: 100, y: 100 });
-const popupStyle = computed(() => ({ 
-  left: `${popupPosition.value.x}px`, 
-  top: `${popupPosition.value.y}px`, 
-  position: 'fixed' as const 
-}));
-
-function startDrag(e: MouseEvent) {
-  if ((e.target as HTMLElement).closest('button')) return;
-  const offX = e.clientX - popupPosition.value.x;
-  const offY = e.clientY - popupPosition.value.y;
-  const onMove = (me: MouseEvent) => { 
-    popupPosition.value = { x: me.clientX - offX, y: me.clientY - offY }; 
-  };
-  const onUp = () => { 
-    window.removeEventListener('mousemove', onMove); 
-    window.removeEventListener('mouseup', onUp); 
-  };
-  window.addEventListener('mousemove', onMove);
-  window.addEventListener('mouseup', onUp);
-}
 
 onMounted(async () => {
   window.addEventListener('keydown', handleKeyboard);
