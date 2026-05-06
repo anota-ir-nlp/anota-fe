@@ -20,12 +20,12 @@
           <DocumentSingleUploadDialog
             v-model:open="isCreateDialogOpen"
             :project-id="selectedProjectId"
-            @success="fetchDocuments(currentPage)"
+            @success="fetchDocuments"
           />
           <DocumentBulkUploadDialog
             v-model:open="isBulkDialogOpen"
             :project-id="selectedProjectId"
-            @success="fetchDocuments(currentPage)"
+            @success="fetchDocuments"
           />
         </div>
 
@@ -48,7 +48,7 @@
           :document="documentToReopen"
           :users="users"
           :project-id="selectedProjectId"
-          @success="fetchDocuments(currentPage)"
+          @success="fetchDocuments"
         />
 
         <div v-if="isLoading" class="text-gray-600 mb-4">
@@ -58,31 +58,18 @@
         <div v-if="documents.length" class="bg-white border border-gray-200 rounded-xl shadow-sm p-6 mb-6">
           <DataTable
             :columns="documentColumns"
-            :data="documents"
+            :data="paginatedDocuments"
             @selection-change="handleSelectionChange"
             @delete-document="handleDeleteDocument"
           />
-        </div>
-
-        <div v-if="documents.length && totalPages > 1" class="mt-4 flex justify-center">
-          <Pagination :page="currentPage" :total="totalPages" :items-per-page="documents.length > 0 ? documents.length : 1" @update:page="fetchDocuments">
-            <PaginationContent>
-              <PaginationPrevious :disabled="currentPage === 1" @click="fetchDocuments(currentPage - 1)">
-                <ArrowLeft class="w-4 h-4" />
-              </PaginationPrevious>
-              <template v-for="(page, idx) in paginationPages" :key="idx">
-                <PaginationItem v-if="typeof page === 'number'" :value="page" :is-active="page === currentPage" @click="fetchDocuments(page)">
-                  {{ page }}
-                </PaginationItem>
-                <PaginationEllipsis v-else>
-                  <MoreHorizontal class="w-4 h-4" />
-                </PaginationEllipsis>
-              </template>
-              <PaginationNext :disabled="currentPage === totalPages" @click="fetchDocuments(currentPage + 1)">
-                <ArrowRight class="w-4 h-4" />
-              </PaginationNext>
-            </PaginationContent>
-          </Pagination>
+          
+          <div v-if="totalItems > 0" class="flex justify-center mt-6">
+            <UPagination
+              v-model:page="currentPage"
+              :page-count="itemsPerPage"
+              :total="totalItems"
+            />
+          </div>
         </div>
 
         <div v-if="!documents.length && !isLoading" class="bg-white border border-gray-200 rounded-xl p-6 text-center">
@@ -102,8 +89,7 @@ import { useProjectContext } from "~/composables/project-context";
 import type { DocumentResponse, UserResponse } from "~/types/api";
 
 import { Button } from "~/components/ui/button";
-import { Pagination, PaginationContent, PaginationItem, PaginationPrevious, PaginationNext, PaginationEllipsis } from "~/components/ui/pagination";
-import { ArrowLeft, ArrowRight, MoreHorizontal, UserPlus } from "lucide-vue-next";
+import { UserPlus } from "lucide-vue-next";
 import { toast } from "vue-sonner";
 import DataTable from "~/components/ui/data-table/data-table.vue";
 import { createColumns } from "~/components/documents/columns";
@@ -120,8 +106,9 @@ const documents = ref<DocumentResponse[]>([]);
 const users = ref<UserResponse[]>([]);
 const selectedDocuments = ref<DocumentResponse[]>([]);
 const isLoading = ref(false);
+
 const currentPage = ref(1);
-const totalPages = ref(1);
+const itemsPerPage = ref(20);
 
 const isCreateDialogOpen = ref(false);
 const isBulkDialogOpen = ref(false);
@@ -129,22 +116,12 @@ const isAssignmentDialogOpen = ref(false);
 const isReopenDialogOpen = ref(false);
 const documentToReopen = ref<DocumentResponse | null>(null);
 
-const paginationPages = computed(() => {
-  const pages: (number | string)[] = [];
-  const total = totalPages.value || 1;
-  const current = currentPage.value || 1;
+const totalItems = computed(() => documents.value.length);
 
-  if (total <= 5) {
-    for (let i = 1; i <= total; i++) pages.push(i);
-  } else if (current <= 3) {
-    pages.push(1, 2, 3, 4, 5, "ellipsis", total);
-  } else if (current >= total - 2) {
-    pages.push(1, "ellipsis");
-    for (let i = total - 4; i <= total; i++) pages.push(i);
-  } else {
-    pages.push(1, "ellipsis", current - 1, current, current + 1, "ellipsis", total);
-  }
-  return pages;
+const paginatedDocuments = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value;
+  const end = start + itemsPerPage.value;
+  return documents.value.slice(start, end);
 });
 
 const documentColumns = computed(() => createColumns(getUserName, getUserFullNameFromUsername, handleDeleteDocument, handleReopenDocument));
@@ -171,10 +148,9 @@ function handleDeleteDocument(documentId: string) {
   apiDeleteDocument(numericId)
     .then(() => {
       toast.success("Dokumen berhasil dihapus");
-      fetchDocuments(currentPage.value);
+      fetchDocuments();
     })
     .catch((error: any) => {
-      console.error("Error deleting document:", error);
       toast.error("Gagal menghapus dokumen");
     });
 }
@@ -186,26 +162,22 @@ function handleReopenDocument(document: DocumentResponse) {
 
 function handleAssignmentSuccess() {
   selectedDocuments.value = [];
-  fetchDocuments(currentPage.value);
+  fetchDocuments();
 }
 
-async function fetchDocuments(page = 1) {
+async function fetchDocuments() {
   isLoading.value = true;
   try {
     if (!selectedProjectId.value) {
       documents.value = [];
-      totalPages.value = 1;
       return;
     }
     const projectDocuments = await getDocumentsInProject(selectedProjectId.value);
     documents.value = projectDocuments || [];
     currentPage.value = 1;
-    totalPages.value = 1;
   } catch (error) {
-    console.error("Error fetching documents:", error);
     toast.error("Gagal memuat data dokumen");
     documents.value = [];
-    totalPages.value = 1;
   } finally {
     isLoading.value = false;
   }
@@ -221,7 +193,6 @@ async function fetchUsers() {
       toast.error("Pilih project terlebih dahulu untuk melihat pengguna");
     }
   } catch (error) {
-    console.error("Error fetching users:", error);
     toast.error("Gagal memuat daftar user");
   }
 }
@@ -229,7 +200,7 @@ async function fetchUsers() {
 onMounted(async () => {
   await fetchUsers();
   if (selectedProjectId.value) {
-    await fetchDocuments(currentPage.value);
+    await fetchDocuments();
   }
 });
 
@@ -238,12 +209,10 @@ watch(
   async () => {
     if (selectedProjectId.value) {
       await fetchUsers();
-      await fetchDocuments(1);
-      currentPage.value = 1;
+      await fetchDocuments();
     } else {
       documents.value = [];
       users.value = [];
-      totalPages.value = 1;
       currentPage.value = 1;
     }
   },
