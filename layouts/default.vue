@@ -162,12 +162,6 @@ const menuGroups = computed<MenuGroup[]>(() => {
       icon: BarChart3,
       items: [
         {
-          label: "Dashboard Analytics",
-          path: "/kepala-riset-admin/dashboard",
-          icon: BarChart3,
-          description: "View system analytics and performance metrics",
-        },
-        {
           label: "Kelola Project",
           path: "/kepala-riset/kelola-project",
           icon: BarChart3,

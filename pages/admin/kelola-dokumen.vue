@@ -32,7 +32,7 @@
               </Button>
             </DialogTrigger>
             <DialogContent
-              class="sm:max-w-4xl h-[85vh] overflow-hidden flex flex-col"
+              class="sm:max-w-4xl h-[85vh] flex flex-col overflow-auto"
             >
               <DialogHeader>
                 <DialogTitle class="text-black-900">Upload Dokumen</DialogTitle>
@@ -41,7 +41,7 @@
                   menjadi judul dokumen.
                 </DialogDescription>
               </DialogHeader>
-              <div class="flex-1 flex flex-col gap-4 py-4 overflow-hidden">
+              <div class="flex-1 flex flex-col gap-4 py-4 overflow-auto">
                 <Input
                   type="file"
                   accept=".txt,.docx"
@@ -72,13 +72,13 @@
 
                 <div
                   v-else-if="singleFilePreview"
-                  class="flex-1 bg-gray-50 border border-gray-200 rounded p-4 text-sm flex flex-col overflow-hidden"
+                  class="flex-1 bg-gray-50 border border-gray-200 rounded p-4 flex flex-col overflow-auto"
                 >
-                  <div class="font-semibold text-blue-600 mb-3">Preview:</div>
+                  <div class="font-semibold text-blue-600 mb-3 text-base">Preview:</div>
                   <div
                     class="flex-1 text-left space-y-3 flex flex-col overflow-y-auto min-h-0"
                   >
-                    <div class="font-medium text-lg text-gray-900">
+                    <div class="font-medium text-xl text-gray-900">
                       {{ singleFilePreview.title }}
                     </div>
 
@@ -95,7 +95,7 @@
                     </div>
 
                     <div
-                      class="flex-1 text-gray-700 p-4 bg-white border border-gray-200 rounded overflow-y-auto whitespace-pre-wrap"
+                      class="flex-1 text-gray-700 p-6 bg-white border border-gray-200 rounded overflow-y-auto whitespace-pre-wrap text-sm leading-relaxed min-h-[450px] max-h-[500px] font-mono"
                     >
                       {{ singleFilePreview.text }}
                     </div>
@@ -110,13 +110,13 @@
                       <div class="text-green-800 font-medium mb-2">
                         Preview Kalimat
                       </div>
-                      <div class="max-h-32 overflow-y-auto space-y-1">
+                      <div class="max-h-48 overflow-y-auto space-y-1">
                         <div
                           v-for="(
                             sentence, index
                           ) in singleFilePreview.sentences.slice(0, 5)"
                           :key="index"
-                          class="text-green-700 text-xs p-2 bg-white rounded border"
+                          class="text-green-700 text-sm p-2 bg-white rounded border"
                         >
                           <span class="font-medium">{{ index + 1 }}:</span>
                           {{ sentence }}
@@ -183,7 +183,7 @@
               </Button>
             </DialogTrigger>
             <DialogContent
-              class="sm:max-w-4xl h-[85vh] overflow-hidden flex flex-col"
+              class="sm:max-w-4xl h-[85vh] flex flex-col overflow-auto"
             >
               <DialogHeader>
                 <DialogTitle>Bulk Upload Dokumen dari Folder</DialogTitle>
@@ -192,7 +192,7 @@
                   menjadi dokumen baru dengan nama file sebagai judul.
                 </DialogDescription>
               </DialogHeader>
-              <div class="flex-1 flex flex-col gap-4 py-4 overflow-hidden">
+              <div class="flex-1 flex flex-col gap-4 py-4 overflow-auto">
                 <Input
                   type="file"
                   webkitdirectory
@@ -228,7 +228,7 @@
 
                 <div
                   v-else-if="bulkFilesPreview.length"
-                  class="flex-1 flex flex-col gap-4 overflow-hidden"
+                  class="flex-1 flex flex-col gap-4 overflow-auto"
                 >
                   <div class="flex items-center justify-between">
                     <div class="font-semibold">
@@ -259,10 +259,10 @@
 
                   <div
                     v-if="currentBulkFile"
-                    class="flex-1 bg-gray-50 border border-gray-200 rounded p-6 flex flex-col overflow-hidden"
+                    class="flex-1 bg-gray-50 border border-gray-200 rounded p-6 flex flex-col overflow-auto"
                   >
-                    <div class="space-y-4 flex-1 flex flex-col overflow-y-auto min-h-0">
-                      <div class="font-medium text-blue-600 text-lg flex-shrink-0">
+                    <div class="space-y-4 flex-1 flex flex-col overflow-hidden">
+                      <div class="font-medium text-blue-600 text-lg">
                         {{ currentBulkFile.title }}
                       </div>
 
@@ -279,7 +279,7 @@
                       </div>
 
                       <div
-                        class="flex-1 text-gray-700 p-4 bg-white border border-gray-200 rounded overflow-y-auto whitespace-pre-wrap text-sm min-h-0"
+                        class="flex-1 text-gray-700 p-4 bg-white border border-gray-200 rounded overflow-y-auto whitespace-pre-wrap text-sm"
                       >
                         {{ currentBulkFile.text }}
                       </div>
@@ -300,7 +300,7 @@
                               sentence, index
                             ) in currentBulkFile.sentences.slice(0, 3)"
                             :key="index"
-                            class="text-green-700 text-xs p-2 bg-white rounded border"
+                            class="text-green-700 text-sm p-2 bg-white rounded border"
                           >
                             <span class="font-medium">{{ index + 1 }}:</span>
                             {{ sentence }}
