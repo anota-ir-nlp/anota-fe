@@ -98,8 +98,8 @@
                 <div class="flex items-center gap-2 ml-auto">
                   <UButton
                     icon="i-heroicons-plus-circle"
-                    size="sm"
-                    class="rounded-2xl bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 flex items-center"
+                    size="md"
+                    class="rounded-2xl bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 flex items-center cursor-pointer"
                     :disabled="!selectedSentence || !canAnnotate"
                     @click="showAnnotationUI = true"
                     variant="ghost"
@@ -111,8 +111,8 @@
                   </UButton>
                   <UButton
                     icon="i-heroicons-clock"
-                    size="sm"
-                    class="rounded-2xl bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 flex items-center"
+                    size="md"
+                    class="rounded-2xl bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 flex items-center cursor-pointer"
                     :disabled="!selectedSentence"
                     @click="showCombinedHistory = true"
                     variant="ghost"
@@ -124,8 +124,8 @@
                   </UButton>
                   <UButton
                     icon="i-heroicons-x-mark"
-                    size="sm"
-                    class="rounded-2xl bg-red-100 text-red-700 border border-red-200 hover:bg-red-200 flex items-center"
+                    size="md"
+                    class="rounded-2xl bg-red-100 text-red-700 border border-red-200 hover:bg-red-200 flex items-center cursor-pointer"
                     :disabled="!selectedSentence"
                     @click="clearSelection"
                     variant="ghost"
@@ -155,27 +155,27 @@
             <div class="text-black leading-relaxed">
               <template v-if="document?.sentences && document.sentences.length > 0">
                 <template v-for="(sentence, idx) in document.sentences" :key="sentence.id">
+                  
                   <span
                     v-if="selectedSentence && selectedSentence.id === sentence.id"
                     :ref="(el) => { if (el) combinedEditableArea = el }"
                     :class="[
-                      'inline-block align-top px-1 py-0.5 rounded transition-colors cursor-text bg-blue-100',
+                      'inline px-1 py-0.5 rounded transition-colors cursor-text bg-blue-100',
                       hasAnnotations(sentence.id) ? 'border-b-2 border-dashed border-blue-300 pb-px' : '',
                     ]"
                     @mouseup="handleTextSelection"
                     style="user-select: auto;"
                   >
                     <template v-for="(seg, i) in buildSegmentsForSentence(sentence.id)" :key="i">
-                      <span v-if="seg.type === 'annotated'" class="inline-flex flex-col items-center align-middle leading-none mx-0.5">
-                        <span class="text-[0.75em] text-green-600 font-bold bg-green-50 px-1 rounded mb-0.5 select-none">
+                      <span v-if="seg.type === 'annotated'" class="inline-flex flex-col items-center align-bottom leading-snug mx-px">
+                        <span class="text-[1em] text-green-600 font-semibold bg-green-100 rounded px-1 leading-snug whitespace-nowrap">
                           {{ seg.correction }}
                         </span>
-                        <span class="text-[1em] text-gray-500 line-through decoration-red-400">
+                        <span class="text-[1em] text-gray-500 line-through leading-snug whitespace-nowrap">
                           {{ seg.text }}
                         </span>
                       </span>
-                      
-                      <span v-else class="align-middle">{{ seg.text }}</span>
+                      <span v-else>{{ seg.text }}</span>
                     </template>
                   </span>
 
@@ -194,12 +194,17 @@
                   >
                     <template v-for="(seg, i) in buildSegmentsForSentence(sentence.id)" :key="i">
                       <span v-if="seg.type === 'annotated'" class="inline-flex flex-col items-center align-bottom leading-snug mx-px">
-                        <span class="text-[1em] text-green-600 font-semibold bg-green-100 rounded px-1 leading-snug whitespace-nowrap">{{ seg.correction }}</span>
-                        <span class="text-[1em] text-gray-500 line-through leading-snug whitespace-nowrap">{{ seg.text }}</span>
+                        <span class="text-[1em] text-green-600 font-semibold bg-green-100 rounded px-1 leading-snug whitespace-nowrap">
+                          {{ seg.correction }}
+                        </span>
+                        <span class="text-[1em] text-gray-500 line-through leading-snug whitespace-nowrap">
+                          {{ seg.text }}
+                        </span>
                       </span>
                       <span v-else>{{ seg.text }}</span>
                     </template>
                   </span>
+
                   <span v-if="idx < document.sentences.length - 1"> </span>
                 </template>
               </template>
