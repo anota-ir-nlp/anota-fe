@@ -43,7 +43,7 @@
             <div class="flex gap-2 pt-4">
               <UButton
                 label="Simpan"
-                class="rounded-2xl px-4 py-2 bg-blue-100 text-blue-700 border border-blue-700 hover:bg-blue-200"
+                class="rounded-2xl px-4 py-2 bg-blue-100 text-blue-700 border border-blue-700 hover:bg-blue-200 disabled:bg-gray-200 disabled:border-none disabled:text-gray-500"
                 @click="handleSave"
                 :disabled="localErrorTypes.length === 0 || loading"
                 :loading="loading"

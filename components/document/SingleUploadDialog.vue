@@ -172,7 +172,6 @@ function resetForm() {
   singleFileConfirmed.value = false;
   fileError.value = "";
   isLoadingPreview.value = false;
-  emit('update:open', false);
   const fileInput = document.querySelector('input[type="file"][accept=".txt,.docx"]') as HTMLInputElement;
   if (fileInput) fileInput.value = "";
 }

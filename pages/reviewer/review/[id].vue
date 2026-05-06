@@ -86,15 +86,19 @@
             <template v-if="document?.sentences">
               <template v-for="(sentence, idx) in document.sentences" :key="sentence.id">
                 <span
-                  class="px-1 py-0.5 rounded transition-colors cursor-pointer inline"
+                  class="px-1 py-0.5 rounded transition-colors cursor-pointer inline leading-relaxed"
                   :class="[
                     selectedSentence?.id === sentence.id ? 'bg-blue-100 ring-2 ring-blue-400' : 'hover:bg-blue-50',
-                    hasReviewerAnnotations(sentence.id) ? 'border-b-2 border-dashed border-blue-500' : '',
                     selectedSentence && selectedSentence.id !== sentence.id ? 'opacity-40 pointer-events-none' : ''
                   ]"
                   @click="selectSentence(sentence.id)"
                 >
-                  {{ sentence.text }}
+                  <template v-for="(seg, i) in buildSegmentsForReview(sentence.id)" :key="i">
+                    <span v-if="seg.type === 'annotation'" class="text-[0.85em] text-green-700 font-semibold bg-green-100 border border-green-200 rounded px-1.5 py-0.5 mx-px align-baseline">
+                      {{ seg.correction }}
+                    </span>
+                    <span v-else>{{ seg.text }}</span>
+                  </template>
                 </span>
                 <span v-if="idx as number < (document?.sentences?.length || 0) - 1"> </span>
               </template>
@@ -140,9 +144,11 @@
                     v-if="!isAnnotationAccepted(ann)"
                     icon="i-heroicons-check"
                     label="Terima"
-                    class="flex-1 justify-center bg-blue-600 text-white hover:bg-blue-700 rounded-xl font-bold"
+                    class="flex-1 justify-center rounded-xl font-bold transition-colors disabled:bg-gray-200"
+                    :class="isRangeAccepted(ann) ? 'bg-gray-200 text-gray-500 hover:bg-gray-200' : 'bg-blue-600 text-white hover:bg-blue-700'"
                     @click="toggleAcceptAnnotation(ann)"
                     :loading="actionLoading === ann.id"
+                    :disabled="isRangeAccepted(ann)"
                   />
                   <UButton
                     v-else
@@ -216,8 +222,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, onUnmounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
 import { useUserDocumentsApi } from "~/data/user-documents";
 import { useReviewsApi } from "~/data/reviews";
 import { toast } from "vue-sonner";
@@ -285,6 +289,14 @@ function clearSelection() {
 
 function isAnnotationAccepted(ann: any) {
   return apiAnnotations.value.some(a => 
+    (a.annotation && a.annotation === ann.id) || 
+    (!a.annotation && Number(a.sentence) === Number(ann.sentence) && Number(a.start_index) === Number(ann.start_index) && Number(a.end_index) === Number(ann.end_index) && a.correction === ann.correction)
+  );
+}
+
+// Fungsi baru untuk cek apakah index range yang sama sudah ada yang di-ACC
+function isRangeAccepted(ann: any) {
+  return apiAnnotations.value.some(a => 
     Number(a.sentence) === Number(ann.sentence) && 
     Number(a.start_index) === Number(ann.start_index) && 
     Number(a.end_index) === Number(ann.end_index)
@@ -300,9 +312,8 @@ async function toggleAcceptAnnotation(ann: any) {
   actionLoading.value = ann.id;
   try {
     const existing = apiAnnotations.value.find(a => 
-      Number(a.sentence) === Number(ann.sentence) && 
-      Number(a.start_index) === Number(ann.start_index) && 
-      Number(a.end_index) === Number(ann.end_index)
+      (a.annotation && a.annotation === ann.id) || 
+      (!a.annotation && Number(a.sentence) === Number(ann.sentence) && Number(a.start_index) === Number(ann.start_index) && Number(a.end_index) === Number(ann.end_index) && a.correction === ann.correction)
     );
 
     if (existing) {
@@ -327,6 +338,33 @@ async function toggleAcceptAnnotation(ann: any) {
   } finally {
     actionLoading.value = null;
   }
+}
+
+function buildSegmentsForReview(sentenceId: number): any[] {
+  const sentence = document.value?.sentences.find((s: any) => s.id === sentenceId);
+  if (!sentence) return [];
+  const text = sentence.text;
+  
+  const acceptedAnns = apiAnnotations.value
+    .filter((a) => Number(a.sentence) === sentenceId)
+    .sort((a, b) => Number(a.start_index) - Number(b.start_index));
+
+  if (!acceptedAnns.length) return [{ type: 'text', text }];
+
+  const segments = [];
+  let lastIdx = 0;
+  acceptedAnns.forEach(ann => {
+    if (Number(ann.start_index) > lastIdx) {
+      segments.push({ type: 'text', text: text.slice(lastIdx, Number(ann.start_index)) });
+    }
+    segments.push({ 
+      type: 'annotation', 
+      correction: ann.correction 
+    });
+    lastIdx = Number(ann.end_index);
+  });
+  if (lastIdx < text.length) segments.push({ type: 'text', text: text.slice(lastIdx) });
+  return segments;
 }
 
 function buildSegmentsForAnnotator(sentenceId: number, annotatorId: string): any[] {
@@ -360,10 +398,6 @@ function buildSegmentsForAnnotator(sentenceId: number, annotatorId: string): any
 function getOriginalTextFromRange(ann: any) {
   const sentence = document.value?.sentences.find((s: any) => s.id === ann.sentence);
   return sentence ? sentence.text.slice(ann.start_index, ann.end_index) : '';
-}
-
-function hasReviewerAnnotations(id: number) {
-  return apiAnnotations.value.some(a => Number(a.sentence) === id);
 }
 
 function getAnnotatorAnnotationsForSentence(id: number) {

@@ -9,7 +9,7 @@
       </DialogHeader>
       <div class="grid gap-4 py-4">
         <div class="grid gap-2">
-          <label class="text-sm font-medium text-left">Deadline Assignment</label>
+          <label class="text-sm font-medium text-left">Deadline Assignment <span class="text-red-500">*</span></label>
           <Popover>
             <PopoverTrigger as-child>
               <Button variant="outline" :class="['w-full justify-start text-left font-normal', !assignmentDeadline && 'text-muted-foreground']">
@@ -23,7 +23,7 @@
           </Popover>
         </div>
         <div class="grid gap-2">
-          <label class="text-sm font-medium text-left">User yang Ditugaskan</label>
+          <label class="text-sm font-medium text-left">User yang Ditugaskan <span class="text-red-500">*</span></label>
           <Combobox v-model="assignedUserIds" v-model:open="openUsers" :ignore-filter="true">
             <ComboboxAnchor as-child>
               <TagsInput v-model="assignedUserIds" class="px-2 w-full">
@@ -61,7 +61,7 @@
       </div>
       <DialogFooter>
         <Button variant="outline" @click="closeDialog">Batal</Button>
-        <Button @click="saveAssignmentChanges" :disabled="isManaging" class="flex items-center gap-2">
+        <Button @click="saveAssignmentChanges" :disabled="isManaging || !assignmentDeadline || assignedUserIds.length === 0" class="flex items-center gap-2">
           <UserPlus v-if="!isManaging" class="w-4 h-4" />
           <Loader2 v-else class="w-4 h-4 animate-spin" />
           {{ isManaging ? "Menyimpan..." : "Simpan Assignment" }}

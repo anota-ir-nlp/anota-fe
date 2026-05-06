@@ -17,7 +17,7 @@
         <Input type="file" webkitdirectory multiple accept=".txt,.docx" @change="handleBulkFiles" class="mb-2" />
 
         <div class="grid gap-2">
-          <label class="text-sm font-medium text-left">Institusi</label>
+          <label class="text-sm font-medium text-left">Institusi (opsional)</label>
           <Input v-model="bulkDocumentInstitution" placeholder="Contoh: Universitas Indonesia" class="w-full" />
           <p class="text-xs text-gray-500">Institusi ini akan diterapkan ke semua dokumen yang diupload</p>
         </div>
