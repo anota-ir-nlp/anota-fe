@@ -13,6 +13,10 @@ const roleBasedRoutes = {
     "/kepala-riset-admin/kelola-pengguna",
     "/kepala-riset-admin/dashboard",
   ],
+  Superadmin: [
+    "/superadmin/kelola-pengguna",
+    "/superadmin",
+  ],
 };
 
 const publicRoutes = ["/", "/reset-password"];

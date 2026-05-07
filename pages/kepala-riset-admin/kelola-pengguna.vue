@@ -423,6 +423,7 @@ const { selectedProject, selectedProjectId, isAllProjects } = useProjectContext(
 
 const isKepalaRiset = computed(() => userRoles.value.includes("Kepala Riset"));
 const isAdmin = computed(() => userRoles.value.includes("Admin"));
+const isSuperadmin = computed(() => userRoles.value.includes("Superadmin"));
 
 const users = ref<UserResponse[]>([]);
 const selectedUsers = ref<UserResponse[]>([]);

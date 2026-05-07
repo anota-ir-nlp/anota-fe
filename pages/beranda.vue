@@ -51,6 +51,36 @@
         </div>
       </Card>
 
+      <div v-if="hasRole('Superadmin')" class="space-y-6 animate-in fade-in duration-700">
+        <div class="flex items-center justify-between p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl shadow-sm">
+          <div class="flex items-center gap-4">
+            <div class="p-3 bg-blue-600 rounded-xl text-white shadow-blue-200 shadow-lg">
+              <ShieldCheck class="w-6 h-6" />
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-blue-900">Console Management</h3>
+              <p class="text-sm text-blue-700/80">Akses penuh ke seluruh data sistem Anota.</p>
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <Button 
+              variant="outline" 
+              class="border-blue-300 text-blue-700 hover:bg-blue-100"
+              @click="navigateTo('/projects')"
+            >
+              <Building2 class="w-4 h-4 mr-2" />
+              Semua Proyek
+            </Button>
+            <Button 
+              class="bg-blue-600 hover:bg-blue-700 text-white"
+              @click="navigateTo('/kelola-pengguna')"
+            >
+              <Users class="w-4 h-4 mr-2" />
+              Kelola Pengguna
+            </Button>
+          </div>
+        </div>
+      </div>
       <div
         v-if="!isKepalaRiset"
         class="mt-8 mb-8"
@@ -598,6 +628,7 @@ import {
   Users,
   Pencil,
   Building2,
+  ShieldCheck,
 } from "lucide-vue-next";
 import { Card } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
@@ -621,6 +652,9 @@ import { useProjectContext } from "~/composables/project-context";
 import type { DocumentStatus } from "~/types/api";
 
 const { user } = useAuth();
+
+// State baru untuk Superadmin
+const recentUsersList = ref<any[]>([]);
 const { getDashboardSummary, getAnnotatorPerformance, getReviewerPerformance, getInterAnnotatorAgreement, getIAAPersonSummary } =
   useDashboardApi();
 const { getAvailableUsersInProject, getMyProjects, getUserRolesInProject } = useUsersApi();
