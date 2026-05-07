@@ -40,6 +40,11 @@
                 <option :value="false">Optional</option>
               </select>
             </div>
+            <div>
+              <label class="block text-sm font-medium mb-2 text-black">Komentar (Opsional):</label>
+              <UTextarea v-model="localComments" placeholder="Tambahkan catatan atau komentar" class="w-full" />
+            </div>
+
             <div class="flex gap-2 pt-4">
               <UButton
                 label="Simpan"
@@ -65,6 +70,7 @@ const props = defineProps<{
   errorTypes: any[]
   selectedErrorTypes: string[]
   isRequired: boolean
+  comments?: string
   loading: boolean
 }>()
 
@@ -78,12 +84,14 @@ const isOpen = computed({
 const localCorrection = ref(props.correction)
 const localErrorTypes = ref(props.selectedErrorTypes)
 const localIsRequired = ref(props.isRequired)
+const localComments = ref(props.comments || '')
 
 watch(() => props.modelValue, (newVal) => {
   if (newVal) {
     localCorrection.value = props.correction
     localErrorTypes.value = [...props.selectedErrorTypes]
     localIsRequired.value = props.isRequired
+    localComments.value = props.comments || ''
   }
 })
 
@@ -91,7 +99,8 @@ const handleSave = () => {
   emit('save', {
     correction: localCorrection.value,
     errorTypes: localErrorTypes.value,
-    isRequired: localIsRequired.value
+    isRequired: localIsRequired.value,
+    comments: localComments.value
   })
 }
 </script>

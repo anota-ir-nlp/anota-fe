@@ -243,53 +243,36 @@ const page = ref(1)
 const pageCount = ref(10)
 const totalItems = ref(0)
 
-const stats = computed(() => ({
-  annotated: docs.value.filter((doc) => doc.status === "sudah_dianotasi").length,
-  total: totalItems.value,
-}))
+const globalStats = ref({ annotated: 0, total: 0 })
+
+const stats = computed(() => globalStats.value)
 
 const accuracy = computed(() => {
-  if (!totalItems.value) return "0"
-  return ((stats.value.annotated / totalItems.value) * 100).toFixed(0)
+  if (!stats.value.total) return "0"
+  return ((stats.value.annotated / stats.value.total) * 100).toFixed(0)
 })
 
-const filteredDocs = computed(() => {
-  const base = docs.value.filter((doc) => {
-    const matchSearch = !search.value || doc.title.toLowerCase().includes(search.value.toLowerCase())
-    const matchStatus = !filter.value.status || doc.status === filter.value.status
-    const docDate = new Date(doc.created_at)
-    let matchDate = true
-
-    if (dateFilterType.value && dateFilterType.value !== "custom") {
-      const today = new Date()
-      const todayStr = today.toISOString().split("T")[0]
-      switch (dateFilterType.value) {
-        case "today":
-          matchDate = doc.created_at.startsWith(todayStr)
-          break
-        case "week": {
-          const weekAgo = new Date(today)
-          weekAgo.setDate(today.getDate() - 7)
-          matchDate = docDate >= weekAgo
-          break
-        }
-        case "month": {
-          const monthAgo = new Date(today)
-          monthAgo.setMonth(today.getMonth() - 1)
-          matchDate = docDate >= monthAgo
-          break
-        }
-      }
-    } else if (filter.value.dateFrom && filter.value.dateTo) {
-      matchDate = docDate >= new Date(filter.value.dateFrom) && docDate <= new Date(filter.value.dateTo)
+async function fetchGlobalStats() {
+  try {
+    const [totalRes, annotatedRes] = await Promise.all([
+      getAssignedDocuments(),
+      getAssignedDocuments({ status: "sudah_dianotasi" })
+    ])
+    
+    globalStats.value = {
+      total: totalRes?.count || 0,
+      annotated: annotatedRes?.count || 0
     }
+  } catch (e) {
+    globalStats.value = { annotated: 0, total: 0 }
+  }
+}
 
-    return matchSearch && matchStatus && matchDate
-  })
-
-  return [...base].sort((a, b) => {
+const filteredDocs = computed(() => {
+  return [...docs.value].sort((a, b) => {
     const dir = sort.value.dir === "asc" ? 1 : -1
     const key = sort.value.key as keyof DocumentResponse
+    
     if (key === "title") return a.title.localeCompare(b.title) * dir
     if (key === "status") return a.status.localeCompare(b.status) * dir
     return (new Date(a.created_at).getTime() - new Date(b.created_at).getTime()) * dir
@@ -310,15 +293,51 @@ function resetFilters() {
 
 function handleDateFilterChange() {
   if (dateFilterType.value !== "custom") {
-    filter.value.dateFrom = ""
-    filter.value.dateTo = ""
+    const today = new Date()
+    const todayStr = today.toISOString().split("T")[0]
+
+    switch (dateFilterType.value) {
+      case "today":
+        filter.value.dateFrom = todayStr
+        filter.value.dateTo = todayStr
+        break
+      case "week": {
+        const weekAgo = new Date(today)
+        weekAgo.setDate(today.getDate() - 7)
+        filter.value.dateFrom = weekAgo.toISOString().split("T")[0]
+        filter.value.dateTo = todayStr
+        break
+      }
+      case "month": {
+        const monthAgo = new Date(today)
+        monthAgo.setMonth(today.getMonth() - 1)
+        filter.value.dateFrom = monthAgo.toISOString().split("T")[0]
+        filter.value.dateTo = todayStr
+        break
+      }
+      default:
+        filter.value.dateFrom = ""
+        filter.value.dateTo = ""
+        break
+    }
   }
   page.value = 1
   fetchData()
 }
 
-watch([search, () => filter.value.status], () => {
+let searchTimeout: ReturnType<typeof setTimeout>;
+
+watch(search, () => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    page.value = 1;
+    fetchData();
+  }, 2000);
+});
+
+watch([search, () => filter.value.status, () => filter.value.dateFrom, () => filter.value.dateTo], () => {
   page.value = 1
+  fetchData()
 })
 
 function setSort(key: string) {
@@ -364,7 +383,15 @@ function getStatusClass(status: DocumentStatus) {
 async function fetchData() {
   isLoading.value = true
   try {
-    const response = await getAssignedDocuments(page.value)
+    const params = {
+      page: page.value,
+      search: search.value || undefined,
+      status: filter.value.status || undefined,
+      date_from: filter.value.dateFrom || undefined,
+      date_to: filter.value.dateTo || undefined,
+    }
+
+    const response = await getAssignedDocuments(params)
     docs.value = response?.results?.filter((doc: any) => ANNOTATION_STATUSES.includes(doc.status)) || []
     totalItems.value = response?.count || 0
   } catch (e) {
@@ -374,7 +401,10 @@ async function fetchData() {
   isLoading.value = false
 }
 
-onMounted(fetchData)
+onMounted(() => {
+  fetchData()
+  fetchGlobalStats()
+})
 
 const showReopenModal = ref(false)
 const reopenReason = ref("")
