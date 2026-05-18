@@ -419,7 +419,7 @@ export interface UnassignAdminResponse {
   message: string;
 }
 
-export type AvailableRole = "Admin" | "Annotator" | "Reviewer" | "Kepala Riset";
+export type AvailableRole = "Admin" | "Annotator" | "Reviewer" | "Kepala Riset" | "Superadmin";
 
 export interface DocumentAssignedDetailResponse {
   id: number;

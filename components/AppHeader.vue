@@ -59,6 +59,22 @@ const menuGroups = computed(() => {
   const groups: any[] = [];
   groups.push({ type: "link", label: "Beranda", path: "/beranda", icon: Home });
 
+  if (hasRole("Superadmin")) {
+    groups.push({
+      type: "dropdown",
+      label: "Superadmin",
+      icon: Users,
+      items: [
+        {
+          label: "Kelola Pengguna",
+          path: "/superadmin/kelola-pengguna",
+          icon: Users,
+          description: "Manage system users and create Kepala Riset accounts",
+        },
+      ],
+    });
+  }
+
   if (hasRole("Kepala Riset")) {
     groups.push({
       type: "dropdown",
@@ -67,7 +83,6 @@ const menuGroups = computed(() => {
       items: [
         { label: "Dashboard Analytics", path: "/kepala-riset-admin/dashboard", icon: BarChart3, description: "View system analytics and performance metrics" },
         { label: "Kelola Project", path: "/kepala-riset/kelola-project", icon: BarChart3, description: "Manage research projects" },
-        { label: "Kelola Pengguna", path: "/kepala-riset-admin/kelola-pengguna", icon: Users, description: "Manage system users and reset passwords" },
       ],
     });
   }
