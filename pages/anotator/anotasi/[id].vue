@@ -247,6 +247,7 @@
       :error-types="errorTypes"
       :selected-error-types="selectedErrorTypes"
       :is-required="isRequiredInput"
+      :comments="commentsInput"
       :loading="annotationCreating"
       :error-types-loading="errorTypesLoading"
       :error-types-page="errorTypesPage"
@@ -277,7 +278,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, onUnmounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useTextSelection } from "@vueuse/core";
 import { useDocumentsApi } from "~/data/documents";

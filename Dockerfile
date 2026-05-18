@@ -31,10 +31,8 @@ RUN pnpm run build
 # Stage 2: Production image
 FROM node:18-alpine
 
-<<<<<<< HEAD
 WORKDIR /app
 ENV NODE_ENV=production
-=======
 ARG AUTH_ORIGIN=http://localhost:3000
 ARG AUTH_SECRET=your-secret-key-here
 ARG NUXT_PUBLIC_API_BASE_URL=/api/proxy
@@ -44,9 +42,6 @@ ENV AUTH_ORIGIN=$AUTH_ORIGIN
 ENV AUTH_SECRET=$AUTH_SECRET
 ENV NUXT_PUBLIC_API_BASE_URL=$NUXT_PUBLIC_API_BASE_URL
 ENV NUXT_BACKEND_URL=$NUXT_BACKEND_URL
-
-WORKDIR /app
->>>>>>> 0c429dc37fb75f7945e89dbcca19291415baf067
 
 # Copy only production node_modules from builder
 COPY --from=builder /app/node_modules ./node_modules
@@ -58,8 +53,4 @@ COPY package.json pnpm-lock.yaml* ./
 COPY --from=builder /app/.output ./.output
 
 EXPOSE 3000
-<<<<<<< HEAD
 CMD ["npm", "run", "start"]
-=======
-CMD ["npm", "run", "start"]
->>>>>>> 0c429dc37fb75f7945e89dbcca19291415baf067

@@ -148,7 +148,7 @@
             </thead>
             <tbody>
               <tr v-for="(doc, index) in filteredDocs" :key="doc.id" class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                <td class="px-4 py-4">{{ index + 1 }}</td>
+                <td class="px-4 py-4">{{ (page - 1) * pageCount + index + 1 }}</td>
                 <td class="px-4 py-4 font-semibold">{{ doc.title }}</td>
                 <td class="px-4 py-4">
                   <span :class="getStatusClass(doc.status)" class="px-3 py-1 rounded-full text-xs font-medium">
@@ -184,6 +184,15 @@
               </tr>
             </tbody>
           </table>
+          
+          <div v-if="totalItems > 0" class="flex justify-center mt-6">
+            <UPagination
+              v-model:page="page"
+              :page-count="pageCount"
+              :total="totalItems"
+              @update:page="fetchData"
+            />
+          </div>
         </div>
       </Card>
 
@@ -211,114 +220,146 @@
 </template>
 
 <script setup lang="ts">
-import { Button } from "~/components/ui/button";
-import { useUserDocumentsApi } from "~/data/user-documents";
-import { useAnnotationsApi } from "~/data/annotations";
-import type { DocumentResponse, DocumentStatus } from "~/types/api";
+import { ref, computed, onMounted, watch } from 'vue'
+import { Button } from "~/components/ui/button"
+import { useUserDocumentsApi } from "~/data/user-documents"
+import { useAnnotationsApi } from "~/data/annotations"
+import type { DocumentResponse, DocumentStatus } from "~/types/api"
 
-const ANNOTATION_STATUSES: DocumentStatus[] = ["belum_dianotasi", "sedang_dianotasi", "sudah_dianotasi"];
+const ANNOTATION_STATUSES: DocumentStatus[] = ["belum_dianotasi", "sedang_dianotasi", "sudah_dianotasi"]
 
-const { getAssignedDocuments } = useUserDocumentsApi();
-const { reopenAnnotation } = useAnnotationsApi();
+const { getAssignedDocuments } = useUserDocumentsApi()
+const { reopenAnnotation } = useAnnotationsApi()
 
-const docs = ref<DocumentResponse[]>([]);
-const isLoading = ref(false);
+const docs = ref<DocumentResponse[]>([])
+const isLoading = ref(false)
 
-const search = ref("");
-const filter = ref({ status: "", dateFrom: "", dateTo: "" });
-const dateFilterType = ref("");
-const sort = ref<{ key: string; dir: "asc" | "desc" }>({ key: "created_at", dir: "desc" });
+const search = ref("")
+const filter = ref({ status: "", dateFrom: "", dateTo: "" })
+const dateFilterType = ref("")
+const sort = ref<{ key: string; dir: "asc" | "desc" }>({ key: "created_at", dir: "desc" })
 
-const stats = computed(() => ({
-  annotated: docs.value.filter((doc) => doc.status === "sudah_dianotasi").length,
-  total: docs.value.length,
-}));
+const page = ref(1)
+const pageCount = ref(10)
+const totalItems = ref(0)
+
+const globalStats = ref({ annotated: 0, total: 0 })
+
+const stats = computed(() => globalStats.value)
 
 const accuracy = computed(() => {
-  if (!docs.value.length) return "0";
-  return ((stats.value.annotated / docs.value.length) * 100).toFixed(0);
-});
+  if (!stats.value.total) return "0"
+  return ((stats.value.annotated / stats.value.total) * 100).toFixed(0)
+})
+
+async function fetchGlobalStats() {
+  try {
+    const [totalRes, annotatedRes] = await Promise.all([
+      getAssignedDocuments(),
+      getAssignedDocuments({ status: "sudah_dianotasi" })
+    ])
+    
+    globalStats.value = {
+      total: totalRes?.count || 0,
+      annotated: annotatedRes?.count || 0
+    }
+  } catch (e) {
+    globalStats.value = { annotated: 0, total: 0 }
+  }
+}
 
 const filteredDocs = computed(() => {
-  const base = docs.value.filter((doc) => {
-    const matchSearch = !search.value || doc.title.toLowerCase().includes(search.value.toLowerCase());
-    const matchStatus = !filter.value.status || doc.status === filter.value.status;
-    const docDate = new Date(doc.created_at);
-    let matchDate = true;
-
-    if (dateFilterType.value && dateFilterType.value !== "custom") {
-      const today = new Date();
-      const todayStr = today.toISOString().split("T")[0];
-      switch (dateFilterType.value) {
-        case "today":
-          matchDate = doc.created_at.startsWith(todayStr);
-          break;
-        case "week": {
-          const weekAgo = new Date(today);
-          weekAgo.setDate(today.getDate() - 7);
-          matchDate = docDate >= weekAgo;
-          break;
-        }
-        case "month": {
-          const monthAgo = new Date(today);
-          monthAgo.setMonth(today.getMonth() - 1);
-          matchDate = docDate >= monthAgo;
-          break;
-        }
-      }
-    } else if (filter.value.dateFrom && filter.value.dateTo) {
-      matchDate = docDate >= new Date(filter.value.dateFrom) && docDate <= new Date(filter.value.dateTo);
-    }
-
-    return matchSearch && matchStatus && matchDate;
-  });
-
-  return [...base].sort((a, b) => {
-    const dir = sort.value.dir === "asc" ? 1 : -1;
-    const key = sort.value.key as keyof DocumentResponse;
-    if (key === "title") return a.title.localeCompare(b.title) * dir;
-    if (key === "status") return a.status.localeCompare(b.status) * dir;
-    return (new Date(a.created_at).getTime() - new Date(b.created_at).getTime()) * dir;
-  });
-});
+  return [...docs.value].sort((a, b) => {
+    const dir = sort.value.dir === "asc" ? 1 : -1
+    const key = sort.value.key as keyof DocumentResponse
+    
+    if (key === "title") return a.title.localeCompare(b.title) * dir
+    if (key === "status") return a.status.localeCompare(b.status) * dir
+    return (new Date(a.created_at).getTime() - new Date(b.created_at).getTime()) * dir
+  })
+})
 
 const firstInProgressDoc = computed(() =>
   docs.value.find((doc) => doc.status === "belum_dianotasi" || doc.status === "sedang_dianotasi")
-);
+)
 
 function resetFilters() {
-  search.value = "";
-  filter.value = { status: "", dateFrom: "", dateTo: "" };
-  dateFilterType.value = "";
+  search.value = ""
+  filter.value = { status: "", dateFrom: "", dateTo: "" }
+  dateFilterType.value = ""
+  page.value = 1
+  fetchData()
 }
 
 function handleDateFilterChange() {
   if (dateFilterType.value !== "custom") {
-    filter.value.dateFrom = "";
-    filter.value.dateTo = "";
+    const today = new Date()
+    const todayStr = today.toISOString().split("T")[0]
+
+    switch (dateFilterType.value) {
+      case "today":
+        filter.value.dateFrom = todayStr
+        filter.value.dateTo = todayStr
+        break
+      case "week": {
+        const weekAgo = new Date(today)
+        weekAgo.setDate(today.getDate() - 7)
+        filter.value.dateFrom = weekAgo.toISOString().split("T")[0]
+        filter.value.dateTo = todayStr
+        break
+      }
+      case "month": {
+        const monthAgo = new Date(today)
+        monthAgo.setMonth(today.getMonth() - 1)
+        filter.value.dateFrom = monthAgo.toISOString().split("T")[0]
+        filter.value.dateTo = todayStr
+        break
+      }
+      default:
+        filter.value.dateFrom = ""
+        filter.value.dateTo = ""
+        break
+    }
   }
+  page.value = 1
+  fetchData()
 }
+
+let searchTimeout: ReturnType<typeof setTimeout>;
+
+watch(search, () => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    page.value = 1;
+    fetchData();
+  }, 2000);
+});
+
+watch([search, () => filter.value.status, () => filter.value.dateFrom, () => filter.value.dateTo], () => {
+  page.value = 1
+  fetchData()
+})
 
 function setSort(key: string) {
   if (sort.value.key === key) {
-    sort.value.dir = sort.value.dir === "asc" ? "desc" : "asc";
+    sort.value.dir = sort.value.dir === "asc" ? "desc" : "asc"
   } else {
-    sort.value.key = key;
-    sort.value.dir = "asc";
+    sort.value.key = key
+    sort.value.dir = "asc"
   }
 }
 
 function sortIcon(key: string) {
-  if (sort.value.key !== key) return "i-heroicons-arrows-up-down";
-  return sort.value.dir === "asc" ? "i-heroicons-arrow-up" : "i-heroicons-arrow-down";
+  if (sort.value.key !== key) return "i-heroicons-arrows-up-down"
+  return sort.value.dir === "asc" ? "i-heroicons-arrow-up" : "i-heroicons-arrow-down"
 }
 
 function goToDetail(id: number) {
-  navigateTo(`/anotator/anotasi/${id}`);
+  navigateTo(`/anotator/anotasi/${id}`)
 }
 
 function formatDate(dateString: string) {
-  return new Date(dateString).toLocaleDateString("id-ID");
+  return new Date(dateString).toLocaleDateString("id-ID")
 }
 
 function getStatusText(status: DocumentStatus) {
@@ -326,8 +367,8 @@ function getStatusText(status: DocumentStatus) {
     belum_dianotasi: "Belum Dianotasi",
     sedang_dianotasi: "Sedang Dianotasi",
     sudah_dianotasi: "Sudah Dianotasi",
-  };
-  return statusMap[status] || status;
+  }
+  return statusMap[status] || status
 }
 
 function getStatusClass(status: DocumentStatus) {
@@ -335,52 +376,65 @@ function getStatusClass(status: DocumentStatus) {
     belum_dianotasi: "bg-gray-100 text-gray-700",
     sedang_dianotasi: "bg-yellow-50 text-yellow-700",
     sudah_dianotasi: "bg-blue-50 text-blue-700",
-  };
-  return classMap[status] || "bg-gray-50 text-gray-700";
+  }
+  return classMap[status] || "bg-gray-50 text-gray-700"
 }
 
 async function fetchData() {
-  isLoading.value = true;
+  isLoading.value = true
   try {
-    const response = await getAssignedDocuments();
-    docs.value = response?.results?.filter((doc: any) => ANNOTATION_STATUSES.includes(doc.status)) || [];
+    const params = {
+      page: page.value,
+      search: search.value || undefined,
+      status: filter.value.status || undefined,
+      date_from: filter.value.dateFrom || undefined,
+      date_to: filter.value.dateTo || undefined,
+    }
+
+    const response = await getAssignedDocuments(params)
+    docs.value = response?.results?.filter((doc: any) => ANNOTATION_STATUSES.includes(doc.status)) || []
+    totalItems.value = response?.count || 0
   } catch (e) {
-    docs.value = [];
+    docs.value = []
+    totalItems.value = 0
   }
-  isLoading.value = false;
+  isLoading.value = false
 }
 
-onMounted(fetchData);
+onMounted(() => {
+  fetchData()
+  fetchGlobalStats()
+})
 
-const showReopenModal = ref(false);
-const reopenReason = ref("");
-const reopenDocId = ref<number | null>(null);
-const reopenLoading = ref(false);
-const reopenError = ref("");
+const showReopenModal = ref(false)
+const reopenReason = ref("")
+const reopenDocId = ref<number | null>(null)
+const reopenLoading = ref(false)
+const reopenError = ref("")
 
 function handleReopen(doc: any) {
-  reopenDocId.value = doc.id;
-  reopenReason.value = "";
-  reopenError.value = "";
-  showReopenModal.value = true;
+  reopenDocId.value = doc.id
+  reopenReason.value = ""
+  reopenError.value = ""
+  showReopenModal.value = true
 }
 
 function closeReopenModal() {
-  showReopenModal.value = false;
-  reopenDocId.value = null;
+  showReopenModal.value = false
+  reopenDocId.value = null
 }
 
 async function submitReopen() {
-  if (!reopenDocId.value) return;
-  reopenLoading.value = true;
+  if (!reopenDocId.value) return
+  reopenLoading.value = true
   try {
-    await reopenAnnotation({ document: reopenDocId.value, reason: reopenReason.value });
-    closeReopenModal();
-    fetchData();
+    await reopenAnnotation({ document: reopenDocId.value, reason: reopenReason.value })
+    closeReopenModal()
+    fetchData()
   } catch (e: any) {
-    reopenError.value = e?.message || "Gagal melakukan reopen.";
+    reopenError.value = e?.message || "Gagal melakukan reopen."
   } finally {
-    reopenLoading.value = false;
+    reopenLoading.value = false
   }
 }
 </script>

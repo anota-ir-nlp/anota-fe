@@ -148,7 +148,7 @@
             </thead>
             <tbody>
               <tr v-for="(doc, index) in filteredDocs" :key="doc.id" class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                <td class="px-4 py-4">{{ index + 1 }}</td>
+                <td class="px-4 py-4">{{ (page - 1) * pageCount + index + 1 }}</td>
                 <td class="px-4 py-4 font-semibold">{{ doc.title }}</td>
                 <td class="px-4 py-4">
                   <span :class="getStatusClass(doc.status)" class="px-3 py-1 rounded-full text-xs font-medium">
@@ -184,6 +184,15 @@
               </tr>
             </tbody>
           </table>
+
+          <div v-if="totalItems > 0" class="flex justify-center mt-6">
+            <UPagination
+              v-model:page="page"
+              :page-count="pageCount"
+              :total="totalItems"
+              @update:page="fetchData"
+            />
+          </div>
         </div>
       </Card>
 
@@ -199,7 +208,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { navigateTo } from "#app";
 import { Button } from "~/components/ui/button";
 import { useUserDocumentsApi } from "~/data/user-documents";
@@ -219,51 +228,20 @@ const filter = ref({ status: "", dateFrom: "", dateTo: "" });
 const dateFilterType = ref("");
 const sort = ref<{ key: string; dir: "asc" | "desc" }>({ key: "created_at", dir: "desc" });
 
-const stats = computed(() => ({
-  reviewed: docs.value.filter((doc) => doc.status === "sudah_direview").length,
-  total: docs.value.length,
-}));
+const page = ref(1);
+const pageCount = ref(10);
+const totalItems = ref(0);
+
+const globalStats = ref({ reviewed: 0, total: 0 });
+const stats = computed(() => globalStats.value);
 
 const accuracy = computed(() => {
-  if (!docs.value.length) return "0";
-  return ((stats.value.reviewed / docs.value.length) * 100).toFixed(0);
+  if (!stats.value.total) return "0";
+  return ((stats.value.reviewed / stats.value.total) * 100).toFixed(0);
 });
 
 const filteredDocs = computed(() => {
-  const base = docs.value.filter((doc) => {
-    const matchSearch = !search.value || doc.title.toLowerCase().includes(search.value.toLowerCase());
-    const matchStatus = !filter.value.status || doc.status === filter.value.status;
-    const docDate = new Date(doc.created_at);
-    let matchDate = true;
-
-    if (dateFilterType.value && dateFilterType.value !== "custom") {
-      const today = new Date();
-      const todayStr = today.toISOString().split("T")[0];
-      switch (dateFilterType.value) {
-        case "today":
-          matchDate = doc.created_at.startsWith(todayStr);
-          break;
-        case "week": {
-          const weekAgo = new Date(today);
-          weekAgo.setDate(today.getDate() - 7);
-          matchDate = docDate >= weekAgo;
-          break;
-        }
-        case "month": {
-          const monthAgo = new Date(today);
-          monthAgo.setMonth(today.getMonth() - 1);
-          matchDate = docDate >= monthAgo;
-          break;
-        }
-      }
-    } else if (filter.value.dateFrom && filter.value.dateTo) {
-      matchDate = docDate >= new Date(filter.value.dateFrom) && docDate <= new Date(filter.value.dateTo);
-    }
-
-    return matchSearch && matchStatus && matchDate;
-  });
-
-  return [...base].sort((a, b) => {
+  return [...docs.value].sort((a, b) => {
     const dir = sort.value.dir === "asc" ? 1 : -1;
     const key = sort.value.key as keyof DocumentResponse;
     if (key === "title") return a.title.localeCompare(b.title) * dir;
@@ -280,14 +258,62 @@ function resetFilters() {
   search.value = "";
   filter.value = { status: "", dateFrom: "", dateTo: "" };
   dateFilterType.value = "";
+  page.value = 1;
+  fetchData();
+}
+
+function applyDateFilterType() {
+  const today = new Date();
+  const todayStr = today.toISOString().split("T")[0];
+  
+  if (dateFilterType.value === "today") {
+    filter.value.dateFrom = todayStr;
+    filter.value.dateTo = todayStr;
+  } else if (dateFilterType.value === "week") {
+    const weekAgo = new Date(today);
+    weekAgo.setDate(today.getDate() - 7);
+    filter.value.dateFrom = weekAgo.toISOString().split("T")[0];
+    filter.value.dateTo = todayStr;
+  } else if (dateFilterType.value === "month") {
+    const monthAgo = new Date(today);
+    monthAgo.setMonth(today.getMonth() - 1);
+    filter.value.dateFrom = monthAgo.toISOString().split("T")[0];
+    filter.value.dateTo = todayStr;
+  }
 }
 
 function handleDateFilterChange() {
   if (dateFilterType.value !== "custom") {
+    applyDateFilterType();
+  } else {
     filter.value.dateFrom = "";
     filter.value.dateTo = "";
   }
+  page.value = 1;
+  fetchData();
 }
+
+let searchTimeout: ReturnType<typeof setTimeout>;
+
+watch(search, () => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    page.value = 1;
+    fetchData();
+  }, 2000);
+});
+
+watch(() => filter.value.status, () => {
+  page.value = 1;
+  fetchData();
+});
+
+watch([() => filter.value.dateFrom, () => filter.value.dateTo], () => {
+  if (dateFilterType.value === "custom") {
+    page.value = 1;
+    fetchData();
+  }
+});
 
 function setSort(key: string) {
   if (sort.value.key === key) {
@@ -329,18 +355,45 @@ function getStatusClass(status: DocumentStatus) {
   return classMap[status] || "bg-gray-50 text-gray-700";
 }
 
+async function fetchGlobalStats() {
+  try {
+    const [totalRes, reviewedRes] = await Promise.all([
+      getAssignedDocuments(),
+      getAssignedDocuments({ status: "sudah_direview" })
+    ]);
+    
+    globalStats.value = {
+      total: totalRes?.count || 0,
+      reviewed: reviewedRes?.count || 0
+    };
+  } catch (e) {
+    globalStats.value = { reviewed: 0, total: 0 };
+  }
+}
+
 async function fetchData() {
   isLoading.value = true;
   try {
-    const response = await getAssignedDocuments();
+    const params: any = { page: page.value };
+    if (search.value) params.search = search.value;
+    if (filter.value.status) params.status = filter.value.status;
+    if (filter.value.dateFrom) params.date_from = filter.value.dateFrom;
+    if (filter.value.dateTo) params.date_to = filter.value.dateTo;
+
+    const response = await getAssignedDocuments(params);
     docs.value = response?.results?.filter((doc: any) => REVIEW_STATUSES.includes(doc.status)) || [];
+    totalItems.value = response?.count || 0;
   } catch (e) {
     docs.value = [];
+    totalItems.value = 0;
   }
   isLoading.value = false;
 }
 
-onMounted(fetchData);
+onMounted(() => {
+  fetchData();
+  fetchGlobalStats();
+});
 
 const showReopenModal = ref(false);
 const reopenDocId = ref<number | null>(null);
@@ -365,6 +418,7 @@ async function submitReopen(reasonStr: string) {
     await reopenReview({ document: reopenDocId.value, reason: reasonStr });
     closeReopenModal();
     fetchData();
+    fetchGlobalStats();
   } catch (e: any) {
     reopenError.value = e?.message || "Gagal melakukan reopen.";
   } finally {
