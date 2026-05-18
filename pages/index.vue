@@ -43,14 +43,13 @@ async function onSubmit() {
     return;
   }
 
-  await toast.promise(login(loginData.username, loginData.password), {
-    loading: "Mencoba masuk...",
-    success: () => {
-      navigateTo("/beranda");
-      return "Berhasil Masuk. Selamat datang!";
-    },
-    error: () => "Gagal Masuk. Username atau kata sandi salah.",
-  });
+  try {
+    await login(loginData.username, loginData.password);
+    toast.success("Berhasil Masuk. Selamat datang!");
+    await navigateTo("/beranda");
+  } catch (err) {
+    toast.error("Gagal Masuk. Username atau kata sandi salah.");
+  }
 }
 
 const goBack = () => {

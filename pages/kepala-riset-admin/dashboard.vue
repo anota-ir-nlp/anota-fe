@@ -349,179 +349,74 @@
       </div>
 
       <!-- Inter-Annotator Agreement -->
+      <!-- Inter-Annotator Agreement Table (Automated List) -->
       <Card v-if="(isKepalaRiset && localSelectedProject) || (isAdmin && globalSelectedProject)" class="p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">
-          Inter-Annotator Agreement (IAA)
-        </h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div class="flex items-center justify-between mb-6">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              Anotator
-            </label>
-            <Select v-model="iaaAnnotator">
-              <SelectTrigger>
-                <SelectValue placeholder="Pilih anotator..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem
-                  v-for="user in annotators"
-                  :key="user.id"
-                  :value="user.id"
-                >
-                  {{ user.full_name }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            <h3 class="text-lg font-semibold text-gray-900">
+              Inter-Annotator Agreement (IAA) per Person
+            </h3>
+            <p class="text-sm text-gray-500">
+              Ringkasan kesepakatan nilai Kappa secara otomatis untuk setiap annotator.
+            </p>
           </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              Reviewer
-            </label>
-            <Select v-model="iaaReviewer">
-              <SelectTrigger>
-                <SelectValue placeholder="Pilih reviewer..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem
-                  v-for="user in reviewers"
-                  :key="user.id"
-                  :value="user.id"
-                >
-                  {{ user.full_name }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <Button variant="outline" size="sm" @click="loadDashboardData" :loading="loadingIAASummary">
+            Reload IAA
+          </Button>
         </div>
-        <Button
-          @click="loadIAA"
-          :loading="loadingIAA"
-          :disabled="!iaaAnnotator || !iaaReviewer"
-        >
-          Calculate IAA
-        </Button>
 
-        <div v-if="iaaData && iaaData.participants && iaaData.results" class="mt-6 space-y-4">
-          <!-- Participants Info -->
-          <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h4 class="font-medium text-blue-900 mb-2">Participants</h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div>
-                <p class="text-blue-700"><strong>Annotator:</strong> {{ iaaData.participants?.annotator_name || 'N/A' }}</p>
-                <p class="text-blue-600 text-xs">{{ iaaData.participants?.annotator_id || 'N/A' }}</p>
-              </div>
-              <div>
-                <p class="text-blue-700"><strong>Reviewer:</strong> {{ iaaData.participants?.reviewer_name || 'N/A' }}</p>
-                <p class="text-blue-600 text-xs">{{ iaaData.participants?.reviewer_id || 'N/A' }}</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Main Results -->
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="text-center p-4 bg-blue-50 rounded-lg">
-              <p class="text-sm text-gray-600">Cohen's Kappa</p>
-              <p class="text-2xl font-bold text-blue-600">
-                {{ ((iaaData.results?.cohen_kappa || 0) * 100).toFixed(1) }}%
-              </p>
-            </div>
-            <div class="text-center p-4 bg-green-50 rounded-lg">
-              <p class="text-sm text-gray-600">Accuracy</p>
-              <p class="text-2xl font-bold text-green-600">
-                {{ ((iaaData.results?.accuracy || 0) * 100).toFixed(1) }}%
-              </p>
-            </div>
-            <div class="text-center p-4 bg-purple-50 rounded-lg">
-              <p class="text-sm text-gray-600">Span Agreement</p>
-              <p class="text-2xl font-bold text-purple-600">
-                {{ ((iaaData.results?.span_agreement_ratio || 0) * 100).toFixed(1) }}%
-              </p>
-            </div>
-            <div class="text-center p-4 bg-orange-50 rounded-lg">
-              <p class="text-sm text-gray-600">Total Items</p>
-              <p class="text-2xl font-bold text-orange-600">
-                {{ iaaData.results?.total_items || 0 }}
-              </p>
-            </div>
-          </div>
-
-          <!-- Additional Stats -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="text-center p-4 bg-gray-50 rounded-lg">
-              <p class="text-sm text-gray-600">Correct Items</p>
-              <p class="text-xl font-bold text-gray-700">{{ iaaData.results?.correct_items || 0 }}</p>
-            </div>
-            <div class="text-center p-4 bg-indigo-50 rounded-lg">
-              <p class="text-sm text-gray-600">Total Unique Spans</p>
-              <p class="text-xl font-bold text-indigo-600">{{ iaaData.results?.total_unique_spans || 0 }}</p>
-            </div>
-            <div class="text-center p-4 bg-emerald-50 rounded-lg">
-              <p class="text-sm text-gray-600">Matching Spans</p>
-              <p class="text-xl font-bold text-emerald-600">{{ iaaData.results?.matching_spans || 0 }}</p>
-            </div>
-          </div>
-
-          <!-- Detailed Analysis -->
-          <div class="mt-6">
-            <h4 class="font-medium text-gray-900 mb-4">Detailed Analysis</h4>
-
-            <!-- Confusion Matrix -->
-            <div v-if="iaaData.detailed_analysis?.confusion_like" class="mb-4">
-              <h5 class="text-sm font-medium text-gray-700 mb-2">Agreement Breakdown</h5>
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-                <div class="text-center p-3 bg-gray-50 rounded">
-                  <p class="text-xs text-gray-600">Agree No Annotation</p>
-                  <p class="text-lg font-bold text-gray-900">{{ iaaData.detailed_analysis?.confusion_like?.agree_no_annotation || 0 }}</p>
-                </div>
-                <div class="text-center p-3 bg-green-50 rounded">
-                  <p class="text-xs text-gray-600">Agree Error Type</p>
-                  <p class="text-lg font-bold text-green-600">{{ iaaData.detailed_analysis?.confusion_like?.agree_error_type || 0 }}</p>
-                </div>
-                <div class="text-center p-3 bg-yellow-50 rounded">
-                  <p class="text-xs text-gray-600">Disagree Presence</p>
-                  <p class="text-lg font-bold text-yellow-600">{{ iaaData.detailed_analysis?.confusion_like?.disagree_presence || 0 }}</p>
-                </div>
-                <div class="text-center p-3 bg-red-50 rounded">
-                  <p class="text-xs text-gray-600">Disagree Error Type</p>
-                  <p class="text-lg font-bold text-red-600">{{ iaaData.detailed_analysis?.confusion_like?.disagree_error_type || 0 }}</p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Span Analysis -->
-            <div v-if="iaaData.detailed_analysis" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div class="p-4 border rounded-lg">
-                <h6 class="text-sm font-medium text-gray-700 mb-2">Perfect Agreement Spans</h6>
-                <p class="text-2xl font-bold text-green-600">{{ iaaData.detailed_analysis?.perfect_agreement_spans?.length || 0 }}</p>
-                <p class="text-xs text-gray-500">Both annotated same spans</p>
-              </div>
-              <div class="p-4 border rounded-lg">
-                <h6 class="text-sm font-medium text-gray-700 mb-2">Annotator Only Spans</h6>
-                <p class="text-2xl font-bold text-blue-600">{{ iaaData.detailed_analysis?.annotator_only_spans?.length || 0 }}</p>
-                <p class="text-xs text-gray-500">Only annotator marked</p>
-              </div>
-              <div class="p-4 border rounded-lg">
-                <h6 class="text-sm font-medium text-gray-700 mb-2">Reviewer Only Spans</h6>
-                <p class="text-2xl font-bold text-purple-600">{{ iaaData.detailed_analysis?.reviewer_only_spans?.length || 0 }}</p>
-                <p class="text-xs text-gray-500">Only reviewer marked</p>
-              </div>
-            </div>
-
-            <!-- Metadata -->
-            <div v-if="iaaData.metadata" class="mt-4 p-4 bg-gray-50 rounded-lg">
-              <h6 class="text-sm font-medium text-gray-700 mb-2">Calculation Metadata</h6>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span class="text-gray-600">Execution Time:</span>
-                  <span class="font-medium ml-2">{{ ((iaaData.metadata?.execution_time || 0) * 1000).toFixed(2) }}ms</span>
-                </div>
-                <div>
-                  <span class="text-gray-600">Data Size:</span>
-                  <span class="font-medium ml-2">{{ iaaData.metadata?.data_size || 0 }} items</span>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div class="overflow-x-auto border rounded-lg">
+          <table class="w-full text-sm text-left text-gray-500">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50 border-b">
+              <tr>
+                <th class="px-6 py-3">Nama Annotator</th>
+                <th class="px-6 py-3 text-center">IAA vs Reviewer</th>
+                <th class="px-6 py-3 text-center">IAA vs Peers (Avg)</th>
+                <th class="px-6 py-3 text-center">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="loadingIAASummary" class="bg-white border-b">
+                <td colspan="4" class="px-6 py-10 text-center">Memuat data IAA...</td>
+              </tr>
+              <tr v-else-if="iaaPersonSummary.length === 0" class="bg-white border-b">
+                <td colspan="4" class="px-6 py-10 text-center">Tidak ada data IAA tersedia</td>
+              </tr>
+              <tr v-for="person in iaaPersonSummary" :key="person.annotator_id" class="bg-white border-b hover:bg-gray-50">
+                <td class="px-6 py-4 font-medium text-gray-900">
+                  {{ person.annotator_name }}
+                </td>
+                <td class="px-6 py-4 text-center">
+                  <span v-if="person.iaa_vs_reviewer !== null" 
+                        :class="person.iaa_vs_reviewer > 0.6 ? 'text-green-600' : 'text-orange-600'" 
+                        class="font-bold">
+                    {{ (person.iaa_vs_reviewer * 100).toFixed(1) }}%
+                  </span>
+                  <span v-else class="text-gray-400 italic text-xs">N/A</span>
+                </td>
+                <td class="px-6 py-4 text-center">
+                  <span v-if="person.iaa_vs_peers_avg !== null" class="font-semibold text-blue-600">
+                    {{ (person.iaa_vs_peers_avg * 100).toFixed(1) }}%
+                  </span>
+                  <span v-else class="text-gray-400 italic text-xs">N/A</span>
+                </td>
+                <td class="px-6 py-4 text-center">
+                  <span :class="person.status === 'Has Review' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'"
+                        class="text-[10px] uppercase px-2 py-1 rounded-full font-bold">
+                    {{ person.status }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="mt-4 p-3 bg-blue-50 rounded text-xs text-blue-700 flex gap-2">
+          <ClipboardList class="w-4 h-4" />
+          <p>
+            <strong>Note:</strong> Nilai yang ditampilkan adalah <i>Cohen's Kappa</i>. 
+            N/A muncul jika annotator belum memiliki pasangan reviewer atau tidak ada annotator lain di dokumen yang sama.
+          </p>
         </div>
       </Card>
     </div>
@@ -551,7 +446,7 @@ import type {
 } from "~/data/dashboard";
 import type { ProjectResponse, DocumentResponse, UserResponse, DocumentStatus } from "~/types/api";
 
-const { getDashboardSummary, getAnnotatorPerformance, getReviewerPerformance, getInterAnnotatorAgreement } = useDashboardApi();
+const { getDashboardSummary, getAnnotatorPerformance, getReviewerPerformance, getInterAnnotatorAgreement, getIAAPersonSummary } = useDashboardApi();
 const { getProjects, getDocumentsInProject } = useProjectsApi();
 const { getDocuments } = useDocumentsApi();
 const { getAvailableUsersInProject, getMyProjects } = useUsersApi();
@@ -584,6 +479,8 @@ const dashboardData = ref<DashboardSummaryResponse | null>(null);
 const annotatorPerformance = ref<AnnotatorPerformanceResponse | null>(null);
 const reviewerPerformance = ref<ReviewerPerformanceResponse | null>(null);
 const iaaData = ref<IAAResponse | null>(null);
+const iaaPersonSummary = ref<IAAPersonSummary[]>([]);
+const loadingIAASummary = ref(false);
 
 const annotators = computed(() => users.value.filter((u: UserResponse) => u.roles.includes("Annotator")));
 const reviewers = computed(() => users.value.filter((u: UserResponse) => u.roles.includes("Reviewer")));
@@ -621,23 +518,23 @@ const selectedDocumentDetails = computed(() => {
 
 async function loadDashboardData() {
   loading.value = true;
+  loadingIAASummary.value = true; // Set loading table
   try {
     const params: any = {};
+    if (activeProjectId.value) params.project_id = activeProjectId.value;
+    if (selectedDocument.value !== "all") params.document_id = parseInt(selectedDocument.value);
 
-    if (activeProjectId.value) {
-      params.project_id = activeProjectId.value;
-    }
-
-    if (selectedDocument.value !== "all") {
-      params.document_id = parseInt(selectedDocument.value);
-    }
-
+    // Load data summary utama
     dashboardData.value = await getDashboardSummary(params);
+    
+    // Load data IAA per orang secara otomatis
+    const res = await getIAAPersonSummary(params);
+    iaaPersonSummary.value = res.summary;
   } catch (error) {
     toast.error("Gagal memuat data dashboard");
-    console.error(error);
   } finally {
     loading.value = false;
+    loadingIAASummary.value = false;
   }
 }
 

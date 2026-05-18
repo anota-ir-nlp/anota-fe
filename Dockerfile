@@ -1,6 +1,15 @@
 ﻿# Stage 1: Build the application
 FROM node:18-alpine AS builder
 
+ARG AUTH_ORIGIN=http://localhost:3000
+ARG AUTH_SECRET=your-secret-key-here
+ARG NUXT_PUBLIC_API_BASE_URL=/api/proxy
+ARG NUXT_BACKEND_URL=https://anota.cs.ui.ac.id/server/api/v1/
+ENV AUTH_ORIGIN=$AUTH_ORIGIN
+ENV AUTH_SECRET=$AUTH_SECRET
+ENV NUXT_PUBLIC_API_BASE_URL=$NUXT_PUBLIC_API_BASE_URL
+ENV NUXT_BACKEND_URL=$NUXT_BACKEND_URL
+
 # Install pnpm
 RUN npm install -g pnpm
 
@@ -24,6 +33,15 @@ FROM node:18-alpine
 
 WORKDIR /app
 ENV NODE_ENV=production
+ARG AUTH_ORIGIN=http://localhost:3000
+ARG AUTH_SECRET=your-secret-key-here
+ARG NUXT_PUBLIC_API_BASE_URL=/api/proxy
+ARG NUXT_BACKEND_URL=https://anota.cs.ui.ac.id/server/api/v1/
+ENV NODE_ENV=production
+ENV AUTH_ORIGIN=$AUTH_ORIGIN
+ENV AUTH_SECRET=$AUTH_SECRET
+ENV NUXT_PUBLIC_API_BASE_URL=$NUXT_PUBLIC_API_BASE_URL
+ENV NUXT_BACKEND_URL=$NUXT_BACKEND_URL
 
 # Copy only production node_modules from builder
 COPY --from=builder /app/node_modules ./node_modules

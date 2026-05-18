@@ -374,6 +374,7 @@ export interface UserUpdateRequest {
   username?: string;
   email?: string;
   full_name?: string;
+  roles?: string[];
 }
 
 export interface AvailableRolesResponse {
@@ -419,7 +420,7 @@ export interface UnassignAdminResponse {
   message: string;
 }
 
-export type AvailableRole = "Admin" | "Annotator" | "Reviewer" | "Kepala Riset";
+export type AvailableRole = "Admin" | "Annotator" | "Reviewer" | "Kepala Riset" | "Superadmin";
 
 export interface DocumentAssignedDetailResponse {
   id: number;

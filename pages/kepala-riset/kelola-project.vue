@@ -864,9 +864,9 @@ async function fetchProjects(page = 1) {
   isLoading.value = true;
   try {
     const response = await getProjects(page);
-    projects.value = response.results;
+    projects.value = response?.results || [];
     currentPage.value = page;
-    totalPages.value = Math.max(1, Math.ceil(response.count / 20));
+    totalPages.value = Math.max(1, Math.ceil((response?.count || 0) / 20));
 
     await fetchAdminUsers();
   } catch (error) {
@@ -1076,7 +1076,7 @@ async function confirmDelete() {
     });
 
     const response = await getProjects(currentPage.value);
-    if (response.results.length === 0 && currentPage.value > 1) {
+    if ((response?.results?.length || 0) === 0 && currentPage.value > 1) {
       await fetchProjects(currentPage.value - 1);
     } else {
       await fetchProjects(currentPage.value);

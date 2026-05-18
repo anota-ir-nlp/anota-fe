@@ -155,8 +155,22 @@ export function useAuth() {
         }
       );
 
-      setTokens(res.access, res.refresh);
-      await fetchMe();
+      const access = res?.access?.trim();
+      const refresh = res?.refresh?.trim();
+
+      if (!access || !refresh) {
+        setTokens(null, null);
+        user.value = null;
+        throw new Error("Login response missing tokens");
+      }
+
+      setTokens(access, refresh);
+      const me = await fetchMe();
+      if (!me) {
+        setTokens(null, null);
+        user.value = null;
+        throw new Error("Failed to fetch user profile after login");
+      }
       return true;
     } catch (err) {
       setTokens(null, null);
