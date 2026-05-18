@@ -13,10 +13,12 @@ build-sonar:
   stage: build-sonar
   
   image:
-    name: node:18
+    name: node:22  # ganti dari 18 ke 22
     entrypoint: [""]
 
   before_script:
+    - rm -f package-lock.json        # fix bug oxc-transform
+    - rm -rf node_modules
     - npm install
     - npx nuxt prepare
 
