@@ -21,6 +21,10 @@ build-sonar:
     - rm -rf node_modules
     - npm install --legacy-peer-deps
     - npx nuxt prepare
+    - apt-get update && apt-get install -y default-jre
+    - wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-6.2.1.4610-linux-x64.zip
+    - unzip sonar-scanner-cli-6.2.1.4610-linux-x64.zip
+    - export PATH="$PATH:$(pwd)/sonar-scanner-6.2.1.4610-linux-x64/bin"
 
   cache:
     policy: pull-push
@@ -30,7 +34,7 @@ build-sonar:
       - sonar-scanner/
       
   script: 
-    - npx sonar-scanner -Dsonar.host.url="${SONAR_HOST_URL}"
+    - sonar-scanner -Dsonar.host.url="${SONAR_HOST_URL}"
   allow_failure: true
   rules:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
