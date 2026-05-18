@@ -374,6 +374,7 @@ export interface UserUpdateRequest {
   username?: string;
   email?: string;
   full_name?: string;
+  roles?: string[];
 }
 
 export interface AvailableRolesResponse {
