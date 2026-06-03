@@ -218,6 +218,14 @@
         </div>
       </div>
     </div>
+
+    <ModalAnnotationHistoryModal
+      v-model="showCombinedHistory"
+      :sentence="selectedSentence"
+      :annotations="selectedSentence ? getAnnotatorAnnotationsForSentence(selectedSentence.id) : []"
+      :get-original-text="getOriginalSentenceText"
+      readonly
+    />
   </div>
 </template>
 
@@ -251,6 +259,10 @@ const annotators = computed(() => {
   });
   return Array.from(map.values());
 });
+
+function getOriginalSentenceText(sentenceId: number): string {
+  return document.value?.sentences.find((s: any) => s.id === sentenceId)?.text || '';
+}
 
 async function fetchDocument() {
   const result = await getAssignedDocument(Number(route.params.id));
@@ -294,7 +306,6 @@ function isAnnotationAccepted(ann: any) {
   );
 }
 
-// Fungsi baru untuk cek apakah index range yang sama sudah ada yang di-ACC
 function isRangeAccepted(ann: any) {
   return apiAnnotations.value.some(a => 
     Number(a.sentence) === Number(ann.sentence) && 
