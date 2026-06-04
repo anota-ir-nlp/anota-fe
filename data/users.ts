@@ -8,6 +8,7 @@ import type {
   AvailableRolesResponse,
   ProjectResponse,
   DocumentResponse,
+  AvailableProjectUsersResponse,
 } from "~/types/api";
 
 const BASE = "/users";
@@ -68,6 +69,27 @@ export function useUsersApi() {
   const manageUserRoleInProject = (projectId: number, data: { user_id: string; role: string; action: "add" | "remove" }) =>
     fetcher(`${BASE}/projects/${projectId}/role-management/`, { method: "POST", body: data });
 
+  const getAvailableUsersInProject = (projectId: number) =>
+    fetcher<AvailableProjectUsersResponse>(`${BASE}/projects/${projectId}/available-users/`);
+
+  const getAllUsersInProject = (projectId: number) =>
+    fetcher<UserResponse[]>(`${BASE}/projects/${projectId}/users/`);
+
+  const createUserInProject = (projectId: number, data: UserRegistrationRequest) =>
+    fetcher<UserRegistrationResponse>(`${BASE}/projects/${projectId}/users/create/`, { method: "POST", body: data });
+
+  const deleteUserFromProject = (projectId: number, userId: string) =>
+    fetcher<{ message: string }>(`${BASE}/projects/${projectId}/users/${userId}/`, { method: "DELETE" });
+
+  const getUserRolesInProject = (userId: string, projectId: number) =>
+    fetcher<{ roles: string[] }>(`${BASE}/projects/${projectId}/users/${userId}/`);
+
+  const resetPasswordInProject = (projectId: number, userId: string, data: { user_id: string; send_email: boolean }) =>
+    fetcher<{ message: string; user_id: string; username: string; new_password?: string; email_status?: string }>(`${BASE}/projects/${projectId}/users/${userId}/reset-password/`, {
+      method: "POST",
+      body: data,
+    });
+
   // --- PASSWORD & SECURITY ---
 
   const requestPasswordReset = (data: { email: string }) =>
@@ -101,8 +123,15 @@ export function useUsersApi() {
     
     // Project Based
     getUsersInProject,
+    getAvailableUsersInProject,
+    getAllUsersInProject,
+    createUserInProject,
+    deleteUserFromProject,
+    updateUserInProject: partialUpdateUserInProject,
     partialUpdateUserInProject,
     manageUserRoleInProject,
+    getUserRolesInProject,
+    resetPasswordInProject,
     
     // Auth & Utils
     getCurrentUser,

@@ -254,14 +254,14 @@ const accuracy = computed(() => {
 
 async function fetchGlobalStats() {
   try {
-    const [totalRes, annotatedRes] = await Promise.all([
-      getAssignedDocuments(),
-      getAssignedDocuments({ status: "sudah_dianotasi" })
-    ])
-    
+    const totalRes = await getAssignedDocuments()
+    const allDocs = totalRes?.results || []
+    const total = totalRes?.count || allDocs.length
+    const annotated = allDocs.filter((doc: DocumentResponse) => doc.status === "sudah_dianotasi").length
+
     globalStats.value = {
-      total: totalRes?.count || 0,
-      annotated: annotatedRes?.count || 0
+      total,
+      annotated
     }
   } catch (e) {
     globalStats.value = { annotated: 0, total: 0 }
