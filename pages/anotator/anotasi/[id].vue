@@ -530,16 +530,33 @@ const handleTextSelection = () => {
   const preSelectionRange = range.cloneRange();
   preSelectionRange.selectNodeContents(targetArea);
   preSelectionRange.setEnd(range.startContainer, range.startOffset);
-  
-  const startIndex = preSelectionRange.toString().length;
+
+  const startIndex = getOriginalTextLength(preSelectionRange);
   const endIndex = startIndex + selectedStr.length;
 
   selectedText.value = selectedStr;
-  selectedRange.value = {
-    start: startIndex,
-    end: endIndex,
-  };
+  selectedRange.value = { start: startIndex, end: endIndex };
 };
+
+function getOriginalTextLength(range: Range): number {
+  const fragment = range.cloneContents();
+  let length = 0;
+
+  const walk = (node: Node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const parentEl = node.parentElement;
+      const isCorrection = parentEl?.classList.contains('text-green-600');
+      if (!isCorrection) {
+        length += node.textContent?.length ?? 0;
+      }
+    } else {
+      node.childNodes.forEach(walk);
+    }
+  };
+
+  walk(fragment);
+  return length;
+}
 
 function getOriginalSentenceText(sentenceId: number): string {
   return document.value?.sentences.find((s) => s.id === sentenceId)?.text || "";
