@@ -61,6 +61,7 @@ jobs:
           host: ${{ secrets.SSH_HOSTNAME }}
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
+          debug: true
           script: |
             IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/anota-frontend:latest"
             echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin || true
