@@ -51,6 +51,10 @@ jobs:
       - name: Push Docker image to Docker Hub
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/anota-frontend:latest
 
+      - name: Test connectivity to server
+        run: |
+          ping -c 3 ${{ secrets.SSH_HOSTNAME }} || true
+          nc -zv -w 5 ${{ secrets.SSH_HOSTNAME }} 22 || true
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v0.1.10
         with:
