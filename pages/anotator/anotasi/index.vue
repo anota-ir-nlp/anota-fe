@@ -240,7 +240,7 @@ const dateFilterType = ref("")
 const sort = ref<{ key: string; dir: "asc" | "desc" }>({ key: "created_at", dir: "desc" })
 
 const page = ref(1)
-const pageCount = ref(10)
+const pageCount = ref(20)
 const totalItems = ref(0)
 
 const globalStats = ref({ annotated: 0, total: 0 })
@@ -328,16 +328,23 @@ function handleDateFilterChange() {
 let searchTimeout: ReturnType<typeof setTimeout>;
 
 watch(search, () => {
-  if (searchTimeout) clearTimeout(searchTimeout);
+  if (searchTimeout) clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
-    page.value = 1;
-    fetchData();
-  }, 2000);
-});
+    page.value = 1
+    fetchData()
+  }, 2000)
+})
 
-watch([search, () => filter.value.status, () => filter.value.dateFrom, () => filter.value.dateTo], () => {
+watch(() => filter.value.status, () => {
   page.value = 1
   fetchData()
+})
+
+watch([() => filter.value.dateFrom, () => filter.value.dateTo], () => {
+  if (dateFilterType.value === 'custom') {
+    page.value = 1
+    fetchData()
+  }
 })
 
 function setSort(key: string) {
@@ -385,14 +392,14 @@ async function fetchData() {
   try {
     const params = {
       page: page.value,
+      status: filter.value.status || 'belum_dianotasi,sedang_dianotasi,sudah_dianotasi', // ← tambah default
       search: search.value || undefined,
-      status: filter.value.status || undefined,
       date_from: filter.value.dateFrom || undefined,
       date_to: filter.value.dateTo || undefined,
     }
 
     const response = await getAssignedDocuments(params)
-    docs.value = response?.results?.filter((doc: any) => ANNOTATION_STATUSES.includes(doc.status)) || []
+    docs.value = response?.results || []
     totalItems.value = response?.count || 0
   } catch (e) {
     docs.value = []

@@ -229,7 +229,7 @@ const dateFilterType = ref("");
 const sort = ref<{ key: string; dir: "asc" | "desc" }>({ key: "created_at", dir: "desc" });
 
 const page = ref(1);
-const pageCount = ref(10);
+const pageCount = ref(20);
 const totalItems = ref(0);
 
 const globalStats = ref({ reviewed: 0, total: 0 });
@@ -372,22 +372,24 @@ async function fetchGlobalStats() {
 }
 
 async function fetchData() {
-  isLoading.value = true;
+  isLoading.value = true
   try {
-    const params: any = { page: page.value };
-    if (search.value) params.search = search.value;
-    if (filter.value.status) params.status = filter.value.status;
-    if (filter.value.dateFrom) params.date_from = filter.value.dateFrom;
-    if (filter.value.dateTo) params.date_to = filter.value.dateTo;
+    const params = {
+      page: page.value,
+      status: filter.value.status || 'belum_dianotasi,sedang_dianotasi,sudah_dianotasi', // ← tambah default
+      search: search.value || undefined,
+      date_from: filter.value.dateFrom || undefined,
+      date_to: filter.value.dateTo || undefined,
+    }
 
-    const response = await getAssignedDocuments(params);
-    docs.value = response?.results?.filter((doc: any) => REVIEW_STATUSES.includes(doc.status)) || [];
-    totalItems.value = response?.count || 0;
+    const response = await getAssignedDocuments(params)
+    docs.value = response?.results || []
+    totalItems.value = response?.count || 0
   } catch (e) {
-    docs.value = [];
-    totalItems.value = 0;
+    docs.value = []
+    totalItems.value = 0
   }
-  isLoading.value = false;
+  isLoading.value = false
 }
 
 onMounted(() => {
