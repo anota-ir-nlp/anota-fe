@@ -376,35 +376,43 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-if="loadingIAASummary" class="bg-white border-b">
-                <td colspan="4" class="px-6 py-10 text-center">Memuat data IAA...</td>
+              <tr v-if="loadingIAASummary">
+                <td colspan="5" class="px-6 py-10 text-center">Memuat data...</td>
               </tr>
-              <tr v-else-if="iaaPersonSummary.length === 0" class="bg-white border-b">
-                <td colspan="4" class="px-6 py-10 text-center">Tidak ada data IAA tersedia</td>
+              <tr v-else-if="iaaPersonSummary.length === 0">
+                <td colspan="5" class="px-6 py-10 text-center text-gray-400">Tidak ada data tersedia</td>
               </tr>
-              <tr v-for="person in iaaPersonSummary" :key="person.annotator_id" class="bg-white border-b hover:bg-gray-50">
-                <td class="px-6 py-4 font-medium text-gray-900">
-                  {{ person.annotator_name }}
+              <tr v-for="person in iaaPersonSummary" :key="person.annotator_id" class="border-b hover:bg-gray-50">
+                <td class="px-6 py-4">
+                  <div class="font-medium text-gray-900">{{ person.annotator_name }}</div>
+                  <div class="text-[10px] text-gray-400 uppercase tracking-tighter">Annotator</div>
                 </td>
                 <td class="px-6 py-4 text-center">
-                  <span v-if="person.iaa_vs_reviewer !== null" 
-                        :class="person.iaa_vs_reviewer > 0.6 ? 'text-green-600' : 'text-orange-600'" 
-                        class="font-bold">
-                    {{ (person.iaa_vs_reviewer * 100).toFixed(1) }}%
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    <template v-if="person.completion_percentage !== null">
+                      {{ person.completion_percentage.toFixed(1) }}%
+                    </template>
+                    <template v-else>
+                      N/A
+                    </template>
                   </span>
-                  <span v-else class="text-gray-400 italic text-xs">N/A</span>
                 </td>
                 <td class="px-6 py-4 text-center">
-                  <span v-if="person.iaa_vs_peers_avg !== null" class="font-semibold text-blue-600">
-                    {{ (person.iaa_vs_peers_avg * 100).toFixed(1) }}%
+                  <span v-if="person.iaa_vs_reviewer !== null" :class="person.iaa_vs_reviewer < 0 ? 'text-red-500' : 'text-green-600'" class="font-bold">
+                    {{ person.iaa_vs_reviewer.toFixed(2) }}
                   </span>
-                  <span v-else class="text-gray-400 italic text-xs">N/A</span>
+                  <span v-else class="text-gray-400">N/A</span>
+                </td>
+                <td class="px-6 py-4 text-center text-blue-600 font-bold">
+                  <span v-if="person.iaa_vs_peers_avg !== null">
+                    {{ person.iaa_vs_peers_avg.toFixed(2) }}
+                  </span>
+                  <span v-else class="text-gray-400">N/A</span>
                 </td>
                 <td class="px-6 py-4 text-center">
-                  <span :class="person.status === 'Has Review' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'"
-                        class="text-[10px] uppercase px-2 py-1 rounded-full font-bold">
+                  <Badge :variant="person.status === 'Sudah Direview' ? 'green' : 'gray'" class="text-[10px] uppercase font-bold">
                     {{ person.status }}
-                  </span>
+                  </Badge>
                 </td>
               </tr>
             </tbody>
