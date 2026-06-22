@@ -179,6 +179,16 @@ const newUser = ref({
   role: "Annotator", // Set default ke role yang paling umum atau kosongkan
 });
 
+const resetNewUser = () => {
+  newUser.value = {
+    username: "",
+    email: "",
+    full_name: "",
+    institusi: "",
+    role: "Annotator",
+  };
+};
+
 // Actions
 const fetchUsers = async () => {
   isLoading.value = true;
@@ -198,6 +208,8 @@ const handleCreateUser = async () => {
     await createUserApi(newUser.value); // Pastikan API create user tanpa project_id
     toast.success("Pengguna berhasil dibuat dan email dikirim.");
     isCreateDialogOpen.value = false;
+    // Reset form so it is cleared when dialog reopened
+    resetNewUser();
     fetchUsers();
   } catch (error) {
     toast.error("Gagal membuat pengguna.");

@@ -187,12 +187,19 @@ async function fetchUsers() {
   try {
     if (selectedProjectId.value) {
       const response = await getAllUsersInProject(selectedProjectId.value);
-      users.value = response || [];
+      if (Array.isArray(response)) {
+        users.value = response;
+      } else if (response && Array.isArray((response as any).results)) {
+        users.value = (response as any).results;
+      } else {
+        users.value = [];
+      }
     } else {
       users.value = [];
       toast.error("Pilih project terlebih dahulu untuk melihat pengguna");
     }
   } catch (error) {
+    users.value = [];
     toast.error("Gagal memuat daftar user");
   }
 }

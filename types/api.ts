@@ -336,6 +336,21 @@ export interface UserRegistrationResponse {
   };
 }
 
+export interface AvailableProjectUserResponse {
+  id: string;
+  username: string;
+  email: string;
+  full_name: string;
+  is_in_project: boolean;
+  roles_in_project?: string[];
+}
+
+export interface AvailableProjectUsersResponse {
+  project_id: number;
+  project_name: string;
+  users: AvailableProjectUserResponse[];
+}
+
 export interface UserPasswordResetRequest {
   new_password: string;
   backup_key: string;

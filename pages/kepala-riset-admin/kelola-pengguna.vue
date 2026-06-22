@@ -10,106 +10,266 @@
       <div class="mb-6">
         <Dialog v-model:open="isCreateDialogOpen">
           <div class="flex gap-3 items-start">
-          <DialogTrigger as-child>
-            <Button class="flex items-center gap-2">
-              <Plus class="w-4 h-4" />
-              Tambah Pengguna Baru
-            </Button>
-          </DialogTrigger>
-        </div>
+            <template v-if="isAdmin">
+              <DialogTrigger as-child>
+                <Button
+                  :variant="adminCreateMode === 'existing' ? 'default' : 'outline'"
+                  class="flex items-center gap-2"
+                  @click="adminCreateMode = 'existing'; isCreateDialogOpen = true">
+                  <Plus class="w-4 h-4" />
+                  Tambah Pengguna Terdaftar
+                </Button>
+              </DialogTrigger>
+              <DialogTrigger as-child>
+                <Button
+                  :variant="adminCreateMode === 'new' ? 'default' : 'outline'"
+                  class="flex items-center gap-2"
+                  @click="adminCreateMode = 'new'; isCreateDialogOpen = true">
+                  <Plus class="w-4 h-4" />
+                  Buat Akun Baru
+                </Button>
+              </DialogTrigger>
+            </template>
+            <template v-else>
+              <DialogTrigger as-child>
+                <Button class="flex items-center gap-2">
+                  <Plus class="w-4 h-4" />
+                  Tambah Pengguna Baru
+                </Button>
+              </DialogTrigger>
+            </template>
+          </div>
         <DialogContent class="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Tambah Pengguna Baru</DialogTitle>
+            <DialogTitle>
+              {{ isAdmin ? (adminCreateMode === 'existing' ? 'Tambah Pengguna Terdaftar' : 'Buat Akun Baru') : 'Tambah Pengguna Baru' }}
+            </DialogTitle>
             <DialogDescription>
-              Masukkan informasi pengguna baru. Password akan di-generate otomatis.
+              {{ isAdmin ? (adminCreateMode === 'existing' ? 'Pilih pengguna yang sudah terdaftar untuk ditambahkan ke project.' : 'Buat akun baru dan langsung tambahkan ke project.') : 'Masukkan informasi pengguna baru. Password akan di-generate otomatis.' }}
             </DialogDescription>
           </DialogHeader>
           <div class="grid gap-4 py-4">
-            <div class="grid gap-2">
-              <label for="username" class="text-sm font-medium text-left">Username</label>
-              <Input id="username" v-model="newUser.username" placeholder="Username" class="w-full" />
-            </div>
-            <div class="grid gap-2">
-              <label for="email" class="text-sm font-medium text-left">Email</label>
-              <Input id="email" v-model="newUser.email" type="email" placeholder="Email" class="w-full" />
-            </div>
-            <div class="grid gap-2">
-              <label for="full_name" class="text-sm font-medium text-left">Nama Lengkap</label>
-              <Input id="full_name" v-model="newUser.full_name" placeholder="Nama Lengkap" class="w-full" />
-            </div>
-            <div class="grid gap-2">
-              <label for="institution" class="text-sm font-medium text-left">Institusi (Opsional)</label>
-              <Input id="institution" v-model="newUser.institusi" placeholder="Institusi" class="w-full" />
-            </div>
-            <!-- Project selection for Kepala Riset -->
-            <div v-if="isKepalaRiset" class="grid gap-2">
-              <label for="project_select" class="text-sm font-medium text-left">Pilih Project</label>
-              <Select v-model="selectedProjectForRole">
-                <SelectTrigger class="w-full">
-                  <SelectValue placeholder="Pilih project untuk assign role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem v-for="project in projects" :key="project.id" :value="project.id.toString()">
-                    {{ project.name }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <p class="text-xs text-gray-500">
-                Pilih project untuk menambahkan role ke pengguna
-              </p>
-            </div>
+            <template v-if="isAdmin">
+              <div v-if="adminCreateMode === 'existing'" class="grid gap-2">
+                <label for="existing_user" class="text-sm font-medium text-left">Pilih Pengguna yang Sudah Ada</label>
+                <Select v-model="selectedExistingUserId">
+                  <SelectTrigger class="w-full">
+                    <SelectValue placeholder="Pilih pengguna yang tersedia" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem v-for="user in availableUsersForAdmin" :key="user.id" :value="user.id">
+                      {{ user.full_name }} ({{ user.username }})
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <p class="text-xs text-gray-500">Admin hanya dapat menambahkan pengguna yang sudah ada ke project.</p>
+              </div>
 
-            <!-- Role selection for Admin users with project context, and Kepala Riset -->
-            <div v-if="(isAdmin && selectedProjectId) || (isKepalaRiset && selectedProjectForRole)" class="grid gap-2">
-              <label for="roles" class="text-sm font-medium text-left">Roles untuk Project Ini</label>
-              <Combobox v-model="newUserRoles" v-model:open="openCreateRoles" :ignore-filter="true">
-                <ComboboxAnchor as-child>
-                  <TagsInput v-model="newUserRoles" class="px-2 w-full">
-                    <div class="flex flex-col">
-                      <div v-if="newUserRoles.length" class="flex gap-2 flex-wrap items-center p-1 font-semibold">
-                        <TagsInputItem v-for="item in newUserRoles" :key="item" :value="item">
-                          <TagsInputItemText class="text-xs" />
-                          <TagsInputItemDelete @click="newUserRoles.splice(newUserRoles.indexOf(item), 1)" />
-                        </TagsInputItem>
+              <div v-if="adminCreateMode === 'existing' && selectedExistingUserId && selectedProjectId" class="grid gap-2">
+                <label for="roles" class="text-sm font-medium text-left">Roles untuk Project Ini</label>
+                <Combobox v-model="newUserRoles" v-model:open="openCreateRoles" :ignore-filter="true">
+                  <ComboboxAnchor as-child>
+                    <TagsInput v-model="newUserRoles" class="px-2 w-full">
+                      <div class="flex flex-col">
+                        <div v-if="newUserRoles.length" class="flex gap-2 flex-wrap items-center p-1 font-semibold">
+                          <TagsInputItem v-for="item in newUserRoles" :key="item" :value="item">
+                            <TagsInputItemText class="text-xs" />
+                            <TagsInputItemDelete @click="newUserRoles.splice(newUserRoles.indexOf(item), 1)" />
+                          </TagsInputItem>
+                        </div>
+                        <ComboboxInput v-model="searchTermCreate" as-child>
+                          <TagsInputInput placeholder="Tambah role..." class="w-full" @keydown.enter.prevent />
+                        </ComboboxInput>
                       </div>
-                      <ComboboxInput v-model="searchTermCreate" as-child>
-                        <TagsInputInput placeholder="Tambah role..." class="w-full" @keydown.enter.prevent />
-                      </ComboboxInput>
-                    </div>
-                  </TagsInput>
-                  <ComboboxList class="w-[--reka-popper-anchor-width]" align="start">
-                    <ComboboxEmpty />
-                    <ComboboxGroup>
-                      <ComboboxItem
-                        v-for="role in availableProjectRoles.filter((r: string) => r.includes(searchTermCreate || '') && !newUserRoles.includes(r))"
-                        :key="role" :value="role" @select.prevent="(ev: any) => {
-                          if (typeof ev.detail.value === 'string') {
-                            searchTermCreate = ''
-                            newUserRoles.push(ev.detail.value)
-                          }
-                          if (availableProjectRoles.filter((r: string) => r.includes(searchTermCreate || '') && !newUserRoles.includes(r)).length === 0) {
-                            openCreateRoles = false
-                          }
-                        }">
-                        {{ role }}
-                      </ComboboxItem>
-                    </ComboboxGroup>
-                  </ComboboxList>
-                </ComboboxAnchor>
-              </Combobox>
-              <p v-if="isAdmin && selectedProject" class="text-xs text-gray-500">
-                Role akan diterapkan untuk project "{{ selectedProject.name }}"
-              </p>
-              <p v-else-if="isKepalaRiset && selectedProjectForRole" class="text-xs text-gray-500">
-                Role akan diterapkan untuk project "{{ projects.find((p: ProjectResponse) => p.id.toString() === selectedProjectForRole?.toString())?.name }}"
-              </p>
-            </div>
+                    </TagsInput>
+                    <ComboboxList class="w-[--reka-popper-anchor-width]" align="start">
+                      <ComboboxEmpty />
+                      <ComboboxGroup>
+                        <ComboboxItem
+                          v-for="role in availableProjectRoles.filter((r: string) => r.includes(searchTermCreate || '') && !newUserRoles.includes(r))"
+                          :key="role" :value="role" @select.prevent="(ev: any) => {
+                            if (typeof ev.detail.value === 'string') {
+                              searchTermCreate = ''
+                              newUserRoles.push(ev.detail.value)
+                            }
+                            if (availableProjectRoles.filter((r: string) => r.includes(searchTermCreate || '') && !newUserRoles.includes(r)).length === 0) {
+                              openCreateRoles = false
+                            }
+                          }">
+                          {{ role }}
+                        </ComboboxItem>
+                      </ComboboxGroup>
+                    </ComboboxList>
+                  </ComboboxAnchor>
+                </Combobox>
+                <p class="text-xs text-gray-500">Role akan diterapkan untuk project "{{ selectedProject?.name }}"</p>
+              </div>
+
+              <div v-if="adminCreateMode === 'new'" class="grid gap-2">
+                <div class="grid gap-2">
+                  <label for="username" class="text-sm font-medium text-left">Username</label>
+                  <Input id="username" v-model="newUser.username" placeholder="Username" class="w-full" />
+                </div>
+                <div class="grid gap-2">
+                  <label for="email" class="text-sm font-medium text-left">Email</label>
+                  <Input id="email" v-model="newUser.email" type="email" placeholder="Email" class="w-full" />
+                </div>
+                <div class="grid gap-2">
+                  <label for="full_name" class="text-sm font-medium text-left">Nama Lengkap</label>
+                  <Input id="full_name" v-model="newUser.full_name" placeholder="Nama Lengkap" class="w-full" />
+                </div>
+                <div class="grid gap-2">
+                  <label for="institution" class="text-sm font-medium text-left">Institusi (Opsional)</label>
+                  <Input id="institution" v-model="newUser.institusi" placeholder="Institusi" class="w-full" />
+                </div>
+                <div v-if="selectedProjectId" class="grid gap-2">
+                  <label for="roles" class="text-sm font-medium text-left">Roles untuk Project Ini</label>
+                  <Combobox v-model="newUserRoles" v-model:open="openCreateRoles" :ignore-filter="true">
+                    <ComboboxAnchor as-child>
+                      <TagsInput v-model="newUserRoles" class="px-2 w-full">
+                        <div class="flex flex-col">
+                          <div v-if="newUserRoles.length" class="flex gap-2 flex-wrap items-center p-1 font-semibold">
+                            <TagsInputItem v-for="item in newUserRoles" :key="item" :value="item">
+                              <TagsInputItemText class="text-xs" />
+                              <TagsInputItemDelete @click="newUserRoles.splice(newUserRoles.indexOf(item), 1)" />
+                            </TagsInputItem>
+                          </div>
+                          <ComboboxInput v-model="searchTermCreate" as-child>
+                            <TagsInputInput placeholder="Tambah role..." class="w-full" @keydown.enter.prevent />
+                          </ComboboxInput>
+                        </div>
+                      </TagsInput>
+                      <ComboboxList class="w-[--reka-popper-anchor-width]" align="start">
+                        <ComboboxEmpty />
+                        <ComboboxGroup>
+                          <ComboboxItem
+                            v-for="role in availableProjectRoles.filter((r: string) => r.includes(searchTermCreate || '') && !newUserRoles.includes(r))"
+                            :key="role" :value="role" @select.prevent="(ev: any) => {
+                              if (typeof ev.detail.value === 'string') {
+                                searchTermCreate = ''
+                                newUserRoles.push(ev.detail.value)
+                              }
+                              if (availableProjectRoles.filter((r: string) => r.includes(searchTermCreate || '') && !newUserRoles.includes(r)).length === 0) {
+                                openCreateRoles = false
+                              }
+                            }">
+                            {{ role }}
+                          </ComboboxItem>
+                        </ComboboxGroup>
+                      </ComboboxList>
+                    </ComboboxAnchor>
+                  </Combobox>
+                  <p class="text-xs text-gray-500">Role akan diterapkan untuk project "{{ selectedProject?.name }}"</p>
+                </div>
+              </div>
+            </template>
+
+            <template v-else>
+              <div class="grid gap-2">
+                <label for="username" class="text-sm font-medium text-left">Username</label>
+                <Input id="username" v-model="newUser.username" placeholder="Username" class="w-full" />
+              </div>
+              <div class="grid gap-2">
+                <label for="email" class="text-sm font-medium text-left">Email</label>
+                <Input id="email" v-model="newUser.email" type="email" placeholder="Email" class="w-full" />
+              </div>
+              <div class="grid gap-2">
+                <label for="full_name" class="text-sm font-medium text-left">Nama Lengkap</label>
+                <Input id="full_name" v-model="newUser.full_name" placeholder="Nama Lengkap" class="w-full" />
+              </div>
+              <div class="grid gap-2">
+                <label for="institution" class="text-sm font-medium text-left">Institusi (Opsional)</label>
+                <Input id="institution" v-model="newUser.institusi" placeholder="Institusi" class="w-full" />
+              </div>
+              <!-- Project selection for Kepala Riset -->
+              <div v-if="isKepalaRiset" class="grid gap-2">
+                <label for="project_select" class="text-sm font-medium text-left">Pilih Project</label>
+                <Select v-model="selectedProjectForRole">
+                  <SelectTrigger class="w-full">
+                    <SelectValue placeholder="Pilih project untuk assign role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem v-for="project in projects" :key="project.id" :value="project.id.toString()">
+                      {{ project.name }}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <p class="text-xs text-gray-500">
+                  Pilih project untuk menambahkan role ke pengguna
+                </p>
+              </div>
+
+              <!-- Role selection for Kepala Riset -->
+              <div v-if="isKepalaRiset && selectedProjectForRole" class="grid gap-2">
+                <label for="roles" class="text-sm font-medium text-left">Roles untuk Project Ini</label>
+                <Combobox v-model="newUserRoles" v-model:open="openCreateRoles" :ignore-filter="true">
+                  <ComboboxAnchor as-child>
+                    <TagsInput v-model="newUserRoles" class="px-2 w-full">
+                      <div class="flex flex-col">
+                        <div v-if="newUserRoles.length" class="flex gap-2 flex-wrap items-center p-1 font-semibold">
+                          <TagsInputItem v-for="item in newUserRoles" :key="item" :value="item">
+                            <TagsInputItemText class="text-xs" />
+                            <TagsInputItemDelete @click="newUserRoles.splice(newUserRoles.indexOf(item), 1)" />
+                          </TagsInputItem>
+                        </div>
+                        <ComboboxInput v-model="searchTermCreate" as-child>
+                          <TagsInputInput placeholder="Tambah role..." class="w-full" @keydown.enter.prevent />
+                        </ComboboxInput>
+                      </div>
+                    </TagsInput>
+                    <ComboboxList class="w-[--reka-popper-anchor-width]" align="start">
+                      <ComboboxEmpty />
+                      <ComboboxGroup>
+                        <ComboboxItem
+                          v-for="role in availableProjectRoles.filter((r: string) => r.includes(searchTermCreate || '') && !newUserRoles.includes(r))"
+                          :key="role" :value="role" @select.prevent="(ev: any) => {
+                            if (typeof ev.detail.value === 'string') {
+                              searchTermCreate = ''
+                              newUserRoles.push(ev.detail.value)
+                            }
+                            if (availableProjectRoles.filter((r: string) => r.includes(searchTermCreate || '') && !newUserRoles.includes(r)).length === 0) {
+                              openCreateRoles = false
+                            }
+                          }">
+                          {{ role }}
+                        </ComboboxItem>
+                      </ComboboxGroup>
+                    </ComboboxList>
+                  </ComboboxAnchor>
+                </Combobox>
+                <p v-if="isKepalaRiset && selectedProjectForRole" class="text-xs text-gray-500">
+                  Role akan diterapkan untuk project "{{ projects.find((p: ProjectResponse) => p.id.toString() === selectedProjectForRole?.toString())?.name }}"
+                </p>
+              </div>
+            </template>
           </div>
           <DialogFooter>
             <Button variant="outline" @click="resetForm">
               Reset
             </Button>
-            <Button @click="createUser" :disabled="isCreating" class="flex items-center gap-2">
+            <Button
+              v-if="isAdmin && adminCreateMode === 'existing'"
+              @click="createUser('existing')"
+              :disabled="isCreating || !selectedExistingUserId || !selectedProjectId"
+              class="flex items-center gap-2">
+              <Plus v-if="!isCreating" class="w-4 h-4" />
+              <Loader2 v-else class="w-4 h-4 animate-spin" />
+              {{ isCreating ? 'Menambah...' : 'Tambah Pengguna Terdaftar' }}
+            </Button>
+            <Button
+              v-if="isAdmin && adminCreateMode === 'new'"
+              @click="createUser('new')"
+              :disabled="isCreating || !newUser.username || !newUser.email || !newUser.full_name || !selectedProjectId"
+              class="flex items-center gap-2">
+              <Plus v-if="!isCreating" class="w-4 h-4" />
+              <Loader2 v-else class="w-4 h-4 animate-spin" />
+              {{ isCreating ? 'Menambah...' : 'Buat Akun Baru' }}
+            </Button>
+            <Button
+              v-else-if="!isAdmin"
+              @click="createUser()"
+              :disabled="isCreating"
+              class="flex items-center gap-2">
               <Plus v-if="!isCreating" class="w-4 h-4" />
               <Loader2 v-else class="w-4 h-4 animate-spin" />
               {{ isCreating ? 'Menambah...' : 'Tambah Pengguna' }}
@@ -417,6 +577,10 @@ const {
 
 const { getProjects, getAssignedUsers, assignAdmin, unassignAdmin } = useProjectsApi();
 
+// For Admin: available existing users to add to a project
+const availableUsersForAdmin = ref<Array<{id:string, username:string, email:string, full_name:string, is_in_project:boolean, roles_in_project?: string[]}>>([]);
+const selectedExistingUserId = ref<string | null>(null);
+
 const { userRoles } = useAuth();
 // Admin uses project context, but Kepala Riset always sees all users
 const { selectedProject, selectedProjectId, isAllProjects } = useProjectContext();
@@ -459,6 +623,7 @@ const openCreateRoles = ref(false);
 const openEditRoles = ref(false);
 const searchTermCreate = ref('');
 const searchTermEdit = ref('');
+const adminCreateMode = ref<'existing' | 'new'>('existing');
 
 // Project selection for Kepala Riset when assigning roles
 const selectedProjectForRole = ref<number | null>(null);
@@ -550,6 +715,17 @@ async function fetchAvailableRoles() {
     }
   } catch (error) {
     toast.error("Gagal memuat daftar roles");
+  }
+}
+
+async function fetchAvailableUsersForAdmin(projectId: number) {
+  try {
+    const res = await getAvailableUsersInProject(projectId);
+    availableUsersForAdmin.value = res?.users || [];
+  } catch (error) {
+    console.error('Error fetching available users for admin:', error);
+    availableUsersForAdmin.value = [];
+    toast.error('Gagal memuat daftar pengguna tersedia');
   }
 }
 
@@ -764,12 +940,7 @@ function handleSelectionChange(selection: UserResponse[]) {
   selectedUsers.value = selection || [];
 }
 
-async function createUser() {
-  if (!newUser.value.username || !newUser.value.full_name || !newUser.value.email) {
-    toast.error("Username, email, dan nama lengkap harus diisi");
-    return;
-  }
-
+async function createUser(mode: 'existing' | 'new' = isAdmin.value ? adminCreateMode.value : 'new') {
   // Determine which project ID to use
   const projectIdToUse = isKepalaRiset.value
     ? (selectedProjectForRole.value ? parseInt(selectedProjectForRole.value.toString()) : null)
@@ -780,9 +951,101 @@ async function createUser() {
     return;
   }
 
-  // Admin must select at least one role, but Kepala Riset can create users without roles
-  if (isAdmin.value && newUserRoles.value.length === 0) {
-    toast.error("Pilih minimal satu role untuk pengguna");
+  if (isAdmin.value && mode === 'existing') {
+    if (!selectedExistingUserId.value) {
+      toast.error("Pilih pengguna yang akan ditambahkan ke project");
+      return;
+    }
+    if (newUserRoles.value.length === 0) {
+      toast.error("Pilih minimal satu role untuk pengguna");
+      return;
+    }
+
+    isCreating.value = true;
+    try {
+      await toast.promise((async () => {
+        for (const role of newUserRoles.value) {
+          await manageUserRoleInProject(projectIdToUse, {
+            user_id: selectedExistingUserId.value!,
+            role,
+            action: "add",
+          });
+
+          if (role === "Admin") {
+            await assignAdmin(projectIdToUse, { user_id: selectedExistingUserId.value! });
+          }
+        }
+        return { success: true };
+      })(), {
+        loading: "Menambahkan pengguna ke project...",
+        success: () => {
+          resetForm();
+          fetchUsers(currentPage.value);
+          return `Pengguna berhasil ditambahkan ke project`;
+        },
+        error: "Gagal menambahkan pengguna ke project",
+      });
+    } catch (error) {
+      console.error('Error adding existing user to project:', error);
+    } finally {
+      isCreating.value = false;
+    }
+
+    return;
+  }
+
+  if (isAdmin.value && mode === 'new') {
+    if (!newUser.value.username || !newUser.value.full_name || !newUser.value.email) {
+      toast.error("Username, email, dan nama lengkap harus diisi");
+      return;
+    }
+    if (newUserRoles.value.length === 0) {
+      toast.error("Pilih minimal satu role untuk pengguna");
+      return;
+    }
+
+    isCreating.value = true;
+    try {
+      await toast.promise(
+        (async () => {
+          const result = await createUserInProject(projectIdToUse, newUser.value);
+
+          for (const role of newUserRoles.value) {
+            await manageUserRoleInProject(projectIdToUse, {
+              user_id: result.data.id,
+              role,
+              action: "add",
+            });
+
+            if (role === "Admin") {
+              await assignAdmin(projectIdToUse, { user_id: result.data.id });
+            }
+          }
+
+          return result;
+        })(),
+        {
+          loading: "Membuat akun baru dan menambahkan ke project...",
+          success: (result: UserRegistrationResponse) => {
+            resetForm();
+            fetchUsers(currentPage.value);
+            return `Akun ${result.data.username} berhasil dibuat dan ditambahkan ke project`;
+          },
+          error: "Gagal membuat akun baru",
+        }
+      );
+    } catch (error) {
+      console.error('Error creating new admin account:', error);
+    } finally {
+      isCreating.value = false;
+    }
+
+    return;
+  }
+
+  // Kepala Riset flow: create new user in project context
+  if (!newUser.value.username || !newUser.value.full_name || !newUser.value.email) {
+    toast.error("Username, email, dan nama lengkap harus diisi");
     return;
   }
 
@@ -793,7 +1056,7 @@ async function createUser() {
         // Create user in project context
         const result = await createUserInProject(projectIdToUse, newUser.value);
 
-        // If admin/kepala riset and roles are selected, assign roles to project
+        // If roles are selected, assign roles to project
         if (newUserRoles.value.length > 0) {
           for (const role of newUserRoles.value) {
             await manageUserRoleInProject(projectIdToUse, {
@@ -1067,6 +1330,23 @@ async function editUser(user: {
   isEditDialogOpen.value = true;
 }
 
+// 
+
+watch(isCreateDialogOpen, async (open) => {
+  if (open && isAdmin.value && selectedProjectId.value) {
+    try {
+      const res = await getAvailableUsersInProject(selectedProjectId.value);
+      availableUsersForAdmin.value = res.users || [];
+    } catch (e) {
+      console.error('Error fetching available users for admin:', e);
+      availableUsersForAdmin.value = [];
+      toast.error('Gagal memuat daftar pengguna tersedia');
+    }
+  } else if (!open) {
+    selectedExistingUserId.value = null;
+  }
+});
+
 // Watch for editing project changes and load user's existing roles in that project
 watch(editingProjectForRole, async (newProjectId) => {
   if (newProjectId && editingUser.value.id) {
@@ -1108,6 +1388,9 @@ function resetForm() {
 
   newUserRoles.value = [];
   selectedProjectForRole.value = null;
+  selectedExistingUserId.value = null;
+  availableUsersForAdmin.value = [];
+  adminCreateMode.value = 'existing';
 
   isCreateDialogOpen.value = false;
 }

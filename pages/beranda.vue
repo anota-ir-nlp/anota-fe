@@ -58,22 +58,14 @@
               <ShieldCheck class="w-6 h-6" />
             </div>
             <div>
-              <h3 class="text-lg font-bold text-blue-900">Console Management</h3>
-              <p class="text-sm text-blue-700/80">Akses penuh ke seluruh data sistem Anota.</p>
+              <h3 class="text-lg font-bold text-blue-900">User Management</h3>
+              <p class="text-sm text-blue-700/80">Akses penuh ke seluruh data pengguna sistem</p>
             </div>
           </div>
           <div class="flex gap-3">
             <Button 
-              variant="outline" 
-              class="border-blue-300 text-blue-700 hover:bg-blue-100"
-              @click="navigateTo('/projects')"
-            >
-              <Building2 class="w-4 h-4 mr-2" />
-              Semua Proyek
-            </Button>
-            <Button 
               class="bg-blue-600 hover:bg-blue-700 text-white"
-              @click="navigateTo('/kelola-pengguna')"
+              @click="navigateTo('/superadmin/kelola-pengguna')"
             >
               <Users class="w-4 h-4 mr-2" />
               Kelola Pengguna
@@ -82,7 +74,7 @@
         </div>
       </div>
       <div
-        v-if="!isKepalaRiset"
+        v-if="!isKepalaRiset && !hasRole('Superadmin')"
         class="mt-8 mb-8"
       >
         <!-- Project Assignment Header -->
@@ -576,13 +568,13 @@
                     </td>
                     <td class="px-6 py-4 text-center">
                       <span v-if="person.iaa_vs_reviewer !== null" :class="person.iaa_vs_reviewer < 0 ? 'text-red-500' : 'text-green-600'" class="font-bold">
-                        {{ (person.iaa_vs_reviewer * 100).toFixed(1) }}%
+                        {{ person.iaa_vs_reviewer.toFixed(2) }}
                       </span>
                       <span v-else class="text-gray-400">N/A</span>
                     </td>
                     <td class="px-6 py-4 text-center text-blue-600 font-bold">
                       <span v-if="person.iaa_vs_peers_avg !== null">
-                        {{ (person.iaa_vs_peers_avg * 100).toFixed(1) }}%
+                        {{ person.iaa_vs_peers_avg.toFixed(2) }}
                       </span>
                       <span v-else class="text-gray-400">N/A</span>
                     </td>
