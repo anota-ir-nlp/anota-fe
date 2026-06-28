@@ -118,6 +118,8 @@ const documentToReopen = ref<DocumentResponse | null>(null);
 
 const totalItems = computed(() => documents.value.length);
 
+const minimumWordsInSpan = ref(1)
+
 const paginatedDocuments = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value;
   const end = start + itemsPerPage.value;
