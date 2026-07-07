@@ -175,7 +175,18 @@ async function fetchDocuments() {
       return;
     }
     const projectDocuments = await getDocumentsInProject(selectedProjectId.value);
-    documents.value = projectDocuments || [];
+    // Normalize and validate response: ensure we always set an array
+    if (Array.isArray(projectDocuments)) {
+      documents.value = projectDocuments;
+    } else if (projectDocuments && Array.isArray((projectDocuments as any).results)) {
+      documents.value = (projectDocuments as any).results;
+    } else {
+      // Received unexpected payload (e.g. HTML error page or object). Log and show user-friendly message
+      console.error("Unexpected response for getDocumentsInProject:", projectDocuments);
+      toast.error("Gagal memuat data dokumen (respons server tidak valid)");
+      documents.value = [];
+      return;
+    }
     currentPage.value = 1;
   } catch (error) {
     toast.error("Gagal memuat data dokumen");
