@@ -33,6 +33,7 @@ import {
   Menu as MenuIcon,
   X as CloseIcon,
   Key,
+  Info,
 } from "lucide-vue-next";
 import { toast } from "vue-sonner";
 import type { AvailableRole } from "~/types/api";
@@ -172,6 +173,15 @@ const handleLogout = async () => {
               <NuxtLink to="/" class="flex items-center gap-2 text-gray-900 hover:text-blue-600 transition-colors">
                 <Lightbulb class="w-5 h-5 text-blue-500" />
                 <span class="text-xl font-medium">Anota</span>
+              </NuxtLink>
+
+              <NuxtLink
+                to="/tentang"
+                class="flex items-center space-x-2 px-3 py-3 text-slate-700 hover:text-blue-600 hover:bg-blue-100/50 rounded-lg transition-all duration-200"
+                :class="{ 'font-semibold text-blue-600': route.path === '/tentang' }"
+              >
+                <Info class="w-4 h-4" />
+                <span class="font-medium hidden sm:inline">Tentang</span>
               </NuxtLink>
 
               <template v-if="isAuthenticated">
