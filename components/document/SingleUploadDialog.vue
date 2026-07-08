@@ -21,6 +21,21 @@
           <Input v-model="documentInstitution" placeholder="Contoh: Universitas Indonesia" class="w-full" />
         </div>
 
+        <div class="grid gap-2">
+          <label class="text-sm font-medium text-left">Minimum kata per span</label>
+          <Input
+            type="number"
+            min="1"
+            v-model.number="minimumWordsInSpan"
+            @blur="validateMinimumWordsInSpan"
+            @input="minimumWordsInSpanError = ''"
+            class="w-full"
+            placeholder="Masukkan angka minimal kata"
+          />
+          <p class="text-xs text-gray-500">Kalimat dengan jumlah kata kurang dari nilai ini akan dihapus.</p>
+          <div v-if="minimumWordsInSpanError" class="text-sm text-red-600">{{ minimumWordsInSpanError }}</div>
+        </div>
+
         <div v-if="isLoadingPreview" class="flex-1 bg-gray-50 border border-gray-200 rounded p-4 text-sm flex flex-col items-center justify-center">
           <Loader2 class="w-8 h-8 animate-spin text-blue-600 mb-2" />
           <div class="text-gray-600">Memproses file dan menganalisis kalimat...</div>
@@ -42,12 +57,15 @@
 
             <div v-if="singleFilePreview.sentences && singleFilePreview.sentences.length > 0" class="bg-green-50 border border-green-200 rounded p-3">
               <div class="text-green-800 font-medium mb-2">Preview Kalimat</div>
+              <div class="text-sm text-blue-700 mb-2">
+                Menyimpan {{ filteredPreviewSentences.length }} dari {{ singleFilePreview.sentences.length }} kalimat berdasarkan batas minimum kata.
+              </div>
               <div class="max-h-32 overflow-y-auto space-y-1">
-                <div v-for="(sentence, index) in singleFilePreview.sentences.slice(0, 5)" :key="index" class="text-green-700 text-xs p-2 bg-white rounded border">
+                <div v-for="(sentence, index) in filteredPreviewSentences.slice(0, 5)" :key="index" class="text-green-700 text-xs p-2 bg-white rounded border">
                   <span class="font-medium">{{ index + 1 }}:</span> {{ sentence }}
                 </div>
-                <div v-if="singleFilePreview.sentences.length > 5" class="text-green-600 text-xs text-center py-1">
-                  ... dan {{ singleFilePreview.sentences.length - 5 }} kalimat lainnya
+                <div v-if="filteredPreviewSentences.length > 5" class="text-green-600 text-xs text-center py-1">
+                  ... dan {{ filteredPreviewSentences.length - 5 }} kalimat lainnya
                 </div>
               </div>
             </div>
@@ -88,7 +106,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "~/components/ui/dialog";
@@ -117,6 +135,8 @@ const singleFileConfirmed = ref(false);
 const isLoadingPreview = ref(false);
 const fileError = ref("");
 const documentInstitution = ref("");
+const minimumWordsInSpan = ref(1);
+const minimumWordsInSpanError = ref("");
 
 const isDuplicateWarningOpen = ref(false);
 const duplicateError = ref<DuplicateDocumentError | null>(null);
@@ -151,6 +171,22 @@ async function handleSingleFile(e: Event) {
   }
 }
 
+const filteredPreviewSentences = computed(() => {
+  if (!singleFilePreview.value?.sentences) return [];
+  return singleFilePreview.value.sentences.filter((sentence) =>
+    sentence.trim().split(/\s+/).filter(Boolean).length >= minimumWordsInSpan.value
+  );
+});
+
+function validateMinimumWordsInSpan() {
+  if (!Number.isInteger(minimumWordsInSpan.value) || minimumWordsInSpan.value < 1) {
+    minimumWordsInSpanError.value = "Minimum kata harus berupa angka bulat minimal 1.";
+    return false;
+  }
+  minimumWordsInSpanError.value = "";
+  return true;
+}
+
 function confirmFile() {
   if (singleFilePreview.value) {
     singleFileConfirmed.value = true;
@@ -170,6 +206,8 @@ function resetForm() {
   documentInstitution.value = "";
   singleFilePreview.value = null;
   singleFileConfirmed.value = false;
+  minimumWordsInSpan.value = 1;
+  minimumWordsInSpanError.value = "";
   fileError.value = "";
   isLoadingPreview.value = false;
   const fileInput = document.querySelector('input[type="file"][accept=".txt,.docx"]') as HTMLInputElement;
@@ -179,6 +217,10 @@ function resetForm() {
 async function uploadFile() {
   if (!props.projectId) {
     toast.error("Pilih project terlebih dahulu untuk mengupload dokumen");
+    return;
+  }
+  if (!validateMinimumWordsInSpan()) {
+    toast.error("Mohon perbaiki input minimum kata sebelum mengupload.");
     return;
   }
   isUploading.value = true;
@@ -202,6 +244,7 @@ async function createAndAssignDocument(docRequest: DocumentPreview, allowDuplica
     project: props.projectId!,
     institution: documentInstitution.value || undefined,
     allow_duplicate: allowDuplicate,
+    minimum_words_in_span: minimumWordsInSpan.value,
   };
   try {
     return await apiCreateDocument(documentWithProject);
