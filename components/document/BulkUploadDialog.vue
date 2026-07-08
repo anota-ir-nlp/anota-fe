@@ -22,6 +22,22 @@
           <p class="text-xs text-gray-500">Institusi ini akan diterapkan ke semua dokumen yang diupload</p>
         </div>
 
+        <div class="grid gap-2">
+          <label class="text-sm font-medium text-left">Minimum kata per span</label>
+          <Input
+            type="number"
+            min="1"
+            step="1"
+            v-model.number="minimumWordsInSpan"
+            @blur="validateMinimumWordsInSpan"
+            @input="minimumWordsInSpanError = ''"
+            class="w-full"
+            placeholder="Masukkan angka minimal kata"
+          />
+          <p class="text-xs text-gray-500">Kalimat dengan jumlah kata kurang dari nilai ini akan dihapus.</p>
+          <div v-if="minimumWordsInSpanError" class="text-sm text-red-600">{{ minimumWordsInSpanError }}</div>
+        </div>
+
         <div v-if="isLoadingBulkPreview" class="flex-1 bg-gray-50 border border-gray-200 rounded p-6 flex flex-col items-center justify-center">
           <Loader2 class="w-8 h-8 animate-spin text-blue-600 mb-2" />
           <div class="text-gray-600">Memproses file dan menganalisis kalimat...</div>
@@ -148,6 +164,8 @@ const uploadProgress = ref(0);
 const isLoadingBulkPreview = ref(false);
 const fileError = ref("");
 const bulkDocumentInstitution = ref("");
+const minimumWordsInSpan = ref(1);
+const minimumWordsInSpanError = ref("");
 const applyToAllFiles = ref(false);
 const bulkFilesPreview = ref<BulkFilePreview[]>([]);
 const currentBulkFileIndex = ref(0);
@@ -243,8 +261,19 @@ function deleteFile() {
   }
 }
 
+function validateMinimumWordsInSpan() {
+  if (!Number.isInteger(minimumWordsInSpan.value) || minimumWordsInSpan.value < 1) {
+    minimumWordsInSpanError.value = "Minimum kata harus berupa angka bulat minimal 1.";
+    return false;
+  }
+  minimumWordsInSpanError.value = "";
+  return true;
+}
+
 function resetForm() {
   bulkDocumentInstitution.value = "";
+  minimumWordsInSpan.value = 1;
+  minimumWordsInSpanError.value = "";
   bulkFilesPreview.value = [];
   processedBulkFiles.value = [];
   currentBulkFileIndex.value = 0;
@@ -259,6 +288,10 @@ function resetForm() {
 async function uploadFiles() {
   if (!props.projectId) {
     toast.error("Pilih project terlebih dahulu untuk mengupload dokumen");
+    return;
+  }
+  if (!validateMinimumWordsInSpan()) {
+    toast.error("Mohon perbaiki input minimum kata sebelum mengupload.");
     return;
   }
   isUploading.value = true;
@@ -280,6 +313,7 @@ async function uploadFiles() {
         ...doc,
         project: props.projectId!,
         institution: bulkDocumentInstitution.value || undefined,
+        minimum_words_in_span: minimumWordsInSpan.value,
       };
       await apiCreateDocument(documentWithProject);
       successCount++;
@@ -291,6 +325,7 @@ async function uploadFiles() {
             ...doc,
             project: props.projectId!,
             institution: bulkDocumentInstitution.value || undefined,
+            minimum_words_in_span: minimumWordsInSpan.value,
           };
           duplicateError.value = error.data as DuplicateDocumentError;
           pendingDocumentRequest.value = documentWithProject;
@@ -336,6 +371,7 @@ async function continueBulkUploadWithDuplicates() {
         ...doc,
         project: props.projectId!,
         allow_duplicate: true,
+        minimum_words_in_span: minimumWordsInSpan.value,
       };
       await apiCreateDocument(documentWithProject);
       successCount++;

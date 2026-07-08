@@ -306,6 +306,7 @@ export interface DocumentRequest {
   project: number;
   institution?: string;
   allow_duplicate?: boolean;
+  minimum_words_in_span?: number;
 }
 
 export interface DuplicateDocumentError {
