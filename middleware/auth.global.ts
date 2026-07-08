@@ -19,7 +19,7 @@ const roleBasedRoutes = {
   ],
 };
 
-const publicRoutes = ["/", "/reset-password"];
+const publicRoutes = ["/", "/reset-password", "/tentang"];
 const commonAuthenticatedRoutes = ["/change-password"];
 
 function hasRoleAccess(userRoles: string[], routePath: string): boolean {
