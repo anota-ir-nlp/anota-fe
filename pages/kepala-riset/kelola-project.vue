@@ -1146,6 +1146,25 @@ function deselectAllDocuments() {
   selectedDocumentsForExport.value = [];
 }
 
+function parseParallelBlob(text: string): { original: string[]; updated: string[] } {
+  const lines = text.split(/\r?\n/);
+  const original: string[] = [];
+  const updated: string[] = [];
+  let section: "none" | "original" | "updated" = "none";
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (line === "ORIGINAL") { section = "original"; continue; }
+    if (line === "---") { section = "none"; continue; }
+    if (line === "UPDATED") { section = "updated"; continue; }
+    if (line === "") continue;
+    if (section === "original") original.push(line);
+    else if (section === "updated") updated.push(line);
+  }
+
+  return { original, updated };
+}
+
 async function exportSelectedDocuments() {
   if (selectedDocumentsForExport.value.length === 0) {
     if (exportableDocuments.value.length === 0) {
@@ -1158,6 +1177,7 @@ async function exportSelectedDocuments() {
   isExporting.value = true;
   let successCount = 0;
   const totalDocuments = selectedDocumentsForExport.value.length;
+  const projectBaseName = projectToExport.value?.name.replace(/[^a-zA-Z0-9.-]/g, '_') || 'documents';
 
   try {
     await toast.promise(
@@ -1165,28 +1185,71 @@ async function exportSelectedDocuments() {
         const JSZip = (await import('jszip')).default;
         const zip = new JSZip();
 
-        for (const document of selectedDocumentsForExport.value) {
-          try {
-            const blob = await exportDocumentApi(document.id, exportFormat.value);
+        if (exportFormat.value === "parallel") {
+          // Kumpulkan pasangan kalimat (error, corrected), flat lintas dokumen
+          const pairs: { error: string; corrected: string }[] = [];
 
-            if (!blob) {
-              continue;
+          for (const doc of selectedDocumentsForExport.value) {
+            try {
+              const blob = await exportDocumentApi(doc.id, exportFormat.value);
+              if (!blob) continue;
+
+              const text = await blob.text();
+              const { original, updated } = parseParallelBlob(text);
+
+              if (original.length !== updated.length) {
+                console.warn(`Jumlah baris ORIGINAL/UPDATED tidak sama di dokumen "${doc.title}" (${original.length} vs ${updated.length}), sisanya diabaikan`);
+              }
+
+              const pairCount = Math.min(original.length, updated.length);
+              for (let i = 0; i < pairCount; i++) {
+                pairs.push({ error: original[i], corrected: updated[i] });
+              }
+
+              successCount++;
+            } catch (docError: any) {
+              // Silent fail - lanjut ke dokumen berikutnya
             }
-
-            const extension = exportFormat.value === "parallel" ? "txt" : "m2";
-            const fileName = `${document.title.replace(/[^a-zA-Z0-9.-]/g, '_')}.${extension}`;
-
-            const arrayBuffer = await blob.arrayBuffer();
-            zip.file(fileName, arrayBuffer);
-
-            successCount++;
-          } catch (docError: any) {
-            // Silent fail - continue processing other documents
           }
-        }
 
-        if (successCount === 0) {
-          throw new Error("Tidak ada dokumen yang berhasil diexport");
+          if (successCount === 0) {
+            throw new Error("Tidak ada dokumen yang berhasil diexport");
+          }
+
+          // Shuffle di level kalimat (pair tetap utuh, jadi alignment gak rusak)
+          for (let i = pairs.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [pairs[i], pairs[j]] = [pairs[j], pairs[i]];
+          }
+
+          const tsvContent = pairs.map((p) => `${p.error}\t${p.corrected}`).join("\n");
+          zip.file(`${projectBaseName}_parallel.txt`, tsvContent);
+        } else {
+          // Format m2: tetap merge per-dokumen, shuffle di level dokumen
+          const shuffledDocuments = [...selectedDocumentsForExport.value];
+          for (let i = shuffledDocuments.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffledDocuments[i], shuffledDocuments[j]] = [shuffledDocuments[j], shuffledDocuments[i]];
+          }
+
+          const mergedContents: string[] = [];
+          for (const doc of shuffledDocuments) {
+            try {
+              const blob = await exportDocumentApi(doc.id, exportFormat.value);
+              if (!blob) continue;
+              const text = await blob.text();
+              mergedContents.push(text.trim());
+              successCount++;
+            } catch (docError: any) {
+              // Silent fail
+            }
+          }
+
+          if (successCount === 0) {
+            throw new Error("Tidak ada dokumen yang berhasil diexport");
+          }
+
+          zip.file(`${projectBaseName}_merged.m2`, mergedContents.join("\n\n"));
         }
 
         const zipBlob = await zip.generateAsync({
