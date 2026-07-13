@@ -15,19 +15,19 @@ const roles = [
   },
   {
     icon: BarChart3,
-    title: "Kepala Riset",
+    title: "Kepala Proyek",
     description: "Memantau progres proyek riset, analitik anotasi, dan mengelola alur kerja tim secara keseluruhan.",
   },
   {
     icon: Users,
-    title: "Administrator",
+    title: "Admin Proyek",
     description: "Mengelola pengguna, dokumen, dan penugasan dokumen pada proyek.",
   },
 ];
 
 const features = [
   "Anotasi kesalahan gramatikal berbasis dokumen",
-  "Alur kerja multi-peran (Annotator, Reviewer, Admin)",
+  "Alur kerja multi-peran (Annotator, Reviewer, Admin Proyek, Kepala Proyek)",
   "Riwayat anotasi yang dapat ditelusuri",
   "Ekspor dokumen dan laporan progres",
 ];

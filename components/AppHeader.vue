@@ -70,7 +70,7 @@ const menuGroups = computed(() => {
           label: "Kelola Pengguna",
           path: "/superadmin/kelola-pengguna",
           icon: Users,
-          description: "Manage system users and create Kepala Riset accounts",
+          description: "Manage system users and create Kepala Proyek accounts",
         },
       ],
     });
@@ -79,7 +79,7 @@ const menuGroups = computed(() => {
   if (hasRole("Kepala Riset")) {
     groups.push({
       type: "dropdown",
-      label: "Kepala Riset",
+      label: "Kepala Proyek",
       icon: BarChart3,
       items: [
         { label: "Dashboard Analytics", path: "/kepala-riset-admin/dashboard", icon: BarChart3, description: "View system analytics and performance metrics" },
@@ -91,7 +91,7 @@ const menuGroups = computed(() => {
   if (hasRole("Admin")) {
     groups.push({
       type: "dropdown",
-      label: "Administrator Project",
+      label: "Admin Proyek",
       icon: Users,
       items: [
         { label: "Kelola Dokumen", path: "/admin/kelola-dokumen", icon: FileText, description: "Manage and export documents" },

@@ -134,7 +134,7 @@ export function createUserColumns(
       },
       enableSorting: false,
     },
-    // Conditionally include Project Assignment column only for Kepala Riset
+    // Conditionally include Project Assignment column only for Kepala Proyek
     ...(options?.showProjectAssignment && options?.getProjectAssignments ? [{
       id: 'project_assignment',
       header: 'Project Assignment',

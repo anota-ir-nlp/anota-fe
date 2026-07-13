@@ -22,7 +22,7 @@
             <DialogHeader>
               <DialogTitle>Tambah Project Baru</DialogTitle>
               <DialogDescription>
-                Masukkan informasi project baru. Admin dapat ditugaskan sekarang
+                Masukkan informasi project baru. Admin Proyek dapat ditugaskan sekarang
                 atau nanti.
               </DialogDescription>
             </DialogHeader>
@@ -68,7 +68,7 @@
                   <label
                     for="admin_select"
                     class="text-sm font-medium text-left"
-                    >Admin yang Ditugaskan</label
+                    >Admin Proyek yang Ditugaskan</label
                   >
                   <Combobox
                     v-model="newProjectAdminIds"
@@ -163,7 +163,7 @@
         <DialogHeader>
           <DialogTitle>Edit Project</DialogTitle>
           <DialogDescription>
-            Update informasi project. Admin dapat diubah sesuai kebutuhan.
+            Update informasi project. Admin Proyek dapat diubah sesuai kebutuhan.
           </DialogDescription>
         </DialogHeader>
         <div class="grid gap-6 py-4">
@@ -188,7 +188,7 @@
             </div>
             <div class="grid gap-2">
               <div class="text-xs text-gray-500 mb-1">
-                Admin hanya dapat ditugaskan ke satu project. Pilih admin yang belum ditugaskan.
+                Admin Proyek hanya dapat ditugaskan ke satu project. Pilih admin yang belum ditugaskan.
               </div>
               <Combobox v-model="editingProjectAdminIds" v-model:open="openEditAdmins" :ignore-filter="true">
                 <ComboboxAnchor as-child>
@@ -456,7 +456,7 @@
                 >
                 <TableHead class="font-medium text-left">Deskripsi</TableHead>
                 <TableHead class="font-medium text-left"
-                  >Admin yang Ditugaskan</TableHead
+                  >Admin Proyek yang Ditugaskan</TableHead
                 >
                 <TableHead class="font-medium text-left"
                   >Tanggal Dibuat</TableHead
@@ -1225,7 +1225,6 @@ async function exportSelectedDocuments() {
           const tsvContent = pairs.map((p) => `${p.error}\t${p.corrected}`).join("\n");
           zip.file(`${projectBaseName}_parallel.txt`, tsvContent);
         } else {
-          // Format m2: tetap merge per-dokumen, shuffle di level dokumen
           const shuffledDocuments = [...selectedDocumentsForExport.value];
           for (let i = shuffledDocuments.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
