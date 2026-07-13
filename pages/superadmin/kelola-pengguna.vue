@@ -50,7 +50,7 @@
                 </SelectTrigger>
                 <SelectContent>
                 <SelectItem value="Admin">Admin</SelectItem>
-                <SelectItem value="Kepala Riset">Kepala Riset</SelectItem>
+                <SelectItem value="Kepala Riset">Kepala Proyek</SelectItem>
                 <SelectItem value="Annotator">Annotator</SelectItem>
                 <SelectItem value="Reviewer">Reviewer</SelectItem>
                 </SelectContent>
@@ -129,7 +129,7 @@
                 </SelectTrigger>
                 <SelectContent>
                 <SelectItem value="Admin">Admin</SelectItem>
-                <SelectItem value="Kepala Riset">Kepala Riset</SelectItem>
+                <SelectItem value="Kepala Riset">Kepala Proyek</SelectItem>
                 <SelectItem value="Annotator">Annotator</SelectItem>
                 <SelectItem value="Reviewer">Reviewer</SelectItem>
                 </SelectContent>

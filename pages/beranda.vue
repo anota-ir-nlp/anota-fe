@@ -427,7 +427,7 @@
           </div>
           <div>
             <h2 class="text-3xl font-bold text-gray-900">
-              Dashboard Kepala Riset
+              Dashboard Kepala Proyek
             </h2>
             <p class="text-gray-500 text-lg">
               Pantau progress dan analytics lengkap proyek penelitian
@@ -653,7 +653,7 @@ const { getAvailableUsersInProject, getMyProjects, getUserRolesInProject } = use
 const { getAssignedDocuments } = useUserDocumentsApi();
 const { getProjects } = useProjectsApi();
 
-// For project context (used by all users except Kepala Riset)
+// For project context (used by all users except Kepala Proyek)
 const { selectedProject, setSelectedProject, clearSelectedProject } = useProjectContext();
 
 const pending = ref(false);
