@@ -92,7 +92,7 @@ export function createUserColumns(
               variant: "purple",
               class: "font-semibold",
             },
-            () => "Kepala Riset"
+            () => "Kepala Proyek"
           );
         }
 
