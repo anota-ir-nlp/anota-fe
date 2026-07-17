@@ -1,67 +1,45 @@
 <script setup lang="ts">
-import { Lightbulb, Pencil, FileCheck, BarChart3, Users, FileText, CheckCircle2, GraduationCap } from "lucide-vue-next";
-import { Button } from "~/components/ui/button";
+import { Lightbulb, Pencil, FileCheck, BarChart3, Users, FileText, CheckCircle2, GraduationCap, Globe, Linkedin } from "lucide-vue-next";
 
 const roles = [
   {
     icon: Pencil,
     title: "Anotator",
-    description: "Membuat dan mengedit anotasi pada dokumen sesuai pedoman GEC (Grammatical Error Correction) untuk Bahasa Indonesia.",
+    description: "Melakukan anotasi terhadap dokumen yang ditugaskan sesuai skema anotasi Grammatical Error Correction (GEC).",
   },
   {
     icon: FileCheck,
     title: "Reviewer",
-    description: "Meninjau dan memvalidasi hasil anotasi sebelum dokumen dinyatakan selesai dan siap digunakan sebagai dataset.",
+    description: "Melakukan pemeriksaan dan validasi hasil anotasi untuk menjaga konsistensi dan kualitas dataset.",
   },
   {
     icon: BarChart3,
     title: "Kepala Proyek",
-    description: "Memantau progres proyek riset, analitik anotasi, dan mengelola alur kerja tim secara keseluruhan.",
+    description: "Memantau pelaksanaan proyek melalui informasi statistik dan kemajuan anotasi.",
   },
   {
     icon: Users,
     title: "Admin Proyek",
-    description: "Mengelola pengguna, dokumen, dan penugasan dokumen pada proyek.",
+    description: "Mengelola proyek, dokumen, pengguna, dan penugasan anotasi.",
   },
 ];
 
 const features = [
-  "Anotasi kesalahan gramatikal berbasis dokumen",
-  "Alur kerja multi-peran (Annotator, Reviewer, Admin Proyek, Kepala Proyek)",
-  "Riwayat anotasi yang dapat ditelusuri",
-  "Ekspor dokumen dan laporan progres",
+  "Pengelolaan proyek dan dokumen anotasi",
+  "Manajemen pengguna berbasis peran (RBAC)",
+  "Proses anotasi dan review yang terstruktur",
+  "Ekspor dataset dalam format teks paralel dan format M2",
 ];
 
-const timeline = [
-  {
-    period: "TA Sebelumnya",
-    label: "Frontend",
-    members: [
-      { name: "Alden Luthfi Arrahman", npm: "2206028932", major: "Ilmu Komputer" },
-      { name: "Samuel Taniel Mulyadi", npm: "2206081805", major: "Ilmu Komputer" },
-    ],
-  },
-  {
-    period: "TA Sebelumnya",
-    label: "Backend",
-    members: [
-      { name: "Juan Dharmananda Khusuma", npm: "2206081521", major: "Ilmu Komputer" },
-      { name: "Lim Bodhi Wijaya", npm: "2206082410", major: "Sistem Informasi" },
-    ],
-  },
-  {
-    period: "Anota v1.0",
-    label: "Evaluasi dan Pengembangan Lanjut Website Anotasi Dataset Grammatical Error Correction",
-    members: [
-      { name: "Fernando Valentino Sitinjak", npm: "2206081332", major: "Ilmu Komputer" },
-      { name: "Fiona Ratu Maheswari", npm: "2206024575", major: "Sistem Informasi" },
-    ],
-  },
-];
-
-const advisors = [
-  { name: "Dr. Ika Alfina, S.Kom., M.Kom.", role: "Pembimbing 1" },
-  { name: "Syifa Nurhayati, S.Kom., M.Kom.", role: "Pembimbing 2" },
+const contributors = [
+  { name: "Ika Alfina", role: "Ketua", type: "dosen", url: "https://cs.ui.ac.id/personnel/ika-alfina/" },
+  { name: "Syifa Nurhayati", role: "Anggota", type: "dosen", url: "https://cs.ui.ac.id/personnel/syifa-nurhayati-m-kom/" },
+  { name: "Juan Dharmananda Khusuma", role: "Anggota", type: "dev", url: "https://www.linkedin.com/in/juandk89" },
+  { name: "Lim Bodhi Wijaya", role: "Anggota", type: "dev", url: "https://www.linkedin.com/in/limbodhiwijaya/" },
+  { name: "Samuel Taniel Mulyadi", role: "Anggota", type: "dev", url: "https://www.linkedin.com/in/samuel-taniel-mulyadi" },
+  { name: "Alden Luthfi Arrahman", role: "Anggota", type: "dev", url: "https://www.linkedin.com/in/aldenluthfi" },
+  { name: "Fernando Valentino Sitinjak", role: "Anggota", type: "dev", url: "https://www.linkedin.com/in/fernando-valentino-sitinjak" },
+  { name: "Fiona Ratu Maheswari", role: "Anggota", type: "dev", url: "https://www.linkedin.com/in/fiona-ratu-maheswari-52399a245" },
 ];
 </script>
 
@@ -78,8 +56,9 @@ const advisors = [
           Koreksi Kesalahan Gramatikal
         </h1>
         <p class="text-gray-500 text-lg max-w-2xl mx-auto leading-relaxed">
-          Anota membantu tim riset membangun, mengelola, dan meninjau dataset anotasi GEC
-          Bahasa Indonesia secara kolaboratif dan terstruktur.
+          Anota membantu tim riset membangun dataset Natural Language Processing melalui proses
+          anotasi yang terstruktur, kolaboratif, dan terdokumentasi, dengan implementasi awal
+          pada Modul Grammatical Error Correction (GEC).
         </p>
       </div>
     </section>
@@ -104,8 +83,8 @@ const advisors = [
               Fitur Utama
             </h2>
             <p class="text-gray-500 leading-relaxed mb-6">
-              Dibangun untuk mendukung proses anotasi yang konsisten, terlacak, dan
-              mudah diaudit dari awal hingga akhir.
+              Dibangun di atas Core Platform dan Annotation Framework yang modular, mendukung
+              alur kerja anotasi dari pembentukan proyek hingga ekspor dataset.
             </p>
             <ul class="space-y-3">
               <li v-for="feature in features" :key="feature" class="flex items-start gap-3">
@@ -139,65 +118,37 @@ const advisors = [
           <span>Kontributor</span>
         </div>
         <h2 class="text-3xl md:text-4xl font-semibold text-gray-900 mb-4">
-          Perjalanan Pengembangan Anota
+          Kontributor Anota v1.0
         </h2>
         <p class="text-gray-500 max-w-2xl mx-auto leading-relaxed">
-          Anota dikembangkan secara berkelanjutan lintas angkatan Tugas Akhir,
-          hingga mencapai versi Anota v1.0 saat ini.
+          Tim yang tercatat sebagai pencipta pada pendaftaran Hak Cipta Anota v1.0.
         </p>
       </div>
 
-      <div class="relative">
-        <div class="absolute left-4 md:left-1/2 top-0 bottom-0 w-px bg-gray-200 md:-translate-x-1/2"></div>
-
-        <div class="space-y-10">
-          <div
-            v-for="(entry, index) in timeline"
-            :key="entry.period + entry.label"
-            class="relative flex flex-col md:flex-row items-start gap-6"
-            :class="index % 2 === 1 ? 'md:flex-row-reverse' : ''"
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div
+          v-for="contributor in contributors"
+          :key="contributor.name"
+          class="p-6 rounded-2xl border border-blue-100 bg-gradient-to-b from-blue-50/60 to-white shadow-sm hover:shadow-md hover:border-blue-200 transition-all flex flex-col items-center text-center"
+        >
+          <div class="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center mb-4 shadow-sm">
+            <Users class="w-5 h-5 text-white" />
+          </div>
+          <div class="min-h-[2.5rem] flex items-center justify-center mb-1">
+            <div class="text-sm font-medium text-gray-900 leading-snug">{{ contributor.name }}</div>
+          </div>
+          <span class="inline-block text-xs font-semibold text-white bg-blue-500 px-3 py-1 rounded-full mb-4">
+            {{ contributor.role }}
+          </span>
+          <a
+            :href="contributor.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="w-8 h-8 rounded-lg bg-white border border-blue-200 flex items-center justify-center hover:bg-blue-500 hover:border-blue-500 group transition-all"
           >
-            <div class="absolute left-4 md:left-1/2 w-3 h-3 rounded-full bg-blue-500 ring-4 ring-blue-100 -translate-x-1/2 mt-2"></div>
-
-            <div class="w-full md:w-1/2 pl-10 md:pl-0" :class="index % 2 === 1 ? 'md:pl-10' : 'md:pr-10 md:text-right'">
-              <span class="inline-block text-xs font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded-full mb-3">
-                {{ entry.period }}
-              </span>
-              <div class="p-6 rounded-2xl border border-gray-200 bg-white hover:shadow-sm transition-all">
-                <h3 class="font-semibold text-gray-900 mb-4">{{ entry.label }}</h3>
-                <div class="space-y-3">
-                  <div v-for="member in entry.members" :key="member.npm" class="flex items-start gap-3" :class="index % 2 === 1 ? '' : 'md:flex-row-reverse md:text-right'">
-                    <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-                      <Users class="w-4 h-4 text-blue-500" />
-                    </div>
-                    <div>
-                      <div class="text-sm font-medium text-gray-900">{{ member.name }}</div>
-                      <div class="text-xs text-gray-400">{{ member.npm }} · {{ member.major }}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="hidden md:block md:w-1/2"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="mt-14 p-6 rounded-2xl border border-gray-200 bg-gray-50">
-        <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4 text-center">
-          Dosen Pembimbing
-        </h3>
-        <div class="flex flex-col sm:flex-row justify-center gap-6">
-          <div v-for="advisor in advisors" :key="advisor.name" class="flex items-center gap-3 justify-center">
-            <div class="w-9 h-9 rounded-lg bg-blue-500 flex items-center justify-center flex-shrink-0">
-              <GraduationCap class="w-4 h-4 text-white" />
-            </div>
-            <div>
-              <div class="text-sm font-medium text-gray-900">{{ advisor.name }}</div>
-              <div class="text-xs text-gray-400">{{ advisor.role }}</div>
-            </div>
-          </div>
+            <Globe v-if="contributor.type === 'dosen'" class="w-4 h-4 text-blue-500 group-hover:text-white transition-all" />
+            <Linkedin v-else class="w-4 h-4 text-blue-500 group-hover:text-white transition-all" />
+          </a>
         </div>
       </div>
     </section>
