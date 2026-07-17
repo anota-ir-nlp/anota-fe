@@ -120,9 +120,6 @@ const contributors = [
         <h2 class="text-3xl md:text-4xl font-semibold text-gray-900 mb-4">
           Kontributor Anota v1.0
         </h2>
-        <p class="text-gray-500 max-w-2xl mx-auto leading-relaxed">
-          Tim yang tercatat sebagai pencipta pada pendaftaran Hak Cipta Anota v1.0.
-        </p>
       </div>
 
       <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
